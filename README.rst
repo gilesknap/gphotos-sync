@@ -19,17 +19,17 @@ authorized to use the Google Drive API. It is not provided in the distribution.
 
 To do so:
 
- * Create a project on `Google Developer Console`_, following the `Creating a project procedure`_,
+* Create a project on `Google Developer Console`_, following the `Creating a project procedure`_,
 
- * Authorize it to use the Google Drive API, following the `Activating and desactivating APIs procedure`_,
-   
- * Create a Client ID by following the `setting up oauth 2.0 procedure`_ with application type set to `Other`,
+* Authorize it to use the Google Drive API, following the `Activating and desactivating APIs procedure`_,
 
- * Once the client ID is created, download it as ``client_secret.json`` and save it under the application 
-   configuration directory:
+* Create a Client ID by following the `setting up oauth 2.0 procedure`_ with application type set to `Other`,
 
-    - ``~/Library/Application Support/gphotos-sync/`` under Mac OS X,
-    - ``~/.config/gphotos-sync/`` under Linux.
+* Once the client ID is created, download it as ``client_secret.json`` and save it under the application 
+  configuration directory:
+
+  - ``~/Library/Application Support/gphotos-sync/`` under Mac OS X,
+  - ``~/.config/gphotos-sync/`` under Linux.
 
 .. _`Google Developer Console`: https://developers.google.com/console/
 .. _`Creating a project procedure`: https://developers.google.com/console/help/new/#creatingaproject
