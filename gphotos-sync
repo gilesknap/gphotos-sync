@@ -1,0 +1,215 @@
+#!/usr/bin/python
+# coding: utf8
+
+import os.path
+from datetime import datetime
+import re
+import argparse
+import sys
+
+from pydrive.auth import GoogleAuth
+from pydrive.drive import GoogleDrive
+from retrying import retry
+from appdirs import AppDirs
+
+APPNAME = "gphotos-sync"
+
+
+class NoGooglePhotosFolderError(Exception):
+    pass
+
+
+class GooglePhotosMedia(object):
+
+    SPECIAL_SUFFIXES_PATTERN = r'(?:-EFFECTS|-ANIMATION|-COLLAGE|-PANO|~\d+)$'
+    CANONICAL_FILENAME_FORMAT = '%(date)s-%(camera_model)s%(camera_owner)s%(suffix)s.%(extension)s'
+
+    def __init__(self, drive_file):
+        self.drive_file = drive_file
+
+    def get_custom_property_value(self, key):
+        for prop in self.drive_file['properties']:
+            if prop['key'] == key:
+                return prop['value']
+
+        raise KeyError()
+
+    def get_exif_value(self, tag_name):
+        try:
+            exif_override_property_name = "exif-%s" % tag_name
+            return self.get_custom_property_value(exif_override_property_name)
+        except KeyError:
+            return self.drive_file['imageMediaMetadata'][tag_name]
+
+    @property
+    def date(self):
+        try:
+            exif_date = self.get_exif_value('date')
+            photo_date = datetime.strptime(exif_date, '%Y:%m:%d %H:%M:%S')
+        except (KeyError, ValueError):
+            import_date = self.drive_file['createdDate']
+            photo_date = datetime.strptime(import_date,
+                                           '%Y-%m-%dt%H:%M:%S.000Z')
+
+        return photo_date
+
+    @property
+    def camera_owner(self):
+        try:
+            artist = self.get_exif_value('artist')
+            match = re.match('Camera Owner, ([^;]+)(?:;|$)', artist)
+            camera_owner = match.group(1) if match else artist
+        except KeyError:
+            camera_owner = None
+
+        return camera_owner
+
+    @property
+    def camera_model(self):
+        try:
+            camera_model = self.get_exif_value('cameraModel')
+        except KeyError:
+            if re.match(r'IMG-\d{8}-WA\d+', self.filename):
+                camera_model = 'WhatsApp'
+            else:
+                camera_model = None
+
+        return camera_model
+
+    @property
+    def extension(self):
+        return self.drive_file['fileExtension']
+
+    @property
+    def filename(self):
+        return self.drive_file['title']
+
+    @property
+    def suffix(self):
+        filename, _ = os.path.splitext(self.drive_file['title'])
+        suffix_match = re.search(GooglePhotosMedia.SPECIAL_SUFFIXES_PATTERN,
+                                 filename, re.VERBOSE)
+        suffix = suffix_match.group(0) if suffix_match else None
+        return suffix
+
+    @property
+    def canonical_filename(self):
+        def sanitize_name(name):
+            return re.sub(r'[^\w]', '', name)
+
+        camera_model = self.camera_model or 'Unknown'
+        camera_owner = self.camera_owner or ''
+        suffix = self.suffix or ''
+
+        if self.camera_owner:
+            camera_owner = '-' + sanitize_name(camera_owner)
+
+        canonical_filename = GooglePhotosMedia.CANONICAL_FILENAME_FORMAT % {
+            'date': self.date.strftime('%Y%m%d-%H%M%S'),
+            'camera_model': sanitize_name(camera_model),
+            'camera_owner': camera_owner,
+            'suffix': suffix,
+            'extension': self.extension.lower(),
+        }
+
+        return canonical_filename
+
+    def download(self, target_folder=None):
+        if target_folder:
+            filename = os.path.join(target_folder, self.canonical_filename)
+        else:
+            filename = self.canonical_filename
+
+        self.drive_file.GetContentFile(filename)
+
+
+class GooglePhotosSync(object):
+
+    GOOGLE_PHOTO_FOLDER_QUERY = "title = 'Google Photos' and 'root' in parents and trashed=false"
+    MEDIA_QUERY = "'%s' in parents and trashed=false"
+    PAGE_SIZE = 100
+
+    def __init__(self,
+                 target_folder='.',
+                 client_secret_file='client_secret.json',
+                 credentials_file='credentials.json'):
+
+        self.target_folder = target_folder
+        gauth = GoogleAuth()
+        gauth.settings['client_config_file'] = client_secret_file
+        gauth.settings['save_credentials_file'] = credentials_file
+        gauth.settings['save_credentials'] = True
+        gauth.settings['save_credentials_backend'] = 'file'
+        gauth.settings['get_refresh_token'] = True
+        gauth.CommandLineAuth()
+        self.googleDrive = GoogleDrive(gauth)
+
+    def _get_photos_folder_id(self):
+        query_results = self.googleDrive.ListFile(
+            {'q': GooglePhotosSync.GOOGLE_PHOTO_FOLDER_QUERY}).GetList()
+        try:
+            return query_results[0]['id']
+        except:
+            raise NoGooglePhotosFolderError()
+
+    def get_remote_medias(self):
+        googlePhotosFolderId = self._get_photos_folder_id()
+        for page_results in self.googleDrive.ListFile({
+            'q': GooglePhotosSync.MEDIA_QUERY % googlePhotosFolderId,
+            'maxResults': GooglePhotosSync.PAGE_SIZE
+        }):
+            for drive_file in page_results:
+                if drive_file['mimeType'].startswith('video/'):
+                    continue
+                yield GooglePhotosMedia(drive_file)
+
+    def get_target_folder(self, media):
+        target_folder = media.date.strftime('%Y/%m')
+        if self.target_folder:
+            target_folder = os.path.join(self.target_folder, target_folder)
+        return target_folder
+
+    def has_local_version(self, media):
+        target_folder = self.get_target_folder(media)
+        local_filename = os.path.join(target_folder, media.canonical_filename)
+        return os.path.isfile(local_filename)
+
+    def downloadMedia(self, media, progress_handler=None):
+        target_folder = self.get_target_folder(media)
+        if not os.path.isdir(target_folder):
+            os.makedirs(target_folder)
+
+        media.download(target_folder)
+        return os.path.join(target_folder, media.canonical_filename)
+
+
+parser = argparse.ArgumentParser(
+    description="Google Photos simple synchronization tool")
+parser.add_argument('target_folder',
+                    metavar='TARGET_FOLDER',
+                    help='The photos will be downloaded in that directory')
+args = parser.parse_args()
+
+
+appdirs = AppDirs(APPNAME)
+
+
+credentials_file = os.path.join(appdirs.user_data_dir, 'credentials.json')
+client_secret_file = os.path.join(appdirs.user_config_dir, 'client_secret.json')
+
+
+googlePhotosSync = GooglePhotosSync(target_folder=args.target_folder,
+                                    client_secret_file=client_secret_file,
+                                    credentials_file=credentials_file)
+
+
+for remote_media in googlePhotosSync.get_remote_medias():
+
+    if remote_media.extension == 'gif':
+        continue
+
+    if not googlePhotosSync.has_local_version(remote_media):
+        sys.stdout.write("Downloading %s...\n" % remote_media.canonical_filename)
+        #googlePhotosSync.downloadMedia(remote_media)
+
+# vim: autoindent tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=python
