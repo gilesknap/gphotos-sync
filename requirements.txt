@@ -1,4 +1,4 @@
 pydrive
 retrying
 appdirs
-etaprogress
+progressbar2
