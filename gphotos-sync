@@ -276,3 +276,5 @@ for remote_media in googlePhotosSync.get_remote_medias():
         googlePhotosSync.downloadMedia(remote_media,
                                        progress_handler=progress_handler)
 
+
+# vim: autoindent tabstop=4 shiftwidth=4 expandtab softtabstop=4
