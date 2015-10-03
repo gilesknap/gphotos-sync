@@ -1,19 +1,18 @@
 #!/usr/bin/python
 # coding: utf8
 
-import os.path
-from datetime import datetime
-import re
 import argparse
 import io
+import os.path
+import re
+from datetime import datetime
 
-from pydrive.auth import GoogleAuth
-from pydrive.drive import GoogleDrive
 from apiclient import http
 from appdirs import AppDirs
-from progressbar import (
-    ProgressBar, Percentage, Bar, AdaptiveTransferSpeed, AdaptiveETA
-)
+from progressbar import (AdaptiveETA, AdaptiveTransferSpeed, Bar, Percentage,
+                         ProgressBar)
+from pydrive.auth import GoogleAuth
+from pydrive.drive import GoogleDrive
 
 APPNAME = "gphotos-sync"
 
