@@ -241,7 +241,10 @@ parser = argparse.ArgumentParser(
 parser.add_argument("target_folder",
                     metavar="TARGET_FOLDER",
                     help="The photos will be downloaded in that directory")
-parser.add_argument('--quiet', help='quiet (no output)')
+parser.add_argument("--quiet", help="quiet (no output)")
+parser.add_argument("--dry-run",
+                    action='store_true',
+                    help="show what would have been copied")
 args = parser.parse_args()
 
 appdirs = AppDirs(APPNAME)
@@ -261,6 +264,10 @@ for remote_media in googlePhotosSync.get_remote_medias():
         continue
 
     if not googlePhotosSync.has_local_version(remote_media):
+
+        if args.dry_run:
+            print "Downloading %s" % remote_media.canonical_filename
+            continue
 
         if not args.quiet:
             progress_handler = ProgressHandler(remote_media)
