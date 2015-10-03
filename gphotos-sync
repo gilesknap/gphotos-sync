@@ -5,12 +5,15 @@ import os.path
 from datetime import datetime
 import re
 import argparse
-import sys
+import io
 
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
-from retrying import retry
+from apiclient import http
 from appdirs import AppDirs
+from progressbar import (
+    ProgressBar, Percentage, Bar, AdaptiveTransferSpeed, AdaptiveETA
+)
 
 APPNAME = "gphotos-sync"
 
@@ -56,6 +59,10 @@ class GooglePhotosMedia(object):
         return photo_date
 
     @property
+    def size(self):
+        return int(self.drive_file["fileSize"])
+
+    @property
     def camera_owner(self):
         try:
             artist = self.get_exif_value("artist")
@@ -81,6 +88,10 @@ class GooglePhotosMedia(object):
     @property
     def extension(self):
         return self.drive_file["fileExtension"]
+
+    @property
+    def id(self):
+        return self.drive_file["id"]
 
     @property
     def filename(self):
@@ -139,14 +150,14 @@ class GooglePhotosSync(object):
                  credentials_file="credentials.json"):
 
         self.target_folder = target_folder
-        gauth = GoogleAuth()
-        gauth.settings['client_config_file'] = client_secret_file
-        gauth.settings['save_credentials_file'] = credentials_file
-        gauth.settings['save_credentials'] = True
-        gauth.settings['save_credentials_backend'] = 'file'
-        gauth.settings['get_refresh_token'] = True
-        gauth.CommandLineAuth()
-        self.googleDrive = GoogleDrive(gauth)
+        self.gauth = GoogleAuth()
+        self.gauth.settings["client_config_file"] = client_secret_file
+        self.gauth.settings["save_credentials_file"] = credentials_file
+        self.gauth.settings["save_credentials"] = True
+        self.gauth.settings["save_credentials_backend"] = "file"
+        self.gauth.settings["get_refresh_token"] = True
+        self.gauth.CommandLineAuth()
+        self.googleDrive = GoogleDrive(self.gauth)
 
     def _get_photos_folder_id(self):
         query_results = self.googleDrive.ListFile(
@@ -184,15 +195,59 @@ class GooglePhotosSync(object):
         if not os.path.isdir(target_folder):
             os.makedirs(target_folder)
 
-        media.download(target_folder)
-        return os.path.join(target_folder, media.canonical_filename)
+        target_filename = os.path.join(target_folder, media.canonical_filename)
+
+        with io.open(target_filename, 'bw') as target_file:
+            request = self.gauth.service.files().get_media(fileId=media.id)
+            download_request = http.MediaIoBaseDownload(target_file, request)
+
+            done = False
+            while not done:
+                download_status, done = download_request.next_chunk()
+                if progress_handler is not None:
+                    progress_handler.update_progress(download_status)
+
+        return target_filename
+
+
+class ProgressHandler(object):
+
+    def __init__(self, remote_media):
+
+        progress_bar_widgets = [
+            remote_media.canonical_filename,
+            "    ",
+            Percentage(),
+            Bar(),
+            " ",
+            AdaptiveTransferSpeed(),
+            "  ",
+            AdaptiveETA(),
+        ]
+
+        self.progress_bar = ProgressBar(maxval=remote_media.size,
+                                        term_width=160,
+                                        widgets=progress_bar_widgets)
+        self.progress_bar.start()
+
+    def update_progress(self, status):
+        if status.progress() == 1:
+            self.progress_bar.finish()
+
+        else:
+            size_downloaded = status.progress() * status.total_size
+            self.progress_bar.update(size_downloaded)
+
+
+# Main code
 
 
 parser = argparse.ArgumentParser(
     description="Google Photos simple synchronization tool")
-parser.add_argument('target_folder',
-                    metavar='TARGET_FOLDER',
-                    help='The photos will be downloaded in that directory')
+parser.add_argument("target_folder",
+                    metavar="TARGET_FOLDER",
+                    help="The photos will be downloaded in that directory")
+parser.add_argument('--quiet', help='quiet (no output)')
 args = parser.parse_args()
 
 
@@ -206,6 +261,7 @@ googlePhotosSync = GooglePhotosSync(target_folder=args.target_folder,
                                     client_secret_file=secret_file,
                                     credentials_file=credentials_file)
 
+progress_handler = None
 
 for remote_media in googlePhotosSync.get_remote_medias():
 
@@ -213,7 +269,10 @@ for remote_media in googlePhotosSync.get_remote_medias():
         continue
 
     if not googlePhotosSync.has_local_version(remote_media):
-        sys.stdout.write("Downloading %s...\n" % remote_media.canonical_filename)
-        #googlePhotosSync.downloadMedia(remote_media)
 
-# vim: autoindent tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=python
+        if not args.quiet:
+            progress_handler = ProgressHandler(remote_media)
+
+        googlePhotosSync.downloadMedia(remote_media,
+                                       progress_handler=progress_handler)
+
