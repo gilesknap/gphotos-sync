@@ -2,12 +2,15 @@
 # coding: utf8
 
 import argparse
+import hashlib
 import io
+import mimetypes
 import os.path
 import re
 from datetime import datetime
 
 from apiclient import http
+from apiclient.http import MediaFileUpload
 from appdirs import AppDirs
 from progressbar import (AdaptiveETA, AdaptiveTransferSpeed, Bar, Percentage,
                          ProgressBar)
@@ -16,9 +19,48 @@ from pydrive.drive import GoogleDrive
 
 APPNAME = "gphotos-sync"
 
+###############################################################################
+# Useful classes
+###############################################################################
+
 
 class NoGooglePhotosFolderError(Exception):
     pass
+
+
+class LocalMedia(object):
+
+    CHUNK_SIZE = 4096
+
+    def __init__(self, media_path):
+        self.path = media_path
+
+    @property
+    def filename(self):
+        return os.path.basename(self.path)
+
+    @property
+    def canonical_filename(self):
+        return self.filename
+
+    @property
+    def size(self):
+        return os.path.getsize(self.path)
+
+    @property
+    def checksum(self):
+        md5sum = hashlib.md5()
+        with io.open(self.path, 'rb') as media_file:
+            chunk_reader = lambda: media_file.read(LocalMedia.CHUNK_SIZE)
+            for chunk in iter(chunk_reader, b""):
+                md5sum.update(chunk)
+
+        return md5sum.hexdigest()
+
+    @property
+    def mimetype(self):
+        mimetype, _ = mimetypes.guess_type(self.path)
+        return mimetype
 
 
 class GooglePhotosMedia(object):
@@ -61,6 +103,14 @@ class GooglePhotosMedia(object):
         return int(self.drive_file["fileSize"])
 
     @property
+    def checksum(self):
+        return self.drive_file["md5Checksum"]
+
+    @property
+    def id(self):
+        return self.drive_file["id"]
+
+    @property
     def camera_owner(self):
         try:
             artist = self.get_exif_value("artist")
@@ -86,10 +136,6 @@ class GooglePhotosMedia(object):
     @property
     def extension(self):
         return self.drive_file["fileExtension"]
-
-    @property
-    def id(self):
-        return self.drive_file["id"]
 
     @property
     def filename(self):
@@ -124,14 +170,6 @@ class GooglePhotosMedia(object):
         }
 
         return canonical_filename
-
-    def download(self, target_folder=None):
-        if target_folder:
-            filename = os.path.join(target_folder, self.canonical_filename)
-        else:
-            filename = self.canonical_filename
-
-        self.drive_file.GetContentFile(filename)
 
 
 class GooglePhotosSync(object):
@@ -176,10 +214,26 @@ class GooglePhotosSync(object):
                     continue
                 yield GooglePhotosMedia(drive_file)
 
+    def get_remote_media_by_name(self, filename):
+        googlePhotosFolderId = self._get_photos_folder_id()
+        query_params = {
+            "q": 'title = "%s" and "%s" in parents and trashed=false' %
+            (filename, googlePhotosFolderId)
+        }
+        found_media = self.googleDrive.ListFile(query_params).GetList()
+        return GooglePhotosMedia(found_media[0]) if found_media else None
+
+    def get_local_medias(self):
+        for directory, _, files in os.walk(self.target_folder):
+            for filename in files:
+                media_path = os.path.join(directory, filename)
+                mimetype, _ = mimetypes.guess_type(media_path)
+                if mimetype and mimetype.startswith('image/'):
+                    yield LocalMedia(media_path)
+
     def get_target_folder(self, media):
-        target_folder = media.date.strftime("%Y/%m")
-        if self.target_folder:
-            target_folder = os.path.join(self.target_folder, target_folder)
+        year_month_folder = media.date.strftime("%Y/%m")
+        target_folder = os.path.join(self.target_folder, year_month_folder)
         return target_folder
 
     def has_local_version(self, media):
@@ -206,12 +260,39 @@ class GooglePhotosSync(object):
 
         return target_filename
 
+    def uploadMedia(self, local_media, progress_handler=None):
+
+        remote_media = self.get_remote_media_by_name(local_media.filename)
+
+        media_body = MediaFileUpload(local_media.path, resumable=True)
+
+        if remote_media:
+            upload_request = self.gauth.service.files().update(
+                fileId=remote_media.id,
+                body=remote_media.drive_file,
+                newRevision=True,
+                media_body=media_body)
+        else:
+            body = {
+                'title': local_media.filename,
+                'mimetype': local_media.mimetype
+            }
+            upload_request = self.gauth.service.files().insert(
+                body=body,
+                media_body=media_body)
+
+        done = False
+        while not done:
+            upload_status, done = upload_request.next_chunk()
+            if progress_handler is not None:
+                progress_handler.update_progress(upload_status)
+
 
 class ProgressHandler(object):
-    def __init__(self, remote_media):
+    def __init__(self, media):
 
         progress_bar_widgets = [
-            remote_media.canonical_filename,
+            media.canonical_filename,
             "    ",
             Percentage(),
             Bar(),
@@ -221,30 +302,87 @@ class ProgressHandler(object):
             AdaptiveETA(),
         ]
 
-        self.progress_bar = ProgressBar(maxval=remote_media.size,
+        self.progress_bar = ProgressBar(maxval=media.size,
                                         term_width=160,
                                         widgets=progress_bar_widgets)
         self.progress_bar.start()
 
     def update_progress(self, status):
-        if status.progress() == 1:
+        if not status or status.progress() == 1:
             self.progress_bar.finish()
 
         else:
             size_downloaded = status.progress() * status.total_size
             self.progress_bar.update(size_downloaded)
 
+###############################################################################
+# Command functions
+###############################################################################
+
+
+def download_command(googlePhotosSync, args):
+
+    progress_handler = None
+    for remote_media in googlePhotosSync.get_remote_medias():
+
+        if remote_media.extension == "gif":
+            continue
+
+        if googlePhotosSync.has_local_version(remote_media):
+            continue
+
+        if args.dry_run:
+            print "Downloading %s" % remote_media.canonical_filename
+            continue
+
+        if not args.quiet:
+            progress_handler = ProgressHandler(remote_media)
+
+        googlePhotosSync.downloadMedia(remote_media,
+                                       progress_handler=progress_handler)
+
+
+def re_upload_command(googlePhotosSync, args):
+
+    progress_handler = None
+    for local_media in googlePhotosSync.get_local_medias():
+
+        remote_media = googlePhotosSync.get_remote_media_by_name(
+            local_media.filename)
+
+        if not remote_media or remote_media.checksum == local_media.checksum:
+            continue
+
+        if args.dry_run:
+            print "Re-uploading %s" % remote_media.canonical_filename
+            continue
+
+        if not args.quiet:
+            progress_handler = ProgressHandler(local_media)
+
+        googlePhotosSync.uploadMedia(local_media,
+                                     progress_handler=progress_handler)
+
+###############################################################################
 # Main code
+###############################################################################
 
 parser = argparse.ArgumentParser(
     description="Google Photos simple synchronization tool")
-parser.add_argument("target_folder",
-                    metavar="TARGET_FOLDER",
-                    help="The photos will be downloaded in that directory")
 parser.add_argument("--quiet", help="quiet (no output)")
-parser.add_argument("--dry-run",
-                    action='store_true',
-                    help="show what would have been copied")
+parser.add_argument(
+    "--dry-run",
+    action='store_true',
+    help="show what would have been transfered")
+parser.add_argument(
+    "command",
+    metavar="COMMAND",
+    choices=["re-upload", "download"],
+    help="command to execute")
+parser.add_argument(
+    "target_folder",
+    metavar="TARGET_FOLDER",
+    help="The photos will be transfered from/to that directory")
 args = parser.parse_args()
 
 appdirs = AppDirs(APPNAME)
@@ -256,23 +394,10 @@ googlePhotosSync = GooglePhotosSync(target_folder=args.target_folder,
                                     client_secret_file=secret_file,
                                     credentials_file=credentials_file)
 
-progress_handler = None
+if args.command == "download":
+    download_command(googlePhotosSync, args)
 
-for remote_media in googlePhotosSync.get_remote_medias():
-
-    if remote_media.extension == "gif":
-        continue
-
-    if not googlePhotosSync.has_local_version(remote_media):
-
-        if args.dry_run:
-            print "Downloading %s" % remote_media.canonical_filename
-            continue
-
-        if not args.quiet:
-            progress_handler = ProgressHandler(remote_media)
-
-        googlePhotosSync.downloadMedia(remote_media,
-                                       progress_handler=progress_handler)
+elif args.command == "re-upload":
+    re_upload_command(googlePhotosSync, args)
 
 # vim: autoindent tabstop=4 shiftwidth=4 expandtab softtabstop=4
