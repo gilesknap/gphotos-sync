@@ -246,8 +246,9 @@ class GooglePhotosSync(object):
             os.makedirs(target_folder)
 
         target_filename = os.path.join(target_folder, media.canonical_filename)
+        temp_filename = os.path.join(target_folder, '.temp-gphotos')
 
-        with io.open(target_filename, 'bw') as target_file:
+        with io.open(temp_filename, 'bw') as target_file:
             request = self.gauth.service.files().get_media(fileId=media.id)
             download_request = http.MediaIoBaseDownload(target_file, request)
 
@@ -256,7 +257,7 @@ class GooglePhotosSync(object):
                 download_status, done = download_request.next_chunk()
                 if progress_handler is not None:
                     progress_handler.update_progress(download_status)
-
+        os.rename(temp_filename, target_filename)
         return target_filename
 
     def uploadMedia(self, local_media, progress_handler=None):
