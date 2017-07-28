@@ -175,7 +175,7 @@ class GooglePhotosMedia(object):
 class GooglePhotosSync(object):
 
     GOOGLE_PHOTO_FOLDER_QUERY = (
-        'title = "Google Photos" and "root" in parents and trashed=false')
+        'title = "Google Photos" and "root" in parents and trashed=false')
     MEDIA_QUERY = '"%s" in parents and trashed=false'
     PAGE_SIZE = 100
 
@@ -202,8 +202,7 @@ class GooglePhotosSync(object):
         except:
             raise NoGooglePhotosFolderError()
 
-    def get_remote_medias(self):
-        googlePhotosFolderId = self._get_photos_folder_id()
+    def get_remote_medias(self, googlePhotosFolderId):
         query_params = {
             "q": GooglePhotosSync.MEDIA_QUERY % googlePhotosFolderId,
             "maxResults": GooglePhotosSync.PAGE_SIZE
@@ -320,26 +319,33 @@ class ProgressHandler(object):
 ###############################################################################
 
 
-def download_command(googlePhotosSync, args):
-
+def download_folder(folder_id, googlePhotosSync, args):
     progress_handler = None
-    for remote_media in googlePhotosSync.get_remote_medias():
+    for remote_media in googlePhotosSync.get_remote_medias(folder_id):
 
-        if remote_media.extension == "gif":
-            continue
+        if remote_media.drive_file.metadata[u'mimeType'].endswith('folder'):
+            download_folder(remote_media.id, googlePhotosSync, args)
+        else:
+            if remote_media.extension == "gif":
+                continue
 
-        if googlePhotosSync.has_local_version(remote_media):
-            continue
+            if googlePhotosSync.has_local_version(remote_media):
+                continue
 
-        if args.dry_run:
-            print "Downloading %s" % remote_media.canonical_filename
-            continue
+            if args.dry_run:
+                print "Downloading %s" % remote_media.canonical_filename
+                continue
 
-        if not args.quiet:
-            progress_handler = ProgressHandler(remote_media)
+            if not args.quiet:
+                progress_handler = ProgressHandler(remote_media)
 
-        googlePhotosSync.downloadMedia(remote_media,
-                                       progress_handler=progress_handler)
+            googlePhotosSync.downloadMedia(remote_media,
+                                           progress_handler=progress_handler)
+
+
+def download_command(googlePhotosSync, args):
+    googlePhotosRootId = googlePhotosSync._get_photos_folder_id()
+    download_folder(googlePhotosRootId, googlePhotosSync, args)
 
 
 def re_upload_command(googlePhotosSync, args):

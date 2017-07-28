@@ -1,4 +1,13 @@
 CHANGES
 =======
 
+* Implement re-upload feature to re-upload low-quality pictures with original resolution
+* Replace etaprogress with progressbar2 in requirements.txt
+* Add dry-run option
+* Reformat code using yapf
+* Reorder import statements with isort
+* Add vim modeline
+* Add a visual progress indicator on the terminal, along with a quiet mode
+* Fix PEP8 non-compliance issues
+* Update README.rst
 * First version
