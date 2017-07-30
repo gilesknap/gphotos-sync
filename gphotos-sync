@@ -251,7 +251,9 @@ class GooglePhotosSync(object):
     def get_remote_medias(self, folderId):
         query_params = {
             "q": GooglePhotosSync.MEDIA_QUERY % folderId,
-            "maxResults": GooglePhotosSync.PAGE_SIZE
+            "maxResults": GooglePhotosSync.PAGE_SIZE,
+            #"orderBy": 'createdDate desc, title'
+            "orderBy": 'createdDate, title'
         }
         for page_results in self.googleDrive.ListFile(query_params):
             for drive_file in page_results:
@@ -283,22 +285,22 @@ class GooglePhotosSync(object):
                 if mimetype and mimetype.startswith('image/'):
                     yield LocalMedia(media_path)
 
+    # currently using remote folder structure so this is not used - but may require a rethink later
     def get_target_folder(self, media):
         year_month_folder = media.date.strftime("%Y/%m")
         target_folder = os.path.join(self.target_folder, year_month_folder)
         return target_folder
 
-    def has_local_version(self, media):
-        target_folder = self.get_target_folder(media)
-        local_filename = os.path.join(target_folder, media.full_canonical_filename)
+    def has_local_version(self, path, media):
+        local_filename = os.path.join(path, media.full_canonical_filename)
         return os.path.isfile(local_filename)
 
-    def downloadMedia(self, media, progress_handler=None):
-        target_folder = self.get_target_folder(media)
-        if not os.path.isdir(target_folder):
-            os.makedirs(target_folder)
+    def downloadMedia(self, media, path, progress_handler=None):
+        target_folder = path
+        if not os.path.isdir(path):
+            os.makedirs(path)
 
-        target_filename = os.path.join(target_folder, media.full_canonical_filename)
+        target_filename = os.path.join(path, media.full_canonical_filename)
         temp_filename = os.path.join(target_folder, '.temp-gphotos')
 
 	# retry for occasional transient quota errors - http 503
@@ -385,17 +387,15 @@ class ProgressHandler(object):
 ###############################################################################
 
 
-def download_folder(folder_id, googlePhotosSync, args):
+def download_folder(folder_id, path, googlePhotosSync, args):
     progress_handler = None
     for remote_media in googlePhotosSync.get_remote_medias(folder_id):
 
         if remote_media.drive_file.metadata[u'mimeType'].endswith('folder'):
-            download_folder(remote_media.id, googlePhotosSync, args)
+            new_path = os.path.join(path, remote_media.filename)
+            download_folder(remote_media.id, new_path, googlePhotosSync, args)
         else:
-            # if remote_media.extension == "gif":
-            #     continue
-
-            if googlePhotosSync.has_local_version(remote_media):
+            if googlePhotosSync.has_local_version(path, remote_media):
                 continue
 
             if args.dry_run:
@@ -406,13 +406,14 @@ def download_folder(folder_id, googlePhotosSync, args):
             if not args.quiet:
                 progress_handler = ProgressHandler(remote_media)
 
-            googlePhotosSync.downloadMedia(remote_media,
+            googlePhotosSync.downloadMedia(remote_media, path,
                                            progress_handler=progress_handler)
 
 
 def download_command(googlePhotosSync, args):
     googlePhotosRootId = googlePhotosSync._get_photos_folder_id()
-    download_folder(googlePhotosRootId, googlePhotosSync, args)
+    download_folder(googlePhotosRootId, googlePhotosSync.target_folder,
+                    googlePhotosSync, args)
 
 
 def re_upload_command(googlePhotosSync, args):
