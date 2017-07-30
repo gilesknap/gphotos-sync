@@ -2,7 +2,4 @@ pydrive
 retrying
 appdirs
 progressbar2
-
-# install pyxattr from source
-sudo apt-get install python-dev xattr libattr1-dev
-pip install pyxattr
+pyxattr

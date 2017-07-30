@@ -100,8 +100,9 @@ class GooglePhotosMedia(object):
             photo_date = datetime.strptime(exif_date, "%Y:%m:%d %H:%M:%S")
         except (KeyError, ValueError):
             import_date = self.drive_file["createdDate"]
-            photo_date = datetime.strptime(import_date,
-                                           "%Y-%m-%dt%H:%M:%S.000Z")
+            # some time strings have ucase T and non zero milliseconds - massage to normalize
+            photo_date = datetime.strptime(import_date.upper()[:-4],
+                                           "%Y-%m-%dT%H:%M:%S.")
 
         return photo_date
 
@@ -300,15 +301,24 @@ class GooglePhotosSync(object):
         target_filename = os.path.join(target_folder, media.full_canonical_filename)
         temp_filename = os.path.join(target_folder, '.temp-gphotos')
 
-        with io.open(temp_filename, 'bw') as target_file:
-            request = self.gauth.service.files().get_media(fileId=media.id)
-            download_request = http.MediaIoBaseDownload(target_file, request)
+	# retry for occasional transient quota errors - http 503
+        for retry in range(10):
+            try:
+                with io.open(temp_filename, 'bw') as target_file:
+                    request = self.gauth.service.files().get_media(fileId=media.id)
+                    download_request = http.MediaIoBaseDownload(target_file, request)
 
-            done = False
-            while not done:
-                download_status, done = download_request.next_chunk()
-                if progress_handler is not None:
-                    progress_handler.update_progress(download_status)
+                    done = False
+                    while not done:
+                        download_status, done = download_request.next_chunk()
+                        if progress_handler is not None:
+                            progress_handler.update_progress(download_status)
+            except Exception as e:
+                #todo check the string says this is a quota error
+                print '\nRETRYING due to', e.message
+                continue
+            break
+
         xattr.set(temp_filename, 'user.gdrive_id', media.id)
         xattr.set(temp_filename, 'user.title', media.filename)
         xattr.set(temp_filename, 'user.description', media.description)
@@ -358,7 +368,7 @@ class ProgressHandler(object):
         ]
 
         self.progress_bar = ProgressBar(maxval=media.size,
-                                        term_width=160,
+                                        term_width=80,
                                         widgets=progress_bar_widgets)
         self.progress_bar.start()
 
@@ -382,8 +392,8 @@ def download_folder(folder_id, googlePhotosSync, args):
         if remote_media.drive_file.metadata[u'mimeType'].endswith('folder'):
             download_folder(remote_media.id, googlePhotosSync, args)
         else:
-            if remote_media.extension == "gif":
-                continue
+            # if remote_media.extension == "gif":
+            #     continue
 
             if googlePhotosSync.has_local_version(remote_media):
                 continue

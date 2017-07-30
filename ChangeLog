@@ -1,7 +1,8 @@
 CHANGES
 =======
 
-* add future goals for project to CHANGES file
+* cope with multiple images in the same second
+* add Future Chages file
 * avoid trashed files on abort
 * allow recursive search of google photos sub directories
 * Implement re-upload feature to re-upload low-quality pictures with original resolution

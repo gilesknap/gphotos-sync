@@ -37,6 +37,13 @@ To do so:
 .. _`setting up oauth 2.0 procedure`: https://developers.google.com/console/help/new/#setting-up-oauth-20
 
 
+Pip Install of pyxattr
+-----------------------
+
+# install pyxattr from source
+sudo apt-get install python-dev xattr libattr1-dev
+pip install pyxattr
+
 How to use it
 -------------
 
