@@ -177,11 +177,12 @@ class GooglePhotosSync(object):
     PAGE_SIZE = 100
 
     def __init__(self,
-                 target_folder=".",
+                 args, target_folder=".",
                  client_secret_file="client_secret.json",
                  credentials_json="credentials.json"):
 
         self.target_folder = target_folder
+        self.args = args
         self.g_auth = GoogleAuth()
         self.g_auth.settings["client_config_file"] = client_secret_file
         self.g_auth.settings["save_credentials_file"] = credentials_json
@@ -210,8 +211,9 @@ class GooglePhotosSync(object):
         }
         for page_results in self.googleDrive.ListFile(query_params):
             for drive_file in page_results:
-                if drive_file["mimeType"].startswith("video/"):
-                    continue
+                if not self.args.include_video:
+                    if drive_file["mimeType"].startswith("video/"):
+                        continue
                 media = GooglePhotosMedia(drive_file)
                 yield media
 
@@ -403,6 +405,10 @@ parser.add_argument(
     action='store_true',
     help="show what would have been transfered")
 parser.add_argument(
+    "--include-video",
+    action='store_true',
+    help="include video types in sync")
+parser.add_argument(
     "command",
     metavar="COMMAND",
     choices=["re-upload", "download"],
@@ -413,12 +419,13 @@ parser.add_argument(
     help="The photos will be transfered from/to that directory")
 cmd_args = parser.parse_args()
 
-appdirs = AppDirs(APPNAME)
+app_dirs = AppDirs(APPNAME)
 
-credentials_file = os.path.join(appdirs.user_data_dir, "credentials.json")
-secret_file = os.path.join(appdirs.user_config_dir, "client_secret.json")
+credentials_file = os.path.join(app_dirs.user_data_dir, "credentials.json")
+secret_file = os.path.join(app_dirs.user_config_dir, "client_secret.json")
 
-googlePhotosSync = GooglePhotosSync(target_folder=cmd_args.target_folder,
+googlePhotosSync = GooglePhotosSync(args=cmd_args,
+                                    target_folder=cmd_args.target_folder,
                                     client_secret_file=secret_file,
                                     credentials_json=credentials_file)
 

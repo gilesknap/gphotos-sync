@@ -1,6 +1,10 @@
 CHANGES
 =======
 
+* pep8 tidy up
+* switched from canonical filenames to original titles with reliable duplicate handling
+* switch to using google folder hierarchy
+* cope with occasional transient quota errors
 * cope with multiple images in the same second
 * add Future Chages file
 * avoid trashed files on abort

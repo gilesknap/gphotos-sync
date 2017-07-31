@@ -1,14 +1,16 @@
 TODO
 ====
 * cope with more than one picture taken at a given second e.g. burst shots
-    currently only one of them will download
-* extract google metadata - containing albums and 'info' field (use folders
-   with soft links to represent albums ?)
+    currently only one of them will download -- DONE
+* support videos and gifs (and anything else that may appear in photos?) - DONE
+* command line parameter to set starting folder other than Google Photos root
 * support sync of modified images (via checksum)
 * record date of last synced file
 * allow validating only files that have changed on Drive since last sync
     (speed up checksum above)
-* support videos and gifs (and anything else that may appear in photos?)
+* look into performance of video download
+* extract google metadata - containing albums and 'info' field (use folders
+   with soft links to represent albums ?)
 * Upload of albums and info fields
 
 GOAL
