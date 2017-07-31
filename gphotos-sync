@@ -49,11 +49,15 @@ class LocalMedia(object):
     def size(self):
         return os.path.getsize(self.path)
 
+    @classmethod
+    def read_chunk(cls, media_file):
+        return media_file.read(LocalMedia.CHUNK_SIZE)
+
     @property
     def checksum(self):
         md5sum = hashlib.md5()
         with io.open(self.path, 'rb') as media_file:
-            chunk_reader = lambda: media_file.read(LocalMedia.CHUNK_SIZE)
+            chunk_reader = self.read_chunk(media_file)
             for chunk in iter(chunk_reader, b""):
                 md5sum.update(chunk)
 
@@ -175,21 +179,21 @@ class GooglePhotosSync(object):
     def __init__(self,
                  target_folder=".",
                  client_secret_file="client_secret.json",
-                 credentials_file="credentials.json"):
+                 credentials_json="credentials.json"):
 
         self.target_folder = target_folder
-        self.gauth = GoogleAuth()
-        self.gauth.settings["client_config_file"] = client_secret_file
-        self.gauth.settings["save_credentials_file"] = credentials_file
-        self.gauth.settings["save_credentials"] = True
-        self.gauth.settings["save_credentials_backend"] = "file"
-        self.gauth.settings["get_refresh_token"] = True
-        self.gauth.CommandLineAuth()
-        self.googleDrive = GoogleDrive(self.gauth)
+        self.g_auth = GoogleAuth()
+        self.g_auth.settings["client_config_file"] = client_secret_file
+        self.g_auth.settings["save_credentials_file"] = credentials_json
+        self.g_auth.settings["save_credentials"] = True
+        self.g_auth.settings["save_credentials_backend"] = "file"
+        self.g_auth.settings["get_refresh_token"] = True
+        self.g_auth.CommandLineAuth()
+        self.googleDrive = GoogleDrive(self.g_auth)
         self.previousRemoteName = ''
         self.matchingRemotesCount = 0
 
-    def _get_photos_folder_id(self):
+    def get_photos_folder_id(self):
         query_results = self.googleDrive.ListFile(
             {"q": GooglePhotosSync.GOOGLE_PHOTO_FOLDER_QUERY}).GetList()
         try:
@@ -197,11 +201,11 @@ class GooglePhotosSync(object):
         except:
             raise NoGooglePhotosFolderError()
 
-    def get_remote_medias(self, folderId):
+    def get_remote_medias(self, folder_id):
         query_params = {
-            "q": GooglePhotosSync.MEDIA_QUERY % folderId,
+            "q": GooglePhotosSync.MEDIA_QUERY % folder_id,
             "maxResults": GooglePhotosSync.PAGE_SIZE,
-            #"orderBy": 'createdDate desc, title'
+            # "orderBy": 'createdDate desc, title'
             "orderBy": 'title'
         }
         for page_results in self.googleDrive.ListFile(query_params):
@@ -212,10 +216,10 @@ class GooglePhotosSync(object):
                 yield media
 
     def get_remote_media_by_name(self, filename):
-        googlePhotosFolderId = self._get_photos_folder_id()
+        google_photos_folder_id = self.get_photos_folder_id()
         query_params = {
             "q": 'title = "%s" and "%s" in parents and trashed=false' %
-            (filename, googlePhotosFolderId)
+            (filename, google_photos_folder_id)
         }
         found_media = self.googleDrive.ListFile(query_params).GetList()
         return GooglePhotosMedia(found_media[0]) if found_media else None
@@ -246,7 +250,7 @@ class GooglePhotosSync(object):
                 return self.has_local_version(path, media)
         return False
 
-    def downloadMedia(self, media, path, progress_handler=None):
+    def download_media(self, media, path, progress_handler=None):
         target_folder = path
         if not os.path.isdir(path):
             os.makedirs(path)
@@ -254,11 +258,11 @@ class GooglePhotosSync(object):
         target_filename = os.path.join(path, media.filename)
         temp_filename = os.path.join(target_folder, '.temp-gphotos')
 
-	    # retry for occasional transient quota errors - http 503
+        # retry for occasional transient quota errors - http 503
         for retry in range(10):
             try:
                 with io.open(temp_filename, 'bw') as target_file:
-                    request = self.gauth.service.files().get_media(fileId=media.id)
+                    request = self.g_auth.service.files().get_media(fileId=media.id)
                     download_request = http.MediaIoBaseDownload(target_file, request)
 
                     done = False
@@ -267,8 +271,7 @@ class GooglePhotosSync(object):
                         if progress_handler is not None:
                             progress_handler.update_progress(download_status)
             except Exception as e:
-                #todo check the string says this is a quota error
-                print '\nRETRYING due to', e.message
+                print '\nRETRYING due to', e
                 continue
             break
 
@@ -277,14 +280,14 @@ class GooglePhotosSync(object):
         os.rename(temp_filename, target_filename)
         return target_filename
 
-    def uploadMedia(self, local_media, progress_handler=None):
+    def upload_media(self, local_media, progress_handler=None):
 
         remote_media = self.get_remote_media_by_name(local_media.filename)
 
         media_body = MediaFileUpload(local_media.path, resumable=True)
 
         if remote_media:
-            upload_request = self.gauth.service.files().update(
+            upload_request = self.g_auth.service.files().update(
                 fileId=remote_media.id,
                 body=remote_media.drive_file,
                 newRevision=True,
@@ -294,7 +297,7 @@ class GooglePhotosSync(object):
                 'title': local_media.filename,
                 'mimetype': local_media.mimetype
             }
-            upload_request = self.gauth.service.files().insert(
+            upload_request = self.g_auth.service.files().insert(
                 body=body,
                 media_body=media_body)
 
@@ -337,16 +340,16 @@ class ProgressHandler(object):
 ###############################################################################
 
 
-def download_folder(folder_id, path, googlePhotosSync, args):
+def download_folder(folder_id, path, google_photos_sync, args):
     print '-------------------- %s' % path
     progress_handler = None
-    for remote_media in googlePhotosSync.get_remote_medias(folder_id):
+    for remote_media in google_photos_sync.get_remote_medias(folder_id):
 
         if remote_media.drive_file.metadata[u'mimeType'].endswith('folder'):
             new_path = os.path.join(path, remote_media.filename)
-            download_folder(remote_media.id, new_path, googlePhotosSync, args)
+            download_folder(remote_media.id, new_path, google_photos_sync, args)
         else:
-            if googlePhotosSync.has_local_version(path, remote_media):
+            if google_photos_sync.has_local_version(path, remote_media):
                 continue
 
             if args.dry_run:
@@ -357,22 +360,22 @@ def download_folder(folder_id, path, googlePhotosSync, args):
             if not args.quiet:
                 progress_handler = ProgressHandler(remote_media)
 
-            googlePhotosSync.downloadMedia(remote_media, path,
-                                           progress_handler=progress_handler)
+            google_photos_sync.download_media(remote_media, path,
+                                              progress_handler=progress_handler)
 
 
-def download_command(googlePhotosSync, args):
-    googlePhotosRootId = googlePhotosSync._get_photos_folder_id()
-    download_folder(googlePhotosRootId, googlePhotosSync.target_folder,
-                    googlePhotosSync, args)
+def download_command(google_photos_sync, args):
+    google_photos_root_id = google_photos_sync.get_photos_folder_id()
+    download_folder(google_photos_root_id, google_photos_sync.target_folder,
+                    google_photos_sync, args)
 
 
-def re_upload_command(googlePhotosSync, args):
+def re_upload_command(google_photos_sync, args):
 
     progress_handler = None
-    for local_media in googlePhotosSync.get_local_medias():
+    for local_media in google_photos_sync.get_local_medias():
 
-        remote_media = googlePhotosSync.get_remote_media_by_name(
+        remote_media = google_photos_sync.get_remote_media_by_name(
             local_media.filename)
 
         if not remote_media or remote_media.checksum == local_media.checksum:
@@ -385,8 +388,8 @@ def re_upload_command(googlePhotosSync, args):
         if not args.quiet:
             progress_handler = ProgressHandler(local_media)
 
-        googlePhotosSync.uploadMedia(local_media,
-                                     progress_handler=progress_handler)
+        google_photos_sync.upload_media(local_media,
+                                        progress_handler=progress_handler)
 
 ###############################################################################
 # Main code
@@ -408,21 +411,21 @@ parser.add_argument(
     "target_folder",
     metavar="TARGET_FOLDER",
     help="The photos will be transfered from/to that directory")
-args = parser.parse_args()
+cmd_args = parser.parse_args()
 
 appdirs = AppDirs(APPNAME)
 
 credentials_file = os.path.join(appdirs.user_data_dir, "credentials.json")
 secret_file = os.path.join(appdirs.user_config_dir, "client_secret.json")
 
-googlePhotosSync = GooglePhotosSync(target_folder=args.target_folder,
+googlePhotosSync = GooglePhotosSync(target_folder=cmd_args.target_folder,
                                     client_secret_file=secret_file,
-                                    credentials_file=credentials_file)
+                                    credentials_json=credentials_file)
 
-if args.command == "download":
-    download_command(googlePhotosSync, args)
+if cmd_args.command == "download":
+    download_command(googlePhotosSync, cmd_args)
 
-elif args.command == "re-upload":
-    re_upload_command(googlePhotosSync, args)
+elif cmd_args.command == "re-upload":
+    re_upload_command(googlePhotosSync, cmd_args)
 
 # vim: autoindent tabstop=4 shiftwidth=4 expandtab softtabstop=4
