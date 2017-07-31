@@ -67,14 +67,6 @@ class LocalMedia(object):
 
 class GooglePhotosMedia(object):
 
-    SPECIAL_SUFFIXES_PATTERN = r"(?:-EFFECTS|-ANIMATION|-COLLAGE|-PANO|~\d+)$"
-    CANONICAL_FILENAME_ROOT = (
-        "%(date)s-%(camera_model)s%(camera_owner)s%(suffix)s")
-    FULL_CANONICAL_FILENAME_FORMAT = (
-        "%(root)s-%(duplicate)03d.%(extension)s")
-    CANONICAL_FILENAME_FORMAT = (
-        "%(root)s.%(extension)s")
-
     def __init__(self, drive_file):
         self.drive_file = drive_file
         self.duplicate_number = 0
@@ -162,58 +154,15 @@ class GooglePhotosMedia(object):
 
     @property
     def filename(self):
-        return self.drive_file["title"]
-
-    @property
-    def suffix(self):
-        filename, _ = os.path.splitext(self.drive_file["title"])
-        suffix_match = re.search(GooglePhotosMedia.SPECIAL_SUFFIXES_PATTERN,
-                                 filename, re.VERBOSE)
-        suffix = suffix_match.group(0) if suffix_match else None
-        return suffix
-
-    def canonical_root(self):
-        def sanitize_name(name):
-            return re.sub(r"[^\w]", "", name)
-
-        camera_model = self.camera_model or "Unknown"
-        camera_owner = self.camera_owner or ""
-        suffix = self.suffix or ""
-
-        if self.camera_owner:
-            camera_owner = "-" + sanitize_name(camera_owner)
-
-        canonical_filename = GooglePhotosMedia.CANONICAL_FILENAME_ROOT % {
-            "date": self.date.strftime("%Y%m%d-%H%M%S"),
-            "camera_model": sanitize_name(camera_model),
-            "camera_owner": camera_owner,
-            "suffix": suffix,
-        }
-
-        return canonical_filename
-
-    @property
-    def canonical_filename(self):
-        canonical_filename = GooglePhotosMedia.CANONICAL_FILENAME_FORMAT % {
-            "root": self.canonical_root(),
-            "extension": self.extension.lower(),
-        }
-
-        return canonical_filename
-
-    # this property adds a suffix for items that have exactly the same canonical name
-    # (e.g. images taken within 1 second of each other) It arranges the files in the
-    # order in which they came out of the query which should be title sorted and hence
-    # be correct order for burst shots which usually have a numeric suffix
-    @property
-    def full_canonical_filename(self):
-        canonical_filename = GooglePhotosMedia.FULL_CANONICAL_FILENAME_FORMAT % {
-            "root": self.canonical_root(),
-            "duplicate": self.duplicate_number,
-            "extension": self.extension.lower(),
-        }
-
-        return canonical_filename
+        base, ext = os.path.splitext(os.path.basename(self.drive_file["title"]))
+        if self.duplicate_number > 0:
+            return "%(base)s (%(duplicate)d)%(ext)s" % {
+                'base': base,
+                'ext': ext,
+                'duplicate': self.duplicate_number
+            }
+        else:
+            return self.drive_file["title"]
 
 
 class GooglePhotosSync(object):
@@ -253,19 +202,13 @@ class GooglePhotosSync(object):
             "q": GooglePhotosSync.MEDIA_QUERY % folderId,
             "maxResults": GooglePhotosSync.PAGE_SIZE,
             #"orderBy": 'createdDate desc, title'
-            "orderBy": 'createdDate, title'
+            "orderBy": 'title'
         }
         for page_results in self.googleDrive.ListFile(query_params):
             for drive_file in page_results:
                 if drive_file["mimeType"].startswith("video/"):
                     continue
                 media = GooglePhotosMedia(drive_file)
-                if media.canonical_filename == self.previousRemoteName:
-                    self.matchingRemotesCount += 1
-                    media.duplicate_number = self.matchingRemotesCount
-                else:
-                    self.matchingRemotesCount = 0
-                self.previousRemoteName = media.canonical_filename
                 yield media
 
     def get_remote_media_by_name(self, filename):
@@ -292,18 +235,26 @@ class GooglePhotosSync(object):
         return target_folder
 
     def has_local_version(self, path, media):
-        local_filename = os.path.join(path, media.full_canonical_filename)
-        return os.path.isfile(local_filename)
+        local_filename = os.path.join(path, media.filename)
+
+        # recursively check if any existing duplicates have same id
+        if os.path.isfile(local_filename):
+            if media.id == xattr.get(local_filename, 'user.gdrive_id'):
+                return True
+            else:
+                media.duplicate_number += 1
+                return self.has_local_version(path, media)
+        return False
 
     def downloadMedia(self, media, path, progress_handler=None):
         target_folder = path
         if not os.path.isdir(path):
             os.makedirs(path)
 
-        target_filename = os.path.join(path, media.full_canonical_filename)
+        target_filename = os.path.join(path, media.filename)
         temp_filename = os.path.join(target_folder, '.temp-gphotos')
 
-	# retry for occasional transient quota errors - http 503
+	    # retry for occasional transient quota errors - http 503
         for retry in range(10):
             try:
                 with io.open(temp_filename, 'bw') as target_file:
@@ -322,7 +273,6 @@ class GooglePhotosSync(object):
             break
 
         xattr.set(temp_filename, 'user.gdrive_id', media.id)
-        xattr.set(temp_filename, 'user.title', media.filename)
         xattr.set(temp_filename, 'user.description', media.description)
         os.rename(temp_filename, target_filename)
         return target_filename
@@ -359,8 +309,8 @@ class ProgressHandler(object):
     def __init__(self, media):
 
         progress_bar_widgets = [
-            media.full_canonical_filename,
-            "    ",
+            media.filename,
+            "  ",
             Percentage(),
             Bar(),
             " ",
@@ -388,6 +338,7 @@ class ProgressHandler(object):
 
 
 def download_folder(folder_id, path, googlePhotosSync, args):
+    print '-------------------- %s' % path
     progress_handler = None
     for remote_media in googlePhotosSync.get_remote_medias(folder_id):
 
@@ -399,7 +350,7 @@ def download_folder(folder_id, path, googlePhotosSync, args):
                 continue
 
             if args.dry_run:
-                print "Downloading %s" % remote_media.full_canonical_filename
+                print "Downloading %s" % remote_media.filename
                 print remote_media.drive_file
                 continue
 
@@ -428,7 +379,7 @@ def re_upload_command(googlePhotosSync, args):
             continue
 
         if args.dry_run:
-            print "Re-uploading %s" % remote_media.full_canonical_filename
+            print "Re-uploading %s" % remote_media.filename
             continue
 
         if not args.quiet:
