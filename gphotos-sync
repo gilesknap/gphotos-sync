@@ -21,6 +21,7 @@ from pydrive.drive import GoogleDrive
 
 APPNAME = "gphotos-sync"
 
+
 ###############################################################################
 # Useful classes
 ###############################################################################
@@ -31,7 +32,6 @@ class NoGooglePhotosFolderError(Exception):
 
 
 class LocalMedia(object):
-
     CHUNK_SIZE = 4096
 
     def __init__(self, media_path):
@@ -70,7 +70,6 @@ class LocalMedia(object):
 
 
 class GooglePhotosMedia(object):
-
     def __init__(self, drive_file):
         self.drive_file = drive_file
         self.duplicate_number = 0
@@ -96,7 +95,7 @@ class GooglePhotosMedia(object):
             photo_date = datetime.strptime(exif_date, "%Y:%m:%d %H:%M:%S")
         except (KeyError, ValueError):
             import_date = self.drive_file["createdDate"]
-            # some time strings have ucase T and non zero milliseconds - massage to normalize
+            # some times are ucase T and non zero millisecs - normalize
             photo_date = datetime.strptime(import_date.upper()[:-4],
                                            "%Y-%m-%dT%H:%M:%S.")
 
@@ -170,10 +169,13 @@ class GooglePhotosMedia(object):
 
 
 class GooglePhotosSync(object):
-
     GOOGLE_PHOTO_FOLDER_QUERY = (
         'title = "Google Photos" and "root" in parents and trashed=false')
-    MEDIA_QUERY = '"%s" in parents and trashed=false'
+    MEDIA_QUERY = '"%s" in parents and trashed=false '
+    FOLDER_QUERY = ('title = "%s" and "%s" in parents and trashed=false'
+                    ' and mimeType="application/vnd.google-apps.folder"')
+    AFTER_QUERY = " and modifiedDate >= '%sT00:00:00'"
+    BEFORE_QUERY = " and modifiedDate <= '%sT00:00:00'"
     PAGE_SIZE = 100
 
     def __init__(self,
@@ -202,6 +204,26 @@ class GooglePhotosSync(object):
         except:
             raise NoGooglePhotosFolderError()
 
+    @classmethod
+    def add_date_filter(cls, query_params):
+        if cmd_args.start_date:
+            query_params['q'] += cls.AFTER_QUERY % cmd_args.start_date
+        elif cmd_args.end_date:
+            query_params['q'] += cls.BEFORE_QUERY % cmd_args.end_date
+
+    def get_remote_folder(self, parent_id, folder_name):
+        this_folder_id = None
+        parts = folder_name.split('/', 1)
+        query_params = {
+            "q": GooglePhotosSync.FOLDER_QUERY % (parts[0], parent_id)
+        }
+
+        for results in self.googleDrive.ListFile(query_params):
+            this_folder_id = results[0]["id"]
+        if len(parts) > 1:
+            this_folder_id = self.get_remote_folder(this_folder_id, parts[1])
+        return this_folder_id
+
     def get_remote_medias(self, folder_id):
         query_params = {
             "q": GooglePhotosSync.MEDIA_QUERY % folder_id,
@@ -209,6 +231,8 @@ class GooglePhotosSync(object):
             # "orderBy": 'createdDate desc, title'
             "orderBy": 'title'
         }
+        self.add_date_filter(query_params)
+
         for page_results in self.googleDrive.ListFile(query_params):
             for drive_file in page_results:
                 if not self.args.include_video:
@@ -221,7 +245,7 @@ class GooglePhotosSync(object):
         google_photos_folder_id = self.get_photos_folder_id()
         query_params = {
             "q": 'title = "%s" and "%s" in parents and trashed=false' %
-            (filename, google_photos_folder_id)
+                 (filename, google_photos_folder_id)
         }
         found_media = self.googleDrive.ListFile(query_params).GetList()
         return GooglePhotosMedia(found_media[0]) if found_media else None
@@ -230,11 +254,12 @@ class GooglePhotosSync(object):
         for directory, _, files in os.walk(self.target_folder):
             for filename in files:
                 media_path = os.path.join(directory, filename)
-                mimetype, _ = mimetypes.guess_type(media_path)
-                if mimetype and mimetype.startswith('image/'):
+                mime_type, _ = mimetypes.guess_type(media_path)
+                if mime_type and mime_type.startswith('image/'):
                     yield LocalMedia(media_path)
 
-    # currently using remote folder structure so this is not used - but may require a rethink later
+    # currently using remote folder structure so this is not used
+    # but may require a rethink later
     def get_target_folder(self, media):
         year_month_folder = media.date.strftime("%Y/%m")
         target_folder = os.path.join(self.target_folder, year_month_folder)
@@ -264,8 +289,10 @@ class GooglePhotosSync(object):
         for retry in range(10):
             try:
                 with io.open(temp_filename, 'bw') as target_file:
-                    request = self.g_auth.service.files().get_media(fileId=media.id)
-                    download_request = http.MediaIoBaseDownload(target_file, request)
+                    request = self.g_auth.service.files().get_media(
+                        fileId=media.id)
+                    download_request = http.MediaIoBaseDownload(target_file,
+                                                                request)
 
                     done = False
                     while not done:
@@ -337,6 +364,7 @@ class ProgressHandler(object):
             size_downloaded = status.progress() * status.total_size
             self.progress_bar.update(size_downloaded)
 
+
 ###############################################################################
 # Command functions
 ###############################################################################
@@ -367,13 +395,15 @@ def download_folder(folder_id, path, google_photos_sync, args):
 
 
 def download_command(google_photos_sync, args):
-    google_photos_root_id = google_photos_sync.get_photos_folder_id()
-    download_folder(google_photos_root_id, google_photos_sync.target_folder,
+    folder_id = google_photos_sync.get_photos_folder_id()
+    if args.start_folder:
+        folder_id = google_photos_sync.get_remote_folder(folder_id,
+                                                         args.start_folder)
+    download_folder(folder_id, google_photos_sync.target_folder,
                     google_photos_sync, args)
 
 
 def re_upload_command(google_photos_sync, args):
-
     progress_handler = None
     for local_media in google_photos_sync.get_local_medias():
 
@@ -392,6 +422,7 @@ def re_upload_command(google_photos_sync, args):
 
         google_photos_sync.upload_media(local_media,
                                         progress_handler=progress_handler)
+
 
 ###############################################################################
 # Main code
@@ -417,15 +448,32 @@ parser.add_argument(
     "target_folder",
     metavar="TARGET_FOLDER",
     help="The photos will be transfered from/to that directory")
-cmd_args = parser.parse_args()
+parser.add_argument(
+    "--start-folder",
+    metavar="START_FOLDER",
+    help="Google Photos folder to sync e.g. 2017/08, defaults to root",
+    default=None)
+parser.add_argument(
+    "--start-date",
+    help="Set the earliest date of files to sync",
+    default=None)
+parser.add_argument(
+    "--end-date",
+    help="Set the latest date of files to sync",
+    default=None)
 
+cmd_args = parser.parse_args()
 app_dirs = AppDirs(APPNAME)
 
 credentials_file = os.path.join(app_dirs.user_data_dir, "credentials.json")
 secret_file = os.path.join(app_dirs.user_config_dir, "client_secret.json")
+if cmd_args.start_folder:
+    target_root = os.path.join(cmd_args.target_folder, cmd_args.start_folder)
+else:
+    target_root = cmd_args.target_folder
 
 googlePhotosSync = GooglePhotosSync(args=cmd_args,
-                                    target_folder=cmd_args.target_folder,
+                                    target_folder=target_root,
                                     client_secret_file=secret_file,
                                     credentials_json=credentials_file)
 

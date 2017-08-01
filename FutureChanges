@@ -4,6 +4,8 @@ TODO
     currently only one of them will download -- DONE
 * support videos and gifs (and anything else that may appear in photos?) - DONE
 * command line parameter to set starting folder other than Google Photos root
+    -DONE
+* -start-date and --end-date filer out folders as well as files - fix this
 * support sync of modified images (via checksum)
 * record date of last synced file
 * allow validating only files that have changed on Drive since last sync

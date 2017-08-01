@@ -1,6 +1,7 @@
 CHANGES
 =======
 
+* add option to download video files
 * pep8 tidy up
 * switched from canonical filenames to original titles with reliable duplicate handling
 * switch to using google folder hierarchy
