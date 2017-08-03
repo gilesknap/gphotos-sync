@@ -41,8 +41,12 @@ Pip Install of pyxattr
 -----------------------
 
 # install pyxattr from source
+python2
 sudo apt-get install python-dev xattr libattr1-dev
 pip install pyxattr
+
+python3
+
 
 How to use it
 -------------

@@ -10,6 +10,7 @@ import re
 import zlib
 import xattr
 from datetime import datetime
+from PhotoInfo import PhotoInfo
 
 from googleapiclient import http
 from googleapiclient.http import MediaFileUpload
@@ -192,6 +193,7 @@ class GooglePhotosSync(object):
         self.g_auth.settings["save_credentials_backend"] = "file"
         self.g_auth.settings["get_refresh_token"] = True
         self.g_auth.CommandLineAuth()
+        self.g_auth.credentials
         self.googleDrive = GoogleDrive(self.g_auth)
         self.previousRemoteName = ''
         self.matchingRemotesCount = 0
@@ -475,6 +477,13 @@ googlePhotosSync = GooglePhotosSync(args=cmd_args,
                                     target_folder=target_root,
                                     client_secret_file=secret_file,
                                     credentials_json=credentials_file)
+
+pi = PhotoInfo()
+pi.connect_photos(googlePhotosSync.g_auth.credentials)
+albums = pi.get_albums()
+print(albums)
+
+exit(0)
 
 if cmd_args.command == "download":
     download_command(googlePhotosSync, cmd_args)
