@@ -8,9 +8,9 @@ import mimetypes
 import os.path
 import re
 import zlib
-import xattr
+import pickledb
 from datetime import datetime
-from PhotoInfo import PhotoInfo
+# from PhotoInfo import PhotoInfo
 
 from googleapiclient import http
 from googleapiclient.http import MediaFileUpload
@@ -177,15 +177,19 @@ class GooglePhotosSync(object):
                     ' and mimeType="application/vnd.google-apps.folder"')
     AFTER_QUERY = " and modifiedDate >= '%sT00:00:00'"
     BEFORE_QUERY = " and modifiedDate <= '%sT00:00:00'"
+    DB_NAME = '.gphotos.db'
     PAGE_SIZE = 100
 
     def __init__(self,
-                 args, target_folder=".",
+                 args, root_folder, start_folder,
                  client_secret_file="client_secret.json",
                  credentials_json="credentials.json"):
 
-        self.target_folder = target_folder
         self.args = args
+        self.root_folder = root_folder
+        self.start_folder = start_folder
+        self.target_folder = os.path.join(cmd_args.target_folder,
+                                    cmd_args.start_folder)
         self.g_auth = GoogleAuth()
         self.g_auth.settings["client_config_file"] = client_secret_file
         self.g_auth.settings["save_credentials_file"] = credentials_json
@@ -195,8 +199,9 @@ class GooglePhotosSync(object):
         self.g_auth.CommandLineAuth()
         self.g_auth.credentials
         self.googleDrive = GoogleDrive(self.g_auth)
-        self.previousRemoteName = ''
         self.matchingRemotesCount = 0
+        db_name = os.path.join(root_folder, GooglePhotosSync.DB_NAME)
+        self.db = pickledb.load(db_name, True)
 
     def get_photos_folder_id(self):
         query_results = self.googleDrive.ListFile(
@@ -253,7 +258,7 @@ class GooglePhotosSync(object):
         return GooglePhotosMedia(found_media[0]) if found_media else None
 
     def get_local_medias(self):
-        for directory, _, files in os.walk(self.target_folder):
+        for directory, _, files in os.walk(self.start_folder):
             for filename in files:
                 media_path = os.path.join(directory, filename)
                 mime_type, _ = mimetypes.guess_type(media_path)
@@ -264,7 +269,7 @@ class GooglePhotosSync(object):
     # but may require a rethink later
     def get_target_folder(self, media):
         year_month_folder = media.date.strftime("%Y/%m")
-        target_folder = os.path.join(self.target_folder, year_month_folder)
+        target_folder = os.path.join(self.start_folder, year_month_folder)
         return target_folder
 
     def has_local_version(self, path, media):
@@ -272,7 +277,8 @@ class GooglePhotosSync(object):
 
         # recursively check if any existing duplicates have same id
         if os.path.isfile(local_filename):
-            if media.id == xattr.get(local_filename, 'user.gdrive_id'):
+            media_record = self.db.get(media.id)
+            if media_record and media_record['filename'] == local_filename:
                 return True
             else:
                 media.duplicate_number += 1
@@ -306,8 +312,10 @@ class GooglePhotosSync(object):
                 continue
             break
 
-        xattr.set(temp_filename, 'user.gdrive_id', media.id)
-        xattr.set(temp_filename, 'user.description', media.description)
+        self.db.dcreate(media.id)
+        self.db.dadd(media.id, ('filename', target_filename))
+        self.db.dadd(media.id, ('description', media.description))
+        self.db.dump()
         os.rename(temp_filename, target_filename)
         return target_filename
 
@@ -395,11 +403,11 @@ def download_folder(folder_id, path, google_photos_sync, args):
                                               progress_handler=progress_handler)
 
 
-def download_command(google_photos_sync, args):
+def download_command(google_photos_sync,args):
     folder_id = google_photos_sync.get_photos_folder_id()
-    if args.start_folder:
+    if google_photos_sync.start_folder != '.':
         folder_id = google_photos_sync.get_remote_folder(folder_id,
-                                                         args.start_folder)
+                                            google_photos_sync.start_folder)
     download_folder(folder_id, google_photos_sync.target_folder,
                     google_photos_sync, args)
 
@@ -453,7 +461,7 @@ parser.add_argument(
     "--start-folder",
     metavar="START_FOLDER",
     help="Google Photos folder to sync e.g. 2017/08, defaults to root",
-    default=None)
+    default='.')
 parser.add_argument(
     "--start-date",
     help="Set the earliest date of files to sync",
@@ -468,22 +476,18 @@ app_dirs = AppDirs(APPNAME)
 
 credentials_file = os.path.join(app_dirs.user_data_dir, "credentials.json")
 secret_file = os.path.join(app_dirs.user_config_dir, "client_secret.json")
-if cmd_args.start_folder:
-    target_root = os.path.join(cmd_args.target_folder, cmd_args.start_folder)
-else:
-    target_root = cmd_args.target_folder
 
-googlePhotosSync = GooglePhotosSync(args=cmd_args,
-                                    target_folder=target_root,
+# todo remove args param and design interface to GooglePhotoSync properly
+googlePhotosSync = GooglePhotosSync(cmd_args,
+                                    root_folder=cmd_args.target_folder,
+                                    start_folder=cmd_args.start_folder,
                                     client_secret_file=secret_file,
                                     credentials_json=credentials_file)
 
-pi = PhotoInfo()
-pi.connect_photos(googlePhotosSync.g_auth.credentials)
-albums = pi.get_albums()
-print(albums)
-
-exit(0)
+# pi = PhotoInfo()
+# pi.connect_photos(googlePhotosSync.g_auth.credentials)
+# albums = pi.get_albums()
+# print(albums)
 
 if cmd_args.command == "download":
     download_command(googlePhotosSync, cmd_args)

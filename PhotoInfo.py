@@ -10,8 +10,13 @@ class PhotoInfo():
         self.gdata_client = None
         self.credentials = None
 
+    # note - I needed to hack gdata-python-client for this to work
+    # is that an issue?
+    # this almost works but only shows two albums
+    # but https://picasaweb.google.com/data/feed/api/user/giles.knap%40gmail.com
+    # in browser shows them all (which is the url below uses)
     def get_albums(self):
-        albums = self.gdata_client.GetUserFeed(user='xxx@gmail.com')
+        albums = self.gdata_client.GetUserFeed(user='giles.knap@gmail.com')
         for album in albums.entry:
             print('title: %s, number of photos:"'
                   ' %s, id: %s' % (album.title.text,
@@ -21,10 +26,8 @@ class PhotoInfo():
 
     def connect_photos(self, credentials):
         self.credentials = AccessTokenCredentials(credentials.access_token,
-                                             "MyAgent/1.0", None)
+                                                  "MyAgent/1.0", None)
 
-        http = Http()
-        http = self.credentials.authorize(http)
         auth2token = gdata.gauth.OAuth2TokenFromCredentials(self.credentials)
         gd_client = gdata.photos.service.PhotosService()
         gd_client = auth2token.authorize(gd_client)
