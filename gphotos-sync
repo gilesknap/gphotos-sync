@@ -180,16 +180,15 @@ class GooglePhotosSync(object):
     DB_NAME = '.gphotos.db'
     PAGE_SIZE = 100
 
-    def __init__(self,
-                 args, root_folder, start_folder,
+    def __init__(self, args,
                  client_secret_file="client_secret.json",
                  credentials_json="credentials.json"):
 
         self.args = args
-        self.root_folder = root_folder
-        self.start_folder = start_folder
-        self.target_folder = os.path.join(cmd_args.target_folder,
-                                    cmd_args.start_folder)
+        self.root_folder = args.root_folder
+        self.start_folder = args.start_folder
+        self.target_folder = os.path.join(self.root_folder,
+                                          self.start_folder)
         self.g_auth = GoogleAuth()
         self.g_auth.settings["client_config_file"] = client_secret_file
         self.g_auth.settings["save_credentials_file"] = credentials_json
@@ -197,11 +196,13 @@ class GooglePhotosSync(object):
         self.g_auth.settings["save_credentials_backend"] = "file"
         self.g_auth.settings["get_refresh_token"] = True
         self.g_auth.CommandLineAuth()
-        self.g_auth.credentials
         self.googleDrive = GoogleDrive(self.g_auth)
         self.matchingRemotesCount = 0
-        db_name = os.path.join(root_folder, GooglePhotosSync.DB_NAME)
+        db_name = os.path.join(self.root_folder, GooglePhotosSync.DB_NAME)
         self.db = pickledb.load(db_name, True)
+
+    def store_data(self):
+        self.db.dump()
 
     def get_photos_folder_id(self):
         query_results = self.googleDrive.ListFile(
@@ -211,12 +212,13 @@ class GooglePhotosSync(object):
         except:
             raise NoGooglePhotosFolderError()
 
-    @classmethod
-    def add_date_filter(cls, query_params):
-        if cmd_args.start_date:
-            query_params['q'] += cls.AFTER_QUERY % cmd_args.start_date
-        elif cmd_args.end_date:
-            query_params['q'] += cls.BEFORE_QUERY % cmd_args.end_date
+    def add_date_filter(self, query_params):
+        if self.args.start_date:
+            query_params[
+                'q'] += GooglePhotosSync.AFTER_QUERY % self.args.start_date
+        elif self.args.end_date:
+            query_params[
+                'q'] += GooglePhotosSync.BEFORE_QUERY % self.args.end_date
 
     def get_remote_folder(self, parent_id, folder_name):
         this_folder_id = None
@@ -315,7 +317,6 @@ class GooglePhotosSync(object):
         self.db.dcreate(media.id)
         self.db.dadd(media.id, ('filename', target_filename))
         self.db.dadd(media.id, ('description', media.description))
-        self.db.dump()
         os.rename(temp_filename, target_filename)
         return target_filename
 
@@ -403,20 +404,20 @@ def download_folder(folder_id, path, google_photos_sync, args):
                                               progress_handler=progress_handler)
 
 
-def download_command(google_photos_sync,args):
-    folder_id = google_photos_sync.get_photos_folder_id()
-    if google_photos_sync.start_folder != '.':
-        folder_id = google_photos_sync.get_remote_folder(folder_id,
-                                            google_photos_sync.start_folder)
-    download_folder(folder_id, google_photos_sync.target_folder,
-                    google_photos_sync, args)
+def download_command(gs, args):
+    folder_id = gs.get_photos_folder_id()
+
+    if gs.start_folder != '.':
+        folder_id = gs.get_remote_folder(folder_id, gs.start_folder)
+
+    download_folder(folder_id, gs.target_folder, gs, args)
 
 
-def re_upload_command(google_photos_sync, args):
+def re_upload_command(gs, args):
     progress_handler = None
-    for local_media in google_photos_sync.get_local_medias():
+    for local_media in gs.get_local_medias():
 
-        remote_media = google_photos_sync.get_remote_media_by_name(
+        remote_media = gs.get_remote_media_by_name(
             local_media.filename)
 
         if not remote_media or remote_media.checksum == local_media.checksum:
@@ -429,70 +430,87 @@ def re_upload_command(google_photos_sync, args):
         if not args.quiet:
             progress_handler = ProgressHandler(local_media)
 
-        google_photos_sync.upload_media(local_media,
-                                        progress_handler=progress_handler)
+        gs.upload_media(local_media,
+                        progress_handler=progress_handler)
 
 
 ###############################################################################
 # Main code
 ###############################################################################
 
-parser = argparse.ArgumentParser(
-    description="Google Photos simple synchronization tool")
-parser.add_argument("--quiet", help="quiet (no output)")
-parser.add_argument(
-    "--dry-run",
-    action='store_true',
-    help="show what would have been transfered")
-parser.add_argument(
-    "--include-video",
-    action='store_true',
-    help="include video types in sync")
-parser.add_argument(
-    "command",
-    metavar="COMMAND",
-    choices=["re-upload", "download"],
-    help="command to execute")
-parser.add_argument(
-    "target_folder",
-    metavar="TARGET_FOLDER",
-    help="The photos will be transfered from/to that directory")
-parser.add_argument(
-    "--start-folder",
-    metavar="START_FOLDER",
-    help="Google Photos folder to sync e.g. 2017/08, defaults to root",
-    default='.')
-parser.add_argument(
-    "--start-date",
-    help="Set the earliest date of files to sync",
-    default=None)
-parser.add_argument(
-    "--end-date",
-    help="Set the latest date of files to sync",
-    default=None)
+def parse_arguments():
+    parser = argparse.ArgumentParser(
+        description="Google Photos simple synchronization tool")
+    parser.add_argument("--quiet", help="quiet (no output)")
+    parser.add_argument(
+        "--dry-run",
+        action='store_true',
+        help="show what would have been transfered")
+    parser.add_argument(
+        "--include-video",
+        action='store_true',
+        help="include video types in sync")
+    parser.add_argument(
+        "command",
+        metavar="COMMAND",
+        choices=["re-upload", "download"],
+        help="command to execute")
+    parser.add_argument(
+        "root_folder",
+        help="root of the local folders to download into")
+    parser.add_argument(
+        "--start-folder",
+        metavar="START_FOLDER",
+        help="Google Photos folder to sync e.g. 2017/08, defaults to root",
+        default='.')
+    parser.add_argument(
+        "--start-date",
+        help="Set the earliest date of files to sync",
+        default=None)
+    parser.add_argument(
+        "--end-date",
+        help="Set the latest date of files to sync",
+        default=None)
+    return parser.parse_args()
 
-cmd_args = parser.parse_args()
-app_dirs = AppDirs(APPNAME)
 
-credentials_file = os.path.join(app_dirs.user_data_dir, "credentials.json")
-secret_file = os.path.join(app_dirs.user_config_dir, "client_secret.json")
+def main():
+    cmd_args = parse_arguments()
+    app_dirs = AppDirs(APPNAME)
 
-# todo remove args param and design interface to GooglePhotoSync properly
-googlePhotosSync = GooglePhotosSync(cmd_args,
-                                    root_folder=cmd_args.target_folder,
-                                    start_folder=cmd_args.start_folder,
-                                    client_secret_file=secret_file,
-                                    credentials_json=credentials_file)
+    credentials_file = os.path.join(app_dirs.user_data_dir, "credentials.json")
+    secret_file = os.path.join(app_dirs.user_config_dir, "client_secret.json")
 
-# pi = PhotoInfo()
-# pi.connect_photos(googlePhotosSync.g_auth.credentials)
-# albums = pi.get_albums()
-# print(albums)
+    google_photos_sync = GooglePhotosSync(cmd_args,
+                                        client_secret_file=secret_file,
+                                        credentials_json=credentials_file)
 
-if cmd_args.command == "download":
-    download_command(googlePhotosSync, cmd_args)
+    # todo photo album metadata download code is under development
+    # this code demonstrates how to use the already obtained oauth2 credentials
+    # to connect to photos api with gdata. However not all folders come back and
+    # python gdata is out of date (at v1). Even the current v3 api in Java does
+    # not appear to provide ability to create albums so some goals of this
+    # project may be unobtainable.
 
-elif cmd_args.command == "re-upload":
-    re_upload_command(googlePhotosSync, cmd_args)
+    # pi = PhotoInfo()
+    # pi.connect_photos(googlePhotosSync.g_auth.credentials)
+    # albums = pi.get_albums()
+    # print(albums)
 
+    try:
+        if cmd_args.command == "download":
+            download_command(google_photos_sync, cmd_args)
+
+        elif cmd_args.command == "re-upload":
+            re_upload_command(google_photos_sync, cmd_args)
+
+    except (KeyboardInterrupt, SystemExit):
+        print ("\nUser cancelled download")
+    finally:
+        print ("saving metadata ...")
+        google_photos_sync.store_data()
+
+
+if __name__ == "__main__":
+    main()
 # vim: autoindent tabstop=4 shiftwidth=4 expandtab softtabstop=4
