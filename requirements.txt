@@ -2,4 +2,5 @@ pydrive
 retrying
 appdirs
 progressbar2
-pyxattr
+gdata
+pickledb

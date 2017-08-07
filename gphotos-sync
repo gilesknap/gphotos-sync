@@ -1,16 +1,14 @@
 #!/usr/bin/python
 # coding: utf8
-
 import argparse
 import hashlib
 import io
 import mimetypes
 import os.path
 import re
-import zlib
 import pickledb
 from datetime import datetime
-# from PhotoInfo import PhotoInfo
+from PhotoInfo import PhotoInfo
 
 from googleapiclient import http
 from googleapiclient.http import MediaFileUpload
@@ -115,11 +113,6 @@ class GooglePhotosMedia(object):
         return self.drive_file["id"]
 
     @property
-    def hash_id(self):
-        h = format(zlib.adler32(self.drive_file["id"]) & 0xffffffff, 'x')
-        return h
-
-    @property
     def camera_owner(self):
         try:
             artist = self.get_exif_value("artist")
@@ -189,6 +182,8 @@ class GooglePhotosSync(object):
         self.start_folder = args.start_folder
         self.target_folder = os.path.join(self.root_folder,
                                           self.start_folder)
+        if args.new_token:
+            os.remove(credentials_json)
         self.g_auth = GoogleAuth()
         self.g_auth.settings["client_config_file"] = client_secret_file
         self.g_auth.settings["save_credentials_file"] = credentials_json
@@ -199,7 +194,7 @@ class GooglePhotosSync(object):
         self.googleDrive = GoogleDrive(self.g_auth)
         self.matchingRemotesCount = 0
         db_name = os.path.join(self.root_folder, GooglePhotosSync.DB_NAME)
-        self.db = pickledb.load(db_name, True)
+        self.db = pickledb.load(db_name, False)
 
     def store_data(self):
         self.db.dump()
@@ -441,11 +436,14 @@ def re_upload_command(gs, args):
 def parse_arguments():
     parser = argparse.ArgumentParser(
         description="Google Photos simple synchronization tool")
-    parser.add_argument("--quiet", help="quiet (no output)")
+    parser.add_argument(
+        "--quiet",
+        action='store_true',
+        help="quiet (no output)")
     parser.add_argument(
         "--dry-run",
         action='store_true',
-        help="show what would have been transfered")
+        help="show what would have been transferred")
     parser.add_argument(
         "--include-video",
         action='store_true',
@@ -471,6 +469,10 @@ def parse_arguments():
         "--end-date",
         help="Set the latest date of files to sync",
         default=None)
+    parser.add_argument(
+        "--new-token",
+        action='store_true',
+        help="Request new token")
     return parser.parse_args()
 
 
@@ -482,20 +484,19 @@ def main():
     secret_file = os.path.join(app_dirs.user_config_dir, "client_secret.json")
 
     google_photos_sync = GooglePhotosSync(cmd_args,
-                                        client_secret_file=secret_file,
-                                        credentials_json=credentials_file)
+                                          client_secret_file=secret_file,
+                                          credentials_json=credentials_file)
 
     # todo photo album metadata download code is under development
     # this code demonstrates how to use the already obtained oauth2 credentials
-    # to connect to photos api with gdata. However not all folders come back and
+    # to connect to photos api with gdata. However :-
     # python gdata is out of date (at v1). Even the current v3 api in Java does
     # not appear to provide ability to create albums so some goals of this
-    # project may be unobtainable.
+    # project may be unobtainable. Shared albums are not seen by the API.
 
-    # pi = PhotoInfo()
-    # pi.connect_photos(googlePhotosSync.g_auth.credentials)
-    # albums = pi.get_albums()
-    # print(albums)
+    pi = PhotoInfo()
+    pi.connect_photos(google_photos_sync.g_auth.credentials)
+    pi.get_albums()
 
     try:
         if cmd_args.command == "download":
@@ -505,12 +506,13 @@ def main():
             re_upload_command(google_photos_sync, cmd_args)
 
     except (KeyboardInterrupt, SystemExit):
-        print ("\nUser cancelled download")
+        print("\nUser cancelled download")
     finally:
-        print ("saving metadata ...")
+        print("saving metadata ...")
         google_photos_sync.store_data()
 
 
 if __name__ == "__main__":
     main()
+
 # vim: autoindent tabstop=4 shiftwidth=4 expandtab softtabstop=4

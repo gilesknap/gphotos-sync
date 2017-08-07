@@ -36,27 +36,45 @@ To do so:
 .. _`Activating and Desactivating APIs procedure`: https://developers.google.com/console/help/new/#activating-and-deactivating-apis
 .. _`setting up oauth 2.0 procedure`: https://developers.google.com/console/help/new/#setting-up-oauth-20
 
-
-Pip Install of pyxattr
------------------------
-
-# install pyxattr from source
-python2
-sudo apt-get install python-dev xattr libattr1-dev
-pip install pyxattr
-
-python3
-
+Currently photo api relies on a hacked version of gdata: TODO - fork the gdata repo and
+point dependency at it.
 
 How to use it
 -------------
 
 Once the script is configured, you are now ready to use it using the simple following command line::
 
-    gphotos-sync TARGET_DIRECTORY
+    gphotos-sync download TARGET_DIRECTORY
 
 The first time, it will ask you to go to an url and copy back the authorization code in order
 to authorize the client to access your Google Photos through Google Drive.
 
-It will then begin to download all photos locally.
+supported commands:-
+    download    : copies files down to local disk
+    re-upload   : uploads any modified files (TODO un-tested in current version)
+    fix-db      : repair meta data store (FUTURE)
+
+usage: gphotos-sync [-h] [--quiet] [--dry-run] [--include-video]
+                    [--start-folder START_FOLDER] [--start-date START_DATE]
+                    [--end-date END_DATE] [--new-token]
+                    COMMAND root_folder
+
+Google Photos simple synchronization tool
+
+positional arguments:
+  COMMAND               command to execute
+  root_folder           root of the local folders to download into
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --quiet               quiet (no output)
+  --dry-run             show what would have been transferred
+  --include-video       include video types in sync
+  --start-folder START_FOLDER
+                        Google Photos folder to sync e.g. 2017/08, defaults to
+                        root
+  --start-date START_DATE
+                        Set the earliest date of files to sync
+  --end-date END_DATE   Set the latest date of files to sync
+  --new-token           Request new token
 

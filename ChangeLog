@@ -1,6 +1,11 @@
 CHANGES
 =======
 
+* tidy pickledb use - only dump when done
+* switched from extended attributes to pickledb
+* connecting to google photos with oauth2
+* update to python 3.5 in hope of fixing ssl lockup issue
+* added options for starting remote folder, plus start and end date
 * add option to download video files
 * pep8 tidy up
 * switched from canonical filenames to original titles with reliable duplicate handling

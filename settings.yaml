@@ -1,0 +1,18 @@
+# Uncomment the following and paste in values from
+#  https://console.cloud.google.com/apis/
+#  as an alternative to creating a secrets file
+#
+#client_config_backend: settings
+#client_config:
+#  client_id: 9637341109347.apps.googleusercontent.com
+#  client_secret: psDskOoWr1P602PXRTHi
+
+save_credentials: True
+save_credentials_backend: file
+save_credentials_file: credentials.json
+
+get_refresh_token: True
+
+oauth_scope:
+  - https://www.googleapis.com/auth/drive
+  - https://picasaweb.google.com/data/
