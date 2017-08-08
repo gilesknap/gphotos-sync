@@ -270,6 +270,17 @@ class GooglePhotosSync(object):
         target_folder = os.path.join(self.start_folder, year_month_folder)
         return target_folder
 
+    def is_indexed(self, path, media):
+        local_filename = os.path.join(path, media.filename)
+        file_record = self.db.get(local_filename)
+        if file_record:
+            if file_record['id'] == media.id:
+                return True
+            else:
+                media.duplicate_number += 1
+                return self.is_indexed(path, media)
+        return False
+
     def has_local_version(self, path, media):
         local_filename = os.path.join(path, media.filename)
 
@@ -284,36 +295,45 @@ class GooglePhotosSync(object):
         return False
 
     def download_media(self, media, path, progress_handler=None):
-        target_folder = path
         if not os.path.isdir(path):
             os.makedirs(path)
 
         target_filename = os.path.join(path, media.filename)
-        temp_filename = os.path.join(target_folder, '.temp-gphotos')
+        temp_filename = os.path.join(path, '.temp-gphotos')
 
-        # retry for occasional transient quota errors - http 503
-        for retry in range(10):
-            try:
-                with io.open(temp_filename, 'bw') as target_file:
-                    request = self.g_auth.service.files().get_media(
-                        fileId=media.id)
-                    download_request = http.MediaIoBaseDownload(target_file,
-                                                                request)
+        if not self.args.index_only:
+            # retry for occasional transient quota errors - http 503
+            for retry in range(10):
+                try:
+                    with io.open(temp_filename, 'bw') as target_file:
+                        request = self.g_auth.service.files().get_media(
+                            fileId=media.id)
+                        download_request = http.MediaIoBaseDownload(target_file,
+                                                                    request)
 
-                    done = False
-                    while not done:
-                        download_status, done = download_request.next_chunk()
-                        if progress_handler is not None:
-                            progress_handler.update_progress(download_status)
-            except Exception as e:
-                print('\nRETRYING due to', e)
-                continue
-            break
+                        done = False
+                        while not done:
+                            download_status, done = \
+                                download_request.next_chunk()
+                            if progress_handler is not None:
+                                progress_handler.update_progress(
+                                    download_status)
+                except Exception as e:
+                    print('\nRETRYING due to', e)
+                    continue
 
+                os.rename(temp_filename, target_filename)
+                break
+
+        # todo - root relative names here would make the folders portable
+        # store meta data indexed by unique id
         self.db.dcreate(media.id)
         self.db.dadd(media.id, ('filename', target_filename))
         self.db.dadd(media.id, ('description', media.description))
-        os.rename(temp_filename, target_filename)
+        self.db.dadd(media.id, ('checksum', media.checksum))
+        # reverse lookup by filename
+        self.db.dcreate(target_filename)
+        self.db.dadd(target_filename, ('id', media.id))
         return target_filename
 
     def upload_media(self, local_media, progress_handler=None):
@@ -386,14 +406,18 @@ def download_folder(folder_id, path, google_photos_sync, args):
             new_path = os.path.join(path, remote_media.filename)
             download_folder(remote_media.id, new_path, google_photos_sync, args)
         else:
-            if google_photos_sync.has_local_version(path, remote_media):
-                continue
+            if args.index_only:
+                if google_photos_sync.is_indexed(path, remote_media):
+                    continue
+            else:
+                if google_photos_sync.has_local_version(path, remote_media):
+                    continue
 
             if args.dry_run:
                 print("Downloading %s" % remote_media.filename)
                 continue
 
-            if not args.quiet:
+            if not (args.quiet or args.index_only):
                 progress_handler = ProgressHandler(remote_media)
 
             google_photos_sync.download_media(remote_media, path,
@@ -451,7 +475,6 @@ def parse_arguments():
         help="include video types in sync")
     parser.add_argument(
         "command",
-        metavar="COMMAND",
         choices=["re-upload", "download"],
         help="command to execute")
     parser.add_argument(
@@ -459,7 +482,6 @@ def parse_arguments():
         help="root of the local folders to download into")
     parser.add_argument(
         "--start-folder",
-        metavar="START_FOLDER",
         help="Google Photos folder to sync e.g. 2017/08, defaults to root",
         default='.')
     parser.add_argument(
@@ -474,6 +496,10 @@ def parse_arguments():
         "--new-token",
         action='store_true',
         help="Request new token")
+    parser.add_argument(
+        "--index-only",
+        action='store_true',
+        help="Only build the index of files in .gphotos.db - no downloads")
     return parser.parse_args()
 
 
@@ -496,9 +522,9 @@ def main():
     # project may be unobtainable. Shared albums are not seen by the API.
 
     try:
-        pi = PhotoInfo()
-        pi.connect_photos(google_photos_sync.g_auth.credentials)
-        pi.get_albums()
+        # pi = PhotoInfo()
+        # pi.connect_photos(google_photos_sync.g_auth.credentials)
+        # pi.get_albums()
 
         if cmd_args.command == "download":
             download_command(google_photos_sync, cmd_args)
@@ -506,7 +532,7 @@ def main():
         elif cmd_args.command == "re-upload":
             re_upload_command(google_photos_sync, cmd_args)
 
-    except (KeyboardInterrupt, SystemExit) as e:
+    except (KeyboardInterrupt, SystemExit):
         print("\nUser cancelled download")
         with open(".gphoto-terminated", "w") as text_file:
             text_file.write(traceback.format_exc())
