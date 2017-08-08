@@ -7,6 +7,7 @@ import mimetypes
 import os.path
 import re
 import pickledb
+import traceback
 from datetime import datetime
 from PhotoInfo import PhotoInfo
 
@@ -494,19 +495,21 @@ def main():
     # not appear to provide ability to create albums so some goals of this
     # project may be unobtainable. Shared albums are not seen by the API.
 
-    pi = PhotoInfo()
-    pi.connect_photos(google_photos_sync.g_auth.credentials)
-    pi.get_albums()
-
     try:
+        pi = PhotoInfo()
+        pi.connect_photos(google_photos_sync.g_auth.credentials)
+        pi.get_albums()
+
         if cmd_args.command == "download":
             download_command(google_photos_sync, cmd_args)
 
         elif cmd_args.command == "re-upload":
             re_upload_command(google_photos_sync, cmd_args)
 
-    except (KeyboardInterrupt, SystemExit):
+    except (KeyboardInterrupt, SystemExit) as e:
         print("\nUser cancelled download")
+        with open(".gphoto-terminated", "w") as text_file:
+            text_file.write(traceback.format_exc())
     finally:
         print("saving metadata ...")
         google_photos_sync.store_data()

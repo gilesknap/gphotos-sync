@@ -58,3 +58,7 @@ target/
 
 # jetbrains
 .idea
+
+# exception dump
+.gphoto-terminated
+
