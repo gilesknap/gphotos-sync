@@ -6,7 +6,9 @@ import traceback
 from appdirs import AppDirs
 
 from GooglePhotosSync import GooglePhotosSync
-import ProgressHandler
+from ProgressHandler import ProgressHandler
+from PhotoInfo import PhotoInfo
+from LocalData import LocalData
 
 APPNAME = "gphotos-sync"
 
@@ -20,6 +22,7 @@ def download_folder(folder_id, path, google_photos_sync, args):
             download_folder(remote_media.id, new_path, google_photos_sync, args)
         else:
             if args.index_only:
+                print(remote_media.drive_file)
                 if google_photos_sync.is_indexed(path, remote_media):
                     continue
             else:
@@ -120,6 +123,8 @@ def main():
     cmd_args = parse_arguments()
     app_dirs = AppDirs(APPNAME)
 
+    data_store = LocalData(cmd_args.root_folder)
+
     credentials_file = os.path.join(app_dirs.user_data_dir, "credentials.json")
     secret_file = os.path.join(app_dirs.user_config_dir, "client_secret.json")
 
@@ -135,6 +140,7 @@ def main():
     # project may be unobtainable. Shared albums are not seen by the API.
 
     try:
+
         # pi = PhotoInfo()
         # pi.connect_photos(google_photos_sync.g_auth.credentials)
         # pi.get_albums()

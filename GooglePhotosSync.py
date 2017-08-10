@@ -13,6 +13,7 @@ from pydrive.drive import GoogleDrive
 from GooglePhotosMedia import GooglePhotosMedia
 from LocalMedia import LocalMedia
 
+
 class NoGooglePhotosFolderError(Exception):
     pass
 

@@ -5,6 +5,7 @@ import io
 import mimetypes
 import os.path
 
+
 class LocalMedia(object):
     CHUNK_SIZE = 4096
 
