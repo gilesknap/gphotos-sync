@@ -3,4 +3,3 @@ retrying
 appdirs
 progressbar2
 gdata
-pickledb

@@ -12,6 +12,7 @@ from LocalData import LocalData
 
 APPNAME = "gphotos-sync"
 
+
 def download_folder(folder_id, path, google_photos_sync, args):
     print('-------------------- %s' % path)
     progress_handler = None
@@ -22,16 +23,11 @@ def download_folder(folder_id, path, google_photos_sync, args):
             download_folder(remote_media.id, new_path, google_photos_sync, args)
         else:
             if args.index_only:
-                print(remote_media.drive_file)
                 if google_photos_sync.is_indexed(path, remote_media):
                     continue
             else:
                 if google_photos_sync.has_local_version(path, remote_media):
                     continue
-
-            if args.dry_run:
-                print("Downloading %s" % remote_media.filename)
-                continue
 
             if not (args.quiet or args.index_only):
                 progress_handler = ProgressHandler(remote_media)
@@ -82,10 +78,6 @@ def parse_arguments():
         action='store_true',
         help="quiet (no output)")
     parser.add_argument(
-        "--dry-run",
-        action='store_true',
-        help="show what would have been transferred")
-    parser.add_argument(
         "--include-video",
         action='store_true',
         help="include video types in sync")
@@ -124,41 +116,47 @@ def main():
     app_dirs = AppDirs(APPNAME)
 
     data_store = LocalData(cmd_args.root_folder)
+    with data_store:
 
-    credentials_file = os.path.join(app_dirs.user_data_dir, "credentials.json")
-    secret_file = os.path.join(app_dirs.user_config_dir, "client_secret.json")
+        credentials_file = os.path.join(app_dirs.user_data_dir,
+                                        "credentials.json")
+        secret_file = os.path.join(app_dirs.user_config_dir,
+                                   "client_secret.json")
 
-    google_photos_sync = GooglePhotosSync(cmd_args,
-                                          client_secret_file=secret_file,
-                                          credentials_json=credentials_file)
+        google_photos_sync = GooglePhotosSync(cmd_args,
+                                              data_store,
+                                              client_secret_file=secret_file,
+                                              credentials_json=credentials_file)
 
-    # todo photo album metadata download code is under development
-    # this code demonstrates how to use the already obtained oauth2 credentials
-    # to connect to photos api with gdata. However :-
-    # python gdata is out of date (at v1). Even the current v3 api in Java does
-    # not appear to provide ability to create albums so some goals of this
-    # project may be unobtainable. Shared albums are not seen by the API.
+        # todo photo album metadata download code is under development
+        # this code demonstrates how to use the already obtained oauth2
+        # credentials
+        # to connect to photos api with gdata. However :-
+        # python gdata is out of date (at v1). Even the current v3 api in
+        # Java does
+        # not appear to provide ability to create albums so some goals of this
+        # project may be unobtainable. Shared albums are not seen by the API.
 
-    try:
+        try:
 
-        # pi = PhotoInfo()
-        # pi.connect_photos(google_photos_sync.g_auth.credentials)
-        # pi.get_albums()
+            # pi = PhotoInfo()
+            # pi.connect_photos(google_photos_sync.g_auth.credentials)
+            # pi.get_albums()
 
-        if cmd_args.command == "download":
-            download_command(google_photos_sync, cmd_args)
+            if cmd_args.command == "download":
+                download_command(google_photos_sync, cmd_args)
 
-        elif cmd_args.command == "re-upload":
-            re_upload_command(google_photos_sync, cmd_args)
+            elif cmd_args.command == "re-upload":
+                re_upload_command(google_photos_sync, cmd_args)
 
-    except (KeyboardInterrupt, SystemExit):
-        print("\nUser cancelled download")
-        with open(".gphoto-terminated", "w") as text_file:
-            text_file.write(traceback.format_exc())
-    finally:
-        print("saving metadata ...")
-        google_photos_sync.store_data()
-        print("done.")
+        except (KeyboardInterrupt, SystemExit):
+            print("\nUser cancelled download")
+            print("\nSaving Database ...")
+            # save the traceback so we can diagnose lockups
+            with open(".gphoto-terminated", "w") as text_file:
+                text_file.write(traceback.format_exc())
+        finally:
+            print("done.")
 
 
 if __name__ == "__main__":

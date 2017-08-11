@@ -3,7 +3,6 @@
 import io
 import mimetypes
 import os.path
-import pickledb
 
 from googleapiclient import http
 from googleapiclient.http import MediaFileUpload
@@ -26,13 +25,14 @@ class GooglePhotosSync(object):
                     ' and mimeType="application/vnd.google-apps.folder"')
     AFTER_QUERY = " and modifiedDate >= '%sT00:00:00'"
     BEFORE_QUERY = " and modifiedDate <= '%sT00:00:00'"
-    DB_NAME = '.gphotos.db'
     PAGE_SIZE = 100
 
     def __init__(self, args,
+                 db=None,
                  client_secret_file="client_secret.json",
                  credentials_json="credentials.json"):
 
+        self.db = db
         self.args = args
         self.root_folder = args.root_folder
         self.start_folder = args.start_folder
@@ -49,11 +49,6 @@ class GooglePhotosSync(object):
         self.g_auth.CommandLineAuth()
         self.googleDrive = GoogleDrive(self.g_auth)
         self.matchingRemotesCount = 0
-        db_name = os.path.join(self.root_folder, GooglePhotosSync.DB_NAME)
-        self.db = pickledb.load(db_name, False)
-
-    def store_data(self):
-        self.db.dump()
 
     def get_photos_folder_id(self):
         query_results = self.googleDrive.ListFile(
@@ -126,23 +121,24 @@ class GooglePhotosSync(object):
         return target_folder
 
     def is_indexed(self, path, media):
+        is_indexed = False
         local_filename = os.path.join(path, media.filename)
-        file_record = self.db.get(local_filename)
+        file_record = self.db.get_file(local_filename)
         if file_record:
-            if file_record['id'] == media.id:
-                return True
+            if file_record['DriveId'] == media.id:
+                is_indexed = True
             else:
                 media.duplicate_number += 1
-                return self.is_indexed(path, media)
-        return False
+                is_indexed = self.is_indexed(path, media)
+        return is_indexed
 
     def has_local_version(self, path, media):
         local_filename = os.path.join(path, media.filename)
 
         # recursively check if any existing duplicates have same id
         if os.path.isfile(local_filename):
-            media_record = self.db.get(media.id)
-            if media_record and media_record['filename'] == local_filename:
+            media_record = self.db.get_file(local_filename)
+            if media_record and media_record['LocalFileName'] == local_filename:
                 return True
             else:
                 media.duplicate_number += 1
@@ -179,16 +175,12 @@ class GooglePhotosSync(object):
 
                 os.rename(temp_filename, target_filename)
                 break
+        else:
+            print("Added %s" % target_filename)
 
         # todo - root relative names here would make the folders portable
-        # store meta data indexed by unique id
-        self.db.dcreate(media.id)
-        self.db.dadd(media.id, ('filename', target_filename))
-        self.db.dadd(media.id, ('description', media.description))
-        self.db.dadd(media.id, ('checksum', media.checksum))
-        # reverse lookup by filename
-        self.db.dcreate(target_filename)
-        self.db.dadd(target_filename, ('id', media.id))
+        self.db.put_file(media.id, media.drive_file[u'originalFilename'],
+                         media.filename, target_filename)
         return target_filename
 
     def upload_media(self, local_media, progress_handler=None):

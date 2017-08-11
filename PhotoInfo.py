@@ -8,7 +8,9 @@ import gdata.photos.service
 class PhotoInfo:
     PHOTOS_QUERY = '/data/feed/api/user/default/albumid/{0}?kind=photo'
 
-    def __init__(self):
+    def __init__(self, db, args):
+        self.db = db
+        self.args = args
         self.gdata_client = None
         self.credentials = None
         self.auth2token = None
