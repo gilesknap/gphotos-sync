@@ -15,7 +15,7 @@ class FileStatus(Enum):
 
 class LocalData:
     DB_FILE_NAME = 'gphotos.sql'
-    VERSION = 1.1
+    VERSION = "1.3"
 
     def __init__(self, root_folder):
         self.file_name = os.path.join(root_folder, LocalData.DB_FILE_NAME)
@@ -28,6 +28,7 @@ class LocalData:
         if self.db_is_new():
             print('initialising new database')
             self.setup_new_db()
+        self.migrate_db()
 
     def __enter__(self):
         pass
@@ -38,22 +39,42 @@ class LocalData:
             self.con.close()
 
     def setup_new_db(self):
-        self.cur.executescript("""
-            CREATE TABLE Globals(Version INT, Albums INT,
-              Files INT, LastScanDate TEXT);
-            CREATE TABLE DriveFiles(Id INTEGER PRIMARY KEY, DriveId TEXT, 
-              OrigFileName TEXT, DriveFileName TEXT, LocalFileName TEXT);
-            CREATE TABLE Albums(Id INTEGER PRIMARY KEY, AlbumId TEXT,
-              AlbumName TEXT);
-            CREATE TABLE AlbumFiles(Id INTEGER PRIMARY KEY, Title TEXT,
-              AlbumNo INT) """)
-        self.cur.execute("INSERT INTO Globals VALUES(?,0,0, 'Never');",
-                         (LocalData.VERSION,))
+        self.cur.executescript(
+            "CREATE TABLE  Globals(Version TEXT, Albums INT, Files INT,"
+            "LastScanDate TEXT);"
+            "CREATE TABLE  DriveFiles(Id INTEGER PRIMARY KEY, DriveId TEXT,"
+            "OrigFileName TEXT, DriveFileName TEXT, LocalFileName TEXT);"
+            "CREATE TABLE  Albums(Id INTEGER PRIMARY KEY, AlbumId TEXT,"
+            "AlbumName TEXT);"
+            "CREATE TABLE AlbumFiles(Id INTEGER PRIMARY KEY, Title TEXT,"
+            "AlbumNo INT, DriveFile INT);")
+        self.cur.execute(
+            "INSERT INTO Globals VALUES(?,0,0,'Never');",
+            (LocalData.VERSION,))
         self.con.commit()
 
+    def migrate_db(self):
+        self.cur.execute(
+            "SELECT ALL Version FROM Globals;")
+        version = self.cur.fetchone()
+        if version is None or version[0] != LocalData.VERSION:
+            print('Database Migrate ...')
+            self.cur.executescript(
+                "DROP TABLE IF EXISTS Globals; "
+                "CREATE TABLE  Globals(Version TEXT, Albums INT, Files "
+                "INT, LastScanDate TEXT)")
+            self.cur.execute(
+                "INSERT INTO Globals VALUES(?,0,0,'Never');",
+                (LocalData.VERSION,))
+            self.cur.executescript(
+                "DROP TABLE IF EXISTS AlbumFiles;"
+                "CREATE TABLE AlbumFiles(Id INTEGER PRIMARY KEY, Title TEXT,"
+                "AlbumNo INT, DriveFile INT);")
+
     def db_is_new(self):
-        self.cur.execute("SELECT name FROM sqlite_master WHERE type='table'"
-                         "AND name = 'Globals'")
+        self.cur.execute(
+            "SELECT name FROM sqlite_master WHERE type='table'"
+            "AND name = 'DriveFiles'")
         data = self.cur.fetchone()
         return data is None
 
@@ -67,7 +88,18 @@ class LocalData:
 
     def put_file(self, drive_id, orig_filename, drive_filename, local_filename):
         self.cur.execute(
-            "INSERT INTO DriveFiles(DriveId, OrigFileName, DriveFileName, " \
+            "INSERT INTO DriveFiles(DriveId, OrigFileName, DriveFileName, "
             "LocalFileName) VALUES(?,?,?,?) ;",
-            (drive_id, orig_filename, drive_filename,
-             local_filename))
+            (drive_id, orig_filename, drive_filename, local_filename))
+
+    def get_album(self, album_id):
+        pass
+
+    def put_album(self, title, album_number):
+        pass
+
+    def get_album_files(self, album_id):
+        pass
+
+    def put_album_file(self, album_id, file_id):
+        pass
