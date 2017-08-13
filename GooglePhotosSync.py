@@ -114,6 +114,7 @@ class GooglePhotosSync(object):
                     yield LocalMedia(media_path)
 
     def is_indexed(self, path, media):
+        # todo switch to using the DB to determine next duplicate number to use
         is_indexed = False
         local_filename = os.path.join(path, media.filename)
         file_record = self.db.get_file(local_filename)
@@ -126,6 +127,8 @@ class GooglePhotosSync(object):
         return is_indexed
 
     def has_local_version(self, path, media):
+        # todo switch to using the DB to determine next duplicate number to use
+        # todo (and can probably combine with is_indexed)
         local_filename = os.path.join(path, media.filename)
         local_full_path = os.path.join(self.root_folder, local_filename)
         # recursively check if any existing duplicates have same id

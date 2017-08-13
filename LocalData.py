@@ -42,8 +42,6 @@ class LocalData:
         self.cur.executescript(
             "CREATE TABLE  Globals(Version TEXT, Albums INT, Files INT,"
             "LastScanDate TEXT);"
-            # Todo add duplicate number in to calculate unique local filename
-            # todo also make path root relative
             "CREATE TABLE  DriveFiles(Id INTEGER PRIMARY KEY, DriveId TEXT,"
             "OrigFileName TEXT, Path TEXT, FileName TEXT, DuplicateNo INT,"
             "ExifDate TEXT, Checksum TEXT, Description TEXT,"
@@ -93,32 +91,18 @@ class LocalData:
         res = self.cur.fetchone()
         return res
 
-    def find_drive_file(self, orig_name, exif_date, size, use_create=False):
-        if not size:
-            size == '%'
-        if not exif_date:
-            exif_date = '%'
+    def find_drive_file(self, orig_name='%', exif_date='%', size='%',
+                        use_create=False):
         if use_create:
             self.cur.execute(
-                "SELECT Id FROM DriveFiles WHERE OrigFileName = ? AND "
+                "SELECT Id FROM DriveFiles WHERE OrigFileName LIKE ? AND "
                 "CreateDate LIKE ? AND FileSize LIKE ?;",
                 (orig_name, exif_date, size))
         else:
             self.cur.execute(
-                "SELECT Id FROM DriveFiles WHERE OrigFileName = ? AND ExifDate "
-                "LIKE ?  AND FileSize LIKE ?;", (orig_name, exif_date, size))
-        res = self.cur.fetchall()
-
-        if len(res) == 0:
-            return None
-        else:
-            return res
-
-    def get_file_by_name_size(self, orig_name, size):
-        self.cur.execute(
-            "SELECT Id FROM DriveFiles WHERE OrigFileName = ? AND FileSize = "
-            "?;",
-            (orig_name, size))
+                "SELECT Id FROM DriveFiles WHERE OrigFileName LIKE ? AND "
+                "ExifDate LIKE ? AND FileSize LIKE ?;",
+                (orig_name, exif_date, size))
         res = self.cur.fetchall()
 
         if len(res) == 0:

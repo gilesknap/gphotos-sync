@@ -8,7 +8,7 @@ import datetime
 
 
 class PhotoInfo:
-    PHOTOS_QUERY = '/data/feed/api/user/default/albumid/{0}?kind=photo'
+    PHOTOS_QUERY = '/data/feed/api/user/default/albumid/{0}'
 
     def __init__(self, args, db):
         self.db = db
@@ -18,55 +18,78 @@ class PhotoInfo:
         self.auth2token = None
 
     def match_drive_photo(self, filename, timestamp, size):
+        file_keys = self.db.find_drive_file(size=size)
+        if file_keys and len(file_keys) == 1:
+            return file_keys
+
+        file_keys = self.db.find_drive_file(orig_name=filename)
+        if file_keys and len(file_keys) == 1:
+            return file_keys
+
+        if file_keys and len(file_keys) > 1:
+            file_keys = self.db.find_drive_file(orig_name=filename, size=size)
+            if file_keys and len(file_keys) == 1:
+                return file_keys
+
+        # search with date, but check for timezone slips and missing
+        # or corrupted exif_date, in which case revert to create date
         for use_create_date in [False, True]:
             for hour_offset in range(2):
                 date = datetime.datetime.fromtimestamp(
-                    int(timestamp) / 1000 - 3600 *
-                    hour_offset).strftime(
+                    int(timestamp) / 1000 - 3600 * hour_offset).strftime(
                     '%Y-%m-%d %H:%M:%S')
-                file_keys = self.db.find_drive_file(filename, date, None,
-                                                    use_create_date)
-                if file_keys and len(file_keys) > 1:
-                    # narrow search on file size
-                    file_keys = self.db.find_drive_file(filename, date, size,
-                                                        use_create_date)
-                if file_keys:
-                    return file_keys
-        # not found anything yet.
-        # MP4s and other non exif files have no date try on name and size only
-        file_keys = self.db.find_drive_file(filename, None, size)
+                dated_file_keys = \
+                    self.db.find_drive_file(orig_name=filename,
+                                            exif_date=date,
+                                            use_create=use_create_date)
+                if dated_file_keys:
+                    return dated_file_keys
+        # not found anything or found >1 result
         return file_keys
 
+    # todo move to utility module
+    @classmethod
+    def retry(cls, count, func,  *arg, **karg):
+        for retry in range(count):
+            try:
+                res = func(*arg, **karg)
+            except Exception as e:
+                print("\nRETRYING due to", e)
+                continue
+            return res
+
     def get_albums(self):
-        albums = self.gdata_client.GetUserFeed()
+        albums = PhotoInfo.retry(5, self.gdata_client.GetUserFeed)
+        total_photos = 0
+
+        print('\n----------------- Album count %d' % len(albums.entry))
         for album in albums.entry:
+            total_photos += album.numphotos.text
             print('----------------------- Album title: %s, number of photos:"'
                   ' %s, id: %s' % (album.title.text,
                                    album.numphotos.text,
                                    album.gphoto_id.text))
             if album.title.text == 'Auto-Backup':
+                # ignore this auto-generated global album
                 continue
 
-            for retry in range(5):
-                try:
-                    q = PhotoInfo.PHOTOS_QUERY.format(album.gphoto_id.text)
-                except Exception as e:
-                    print("\nRETRYING due to", e)
-                    continue
-                break
+            q = PhotoInfo.PHOTOS_QUERY.format(album.gphoto_id.text)
+
+            photos = PhotoInfo.retry(5, self.gdata_client.GetFeed, q)
 
             photos = self.gdata_client.GetFeed(q)
             for photo in photos.entry:
                 name = photo.title.text
                 if '-ANIMATION' in name or '-PANO' in name or '-COLLAGE' in \
                         name or '-EFFECTS' in name:
+                    # todo could download using gdata api for these
                     # drive does not see these Google Photos creations
-                    # Todo could download using gdata api for these
                     continue
                 file_keys = self.match_drive_photo(name,
                                                    photo.timestamp.text,
                                                    int(photo.size.text))
 
+                # Todo need to do timezone offset to find dodgy MP4 dates ?
                 if not file_keys:
                     date = datetime.datetime.fromtimestamp(
                         int(photo.timestamp.text) / 1000).strftime(
@@ -75,8 +98,8 @@ class PhotoInfo:
                           (photo.title.text, date, photo.size.text))
                 elif len(file_keys) > 1:
                     print ('WARNING multiple album file match for %s %s %s' %
-                           (photo.title.text, date, photo.size.text))
-            ('Album count %d' % len(albums.entry))
+                           (name, date, photo.size.text))
+        print('--------------- Total Photos in Albums %d ' % total_photos)
         return albums
 
     def connect_photos(self, credentials):
