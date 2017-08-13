@@ -17,6 +17,26 @@ class PhotoInfo:
         self.credentials = None
         self.auth2token = None
 
+    def match_drive_photo(self, filename, timestamp, size):
+        for use_create_date in [False, True]:
+            for hour_offset in range(2):
+                date = datetime.datetime.fromtimestamp(
+                    int(timestamp) / 1000 - 3600 *
+                    hour_offset).strftime(
+                    '%Y-%m-%d %H:%M:%S')
+                file_keys = self.db.find_drive_file(filename, date, None,
+                                                    use_create_date)
+                if file_keys and len(file_keys) > 1:
+                    # narrow search on file size
+                    file_keys = self.db.find_drive_file(filename, date, size,
+                                                        use_create_date)
+                if file_keys:
+                    return file_keys
+        # not found anything yet.
+        # MP4s and other non exif files have no date try on name and size only
+        file_keys = self.db.find_drive_file(filename, None, size)
+        return file_keys
+
     def get_albums(self):
         albums = self.gdata_client.GetUserFeed()
         for album in albums.entry:
@@ -37,27 +57,25 @@ class PhotoInfo:
 
             photos = self.gdata_client.GetFeed(q)
             for photo in photos.entry:
-                file_key = None
-                for hour_offset in range(2):
-                    date = datetime.datetime.fromtimestamp(
-                        int(photo.timestamp.text) / 1000 - 3600 *
-                        hour_offset).strftime(
-                        '%Y-%m-%d %H:%M:%S')
-                    filename = photo.title.text
-                    file_key = self.db.get_file_by_name_date(filename, date)
-                    if file_key:
-                        break
-                if not file_key:
-                    # try to match on create date
-                    file_key = self.db.get_file_by_name_date(filename, date)
-                if not file_key:
+                name = photo.title.text
+                if '-ANIMATION' in name or '-PANO' in name or '-COLLAGE' in \
+                        name or '-EFFECTS' in name:
+                    # drive does not see these Google Photos creations
+                    # Todo could download using gdata api for these
+                    continue
+                file_keys = self.match_drive_photo(name,
+                                                   photo.timestamp.text,
+                                                   int(photo.size.text))
+
+                if not file_keys:
                     date = datetime.datetime.fromtimestamp(
                         int(photo.timestamp.text) / 1000).strftime(
                         '%Y-%m-%d %H:%M:%S')
-                    print('cant find album file %s %s' %
-                          (photo.title.text, date))
-                    # todo temp test for particular file
-                    assert ('2013-01-04 14.33.44.jpg' != photo.title.text)
+                    print('WARNING cant find album file %s %s %s' %
+                          (photo.title.text, date, photo.size.text))
+                elif len(file_keys) > 1:
+                    print ('WARNING multiple album file match for %s %s %s' %
+                           (photo.title.text, date, photo.size.text))
             ('Album count %d' % len(albums.entry))
         return albums
 

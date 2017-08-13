@@ -93,21 +93,38 @@ class LocalData:
         res = self.cur.fetchone()
         return res
 
-    def get_file_by_name_date(self, orig_name, exif_date, use_create=True):
+    def find_drive_file(self, orig_name, exif_date, size, use_create=False):
+        if not size:
+            size == '%'
+        if not exif_date:
+            exif_date = '%'
         if use_create:
             self.cur.execute(
-                "SELECT * FROM DriveFiles WHERE OrigFileName = ? AND ExifDate "
-                "= ?;", (orig_name, exif_date))
+                "SELECT Id FROM DriveFiles WHERE OrigFileName = ? AND "
+                "CreateDate LIKE ? AND FileSize LIKE ?;",
+                (orig_name, exif_date, size))
         else:
             self.cur.execute(
-                "SELECT * FROM DriveFiles WHERE OrigFileName = ? AND "
-                "CreateDate = ?;", (orig_name, exif_date))
+                "SELECT Id FROM DriveFiles WHERE OrigFileName = ? AND ExifDate "
+                "LIKE ?  AND FileSize LIKE ?;", (orig_name, exif_date, size))
         res = self.cur.fetchall()
 
         if len(res) == 0:
             return None
         else:
-            return res[0]['Id']
+            return res
+
+    def get_file_by_name_size(self, orig_name, size):
+        self.cur.execute(
+            "SELECT Id FROM DriveFiles WHERE OrigFileName = ? AND FileSize = "
+            "?;",
+            (orig_name, size))
+        res = self.cur.fetchall()
+
+        if len(res) == 0:
+            return None
+        else:
+            return res
 
     def put_file(self, media):
         now_time = strftime(GooglePhotosSync.TIME_FORMAT, gmtime())

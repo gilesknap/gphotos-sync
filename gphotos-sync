@@ -132,7 +132,7 @@ def main():
         try:
 
             if cmd_args.command == "download":
-                download_command(google_photos_sync, cmd_args)
+                # download_command(google_photos_sync, cmd_args)
                 photo_info.get_albums()
 
             elif cmd_args.command == "re-upload":
