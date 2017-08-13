@@ -6,9 +6,12 @@ from datetime import datetime
 
 
 class GooglePhotosMedia(object):
-    def __init__(self, drive_file):
+    def __init__(self, drive_file, path):
+        # todo make drive_file private and path/duplicate properties
+        # (requires changes to callers)
         self.drive_file = drive_file
         self.duplicate_number = 0
+        self.path = path
 
     def get_custom_property_value(self, key):
         for prop in self.drive_file["properties"]:
@@ -87,6 +90,13 @@ class GooglePhotosMedia(object):
             return ''
 
     @property
+    def orig_name(self):
+        try:
+            return self.drive_file["originalFilename"]
+        except KeyError:
+            return ''
+
+    @property
     def filename(self):
         base, ext = os.path.splitext(os.path.basename(self.drive_file["title"]))
         if self.duplicate_number > 0:
@@ -97,3 +107,11 @@ class GooglePhotosMedia(object):
             }
         else:
             return self.drive_file["title"]
+
+    @property
+    def create_date(self):
+        # todo this is duplicated above in date property
+        date = datetime.strptime(self.drive_file["createdDate"].upper()[:-4],
+                                           "%Y-%m-%dT%H:%M:%S.")
+        # todo consolidate time format across all uses in the project
+        return date.strftime('%Y-%m-%d %H:%M:%S')

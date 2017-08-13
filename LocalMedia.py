@@ -9,6 +9,8 @@ import os.path
 class LocalMedia(object):
     CHUNK_SIZE = 4096
 
+    # todo - try to remove direct filesystem access from rest of code
+    # todo and go through this
     def __init__(self, media_path):
         self.path = media_path
 

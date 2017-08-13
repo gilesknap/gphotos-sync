@@ -16,7 +16,7 @@ APPNAME = "gphotos-sync"
 def download_folder(folder_id, path, google_photos_sync, args):
     print('-------------------- %s' % path)
     progress_handler = None
-    for remote_media in google_photos_sync.get_remote_medias(folder_id):
+    for remote_media in google_photos_sync.get_remote_medias(folder_id, path):
 
         if remote_media.drive_file.metadata[u'mimeType'].endswith('folder'):
             new_path = os.path.join(path, remote_media.filename)
@@ -38,11 +38,10 @@ def download_folder(folder_id, path, google_photos_sync, args):
 
 def download_command(gs, args):
     folder_id = gs.get_photos_folder_id()
-
-    if gs.start_folder != '.':
+    if gs.start_folder != '':
         folder_id = gs.get_remote_folder(folder_id, gs.start_folder)
 
-    download_folder(folder_id, gs.target_folder, gs, args)
+    download_folder(folder_id, gs.start_folder, gs, args)
 
 
 def re_upload_command(gs, args):
@@ -91,7 +90,7 @@ def parse_arguments():
     parser.add_argument(
         "--start-folder",
         help="Google Photos folder to sync e.g. 2017/08, defaults to root",
-        default='.')
+        default='')
     parser.add_argument(
         "--start-date",
         help="Set the earliest date of files to sync",
@@ -123,28 +122,18 @@ def main():
         secret_file = os.path.join(app_dirs.user_config_dir,
                                    "client_secret.json")
 
-        google_photos_sync = GooglePhotosSync(cmd_args,
-                                              data_store,
+        google_photos_sync = GooglePhotosSync(cmd_args, data_store,
                                               client_secret_file=secret_file,
                                               credentials_json=credentials_file)
 
-        # todo photo album metadata download code is under development
-        # this code demonstrates how to use the already obtained oauth2
-        # credentials
-        # to connect to photos api with gdata. However :-
-        # python gdata is out of date (at v1). Even the current v3 api in
-        # Java does
-        # not appear to provide ability to create albums so some goals of this
-        # project may be unobtainable. Shared albums are not seen by the API.
+        photo_info = PhotoInfo(cmd_args, data_store)
+        photo_info.connect_photos(google_photos_sync.g_auth.credentials)
 
         try:
 
-            # pi = PhotoInfo()
-            # pi.connect_photos(google_photos_sync.g_auth.credentials)
-            # pi.get_albums()
-
             if cmd_args.command == "download":
                 download_command(google_photos_sync, cmd_args)
+                photo_info.get_albums()
 
             elif cmd_args.command == "re-upload":
                 re_upload_command(google_photos_sync, cmd_args)
