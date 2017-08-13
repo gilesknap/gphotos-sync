@@ -48,13 +48,19 @@ class GooglePhotosSync(object):
         self.googleDrive = GoogleDrive(self.g_auth)
         self.matchingRemotesCount = 0
 
+
+    # todo currently I am scanning from the root to include items that where
+    # originally not uploaded to photos - look into using 'spaces' instead.
     def get_photos_folder_id(self):
-        query_results = self.googleDrive.ListFile(
-            {"q": GooglePhotosSync.GOOGLE_PHOTO_FOLDER_QUERY}).GetList()
-        try:
-            return query_results[0]["id"]
-        except:
-            raise NoGooglePhotosFolderError()
+        return "root"
+        # query_results = self.googleDrive.ListFile(
+        #     {"q": GooglePhotosSync.GOOGLE_PHOTO_FOLDER_QUERY}).GetList()
+        # try:
+        #     return query_results[0]["id"]
+        # except:
+        #     raise NoGooglePhotosFolderError()
+
+    # todo
 
     def add_date_filter(self, query_params):
         if self.args.start_date:
@@ -88,8 +94,9 @@ class GooglePhotosSync(object):
 
         for page_results in self.googleDrive.ListFile(query_params):
             for drive_file in page_results:
+                mime = drive_file["mimeType"]
                 if not self.args.include_video:
-                    if drive_file["mimeType"].startswith("video/"):
+                    if mime.startswith("video/"):
                         continue
                 media = GooglePhotosMedia(drive_file, path)
                 yield media
@@ -144,14 +151,13 @@ class GooglePhotosSync(object):
         return False
 
     def download_media(self, media, path, progress_handler=None):
-        if path != '' and not os.path.isdir(path):
-            os.makedirs(path)
-
         target_filename = os.path.join(path, media.filename)
         local_full_path = os.path.join(self.root_folder, target_filename)
         temp_filename = os.path.join(self.root_folder, path, '.temp-photo')
 
         if not self.args.index_only:
+            if path != '' and not os.path.isdir(path):
+                os.makedirs(path)
             # retry for occasional transient quota errors - http 503
             for retry in range(10):
                 try:

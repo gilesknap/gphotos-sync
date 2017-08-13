@@ -17,8 +17,8 @@ def download_folder(folder_id, path, google_photos_sync, args):
     print('-------------------- %s' % path)
     progress_handler = None
     for remote_media in google_photos_sync.get_remote_medias(folder_id, path):
-
-        if remote_media.drive_file.metadata[u'mimeType'].endswith('folder'):
+        mime = remote_media.drive_file.metadata[u'mimeType']
+        if mime.endswith('folder'):
             new_path = os.path.join(path, remote_media.filename)
             download_folder(remote_media.id, new_path, google_photos_sync, args)
         else:
@@ -32,8 +32,9 @@ def download_folder(folder_id, path, google_photos_sync, args):
             if not (args.quiet or args.index_only):
                 progress_handler = ProgressHandler(remote_media)
 
-            google_photos_sync.download_media(remote_media, path,
-                                              progress_handler=progress_handler)
+            if mime.startswith("video/") or mime.startswith("image/"):
+                google_photos_sync.download_media(
+                    remote_media, path, progress_handler=progress_handler)
 
 
 def download_command(gs, args):
@@ -132,7 +133,7 @@ def main():
         try:
 
             if cmd_args.command == "download":
-                # download_command(google_photos_sync, cmd_args)
+                download_command(google_photos_sync, cmd_args)
                 photo_info.get_albums()
 
             elif cmd_args.command == "re-upload":
