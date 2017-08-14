@@ -21,7 +21,7 @@ def download_folder(folder_id, path, google_photos_sync, args):
         if mime.endswith('folder'):
             new_path = os.path.join(path, remote_media.filename)
             download_folder(remote_media.id, new_path, google_photos_sync, args)
-        else:
+        elif mime.startswith("video/") or mime.startswith("image/"):
             if args.index_only:
                 if google_photos_sync.is_indexed(path, remote_media):
                     continue
@@ -31,10 +31,8 @@ def download_folder(folder_id, path, google_photos_sync, args):
 
             if not (args.quiet or args.index_only):
                 progress_handler = ProgressHandler(remote_media)
-
-            if mime.startswith("video/") or mime.startswith("image/"):
-                google_photos_sync.download_media(
-                    remote_media, path, progress_handler=progress_handler)
+            google_photos_sync.download_media(
+                remote_media, path, progress_handler=progress_handler)
 
 
 def download_command(gs, args):

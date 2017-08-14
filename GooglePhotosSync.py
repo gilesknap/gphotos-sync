@@ -136,28 +136,29 @@ class GooglePhotosSync(object):
     def has_local_version(self, path, media):
         # todo switch to using the DB to determine next duplicate number to use
         # todo (and can probably combine with is_indexed)
+        exists = False
         local_filename = os.path.join(path, media.filename)
         local_full_path = os.path.join(self.root_folder, local_filename)
         # recursively check if any existing duplicates have same id
         if os.path.isfile(local_full_path):
-            media_record = self.db.get_file(local_filename)
-            # todo this is broken since path and name now in separate columns
-            # fix by returning a GooglePhotosMedia from get_file
-            if media_record and media_record['LocalFileName'] == local_filename:
-                return True
-            else:
-                media.duplicate_number += 1
-                return self.has_local_version(path, media)
-        return False
+            file_record = self.db.get_file(local_filename)
+            if file_record:
+                if file_record['DriveId'] == media.id:
+                    exists = True
+                else:
+                    media.duplicate_number += 1
+                    exists = self.has_local_version(path, media)
+            return exists
+        return exists
 
     def download_media(self, media, path, progress_handler=None):
-        target_filename = os.path.join(path, media.filename)
-        local_full_path = os.path.join(self.root_folder, target_filename)
+        local_folder = os.path.join(self.root_folder, path)
+        local_full_path = os.path.join(local_folder, media.filename)
         temp_filename = os.path.join(self.root_folder, path, '.temp-photo')
 
         if not self.args.index_only:
-            if path != '' and not os.path.isdir(path):
-                os.makedirs(path)
+            if path != '' and not os.path.isdir(local_folder):
+                os.makedirs(local_folder)
             # retry for occasional transient quota errors - http 503
             for retry in range(10):
                 try:
@@ -183,10 +184,7 @@ class GooglePhotosSync(object):
         else:
             print("Added %s" % local_full_path)
 
-        # todo use root relative path for portability
-        # assert ('2013-01-04 14.33.44.jpg' != media.filename)
         self.db.put_file(media)
-        return target_filename
 
     def upload_media(self, local_media, progress_handler=None):
 

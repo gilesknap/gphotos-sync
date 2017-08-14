@@ -28,8 +28,9 @@ class PhotoInfo:
 
         if file_keys and len(file_keys) > 1:
             file_keys = self.db.find_drive_file(orig_name=filename, size=size)
-            if file_keys and len(file_keys) == 1:
-                return file_keys
+            # multiple matches here represent the same image
+            if file_keys:
+                return file_keys[0:1]
 
         # search with date, but check for timezone slips due to camera not
         # set to correct timezone and missing or corrupted exif_date,
@@ -69,13 +70,13 @@ class PhotoInfo:
         print('\n----------------- Album count %d' % len(albums.entry))
         for album in albums.entry:
             total_photos += int(album.numphotos.text)
-            print('----------------------- Album title: %s, number of photos:"'
+            print('----------------------- Album title: %s, number of photos:'
                   ' %s, id: %s' % (album.title.text,
                                    album.numphotos.text,
                                    album.gphoto_id.text))
-            if album.title.text == 'Auto-Backup':
-                # ignore this auto-generated global album
-                continue
+            # if album.title.text == 'Auto-Backup':
+            #     # ignore this auto-generated global album
+            #     continue
 
             q = PhotoInfo.PHOTOS_QUERY.format(album.gphoto_id.text)
             photos = PhotoInfo.retry(5, self.gdata_client.GetFeed, q)
@@ -85,8 +86,10 @@ class PhotoInfo:
                 if '-ANIMATION' in name or '-PANO' in name or '-COLLAGE' in \
                         name or '-EFFECTS' in name:
                     # todo could download using gdata api for these
+                    # todo also some are in Drive so need to be more discerning
                     # drive does not see these Google Photos creations
                     continue
+
                 file_keys = self.match_drive_photo(name,
                                                    photo.timestamp.text,
                                                    int(photo.size.text))
