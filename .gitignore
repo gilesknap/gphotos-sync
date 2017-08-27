@@ -62,3 +62,6 @@ target/
 # exception dump
 .gphoto-terminated
 
+results.txt
+
+

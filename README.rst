@@ -2,12 +2,22 @@
  Google Photos Sync
 ====================
 
-Google Photos Sync is a simple script that will synchronize on a local filesystem
-all the photos stored in your Google Photos account.
+Google Photos Sync downloads your Google Photos to the local file system.
+It attempts to backup all the photos as stored in Google Drive, but also
+the album information and additional Google Photos generated content that does
+not appear in Drive. The only API for accessing the latter two is picasa web and
+this is now severely crippled by (Google) design.
 
-All the photo filenames are automatically renamed according to the date and camera model 
-and are stored in a ``YEAR/MONTH/`` folder hierarchy.
+It currently does not have upload features. Uploading of album info is no
+longer possible since Google deprecated most of the picasa API.
 
+If in future a Google Photos API is provided by Google then an update to two
+way sync is possible.
+
+Primary Goals:
+* provide a file system backup so it is possible to monitor for accidental deletions (or deletions caused by bugs) in very large photo collections
+* make it possible to switch to a different photo management system in future if this ever becomes desirable/necessary
+ 
 
 Install and configure
 ---------------------
@@ -44,37 +54,33 @@ How to use it
 
 Once the script is configured, you are now ready to use it using the simple following command line::
 
-    gphotos-sync download TARGET_DIRECTORY
+    gphotos-sync TARGET_DIRECTORY
 
 The first time, it will ask you to go to an url and copy back the authorization code in order
 to authorize the client to access your Google Photos through Google Drive.
 
-supported commands:-
-    download    : copies files down to local disk
-    re-upload   : uploads any modified files (TODO un-tested in current version)
-    fix-db      : repair meta data store (FUTURE)
-
-usage: gphotos-sync [-h] [--quiet] [--dry-run] [--include-video]
+usage: gphotos-sync [-h] [--quiet] [--include-video]
                     [--start-folder START_FOLDER] [--start-date START_DATE]
-                    [--end-date END_DATE] [--new-token]
-                    COMMAND root_folder
+                    [--end-date END_DATE] [--new-token] [--index-only]
+                    root_folder
 
-Google Photos simple synchronization tool
+Google Photos download tool
 
 positional arguments:
-  COMMAND               command to execute
   root_folder           root of the local folders to download into
 
 optional arguments:
   -h, --help            show this help message and exit
   --quiet               quiet (no output)
-  --dry-run             show what would have been transferred
   --include-video       include video types in sync
   --start-folder START_FOLDER
-                        Google Photos folder to sync e.g. 2017/08, defaults to
-                        root
+                        Google Photos folder to sync e.g. "Google
+                        Photos/2017/08", defaults to root
   --start-date START_DATE
                         Set the earliest date of files to sync
   --end-date END_DATE   Set the latest date of files to sync
   --new-token           Request new token
+  --index-only          Only build the index of files in .gphotos.db - no
+                        downloads
+
 

@@ -39,7 +39,7 @@ class PhotoInfo:
         # set to correct timezone and missing or corrupted exif_date,
         # in which case revert to create date
         for use_create_date in [False, True]:
-            for hour_offset in range(23):
+            for hour_offset in range(-12, 12):
                 date = datetime.datetime.fromtimestamp(
                     int(timestamp) / 1000 - 3600 * hour_offset).strftime(
                     '%Y-%m-%d %H:%M:%S')
@@ -48,6 +48,8 @@ class PhotoInfo:
                                             exif_date=date,
                                             use_create=use_create_date)
                 if dated_file_keys:
+                    print("MATCH ON DATE, offset %d (create %r) %s, file: %s" %
+                          (hour_offset, use_create_date, date, filename))
                     return dated_file_keys
         # not found anything or found >1 result
         return file_keys
@@ -81,6 +83,10 @@ class PhotoInfo:
             # todo use this flag to make this album not show in local albums
             hide_this_album = album.title.text == 'Auto-Backup'
 
+            # todo temp test
+            if album.title.text != 'Movies':
+                continue
+
             q = album.GetPhotosUri() + "&imgmax=d"
             photos = PhotoInfo.retry(10, self.gdata_client.GetFeed, q)
 
@@ -107,13 +113,13 @@ class PhotoInfo:
                 file_keys = self.match_drive_photo(item_name,
                                                    photo.timestamp.text,
                                                    int(photo.size.text))
-
                 if not file_keys:
+                    print('WARNING no drive entry for album file %s %s %s' % (
+                        photo.title.text, date, photo.size.text))
                     mismatched += 1
                     # todo very temp download code for testing
                     if not os.path.exists(local_path):
-                        print('downloading album file %s %s %s' % (
-                            photo.title.text, date, photo.size.text))
+                        print('downloading')
                         urllib.urlretrieve(item_url, local_path)
                 elif len(file_keys) > 1:
                     multiple += 1

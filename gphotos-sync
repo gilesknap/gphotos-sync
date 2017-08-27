@@ -43,34 +43,13 @@ def download_command(gs, args):
     download_folder(folder_id, gs.start_folder, gs, args)
 
 
-def re_upload_command(gs, args):
-    progress_handler = None
-    for local_media in gs.get_local_medias():
-
-        remote_media = gs.get_remote_media_by_name(
-            local_media.filename)
-
-        if not remote_media or remote_media.checksum == local_media.checksum:
-            continue
-
-        if args.dry_run:
-            print("Re-uploading %s" % remote_media.filename)
-            continue
-
-        if not args.quiet:
-            progress_handler = ProgressHandler(local_media)
-
-        gs.upload_media(local_media,
-                        progress_handler=progress_handler)
-
-
 ###############################################################################
 # Main code
 ###############################################################################
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
-        description="Google Photos simple synchronization tool")
+        description="Google Photos download tool")
     parser.add_argument(
         "--quiet",
         action='store_true',
@@ -79,10 +58,6 @@ def parse_arguments():
         "--include-video",
         action='store_true',
         help="include video types in sync")
-    parser.add_argument(
-        "command",
-        choices=["re-upload", "download"],
-        help="command to execute")
     parser.add_argument(
         "root_folder",
         help="root of the local folders to download into")
@@ -130,13 +105,8 @@ def main():
         photo_info.connect_photos(google_photos_sync.g_auth.credentials)
 
         try:
-
-            if cmd_args.command == "download":
-                download_command(google_photos_sync, cmd_args)
-                photo_info.get_albums()
-
-            elif cmd_args.command == "re-upload":
-                re_upload_command(google_photos_sync, cmd_args)
+            download_command(google_photos_sync, cmd_args)
+            photo_info.get_albums()
 
         except (KeyboardInterrupt, SystemExit):
             print("\nUser cancelled download")

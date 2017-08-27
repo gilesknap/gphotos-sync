@@ -16,6 +16,8 @@ from LocalMedia import LocalMedia
 class NoGooglePhotosFolderError(Exception):
     pass
 
+# todo the following todos to go into documentation before removing from here
+#
 # todo separate indexing and downloading into two separate parts
 # instead of scanning through folders do:
 # index all folders so we get a pathname for each folder id
@@ -42,6 +44,7 @@ class NoGooglePhotosFolderError(Exception):
 # config item
 #
 # todo final breakdown will be the following phases each date gated
+# NOTE: flush the DB between each step
 # * index all drive folders
 # * index drive files
 # * index photos albums (with contents)
@@ -49,6 +52,13 @@ class NoGooglePhotosFolderError(Exception):
 # * download photos only files (not found in drive)
 # * create local google albums as folder with links to above
 # * create local albums from my original uploads via title or filename encoding
+
+# todo keep in mind that no 'Creations' of gphotos are referenced unless
+#  they appear in an album.
+# one workaround is to create an album and use google photos to drop all
+# creations in it. This would need redoing every so often but may be the only
+# solution since it seems picassa API cannot see these otherwise
+# todo - check if a search for -PANO, MOVIE.* etc works from picasa API
 
 
 class GooglePhotosSync(object):
@@ -134,17 +144,7 @@ class GooglePhotosSync(object):
                 media = GooglePhotosMedia(drive_file, path)
                 yield media
 
-    def get_remote_media_by_name(self, filename):
-        google_photos_folder_id = self.get_photos_folder_id()
-        query_params = {
-            "q": 'title = "%s" and "%s" in parents and trashed=false' %
-                 (filename, google_photos_folder_id)
-        }
-        found_media = self.googleDrive.ListFile(query_params).GetList()
-        # todo this function will fail since it cant find jpg in the root
-        # typically, when fixing this make sure we get path set in media obj
-        return GooglePhotosMedia(found_media[0]) if found_media else None
-
+    # todo - not used, retained for future extension
     def get_local_medias(self):
         for directory, _, files in os.walk(self.start_folder):
             for filename in files:
