@@ -69,11 +69,11 @@ class LocalData:
     def put_file(self, media):
         now_time = strftime(GooglePhotosSync.TIME_FORMAT, gmtime())
         self.cur.execute(
-            "insert into DriveFiles values(?,?,?,?,?,?,?,?,?,?,?,?) ;",
+            "insert into DriveFiles values(?,?,?,?,?,?,?,?,?,?,?,?,?) ;",
             (None, media.id, media.orig_name, media.path, media.filename,
              media.duplicate_number, media.date, media.checksum,
              media.description, media.size, media.create_date,
-             now_time))
+             now_time, media.picassa_only))
 
     def get_album(self, table_id):
         self.cur.execute(

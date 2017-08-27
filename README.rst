@@ -16,10 +16,13 @@ of files via the drive API counts against Quota.
 If in future a Google Photos API is provided by Google then an update to two
 way sync is possible.
 
-Primary Goals:
+Primary Goals
+--------------
 * provide a file system backup so it is possible to monitor for accidental deletions (or deletions caused by bugs) in very large photo collections
 * make it possible to switch to a different photo management system in future if this ever becomes desirable/necessary
 
+Known Issues
+------------
 
 Install and configure
 ---------------------

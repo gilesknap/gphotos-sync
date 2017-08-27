@@ -12,6 +12,7 @@ class GooglePhotosMedia(object):
         self.drive_file = drive_file
         self.duplicate_number = 0
         self.path = path
+        self.picassa_only = False
 
     def get_custom_property_value(self, key):
         for prop in self.drive_file["properties"]:

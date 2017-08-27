@@ -12,6 +12,7 @@ import time
 
 class PhotoInfo:
     PHOTOS_QUERY = '/data/feed/api/user/default/albumid/{0}'
+    BLOCK_SIZE = 1000
 
     def __init__(self, args, db):
         self.db = db
@@ -91,46 +92,56 @@ class PhotoInfo:
             #    continue
 
             q = album.GetPhotosUri() + "&imgmax=d"
-            photos = PhotoInfo.retry(10, self.gdata_client.GetFeed, q)
 
-            for photo in photos.entry:
-                item_name = photo.title.text
-                item_url = photo.content.src
-                item_id = photo.gphoto_id.text
-                item_updated = photo.updated.text
-                item_published = photo.published.text
-                local_path = os.path.join(self.local_folder,
-                                          item_id + '-' + item_name)
+            downloading = True
+            start_entry = 1
+            while downloading:
+                photos = PhotoInfo.retry(10, self.gdata_client.GetFeed, q,
+                                         limit=PhotoInfo.BLOCK_SIZE,
+                                         start_index=start_entry)
 
-                # for videos use last (highest res) media.content entry url
-                if photo.media.content:
-                    high_res_content = photo.media.content[-1]
-                    if high_res_content.type.startswith('video'):
-                        if high_res_content.url:
-                            item_url = high_res_content.url
+                for photo in photos.entry:
+                    item_name = photo.title.text
+                    item_url = photo.content.src
+                    item_id = photo.gphoto_id.text
+                    item_updated = photo.updated.text
+                    item_published = photo.published.text
+                    local_path = os.path.join(self.local_folder,
+                                              item_id + '-' + item_name)
 
-                date = datetime.datetime.fromtimestamp(
-                    int(photo.timestamp.text) / 1000).strftime(
-                    '%Y-%m-%d %H:%M:%S')
+                    # for videos use last (highest res) media.content entry url
+                    if photo.media.content:
+                        high_res_content = photo.media.content[-1]
+                        if high_res_content.type.startswith('video'):
+                            if high_res_content.url:
+                                item_url = high_res_content.url
 
-                file_keys = self.match_drive_photo(item_name,
-                                                   photo.timestamp.text,
-                                                   int(photo.size.text))
-                if not file_keys:
-                    print('WARNING no drive entry for album file %s %s %s' % (
-                        photo.title.text, date, photo.size.text))
-                    mismatched += 1
-                    # todo very temp download code for testing
-                    if not (self.args.index_only or os.path.exists(local_path)):
-                        print('downloading ...')
-                        tmp_path = os.path.join(self.local_folder,
-                                                '.gphoto.tmp')
-                        urllib.urlretrieve(item_url, tmp_path)
-                        os.rename(tmp_path, local_path)
-                elif len(file_keys) > 1:
-                    multiple += 1
-                    print ('WARNING multiple album file match for %s %s %s' %
-                           (item_name, date, photo.size.text))
+                    date = datetime.datetime.fromtimestamp(
+                        int(photo.timestamp.text) / 1000).strftime(
+                        '%Y-%m-%d %H:%M:%S')
+
+                    file_keys = self.match_drive_photo(item_name,
+                                                       photo.timestamp.text,
+                                                       int(photo.size.text))
+                    if not file_keys:
+                        print('WARNING no drive entry for album file %s %s %s' % (
+                            photo.title.text, date, photo.size.text))
+                        mismatched += 1
+                        # todo very temp download code for testing
+                        if not (self.args.index_only or os.path.exists(local_path)):
+                            print('downloading ...')
+                            tmp_path = os.path.join(self.local_folder,
+                                                    '.gphoto.tmp')
+                            urllib.urlretrieve(item_url, tmp_path)
+                            os.rename(tmp_path, local_path)
+                    elif len(file_keys) > 1:
+                        multiple += 1
+                        print ('WARNING multiple album file match for %s %s %s' %
+                               (item_name, date, photo.size.text))
+
+                downloading = PhotoInfo.BLOCK_SIZE == len(photos.entry)
+                start_entry += PhotoInfo.BLOCK_SIZE
+
         print('---------Total Photos in Albums %d, mismatched %d, multiples %d'
               % (total_photos, mismatched, multiple))
         return albums
