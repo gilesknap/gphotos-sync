@@ -9,7 +9,9 @@ not appear in Drive. The only API for accessing the latter two is picasa web and
 this is now severely crippled by (Google) design.
 
 It currently does not have upload features. Uploading of album info is no
-longer possible since Google deprecated most of the picasa API.
+longer possible since Google deprecated most of the picasa API see details
+here: https://developers.google.com/picasa-web/docs/3.0/releasenotes. Uploading
+of files via the drive API counts against Quota.
 
 If in future a Google Photos API is provided by Google then an update to two
 way sync is possible.
@@ -17,7 +19,7 @@ way sync is possible.
 Primary Goals:
 * provide a file system backup so it is possible to monitor for accidental deletions (or deletions caused by bugs) in very large photo collections
 * make it possible to switch to a different photo management system in future if this ever becomes desirable/necessary
- 
+
 
 Install and configure
 ---------------------

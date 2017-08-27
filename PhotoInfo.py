@@ -19,6 +19,9 @@ class PhotoInfo:
         self.gdata_client = None
         self.credentials = None
         self.auth2token = None
+        self.local_folder = os.path.join(self.args.root_folder, 'picasa')
+        if not os.path.exists(self.local_folder):
+            os.mkdir(self.local_folder)
 
     def match_drive_photo(self, filename, timestamp, size):
         file_keys = self.db.find_drive_file(size=size)
@@ -84,8 +87,8 @@ class PhotoInfo:
             hide_this_album = album.title.text == 'Auto-Backup'
 
             # todo temp test
-            if album.title.text != 'Movies':
-                continue
+            #if album.title.text != 'Movies':
+            #    continue
 
             q = album.GetPhotosUri() + "&imgmax=d"
             photos = PhotoInfo.retry(10, self.gdata_client.GetFeed, q)
@@ -96,8 +99,8 @@ class PhotoInfo:
                 item_id = photo.gphoto_id.text
                 item_updated = photo.updated.text
                 item_published = photo.published.text
-                local_path = os.path.join(self.args.root_folder,
-                                          'picasa', item_id + '-' + item_name)
+                local_path = os.path.join(self.local_folder,
+                                          item_id + '-' + item_name)
 
                 # for videos use last (highest res) media.content entry url
                 if photo.media.content:
@@ -118,9 +121,12 @@ class PhotoInfo:
                         photo.title.text, date, photo.size.text))
                     mismatched += 1
                     # todo very temp download code for testing
-                    if not os.path.exists(local_path):
-                        print('downloading')
-                        urllib.urlretrieve(item_url, local_path)
+                    if not (self.args.index_only or os.path.exists(local_path)):
+                        print('downloading ...')
+                        tmp_path = os.path.join(self.local_folder,
+                                                '.gphoto.tmp')
+                        urllib.urlretrieve(item_url, tmp_path)
+                        os.rename(tmp_path, local_path)
                 elif len(file_keys) > 1:
                     multiple += 1
                     print ('WARNING multiple album file match for %s %s %s' %
