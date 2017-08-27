@@ -28,7 +28,6 @@ class LocalData:
         if self.db_is_new():
             print('initialising new database')
             self.setup_new_db()
-        self.migrate_db()
 
     def __enter__(self):
         pass
@@ -54,24 +53,6 @@ class LocalData:
             "INSERT INTO Globals VALUES(?,0,0,'Never');",
             (LocalData.VERSION,))
         self.con.commit()
-
-    def migrate_db(self):
-        self.cur.execute(
-            "SELECT ALL * FROM Globals;")
-        res = self.cur.fetchone()
-        if res is None or res['Version'] != LocalData.VERSION:
-            print('Database Migrate ...')
-            self.cur.executescript(
-                "DROP TABLE IF EXISTS Globals; "
-                "CREATE TABLE  Globals(Version TEXT, Albums INT, Files "
-                "INT, LastScanDate TEXT)")
-            self.cur.execute(
-                "INSERT INTO Globals VALUES(?,0,0,'Never');",
-                (LocalData.VERSION,))
-            self.cur.executescript(
-                "DROP TABLE IF EXISTS AlbumFiles;"
-                "CREATE TABLE AlbumFiles(Id INTEGER PRIMARY KEY,AlbumRec INT,"
-                "DriveFileRec INT);")
 
     def db_is_new(self):
         self.cur.execute(

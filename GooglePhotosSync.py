@@ -16,6 +16,40 @@ from LocalMedia import LocalMedia
 class NoGooglePhotosFolderError(Exception):
     pass
 
+# todo separate indexing and downloading into two separate parts
+# instead of scanning through folders do:
+# index all folders so we get a pathname for each folder id
+#  (make this last modified dependent so that it is quick after first pass)
+# get all images (with date filtering as required) and determine their path
+#   from the above index
+# this should make incremental passes as fast as possible
+#
+# todo also
+# start downloading unmatched album files using the picassa download
+# the final scheme will have 3 root level folders
+#  drive
+#  photos
+#  albums
+# drive is a download of all drive files (or images/videos only if required)
+#   with original folder hierarchy
+# photos is download of picasa items not found in drive broken down by year
+#   folders (so one level folder depth only)
+# albums is a set of folders named as per picasa album names containing symlinks
+#   to files is the above two areas, again with year folders
+# goal is to have no files in photos if possible (everything in drive)
+#
+# suggest the layout of folders in all 3 is actually controlled by a regex
+# config item
+#
+# todo final breakdown will be the following phases each date gated
+# * index all drive folders
+# * index drive files
+# * index photos albums (with contents)
+# * download drive files
+# * download photos only files (not found in drive)
+# * create local google albums as folder with links to above
+# * create local albums from my original uploads via title or filename encoding
+
 
 class GooglePhotosSync(object):
     GOOGLE_PHOTO_FOLDER_QUERY = (
@@ -47,7 +81,6 @@ class GooglePhotosSync(object):
         self.g_auth.CommandLineAuth()
         self.googleDrive = GoogleDrive(self.g_auth)
         self.matchingRemotesCount = 0
-
 
     # todo currently I am scanning from the root to include items that where
     # originally not uploaded to photos - look into using 'spaces' instead.

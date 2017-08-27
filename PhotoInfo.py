@@ -1,6 +1,9 @@
 import gdata.gauth
 import gdata.photos.service
 import datetime
+import os.path
+import urllib
+import time
 
 
 # https://developers.google.com/oauthplayground/ helpful for testing and
@@ -57,12 +60,13 @@ class PhotoInfo:
                 res = func(*arg, **k_arg)
             except Exception as e:
                 print("\nRETRYING due to", e)
+                time.sleep(.1)
                 continue
             return res
 
     def get_albums(self):
         print('\n----------------- Reading albums ...')
-        albums = PhotoInfo.retry(5, self.gdata_client.GetUserFeed)
+        albums = PhotoInfo.retry(10, self.gdata_client.GetUserFeed)
         total_photos = 0
         mismatched = 0
         multiple = 0
@@ -74,37 +78,47 @@ class PhotoInfo:
                   ' %s, id: %s' % (album.title.text,
                                    album.numphotos.text,
                                    album.gphoto_id.text))
-            # if album.title.text == 'Auto-Backup':
-            #     # ignore this auto-generated global album
-            #     continue
+            # todo use this flag to make this album not show in local albums
+            hide_this_album = album.title.text == 'Auto-Backup'
 
-            q = PhotoInfo.PHOTOS_QUERY.format(album.gphoto_id.text)
-            photos = PhotoInfo.retry(5, self.gdata_client.GetFeed, q)
+            q = album.GetPhotosUri() + "&imgmax=d"
+            photos = PhotoInfo.retry(10, self.gdata_client.GetFeed, q)
 
             for photo in photos.entry:
-                name = photo.title.text
-                if '-ANIMATION' in name or '-PANO' in name or '-COLLAGE' in \
-                        name or '-EFFECTS' in name:
-                    # todo could download using gdata api for these
-                    # todo also some are in Drive so need to be more discerning
-                    # drive does not see these Google Photos creations
-                    continue
+                item_name = photo.title.text
+                item_url = photo.content.src
+                item_id = photo.gphoto_id.text
+                item_updated = photo.updated.text
+                item_published = photo.published.text
+                local_path = os.path.join(self.args.root_folder,
+                                          'picasa', item_id + '-' + item_name)
 
-                file_keys = self.match_drive_photo(name,
+                # for videos use last (highest res) media.content entry url
+                if photo.media.content:
+                    high_res_content = photo.media.content[-1]
+                    if high_res_content.type.startswith('video'):
+                        if high_res_content.url:
+                            item_url = high_res_content.url
+
+                date = datetime.datetime.fromtimestamp(
+                    int(photo.timestamp.text) / 1000).strftime(
+                    '%Y-%m-%d %H:%M:%S')
+
+                file_keys = self.match_drive_photo(item_name,
                                                    photo.timestamp.text,
                                                    int(photo.size.text))
 
                 if not file_keys:
                     mismatched += 1
-                    date = datetime.datetime.fromtimestamp(
-                        int(photo.timestamp.text) / 1000).strftime(
-                        '%Y-%m-%d %H:%M:%S')
-                    print('WARNING cant find album file %s %s %s' %
-                          (photo.title.text, date, photo.size.text))
+                    # todo very temp download code for testing
+                    if not os.path.exists(local_path):
+                        print('downloading album file %s %s %s' % (
+                            photo.title.text, date, photo.size.text))
+                        urllib.urlretrieve(item_url, local_path)
                 elif len(file_keys) > 1:
                     multiple += 1
                     print ('WARNING multiple album file match for %s %s %s' %
-                           (name, date, photo.size.text))
+                           (item_name, date, photo.size.text))
         print('---------Total Photos in Albums %d, mismatched %d, multiples %d'
               % (total_photos, mismatched, multiple))
         return albums
