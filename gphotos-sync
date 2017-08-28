@@ -17,7 +17,7 @@ def download_folder(folder_id, path, google_photos_sync, args):
     print('-------------------- %s' % path)
     progress_handler = None
     for remote_media in google_photos_sync.get_remote_medias(folder_id, path):
-        mime = remote_media.mimetype
+        mime = remote_media.mime_type
         if mime.endswith('folder'):
             download_folder(remote_media.id, remote_media.remote_path,
                             google_photos_sync, args)

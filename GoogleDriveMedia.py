@@ -31,12 +31,9 @@ class GoogleDriveMedia(GoogleMedia):
     def date(self):
         try:
             exif_date = self.get_exif_value("date")
-            photo_date = datetime.strptime(exif_date, "%Y:%m:%d %H:%M:%S")
+            photo_date = self.format_date(exif_date)
         except (KeyError, ValueError):
-            import_date = self.__drive_file["createdDate"]
-            # some times are ucase T and non zero millisecs - normalize
-            photo_date = datetime.strptime(import_date.upper()[:-4],
-                                           "%Y-%m-%dT%H:%M:%S.")
+            photo_date = self.create_date
 
         return photo_date
 
@@ -98,7 +95,8 @@ class GoogleDriveMedia(GoogleMedia):
 
     @property
     def filename(self):
-        base, ext = os.path.splitext(os.path.basename(self.__drive_file["title"]))
+        base, ext = os.path.splitext(
+            os.path.basename(self.__drive_file["title"]))
         if self.duplicate_number > 0:
             return "%(base)s (%(duplicate)d)%(ext)s" % {
                 'base': base,
@@ -110,12 +108,11 @@ class GoogleDriveMedia(GoogleMedia):
 
     @property
     def create_date(self):
-        # todo this is duplicated above in date property
+        # some times are ucase T and non zero millisecs - normalize
         date = datetime.strptime(self.__drive_file["createdDate"].upper()[:-4],
-                                           "%Y-%m-%dT%H:%M:%S.")
-        # todo consolidate time format across all uses in the project
-        return date.strftime('%Y-%m-%d %H:%M:%S')
+                                 "%Y-%m-%dT%H:%M:%S.")
+        return date
 
     @property
-    def mimetype(self):
+    def mime_type(self):
         return self.__drive_file.metadata[u'mimeType']
