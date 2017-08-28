@@ -14,7 +14,8 @@ import time
 
 class PhotoInfo:
     PHOTOS_QUERY = '/data/feed/api/user/default/albumid/{0}'
-    BLOCK_SIZE = 1000
+    BLOCK_SIZE = 500
+    ALBUM_MAX = 10000  # picasa web api gets 500 response after 10000 files
 
     def __init__(self, args, db):
         self.db = db
@@ -68,6 +69,7 @@ class PhotoInfo:
                 res = func(*arg, **k_arg)
             except Exception as e:
                 print("\nRETRYING due to", e)
+                print "Call was:", func, arg, k_arg
                 time.sleep(.1)
                 continue
             return res
@@ -105,10 +107,11 @@ class PhotoInfo:
             q = album.GetPhotosUri() + "&imgmax=d"
 
             downloading = True
-            start_entry = 1
+            start_entry = 50000
+            limit = PhotoInfo.BLOCK_SIZE
             while downloading:
                 photos = PhotoInfo.retry(10, self.gdata_client.GetFeed, q,
-                                         limit=PhotoInfo.BLOCK_SIZE,
+                                         limit=limit,
                                          start_index=start_entry)
 
                 for photo in photos.entry:
@@ -151,8 +154,12 @@ class PhotoInfo:
                             'WARNING multiple album file match for %s %s %s' %
                             (item_name, date_str, photo.size.text))
 
-                downloading = PhotoInfo.BLOCK_SIZE == len(photos.entry)
                 start_entry += PhotoInfo.BLOCK_SIZE
+                if start_entry + PhotoInfo.BLOCK_SIZE > PhotoInfo.ALBUM_MAX:
+                    limit = PhotoInfo.ALBUM_MAX - start_entry
+                    print ("LIMITING ALBUM TO 10000 entries")
+                downloading = limit > 0 and PhotoInfo.BLOCK_SIZE == len(
+                    photos.entry)
 
         print('---------Total Photos in Albums %d, mismatched %d, multiples %d'
               % (total_photos, mismatched, multiple))

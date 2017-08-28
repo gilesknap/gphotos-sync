@@ -42,8 +42,8 @@ class LocalData:
         path = os.path.dirname(local_name)
         name = os.path.basename(local_name)
         self.cur.execute(
-            "select * from DriveFiles where Path = ? and FileName = "
-            "?;", (path, name))
+            "SELECT * FROM DriveFiles WHERE Path = ? AND FileName = ?;",
+            (path, name))
         res = self.cur.fetchone()
         return res
 
@@ -51,13 +51,13 @@ class LocalData:
                         use_create=False):
         if use_create:
             self.cur.execute(
-                "select Id from DriveFiles where OrigFileName like ? and "
-                "CreateDate like ? and FileSize like ?;",
+                "SELECT Id FROM DriveFiles WHERE OrigFileName LIKE ? AND "
+                "CreateDate LIKE ? AND FileSize LIKE ?;",
                 (orig_name, exif_date, size))
         else:
             self.cur.execute(
-                "select Id from DriveFiles where OrigFileName like ? and "
-                "ExifDate like ? and FileSize like ?;",
+                "SELECT Id FROM DriveFiles WHERE OrigFileName LIKE ? AND "
+                "ExifDate LIKE ? AND FileSize LIKE ?;",
                 (orig_name, exif_date, size))
         res = self.cur.fetchall()
 
@@ -69,7 +69,7 @@ class LocalData:
     def put_file(self, media):
         now_time = strftime(GooglePhotosSync.TIME_FORMAT, gmtime())
         self.cur.execute(
-            "insert into DriveFiles values(?,?,?,?,?,?,?,?,?,?,?,?,?) ;",
+            "INSERT INTO DriveFiles VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?) ;",
             (None, media.id, media.orig_name, media.path, media.filename,
              media.duplicate_number, media.date, media.checksum,
              media.description, media.size, media.create_date,
@@ -77,7 +77,7 @@ class LocalData:
 
     def get_album(self, table_id):
         self.cur.execute(
-            "select * from Albums where Id = ?",
+            "SELECT * FROM Albums WHERE Id = ?",
             (table_id,))
         res = self.cur.fetchone()
         return res

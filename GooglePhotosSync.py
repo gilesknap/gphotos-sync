@@ -105,8 +105,6 @@ class GooglePhotosSync(object):
         # except:
         #     raise NoGooglePhotosFolderError()
 
-    # todo
-
     def add_date_filter(self, query_params):
         if self.args.start_date:
             query_params[
@@ -146,15 +144,6 @@ class GooglePhotosSync(object):
                 media = GooglePhotosMedia(drive_file, path)
                 yield media
 
-    # todo - not used, retained for future extension
-    def get_local_medias(self):
-        for directory, _, files in os.walk(self.start_folder):
-            for filename in files:
-                media_path = os.path.join(directory, filename)
-                mime_type, _ = mimetypes.guess_type(media_path)
-                if mime_type and mime_type.startswith('image/'):
-                    yield LocalMedia(media_path)
-
     def is_indexed(self, path, media):
         # todo switch to using the DB to determine next duplicate number to use
         is_indexed = False
@@ -173,7 +162,9 @@ class GooglePhotosSync(object):
         # todo (and can probably combine with is_indexed)
         exists = False
         local_filename = os.path.join(path, media.filename)
-        local_full_path = os.path.join(self.root_folder, local_filename)
+        local_full_path = os.path.join(self.root_folder,
+                                       GooglePhotosSync.ROOT_FOLDER,
+                                       local_filename)
         # recursively check if any existing duplicates have same id
         if os.path.isfile(local_full_path):
             file_record = self.db.get_file(local_filename)
@@ -222,29 +213,4 @@ class GooglePhotosSync(object):
 
         self.db.put_file(media)
 
-    def upload_media(self, local_media, progress_handler=None):
 
-        remote_media = self.get_remote_media_by_name(local_media.filename)
-
-        media_body = MediaFileUpload(local_media.path, resumable=True)
-
-        if remote_media:
-            upload_request = self.g_auth.service.files().update(
-                fileId=remote_media.id,
-                body=remote_media.drive_file,
-                newRevision=True,
-                media_body=media_body)
-        else:
-            body = {
-                'title': local_media.filename,
-                'mimetype': local_media.mimetype
-            }
-            upload_request = self.g_auth.service.files().insert(
-                body=body,
-                media_body=media_body)
-
-        done = False
-        while not done:
-            upload_status, done = upload_request.next_chunk()
-            if progress_handler is not None:
-                progress_handler.update_progress(upload_status)

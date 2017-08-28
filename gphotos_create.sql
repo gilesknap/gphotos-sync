@@ -54,26 +54,30 @@ create table Globals
 )
 ;
 
+DROP INDEX IF EXISTS DriveFiles_DriveId_uindex;
 DROP INDEX IF EXISTS FileNameIdx;
 DROP INDEX IF EXISTS FileSizeIdx;
 DROP INDEX IF EXISTS FileSizeAndSizeIdx;
 DROP INDEX IF EXISTS CreatedIdx;
 DROP INDEX IF EXISTS ExifDateIdx;
 
+create unique index DriveFiles_DriveId_uindex
+	on DriveFiles (DriveId);
+
 create index FileNameIdx
-on DriveFiles (FileName);
+  on DriveFiles (FileName);
 
 create index FileSizeIdx
-on DriveFiles (FileSize);
+  on DriveFiles (FileSize);
 
 create index FileSizeAndSizeIdx
-on DriveFiles (FileName, FileSize);
+  on DriveFiles (FileName, FileSize);
 
 create index CreatedIdx
-on DriveFiles (CreateDate);
+  on DriveFiles (CreateDate);
 
 create index ExifDateIdx
-on DriveFiles (ExifDate);
+  on DriveFiles (ExifDate);
 
 
 
