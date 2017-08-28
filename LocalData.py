@@ -59,7 +59,7 @@ class LocalData:
         try:
             self.cur.execute(
                 "INSERT INTO DriveFiles VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?) ;",
-                (None, ) + data_tuple)
+                (None,) + data_tuple)
         except lite.IntegrityError as e:
             if e.message == 'UNIQUE constraint failed: DriveFiles.DriveId':
                 raise LocalData.DuplicateDriveIdException
@@ -92,10 +92,12 @@ class LocalData:
         res = self.cur.fetchone()
         return res
 
-    def put_album(self, album_id, album_name):
+    def put_album(self, album_id, album_name, start_date, end_end=0):
         self.cur.execute(
-            "INSERT INTO Albums(AlbumNo, DriveFile) VALUES(?,?) ;",
-            (album_id, album_name))
+            "INSERT OR REPLACE INTO Albums(AlbumId, AlbumName, StartDate, "
+            "EndDate) VALUES(?,?,?,?) ;",
+            (album_id, album_name, start_date, end_end))
+        return self.cur.lastrowid
 
     def get_album_files(self, album_id):
         self.cur.execute(
@@ -106,5 +108,6 @@ class LocalData:
 
     def put_album_file(self, album_rec, file_rec):
         self.cur.execute(
-            "INSERT INTO AlbumsFiles(AlbumRec, DriveFileRec) VALUES(?,?) ;",
+            "INSERT OR REPLACE INTO AlbumFiles(AlbumRec, DriveRec) VALUES(?,"
+            "?) ;",
             (album_rec, file_rec))

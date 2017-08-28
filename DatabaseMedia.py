@@ -12,14 +12,29 @@ class DatabaseMedia(GoogleMedia):
 
     def __init__(self, root_path, local_full_path, db, **k_args):
         super(DatabaseMedia, self).__init__(None, root_path)
+
+        media_root = os.path.join(root_path, self.media_folder)
+        local_folder = os.path.dirname(local_full_path)
+        self.__relative_path = os.path.relpath(local_folder,
+                                               media_root)
+
         data_tuple = db.get_file(local_full_path)
         if data_tuple:
             (
-                self._id, self._orig_name, self.media_folder,
+                self._id, self._orig_name, local_folder,
                 self._filename, self._duplicate_number, self._date,
                 self._checksum, self._description, self._size,
-                self._create_date, _, self.media_type
+                self._create_date, _, self._media_type
             ) = data_tuple
+
+            # todo this is clumsy and repeats the derived class info
+            # probably just need to add a global Enum for the media folders
+            if self._media_type == MediaType.PICASA:
+                self.media_folder = 'picasa'
+            elif self._media_type == MediaType.DRIVE:
+                self.media_folder = 'drive'
+            elif self._media_type == MediaType.ALBUM_LINK:
+                self.media_folder = 'albums'
         else:
             # use this to indicate record not found
             self._id = None

@@ -26,7 +26,7 @@ class PicasaMedia(GoogleMedia):
 
     @property
     def checksum(self):
-        # NOTE: picasa API returns empty checksums
+        # NOTE: picasa API returns empty checksum
         return self.__photo_xml.checksum.text
 
     @property

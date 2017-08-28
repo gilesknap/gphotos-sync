@@ -10,7 +10,8 @@ class MediaType(Enum):
     DRIVE = 0
     PICASA = 1
     DATABASE = 2
-    NONE = 3
+    ALBUM_LINK = 3
+    NONE = 4
 
 
 # base class for media model classes

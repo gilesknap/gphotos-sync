@@ -27,6 +27,12 @@ class PhotoInfo:
         if not os.path.exists(self.local_folder):
             os.mkdir(self.local_folder)
 
+    def time_from_timestamp(self, time_secs, hour_offset=0):
+        date = datetime.datetime.fromtimestamp(
+            int(time_secs) / 1000 - 3600 * hour_offset).strftime(
+            '%Y-%m-%d %H:%M:%S')
+        return date
+
     def match_drive_photo(self, filename, timestamp, size):
         file_keys = self.db.find_drive_file(size=size)
         if file_keys and len(file_keys) == 1:
@@ -47,9 +53,7 @@ class PhotoInfo:
         # in which case revert to create date
         for use_create_date in [False, True]:
             for hour_offset in range(-12, 12):
-                date = datetime.datetime.fromtimestamp(
-                    int(timestamp) / 1000 - 3600 * hour_offset).strftime(
-                    '%Y-%m-%d %H:%M:%S')
+                date = self.time_from_timestamp(timestamp, hour_offset)
                 dated_file_keys = \
                     self.db.find_drive_file(orig_name=filename,
                                             exif_date=date,
@@ -99,10 +103,13 @@ class PhotoInfo:
                                    album.gphoto_id.text))
             # todo use this flag to make this album not show in local albums
             hide_this_album = album.title.text == 'Auto-Backup'
+            if hide_this_album:
+                continue
 
-            # todo temp test
-            # if album.title.text != 'Movies':
-            #    continue
+            end_date = self.time_from_timestamp(album.timestamp.text, 0)
+            start_date = 0
+            album_id = self.db.put_album(album.gphoto_id.text, album.title.text,
+                                         start_date, end_date)
 
             q = album.GetPhotosUri() + "&imgmax=d"
 
@@ -113,7 +120,8 @@ class PhotoInfo:
                 photos = PhotoInfo.retry(10, self.gdata_client.GetFeed, q,
                                          limit=limit,
                                          start_index=start_entry)
-
+                # todo very temp download code for testing - will refactor
+                # as per GoogleDriveSync
                 for photo in photos.entry:
                     date = datetime.datetime.fromtimestamp(
                         int(photo.timestamp.text) / 1000)
@@ -139,11 +147,12 @@ class PhotoInfo:
                             'WARNING no drive entry for album file %s %s %s' % (
                                 photo.title.text, date_str, photo.size.text))
                         mismatched += 1
-                        # todo very temp download code for testing
                         local_path = self.define_path(date, item_name, item_id)
+
                         if not (self.args.index_only or
                                     os.path.exists(local_path)):
                             print('downloading ...')
+                            # todo add a file to DriveFiles and set file_id
                             tmp_path = os.path.join(self.local_folder,
                                                     '.gphoto.tmp')
                             res = self.retry(5, urllib.urlretrieve, item_url,
@@ -157,6 +166,10 @@ class PhotoInfo:
                         print (
                             'WARNING multiple album file match for %s %s %s' %
                             (item_name, date_str, photo.size.text))
+                    else:
+                        # OK - just got one record back
+                        file_id = file_keys[0]['Id']
+                        self.db.put_album_file(album_id, file_id)
 
                 start_entry += PhotoInfo.BLOCK_SIZE
                 if start_entry + PhotoInfo.BLOCK_SIZE > PhotoInfo.ALBUM_MAX:

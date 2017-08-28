@@ -60,6 +60,10 @@ DROP INDEX IF EXISTS FileSizeIdx;
 DROP INDEX IF EXISTS FileSizeAndSizeIdx;
 DROP INDEX IF EXISTS CreatedIdx;
 DROP INDEX IF EXISTS ExifDateIdx;
+DROP INDEX IF EXISTS Albums_AlbumId_uindex;
+DROP INDEX IF EXISTS Albums_StartDate_index;
+DROP INDEX IF EXISTS Albums_AlbumName_index;
+DROP INDEX IF EXISTS AlbumFiles_AlbumRec_DriveRec_uindex;
 
 create unique index DriveFiles_DriveId_uindex
 	on DriveFiles (DriveId);
@@ -79,6 +83,10 @@ create index CreatedIdx
 create index ExifDateIdx
   on DriveFiles (ExifDate);
 
-
-
+CREATE UNIQUE INDEX Albums_AlbumId_uindex ON Albums (AlbumId);
+CREATE INDEX Albums_StartDate_index ON Albums (StartDate);
+CREATE INDEX Albums_AlbumName_index ON Albums (AlbumName);
+create unique index AlbumFiles_AlbumRec_DriveRec_uindex
+	on AlbumFiles (AlbumRec, DriveRec)
+;
 
