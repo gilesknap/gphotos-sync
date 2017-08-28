@@ -71,13 +71,14 @@ class LocalData:
 
     def put_file(self, media):
         try:
-            now_time = strftime(GooglePhotosSync.GooglePhotosSync.TIME_FORMAT, gmtime())
+            now_time = strftime(GooglePhotosSync.GooglePhotosSync.TIME_FORMAT,
+                                gmtime())
             self.cur.execute(
                 "INSERT INTO DriveFiles VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?) ;",
-                (None, media.id, media.orig_name, media.path, media.filename,
-                 media.duplicate_number, media.date, media.checksum,
-                 media.description, media.size, media.create_date,
-                 now_time, media.picassa_only))
+                (None, media.id, media.orig_name, media.relative_folder,
+                 media.filename, media.duplicate_number, media.date,
+                 media.checksum, media.description, media.size,
+                 media.create_date, now_time, media.media_type))
         except lite.IntegrityError as e:
             if e.message == 'UNIQUE constraint failed: DriveFiles.DriveId':
                 raise LocalData.DuplicateDriveIdException

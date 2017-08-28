@@ -3,22 +3,21 @@
 import os.path
 import re
 from datetime import datetime
+from GoogleMedia import GoogleMedia, MediaType
 
 
-class GooglePhotosMedia(object):
-    def __init__(self, drive_file, path):
-        # todo make drive_file private and path/duplicate properties
-        # (requires changes to callers)
-        self.drive_file = drive_file
-        self.duplicate_number = 0
-        self.path = path
-        self.picassa_only = False
+class GoogleDriveMedia(GoogleMedia):
+    MEDIA_FOLDER = "drive"
+    MEDIA_TYPE = MediaType.DRIVE
+
+    def __init__(self, relative_path, root_path, drive_file=None):
+        super(GoogleDriveMedia, self).__init__(relative_path, root_path)
+        self.__drive_file = drive_file
 
     def get_custom_property_value(self, key):
-        for prop in self.drive_file["properties"]:
+        for prop in self.__drive_file["properties"]:
             if prop["key"] == key:
                 return prop["value"]
-
         raise KeyError()
 
     def get_exif_value(self, tag_name):
@@ -26,7 +25,7 @@ class GooglePhotosMedia(object):
             exif_override_property_name = "exif-%s" % tag_name
             return self.get_custom_property_value(exif_override_property_name)
         except KeyError:
-            return self.drive_file["imageMediaMetadata"][tag_name]
+            return self.__drive_file["imageMediaMetadata"][tag_name]
 
     @property
     def date(self):
@@ -34,7 +33,7 @@ class GooglePhotosMedia(object):
             exif_date = self.get_exif_value("date")
             photo_date = datetime.strptime(exif_date, "%Y:%m:%d %H:%M:%S")
         except (KeyError, ValueError):
-            import_date = self.drive_file["createdDate"]
+            import_date = self.__drive_file["createdDate"]
             # some times are ucase T and non zero millisecs - normalize
             photo_date = datetime.strptime(import_date.upper()[:-4],
                                            "%Y-%m-%dT%H:%M:%S.")
@@ -43,15 +42,15 @@ class GooglePhotosMedia(object):
 
     @property
     def size(self):
-        return int(self.drive_file["fileSize"])
+        return int(self.__drive_file["fileSize"])
 
     @property
     def checksum(self):
-        return self.drive_file["md5Checksum"]
+        return self.__drive_file["md5Checksum"]
 
     @property
     def id(self):
-        return self.drive_file["id"]
+        return self.__drive_file["id"]
 
     @property
     def camera_owner(self):
@@ -79,27 +78,27 @@ class GooglePhotosMedia(object):
     @property
     def extension(self):
         try:
-            return self.drive_file["fileExtension"]
+            return self.__drive_file["fileExtension"]
         except KeyError:
             return ''
 
     @property
     def description(self):
         try:
-            return self.drive_file["description"]
+            return self.__drive_file["description"]
         except KeyError:
             return ''
 
     @property
     def orig_name(self):
         try:
-            return self.drive_file["originalFilename"]
+            return self.__drive_file["originalFilename"]
         except KeyError:
             return ''
 
     @property
     def filename(self):
-        base, ext = os.path.splitext(os.path.basename(self.drive_file["title"]))
+        base, ext = os.path.splitext(os.path.basename(self.__drive_file["title"]))
         if self.duplicate_number > 0:
             return "%(base)s (%(duplicate)d)%(ext)s" % {
                 'base': base,
@@ -107,12 +106,16 @@ class GooglePhotosMedia(object):
                 'duplicate': self.duplicate_number
             }
         else:
-            return self.drive_file["title"]
+            return self.__drive_file["title"]
 
     @property
     def create_date(self):
         # todo this is duplicated above in date property
-        date = datetime.strptime(self.drive_file["createdDate"].upper()[:-4],
+        date = datetime.strptime(self.__drive_file["createdDate"].upper()[:-4],
                                            "%Y-%m-%dT%H:%M:%S.")
         # todo consolidate time format across all uses in the project
         return date.strftime('%Y-%m-%d %H:%M:%S')
+
+    @property
+    def mimetype(self):
+        return self.__drive_file.metadata[u'mimeType']

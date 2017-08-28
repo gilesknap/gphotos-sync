@@ -146,8 +146,12 @@ class PhotoInfo:
                             print('downloading ...')
                             tmp_path = os.path.join(self.local_folder,
                                                     '.gphoto.tmp')
-                            urllib.urlretrieve(item_url, tmp_path)
-                            os.rename(tmp_path, local_path)
+                            res = self.retry(5, urllib.urlretrieve, item_url,
+                                             tmp_path)
+                            if res:
+                                os.rename(tmp_path, local_path)
+                            else:
+                                print("failed to download %s" % local_path)
                     elif len(file_keys) > 1:
                         multiple += 1
                         print (

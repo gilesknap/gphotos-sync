@@ -17,16 +17,16 @@ def download_folder(folder_id, path, google_photos_sync, args):
     print('-------------------- %s' % path)
     progress_handler = None
     for remote_media in google_photos_sync.get_remote_medias(folder_id, path):
-        mime = remote_media.drive_file.metadata[u'mimeType']
+        mime = remote_media.mimetype
         if mime.endswith('folder'):
-            new_path = os.path.join(path, remote_media.filename)
-            download_folder(remote_media.id, new_path, google_photos_sync, args)
+            download_folder(remote_media.id, remote_media.remote_path,
+                            google_photos_sync, args)
         elif mime.startswith("video/") or mime.startswith("image/"):
             if args.index_only:
-                if google_photos_sync.is_indexed(path, remote_media):
+                if google_photos_sync.is_indexed(remote_media):
                     continue
             else:
-                if google_photos_sync.has_local_version(path, remote_media):
+                if google_photos_sync.has_local_version(remote_media):
                     continue
 
             if not (args.quiet or args.index_only):

@@ -8,7 +8,7 @@ from googleapiclient import http
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 
-import GooglePhotosMedia
+from GoogleDriveMedia import GoogleDriveMedia
 from LocalData import LocalData
 
 
@@ -140,51 +140,44 @@ class GooglePhotosSync(object):
                 if not self.args.include_video:
                     if mime.startswith("video/"):
                         continue
-                media = GooglePhotosMedia.GooglePhotosMedia(drive_file, path)
+                media = GoogleDriveMedia(path, self.root_folder,
+                                         drive_file=drive_file)
                 yield media
 
-    def is_indexed(self, path, media):
+    def is_indexed(self, media):
         # todo switch to using the DB to determine next duplicate number to use
         is_indexed = False
-        local_filename = os.path.join(path, media.filename)
-        file_record = self.db.get_file(local_filename)
+        file_record = self.db.get_file(media.remote_path)
         if file_record:
             if file_record['DriveId'] == media.id:
                 is_indexed = True
             else:
                 media.duplicate_number += 1
-                is_indexed = self.is_indexed(path, media)
+                is_indexed = self.is_indexed(media)
         return is_indexed
 
-    def has_local_version(self, path, media):
+    def has_local_version(self, media):
         # todo switch to using the DB to determine next duplicate number to use
         # todo (and can probably combine with is_indexed)
         exists = False
-        local_filename = os.path.join(path, media.filename)
-        local_full_path = os.path.join(self.root_folder,
-                                       GooglePhotosSync.ROOT_FOLDER,
-                                       local_filename)
         # recursively check if any existing duplicates have same id
-        if os.path.isfile(local_full_path):
-            file_record = self.db.get_file(local_filename)
+        if os.path.isfile(media.local_full_path):
+            file_record = self.db.get_file(media.remote_path)
             if file_record:
                 if file_record['DriveId'] == media.id:
                     exists = True
                 else:
                     media.duplicate_number += 1
-                    exists = self.has_local_version(path, media)
+                    exists = self.has_local_version(media)
             return exists
         return exists
 
     def download_media(self, media, path, progress_handler=None):
-        local_folder = os.path.join(self.root_folder,
-                                    GooglePhotosSync.ROOT_FOLDER, path)
-        local_full_path = os.path.join(local_folder, media.filename)
         temp_filename = os.path.join(self.root_folder, '.temp-photo')
 
         if not self.args.index_only:
-            if path != '' and not os.path.isdir(local_folder):
-                os.makedirs(local_folder)
+            if not os.path.isdir(media.local_folder):
+                os.makedirs(media.local_folder)
             # retry for occasional transient quota errors - http 503
             for retry in range(10):
                 try:
@@ -205,16 +198,13 @@ class GooglePhotosSync(object):
                     print("\nRETRYING due to", e)
                     continue
 
-                os.rename(temp_filename, local_full_path)
+                os.rename(temp_filename, media.local_full_path)
                 break
         else:
-            print("Added %s" % local_full_path)
+            print("Added %s" % media.local_full_path)
 
         try:
             self.db.put_file(media)
         except LocalData.DuplicateDriveIdException:
-            print("WARNING, %s is a link to another file" % local_full_path)
+            print("WARNING, %s is a link to another file" % media.local_full_path)
             # todo create a symlink in the file system for this
-
-
-
