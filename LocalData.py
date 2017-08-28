@@ -3,7 +3,7 @@
 import os.path
 import sqlite3 as lite
 from time import gmtime, strftime
-from GooglePhotosSync import GooglePhotosSync
+import GooglePhotosSync
 import shutil
 
 
@@ -11,6 +11,9 @@ class LocalData:
     DB_FILE_NAME = 'gphotos.sql'
     EMPTY_FILE_NAME = 'gphotos_empty.sql'
     VERSION = "1.4"
+
+    class DuplicateDriveIdException(Exception):
+        pass
 
     def __init__(self, root_folder):
         self.file_name = os.path.join(root_folder, LocalData.DB_FILE_NAME)
@@ -67,13 +70,19 @@ class LocalData:
             return res
 
     def put_file(self, media):
-        now_time = strftime(GooglePhotosSync.TIME_FORMAT, gmtime())
-        self.cur.execute(
-            "INSERT INTO DriveFiles VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?) ;",
-            (None, media.id, media.orig_name, media.path, media.filename,
-             media.duplicate_number, media.date, media.checksum,
-             media.description, media.size, media.create_date,
-             now_time, media.picassa_only))
+        try:
+            now_time = strftime(GooglePhotosSync.GooglePhotosSync.TIME_FORMAT, gmtime())
+            self.cur.execute(
+                "INSERT INTO DriveFiles VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?) ;",
+                (None, media.id, media.orig_name, media.path, media.filename,
+                 media.duplicate_number, media.date, media.checksum,
+                 media.description, media.size, media.create_date,
+                 now_time, media.picassa_only))
+        except lite.IntegrityError as e:
+            if e.message == 'UNIQUE constraint failed: DriveFiles.DriveId':
+                raise LocalData.DuplicateDriveIdException
+            else:
+                raise
 
     def get_album(self, table_id):
         self.cur.execute(

@@ -107,7 +107,7 @@ class PhotoInfo:
             q = album.GetPhotosUri() + "&imgmax=d"
 
             downloading = True
-            start_entry = 50000
+            start_entry = 1
             limit = PhotoInfo.BLOCK_SIZE
             while downloading:
                 photos = PhotoInfo.retry(10, self.gdata_client.GetFeed, q,

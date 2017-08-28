@@ -5,12 +5,11 @@ import mimetypes
 import os.path
 
 from googleapiclient import http
-from googleapiclient.http import MediaFileUpload
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 
-from GooglePhotosMedia import GooglePhotosMedia
-from LocalMedia import LocalMedia
+import GooglePhotosMedia
+from LocalData import LocalData
 
 
 class NoGooglePhotosFolderError(Exception):
@@ -141,7 +140,7 @@ class GooglePhotosSync(object):
                 if not self.args.include_video:
                     if mime.startswith("video/"):
                         continue
-                media = GooglePhotosMedia(drive_file, path)
+                media = GooglePhotosMedia.GooglePhotosMedia(drive_file, path)
                 yield media
 
     def is_indexed(self, path, media):
@@ -211,6 +210,11 @@ class GooglePhotosSync(object):
         else:
             print("Added %s" % local_full_path)
 
-        self.db.put_file(media)
+        try:
+            self.db.put_file(media)
+        except LocalData.DuplicateDriveIdException:
+            print("WARNING, %s is a link to another file" % local_full_path)
+            # todo create a symlink in the file system for this
+
 
 
