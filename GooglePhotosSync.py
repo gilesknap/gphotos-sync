@@ -16,6 +16,7 @@ from LocalMedia import LocalMedia
 class NoGooglePhotosFolderError(Exception):
     pass
 
+
 # todo the following todos to go into documentation before removing from here
 #
 # todo separate indexing and downloading into two separate parts
@@ -71,6 +72,7 @@ class GooglePhotosSync(object):
     BEFORE_QUERY = " and modifiedDate <= '%sT00:00:00'"
     PAGE_SIZE = 100
     TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+    ROOT_FOLDER = "drive"
 
     def __init__(self, args, db=None, client_secret_file="client_secret.json",
                  credentials_json="credentials.json"):
@@ -185,9 +187,10 @@ class GooglePhotosSync(object):
         return exists
 
     def download_media(self, media, path, progress_handler=None):
-        local_folder = os.path.join(self.root_folder, path)
+        local_folder = os.path.join(self.root_folder,
+                                    GooglePhotosSync.ROOT_FOLDER, path)
         local_full_path = os.path.join(local_folder, media.filename)
-        temp_filename = os.path.join(self.root_folder, path, '.temp-photo')
+        temp_filename = os.path.join(self.root_folder, '.temp-photo')
 
         if not self.args.index_only:
             if path != '' and not os.path.isdir(local_folder):

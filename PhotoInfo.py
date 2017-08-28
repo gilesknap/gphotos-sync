@@ -3,6 +3,8 @@ import gdata.photos.service
 import datetime
 import os.path
 import urllib
+import httplib2
+import threading
 import time
 
 
@@ -70,6 +72,15 @@ class PhotoInfo:
                 continue
             return res
 
+    def define_path(self, date, name, photo_id):
+        year = date.strftime('%Y')
+        folder = os.path.join(self.local_folder, year)
+        if not os.path.exists(folder):
+            os.mkdir(folder)
+
+        local_path = os.path.join(folder, photo_id + '-' + name)
+        return local_path
+
     def get_albums(self):
         print('\n----------------- Reading albums ...')
         albums = PhotoInfo.retry(10, self.gdata_client.GetUserFeed)
@@ -88,7 +99,7 @@ class PhotoInfo:
             hide_this_album = album.title.text == 'Auto-Backup'
 
             # todo temp test
-            #if album.title.text != 'Movies':
+            # if album.title.text != 'Movies':
             #    continue
 
             q = album.GetPhotosUri() + "&imgmax=d"
@@ -101,13 +112,14 @@ class PhotoInfo:
                                          start_index=start_entry)
 
                 for photo in photos.entry:
+                    date = datetime.datetime.fromtimestamp(
+                        int(photo.timestamp.text) / 1000)
+                    date_str = date.strftime('%Y-%m-%d %H:%M:%S')
                     item_name = photo.title.text
                     item_url = photo.content.src
                     item_id = photo.gphoto_id.text
                     item_updated = photo.updated.text
                     item_published = photo.published.text
-                    local_path = os.path.join(self.local_folder,
-                                              item_id + '-' + item_name)
 
                     # for videos use last (highest res) media.content entry url
                     if photo.media.content:
@@ -116,19 +128,18 @@ class PhotoInfo:
                             if high_res_content.url:
                                 item_url = high_res_content.url
 
-                    date = datetime.datetime.fromtimestamp(
-                        int(photo.timestamp.text) / 1000).strftime(
-                        '%Y-%m-%d %H:%M:%S')
-
                     file_keys = self.match_drive_photo(item_name,
                                                        photo.timestamp.text,
                                                        int(photo.size.text))
                     if not file_keys:
-                        print('WARNING no drive entry for album file %s %s %s' % (
-                            photo.title.text, date, photo.size.text))
+                        print(
+                            'WARNING no drive entry for album file %s %s %s' % (
+                                photo.title.text, date_str, photo.size.text))
                         mismatched += 1
                         # todo very temp download code for testing
-                        if not (self.args.index_only or os.path.exists(local_path)):
+                        local_path = self.define_path(date, item_name, item_id)
+                        if not (self.args.index_only or
+                                    os.path.exists(local_path)):
                             print('downloading ...')
                             tmp_path = os.path.join(self.local_folder,
                                                     '.gphoto.tmp')
@@ -136,8 +147,9 @@ class PhotoInfo:
                             os.rename(tmp_path, local_path)
                     elif len(file_keys) > 1:
                         multiple += 1
-                        print ('WARNING multiple album file match for %s %s %s' %
-                               (item_name, date, photo.size.text))
+                        print (
+                            'WARNING multiple album file match for %s %s %s' %
+                            (item_name, date_str, photo.size.text))
 
                 downloading = PhotoInfo.BLOCK_SIZE == len(photos.entry)
                 start_entry += PhotoInfo.BLOCK_SIZE
@@ -149,8 +161,24 @@ class PhotoInfo:
     def connect_photos(self, credentials):
         self.credentials = credentials
         self.auth2token = gdata.gauth.OAuth2TokenFromCredentials(credentials)
+        self.refresh_credentials(0)
+
+    def refresh_credentials(self, sleep):
+        time.sleep(sleep)
+        self.credentials.refresh(httplib2.Http())
+
         gd_client = gdata.photos.service.PhotosService()
         gd_client = self.auth2token.authorize(gd_client)
         gd_client.additional_headers = {
-            'Authorization': 'Bearer %s' % credentials.access_token}
+            'Authorization': 'Bearer %s' % self.credentials.access_token}
         self.gdata_client = gd_client
+
+        expires = self.gdata_client.auth_token.credentials.token_expiry
+        now = datetime.datetime.utcnow()
+        expires_seconds = (expires - now).seconds
+
+        d = threading.Thread(name='refresh_credentials',
+                             target=self.refresh_credentials,
+                             args=(expires_seconds - 10,))
+        d.setDaemon(True)
+        d.start()
