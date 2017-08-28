@@ -9,6 +9,7 @@ from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 
 from GoogleDriveMedia import GoogleDriveMedia
+from DatabaseMedia import DatabaseMedia
 from LocalData import LocalData
 
 
@@ -50,7 +51,7 @@ class NoGooglePhotosFolderError(Exception):
 # * index photos albums (with contents)
 # * download drive files
 # * download photos only files (not found in drive)
-# * create local google albums as folder with links to above
+# * create local google albums as folders with links to above
 # * create local albums from my original uploads via title or filename encoding
 
 # todo keep in mind that no 'Creations' of gphotos are referenced unless
@@ -58,10 +59,15 @@ class NoGooglePhotosFolderError(Exception):
 # one workaround is to create an album and use google photos to drop all
 # creations in it. This would need redoing every so often but may be the only
 # solution since it seems picassa API cannot see these otherwise
+# UDATE - the global 'Auto Backup' album contains all files including creations
+#   however the API fails at the 10000 file mark. Thus it would be possible
+#   tp backup these by creating a folder and then use Auto Backup to continue
+#   to save new creations (would require that they could be marked as 'do not
+#   delete' once sync of deletions is implemented)
 # todo - check if a search for -PANO, MOVIE.* etc works from picasa API
 
 
-class GooglePhotosSync(object):
+class GoogleDriveSync(object):
     GOOGLE_PHOTO_FOLDER_QUERY = (
         'title = "Google Photos" and "root" in parents and trashed=false')
     MEDIA_QUERY = '"%s" in parents and trashed=false '
@@ -70,7 +76,7 @@ class GooglePhotosSync(object):
     AFTER_QUERY = " and modifiedDate >= '%sT00:00:00'"
     BEFORE_QUERY = " and modifiedDate <= '%sT00:00:00'"
     PAGE_SIZE = 100
-    TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+    # TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
     ROOT_FOLDER = "drive"
 
     def __init__(self, args, db=None, client_secret_file="client_secret.json",
@@ -107,16 +113,16 @@ class GooglePhotosSync(object):
     def add_date_filter(self, query_params):
         if self.args.start_date:
             query_params[
-                'q'] += GooglePhotosSync.AFTER_QUERY % self.args.start_date
+                'q'] += GoogleDriveSync.AFTER_QUERY % self.args.start_date
         elif self.args.end_date:
             query_params[
-                'q'] += GooglePhotosSync.BEFORE_QUERY % self.args.end_date
+                'q'] += GoogleDriveSync.BEFORE_QUERY % self.args.end_date
 
     def get_remote_folder(self, parent_id, folder_name):
         this_folder_id = None
         parts = folder_name.split('/', 1)
         query_params = {
-            "q": GooglePhotosSync.FOLDER_QUERY % (parts[0], parent_id)
+            "q": GoogleDriveSync.FOLDER_QUERY % (parts[0], parent_id)
         }
 
         for results in self.googleDrive.ListFile(query_params):
@@ -127,8 +133,8 @@ class GooglePhotosSync(object):
 
     def get_remote_medias(self, folder_id, path):
         query_params = {
-            "q": GooglePhotosSync.MEDIA_QUERY % folder_id,
-            "maxResults": GooglePhotosSync.PAGE_SIZE,
+            "q": GoogleDriveSync.MEDIA_QUERY % folder_id,
+            "maxResults": GoogleDriveSync.PAGE_SIZE,
             # "orderBy": 'createdDate desc, title'
             "orderBy": 'title'
         }
@@ -147,9 +153,10 @@ class GooglePhotosSync(object):
     def is_indexed(self, media):
         # todo switch to using the DB to determine next duplicate number to use
         is_indexed = False
-        file_record = self.db.get_file(media.remote_path)
-        if file_record:
-            if file_record['DriveId'] == media.id:
+        db_record = DatabaseMedia(
+            self.root_folder, media.local_full_path, self.db)
+        if db_record.id:
+            if db_record.id == media.id:
                 is_indexed = True
             else:
                 media.duplicate_number += 1
@@ -162,9 +169,10 @@ class GooglePhotosSync(object):
         exists = False
         # recursively check if any existing duplicates have same id
         if os.path.isfile(media.local_full_path):
-            file_record = self.db.get_file(media.remote_path)
-            if file_record:
-                if file_record['DriveId'] == media.id:
+            db_record = DatabaseMedia(
+                self.root_folder, media.local_full_path, self.db)
+            if db_record.id:
+                if db_record.id == media.id:
                     exists = True
                 else:
                     media.duplicate_number += 1
@@ -204,7 +212,13 @@ class GooglePhotosSync(object):
             print("Added %s" % media.local_full_path)
 
         try:
-            self.db.put_file(media)
+            media.save_to_db(self.db)
         except LocalData.DuplicateDriveIdException:
-            print("WARNING, %s is a link to another file" % media.local_full_path)
+            pass
+            # this error may just mean we already indexed on a previous pass
+            #  but could also mean that there are >1 refs t this file on drive
+            # in future I will separate index and download anyway and this will
+            # be handled differently
+            # print("WARNING, %s is a link to another file" %
+            #       media.local_full_path)
             # todo create a symlink in the file system for this

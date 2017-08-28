@@ -3,6 +3,7 @@
 import os.path
 from enum import Enum
 from datetime import datetime
+from time import gmtime, strftime
 
 
 class MediaType(Enum):
@@ -16,6 +17,7 @@ class MediaType(Enum):
 class GoogleMedia(object):
     MEDIA_FOLDER = ""
     MEDIA_TYPE = MediaType.NONE
+    TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
     def __init__(self, relative_path, root_path, **k_args):
         self.media_type = self.__class__.MEDIA_TYPE
@@ -23,6 +25,16 @@ class GoogleMedia(object):
         self.__relative_path = relative_path
         self.__root_path = root_path
         self.__duplicate_number = 0
+
+    def save_to_db(self, db):
+        now_time = strftime(GoogleMedia.TIME_FORMAT, gmtime())
+        data_tuple = (
+            self.id, self.orig_name, self.local_folder,
+            self.filename, self.duplicate_number, self.date,
+            self.checksum, self.description, self.size,
+            self.create_date, now_time, self.media_type
+        )
+        db.put_file(data_tuple)
 
     def format_date(self, date):
         return datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
@@ -69,10 +81,6 @@ class GoogleMedia(object):
         raise NotImplementedError
 
     @property
-    def extension(self):
-        raise NotImplementedError
-
-    @property
     def description(self):
         raise NotImplementedError
 
@@ -88,5 +96,5 @@ class GoogleMedia(object):
     def create_date(self):
         raise NotImplementedError
     @property
-    def mimetype(self):
+    def mime_type(self):
         raise NotImplementedError

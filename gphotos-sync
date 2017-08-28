@@ -5,7 +5,7 @@ import os.path
 import traceback
 from appdirs import AppDirs
 
-from GooglePhotosSync import GooglePhotosSync
+from GoogleDriveSync import GoogleDriveSync
 from ProgressHandler import ProgressHandler
 from PhotoInfo import PhotoInfo
 from LocalData import LocalData
@@ -97,9 +97,9 @@ def main():
         secret_file = os.path.join(app_dirs.user_config_dir,
                                    "client_secret.json")
 
-        google_photos_sync = GooglePhotosSync(cmd_args, data_store,
-                                              client_secret_file=secret_file,
-                                              credentials_json=credentials_file)
+        google_photos_sync = GoogleDriveSync(cmd_args, data_store,
+                                             client_secret_file=secret_file,
+                                             credentials_json=credentials_file)
 
         photo_info = PhotoInfo(cmd_args, data_store)
         photo_info.connect_photos(google_photos_sync.g_auth.credentials)
@@ -112,7 +112,10 @@ def main():
             print("\nUser cancelled download")
             print("\nSaving Database ...")
             # save the traceback so we can diagnose lockups
-            with open(".gphoto-terminated", "w") as text_file:
+            except_file_name = os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),
+                "etc/.gphoto-terminated")
+            with open(except_file_name, "w") as text_file:
                 text_file.write(traceback.format_exc())
         finally:
             print("done.")

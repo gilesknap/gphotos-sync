@@ -60,8 +60,6 @@ target/
 .idea
 
 # exception dump
-.gphoto-terminated
 
-results.txt
-
-
+etc/results.txt
+etc/.gphoto-terminated
