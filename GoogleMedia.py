@@ -29,10 +29,14 @@ class GoogleMedia(object):
 
     def save_to_db(self, db):
         now_time = strftime(GoogleMedia.TIME_FORMAT, gmtime())
+        if isinstance(self.description, unicode):
+            description = self.description
+        else:
+            description = unicode(self.description, 'utf8')
         data_tuple = (
             self.id, self.orig_name, self.local_folder,
             self.filename, self.duplicate_number, self.date,
-            self.checksum, unicode(self.description, 'utf8'), self.size,
+            self.checksum, description, self.size,
             self.create_date, now_time, self.media_type
         )
         db.put_file(data_tuple)
