@@ -4,7 +4,6 @@ import os.path
 import sqlite3 as lite
 import shutil
 
-
 class LocalData:
     DB_FILE_NAME = 'gphotos.sql'
     EMPTY_FILE_NAME = 'etc/gphotos_empty.sqlite'
@@ -97,7 +96,7 @@ class LocalData:
         self.cur.execute(
             "INSERT OR REPLACE INTO Albums(AlbumId, AlbumName, StartDate, "
             "EndDate) VALUES(?,?,?,?) ;",
-            (album_id, album_name, start_date, end_end))
+            (album_id, unicode(album_name,'utf8'), start_date, end_end))
         return self.cur.lastrowid
 
     def get_album_files(self, album_id):

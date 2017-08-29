@@ -12,6 +12,9 @@ from GoogleDriveMedia import GoogleDriveMedia
 from DatabaseMedia import DatabaseMedia
 from LocalData import LocalData
 
+# todo temporary
+from PhotoInfo import PhotoInfo
+
 
 class NoGooglePhotosFolderError(Exception):
     pass
@@ -140,7 +143,10 @@ class GoogleDriveSync(object):
         }
         self.add_date_filter(query_params)
 
-        for page_results in self.googleDrive.ListFile(query_params):
+        # todo temporary - retry is moving to Utils
+        results = PhotoInfo.retry(5, self.googleDrive.ListFile, query_params)
+
+        for page_results in results:
             for drive_file in page_results:
                 mime = drive_file["mimeType"]
                 if not self.args.include_video:

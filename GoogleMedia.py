@@ -32,7 +32,7 @@ class GoogleMedia(object):
         data_tuple = (
             self.id, self.orig_name, self.local_folder,
             self.filename, self.duplicate_number, self.date,
-            self.checksum, self.description, self.size,
+            self.checksum, unicode(self.description, 'utf8'), self.size,
             self.create_date, now_time, self.media_type
         )
         db.put_file(data_tuple)
