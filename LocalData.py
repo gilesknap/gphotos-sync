@@ -66,7 +66,7 @@ class LocalData:
             else:
                 raise
 
-    def find_drive_file(self, orig_name='%', exif_date='%', size='%',
+    def find_drive_file_ids(self, orig_name='%', exif_date='%', size='%',
                         use_create=False):
         if use_create:
             self.cur.execute(
@@ -83,7 +83,8 @@ class LocalData:
         if len(res) == 0:
             return None
         else:
-            return res
+            keys = [key['Id'] for key in res]
+            return keys
 
     def get_album(self, table_id):
         self.cur.execute(

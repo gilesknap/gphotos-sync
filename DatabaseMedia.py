@@ -10,13 +10,13 @@ class DatabaseMedia(GoogleMedia):
     MEDIA_FOLDER = ""
     MEDIA_TYPE = MediaType.DATABASE
 
-    def __init__(self, root_path, local_full_path, db, **k_args):
-        super(DatabaseMedia, self).__init__(None, root_path)
+    def __init__(self, root_folder, local_full_path, db, **k_args):
+        super(DatabaseMedia, self).__init__(None, root_folder)
 
-        media_root = os.path.join(root_path, self.media_folder)
+        media_root = os.path.join(root_folder, self.media_folder)
         local_folder = os.path.dirname(local_full_path)
-        self.__relative_path = os.path.relpath(local_folder,
-                                               media_root)
+        self._relative_folder = os.path.relpath(local_folder,
+                                                media_root)
 
         data_tuple = db.get_file(local_full_path)
         if data_tuple:
@@ -39,14 +39,7 @@ class DatabaseMedia(GoogleMedia):
             # use this to indicate record not found
             self._id = None
 
-    @property
-    def duplicate_number(self):
-        return self.__duplicate_number
-
-    @property
-    def date(self):
-        return self._date
-
+    # ----- override Properties below -----
     @property
     def size(self):
         return self._size
@@ -74,6 +67,10 @@ class DatabaseMedia(GoogleMedia):
     @property
     def create_date(self):
         return self._create_date
+
+    @property
+    def date(self):
+        return self._date
 
     @property
     def mime_type(self):

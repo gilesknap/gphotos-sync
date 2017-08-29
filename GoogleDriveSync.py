@@ -1,7 +1,6 @@
 #!/usr/bin/python
 # coding: utf8
 import io
-import mimetypes
 import os.path
 
 from googleapiclient import http
@@ -11,9 +10,7 @@ from pydrive.drive import GoogleDrive
 from GoogleDriveMedia import GoogleDriveMedia
 from DatabaseMedia import DatabaseMedia
 from LocalData import LocalData
-
-# todo temporary
-from PhotoInfo import PhotoInfo
+from Utils import Utils
 
 
 class NoGooglePhotosFolderError(Exception):
@@ -102,16 +99,12 @@ class GoogleDriveSync(object):
         self.googleDrive = GoogleDrive(self.g_auth)
         self.matchingRemotesCount = 0
 
-    # todo currently I am scanning from the root to include items that where
-    # originally not uploaded to photos - look into using 'spaces' instead.
+    @property
+    def credentials(self):
+        return self.g_auth.credentials
+
     def get_photos_folder_id(self):
         return "root"
-        # query_results = self.googleDrive.ListFile(
-        #     {"q": GooglePhotosSync.GOOGLE_PHOTO_FOLDER_QUERY}).GetList()
-        # try:
-        #     return query_results[0]["id"]
-        # except:
-        #     raise NoGooglePhotosFolderError()
 
     def add_date_filter(self, query_params):
         if self.args.start_date:
@@ -143,8 +136,7 @@ class GoogleDriveSync(object):
         }
         self.add_date_filter(query_params)
 
-        # todo temporary - retry is moving to Utils
-        results = PhotoInfo.retry(5, self.googleDrive.ListFile, query_params)
+        results = Utils.retry(5, self.googleDrive.ListFile, query_params)
 
         for page_results in results:
             for drive_file in page_results:

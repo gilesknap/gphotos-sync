@@ -7,10 +7,10 @@ from appdirs import AppDirs
 
 from GoogleDriveSync import GoogleDriveSync
 from ProgressHandler import ProgressHandler
-from PhotoInfo import PhotoInfo
+from PicasaSync import PicasaSync
 from LocalData import LocalData
 
-APPNAME = "gphotos-sync"
+APP_NAME = "gphotos-sync"
 
 
 def download_folder(folder_id, path, google_photos_sync, args):
@@ -19,7 +19,7 @@ def download_folder(folder_id, path, google_photos_sync, args):
     for remote_media in google_photos_sync.get_remote_medias(folder_id, path):
         mime = remote_media.mime_type
         if mime.endswith('folder'):
-            download_folder(remote_media.id, remote_media.remote_path,
+            download_folder(remote_media.id, remote_media.relative_path,
                             google_photos_sync, args)
         elif mime.startswith("video/") or mime.startswith("image/"):
             if args.index_only:
@@ -87,26 +87,26 @@ def parse_arguments():
 
 def main():
     cmd_args = parse_arguments()
-    app_dirs = AppDirs(APPNAME)
+    app_dirs = AppDirs(APP_NAME)
 
     data_store = LocalData(cmd_args.root_folder)
     with data_store:
 
-        credentials_file = os.path.join(app_dirs.user_data_dir,
-                                        "credentials.json")
-        secret_file = os.path.join(app_dirs.user_config_dir,
-                                   "client_secret.json")
+        credentials_file = os.path.join(
+            app_dirs.user_data_dir, "credentials.json")
+        secret_file = os.path.join(
+            app_dirs.user_config_dir, "client_secret.json")
 
-        google_photos_sync = GoogleDriveSync(cmd_args, data_store,
-                                             client_secret_file=secret_file,
-                                             credentials_json=credentials_file)
+        google_drive_sync = GoogleDriveSync(
+            cmd_args, data_store, client_secret_file=secret_file,
+            credentials_json=credentials_file)
 
-        photo_info = PhotoInfo(cmd_args, data_store)
-        photo_info.connect_photos(google_photos_sync.g_auth.credentials)
+        picasa_sync = PicasaSync(google_drive_sync.credentials,
+                                 cmd_args, data_store)
 
         try:
-            download_command(google_photos_sync, cmd_args)
-            photo_info.get_albums()
+            download_command(google_drive_sync, cmd_args)
+            picasa_sync.index_album_media()
 
         except (KeyboardInterrupt, SystemExit):
             print("\nUser cancelled download")

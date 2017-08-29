@@ -20,11 +20,13 @@ class GoogleMedia(object):
     MEDIA_TYPE = MediaType.NONE
     TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
-    def __init__(self, relative_path, root_path, **k_args):
+    # todo remove relative path removed and determine it in derived classes
+    # note that PicasaMedia and DataBaseMedia already do this
+    def __init__(self, relative_folder, root_folder, **k_args):
         self.media_type = self.__class__.MEDIA_TYPE
         self.media_folder = self.__class__.MEDIA_FOLDER
-        self.__relative_path = relative_path
-        self.__root_path = root_path
+        self._relative_folder = relative_folder
+        self._root_folder = root_folder
         self.__duplicate_number = 0
 
     def save_to_db(self, db):
@@ -46,20 +48,20 @@ class GoogleMedia(object):
 
     @property
     def local_folder(self):
-        return os.path.join(self.__root_path, self.media_folder,
-                            self.__relative_path)
+        return os.path.join(self._root_folder, self.media_folder,
+                            self._relative_folder)
 
     @property
     def local_full_path(self):
         return os.path.join(self.local_folder, self.filename)
 
     @property
-    def remote_path(self):
-        return os.path.join(self.__relative_path, self.filename)
+    def relative_path(self):
+        return os.path.join(self._relative_folder, self.filename)
 
     @property
     def relative_folder(self):
-        return self.__relative_path
+        return self._relative_folder
 
     @property
     def duplicate_number(self):
@@ -70,9 +72,18 @@ class GoogleMedia(object):
         self.__duplicate_number = value
 
     @property
-    def date(self):
-        raise NotImplementedError
+    def filename(self):
+        if self.duplicate_number > 0:
+            base, ext = os.path.splitext(os.path.basename(self.orig_name))
+            return "%(base)s (%(duplicate)d)%(ext)s" % {
+                'base': base,
+                'ext': ext,
+                'duplicate': self.duplicate_number
+            }
+        else:
+            return self.orig_name
 
+    # ----- Properties for override below -----
     @property
     def size(self):
         raise NotImplementedError
@@ -94,12 +105,13 @@ class GoogleMedia(object):
         raise NotImplementedError
 
     @property
-    def filename(self):
+    def create_date(self):
         raise NotImplementedError
 
     @property
-    def create_date(self):
+    def date(self):
         raise NotImplementedError
+
     @property
     def mime_type(self):
         raise NotImplementedError
