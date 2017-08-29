@@ -61,7 +61,8 @@ class LocalData:
                 "INSERT INTO DriveFiles VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?) ;",
                 (None,) + data_tuple)
         except lite.IntegrityError as e:
-            if e.message == 'UNIQUE constraint failed: DriveFiles.DriveId':
+            if 'DriveId' in e.message:
+                # this is an attempt add the same Drive file twice
                 raise LocalData.DuplicateDriveIdException
             else:
                 raise
