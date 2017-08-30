@@ -3,41 +3,45 @@
 import os.path
 from datetime import datetime
 from time import gmtime, strftime
-from GoogleMedia import GoogleMedia, MediaType
+from GoogleMedia import GoogleMedia, MediaType, MediaFolder
 
 
 class DatabaseMedia(GoogleMedia):
-    MEDIA_FOLDER = ""
     MEDIA_TYPE = MediaType.DATABASE
+    MEDIA_FOLDER = MediaFolder[MEDIA_TYPE]
 
-    def __init__(self, root_folder, local_full_path, db, **k_args):
+    def __init__(self, root_folder, data_tuple):
         super(DatabaseMedia, self).__init__(None, root_folder)
 
-        media_root = os.path.join(root_folder, self.media_folder)
-        local_folder = os.path.dirname(local_full_path)
-        self._relative_folder = os.path.relpath(local_folder,
-                                                media_root)
-
-        data_tuple = db.get_file(local_full_path)
         if data_tuple:
             (
                 self._id, self._orig_name, local_folder,
                 self._filename, self._duplicate_number, self._date,
                 self._checksum, self._description, self._size,
-                self._create_date, _, self._media_type
+                self._create_date, _, self._media_type,
+                self._sym_link
             ) = data_tuple
 
-            # todo this is clumsy and repeats the derived class info
-            # probably just need to add a global Enum for the media folders
-            if self._media_type == MediaType.PICASA:
-                self.media_folder = 'picasa'
-            elif self._media_type == MediaType.DRIVE:
-                self.media_folder = 'drive'
-            elif self._media_type == MediaType.ALBUM_LINK:
-                self.media_folder = 'albums'
+            self.media_folder = MediaFolder[self._media_type]
+            media_root = os.path.join(root_folder, self.media_folder)
+            local_folder = os.path.dirname(local_folder)
+            self._relative_folder = os.path.relpath(local_folder,
+                                                    media_root)
         else:
-            # use this to indicate record not found
+            # this indicates record not found
             self._id = None
+
+    @classmethod
+    def get_media_by_filename(cls, local_full_path, root_folder, db):
+        data_tuple = db.get_file_by_path(local_full_path)
+        return DatabaseMedia(root_folder, data_tuple)
+
+    @classmethod
+    def get_media_by_id(cls, root_folder, db, drive_id='%'):
+        for record in db.get_files_by_id(drive_id):
+            new_media = DatabaseMedia(root_folder, record)
+            yield new_media
+
 
     # ----- override Properties below -----
     @property

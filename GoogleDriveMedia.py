@@ -2,12 +2,12 @@
 # coding: utf8
 import re
 from datetime import datetime
-from GoogleMedia import GoogleMedia, MediaType
+from GoogleMedia import GoogleMedia, MediaType, MediaFolder
 
 
 class GoogleDriveMedia(GoogleMedia):
-    MEDIA_FOLDER = "drive"
     MEDIA_TYPE = MediaType.DRIVE
+    MEDIA_FOLDER = MediaFolder[MEDIA_TYPE]
 
     def __init__(self, relative_folder, root_folder, drive_file=None):
         super(GoogleDriveMedia, self).__init__(relative_folder, root_folder)

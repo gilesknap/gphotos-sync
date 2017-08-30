@@ -4,8 +4,10 @@ import os.path
 import sqlite3 as lite
 import shutil
 
+
 class LocalData:
     DB_FILE_NAME = 'gphotos.sql'
+    BLOCK_SIZE = 10000
     EMPTY_FILE_NAME = 'etc/gphotos_empty.sqlite'
     VERSION = "1.4"
 
@@ -36,28 +38,44 @@ class LocalData:
         from_file = os.path.join(src_folder, LocalData.EMPTY_FILE_NAME)
         shutil.copy(from_file, self.file_name)
 
-    def get_file(self, local_full_path):
+    @classmethod
+    def record_to_tuple(cls, rec):
+        if rec:
+            data_tuple = (
+                rec['DriveId'], rec['OrigFileName'], rec['Path'],
+                rec['FileName'], rec['DuplicateNo'], rec['ExifDate'],
+                rec['Checksum'], rec['Description'], rec['FileSize'],
+                rec['CreateDate'], rec['SyncDate'], rec['PicassaOnly'],
+                rec['SymLink']
+            )
+        else:
+            data_tuple = None
+        return data_tuple
+
+    def get_files_by_id(self, drive_id='%'):
+        self.cur.execute(
+            "SELECT * FROM DriveFiles WHERE DriveId LIKE ?;", drive_id)
+
+        while True:
+            records = self.cur.fetchmany(LocalData.BLOCK_SIZE)
+            if not records:
+                break
+            for record in records:
+                yield (self.record_to_tuple(record))
+
+    def get_file_by_path(self, local_full_path):
         path = os.path.dirname(local_full_path)
         name = os.path.basename(local_full_path)
         self.cur.execute(
             "SELECT * FROM DriveFiles WHERE Path = ? AND FileName = ?;",
             (path, name))
-        res = self.cur.fetchone()
-        if res:
-            data_tuple = (
-                res['DriveId'], res['OrigFileName'], res['Path'],
-                res['FileName'], res['DuplicateNo'], res['ExifDate'],
-                res['Checksum'], res['Description'], res['FileSize'],
-                res['CreateDate'], res['SyncDate'], res['PicassaOnly']
-            )
-            return data_tuple
-        else:
-            return None
+        result = self.record_to_tuple(self.cur.fetchone())
+        return result
 
     def put_file(self, data_tuple):
         try:
             self.cur.execute(
-                "INSERT INTO DriveFiles VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?) ;",
+                "INSERT INTO DriveFiles VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?) ;",
                 (None,) + data_tuple)
         except lite.IntegrityError as e:
             if 'DriveId' in e.message:
@@ -67,7 +85,7 @@ class LocalData:
                 raise
 
     def find_drive_file_ids(self, orig_name='%', exif_date='%', size='%',
-                        use_create=False):
+                            use_create=False):
         if use_create:
             self.cur.execute(
                 "SELECT Id FROM DriveFiles WHERE OrigFileName LIKE ? AND "
@@ -97,7 +115,7 @@ class LocalData:
         self.cur.execute(
             "INSERT OR REPLACE INTO Albums(AlbumId, AlbumName, StartDate, "
             "EndDate) VALUES(?,?,?,?) ;",
-            (album_id, unicode(album_name,'utf8'), start_date, end_end))
+            (album_id, unicode(album_name, 'utf8'), start_date, end_end))
         return self.cur.lastrowid
 
     def get_album_files(self, album_id):

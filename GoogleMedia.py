@@ -9,15 +9,23 @@ from time import gmtime, strftime
 class MediaType(Enum):
     DRIVE = 0
     PICASA = 1
-    DATABASE = 2
-    ALBUM_LINK = 3
+    ALBUM_LINK = 2
+    DATABASE = 4
     NONE = 4
+
+
+MediaFolder = [
+    'drive',
+    'picasa',
+    'albums',
+    '',
+    '']
 
 
 # base class for media model classes
 class GoogleMedia(object):
-    MEDIA_FOLDER = ""
     MEDIA_TYPE = MediaType.NONE
+    MEDIA_FOLDER = MediaFolder[MEDIA_TYPE]
     TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
     # todo remove relative path removed and determine it in derived classes
@@ -27,7 +35,8 @@ class GoogleMedia(object):
         self.media_folder = self.__class__.MEDIA_FOLDER
         self._relative_folder = relative_folder
         self._root_folder = root_folder
-        self.__duplicate_number = 0
+        self._duplicate_number = 0
+        self.symlink = True  # Todo need to implement use of this
 
     def save_to_db(self, db):
         now_time = strftime(GoogleMedia.TIME_FORMAT, gmtime())
@@ -39,37 +48,46 @@ class GoogleMedia(object):
             self.id, self.orig_name, self.local_folder,
             self.filename, self.duplicate_number, self.date,
             self.checksum, description, self.size,
-            self.create_date, now_time, self.media_type
+            self.create_date, now_time, self.media_type,
+            self.symlink
         )
         db.put_file(data_tuple)
 
     def format_date(self, date):
         return datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
 
+    # Path to the local folder in which this media item is stored this
+    # will include the media type folder which is one of 'drive' 'picasa' or
+    # 'albums'
     @property
     def local_folder(self):
         return os.path.join(self._root_folder, self.media_folder,
                             self._relative_folder)
 
+    # Path to the local file in which this media item is stored
     @property
     def local_full_path(self):
         return os.path.join(self.local_folder, self.filename)
 
+    # Relative path to the media file from the root of the media type folder
+    # e.g. 'Google Photos/2017/09'. This also represents the path to the
+    # folder on google drive in which this is stored (if there is one)
     @property
     def relative_path(self):
         return os.path.join(self._relative_folder, self.filename)
 
+    # as above but with the filename appended
     @property
     def relative_folder(self):
         return self._relative_folder
 
     @property
     def duplicate_number(self):
-        return self.__duplicate_number
+        return self._duplicate_number
 
     @duplicate_number.setter
     def duplicate_number(self, value):
-        self.__duplicate_number = value
+        self._duplicate_number = value
 
     @property
     def filename(self):

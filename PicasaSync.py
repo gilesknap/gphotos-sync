@@ -9,13 +9,15 @@ import httplib2
 import threading
 import time
 from PicasaMedia import PicasaMedia
-from Utils import Utils
+from DatabaseMedia import DatabaseMedia
+import Utils
 
 
 class PicasaSync(object):
     PHOTOS_QUERY = '/data/feed/api/user/default/albumid/{0}'
     BLOCK_SIZE = 500
     ALBUM_MAX = 10000  # picasa web api gets 500 response after 10000 files
+    HIDDEN_ALBUMS = ['Auto-Backup', 'Profile Photos']
 
     def __init__(self, credentials, args, db):
         self.db = db
@@ -87,24 +89,17 @@ class PicasaSync(object):
 
     def index_album_media(self, album_name=None):
         print('\nAlbums index - Reading albums ...')
-
         albums = Utils.retry(10, self.gdata_client.GetUserFeed)
         total_photos = multiple = picasa_only = 0
+        print('Album count %d\n' % len(albums.entry))
 
-        print('\nAlbum count %d' % len(albums.entry))
         for album in albums.entry:
             total_photos += int(album.numphotos.text)
-            print(
-                'Album title: %s, number of photos:'
-                ' %s, id: %s' % (album.title.text,
-                                 album.numphotos.text,
-                                 album.gphoto_id.text))
+            print('Album title: %s, number of photos: %s, id: %s' % (
+                album.title.text, album.numphotos.text, album.gphoto_id.text))
 
-            hide_this_album = album.title.text == 'Auto-Backup'
-            if hide_this_album:
-                continue
-
-            if album_name and album_name == album.title.text:
+            if album_name and album_name != album.title.text \
+                    or album.title.text in self.HIDDEN_ALBUMS:
                 continue
 
             end_date = self.time_from_timestamp(album.timestamp.text, 0)
@@ -115,13 +110,11 @@ class PicasaSync(object):
 
             q = album.GetPhotosUri() + "&imgmax=d"
 
-            indexing = True
             start_entry = 1
             limit = PicasaSync.BLOCK_SIZE
-            while indexing:
+            while True:
                 photos = Utils.retry(10, self.gdata_client.GetFeed, q,
-                                     limit=limit,
-                                     start_index=start_entry)
+                                     limit=limit, start_index=start_entry)
                 for photo in photos.entry:
                     media = PicasaMedia(None, self.args.root_folder, photo)
 
@@ -144,82 +137,21 @@ class PicasaSync(object):
                 if start_entry + PicasaSync.BLOCK_SIZE > PicasaSync.ALBUM_MAX:
                     limit = PicasaSync.ALBUM_MAX - start_entry
                     print ("LIMITING ALBUM TO 10000 entries")
-                indexing = limit > 0 and PicasaSync.BLOCK_SIZE == len(
-                    photos.entry)
+                if limit == 0 or len(photos.entry) < limit:
+                    break
 
-        print('Total Album Photos in Drive %d, picasa %d, multiples %d' % (
+        print('Total Album Photos in Drive %d, Picasa %d, multiples %d' % (
             total_photos, picasa_only, multiple))
 
-        # def download_album_media(self):
-        #     downloading = True
-        #     start_entry = 1
-        #     limit = PicasaSync.BLOCK_SIZE
-        #     while downloading:
-        #         photos = Utils.retry(10, self.gdata_client.GetFeed, q,
-        #                              limit=limit,
-        #                              start_index=start_entry)
-        #         # todo very temp download code for testing - will refactor
-        #         # as per GoogleDriveSync
-        #         for photo in photos.entry:
-        #             date = datetime.datetime.fromtimestamp(
-        #                 int(photo.timestamp.text) / 1000)
-        #             date_str = date.strftime('%Y-%m-%d %H:%M:%S')
-        #             item_name = photo.title.text
-        #             item_url = photo.content.src
-        #             item_id = photo.gphoto_id.text
-        #             item_updated = photo.updated.text
-        #             item_published = photo.published.text
-        #
-        #             # for videos use last (highest res) media.content
-        #             # entry url
-        #             if photo.media.content:
-        #                 high_res_content = photo.media.content[-1]
-        #                 if high_res_content.type.startswith('video'):
-        #                     if high_res_content.url:
-        #                         item_url = high_res_content.url
-        #
-        #             file_keys = self.match_drive_photo(item_name,
-        #                                                photo.timestamp.text,
-        #                                                int(photo.size.text))
-        #             if not file_keys:
-        #                 print(
-        #                     'WARNING no drive entry for album file %s %s '
-        #                     '%s' % (
-        #                         photo.title.text, date_str,
-        #                         photo.size.text))
-        #                 mismatched += 1
-        #                 local_path = self.define_path(date, item_name,
-        #                                               item_id)
-        #
-        #                 if not (self.args.index_only or
-        #                             os.path.exists(local_path)):
-        #                     print('downloading ...')
-        #                     # todo add a file to DriveFiles and set file_id
-        #                     tmp_path = os.path.join(self.local_folder,
-        #                                             '.gphoto.tmp')
-                            # if not os.path.isdir(media.local_folder):
-                            #     os.makedirs(media.local_folder)
-        #                     res = Utils.retry(5, urllib.urlretrieve,
-        #                                       item_url,
-        #                                       tmp_path)
-        #                     if res:
-        #                         os.rename(tmp_path, local_path)
-        #                     else:
-        #                         print("failed to download %s" % local_path)
-        #             elif len(file_keys) > 1:
-        #                 multiple += 1
-        #                 print (
-        #                     'WARNING multiple album file match for %s %s '
-        #                     '%s' %
-        #                     (item_name, date_str, photo.size.text))
-        #             else:
-        #                 # OK - just got one record back
-        #                 file_id = file_keys[0]['Id']
-        #                 self.db.put_album_file(album_id, file_id)
-        #
-        #         start_entry += PhotoInfo.BLOCK_SIZE
-        #         if start_entry + PhotoInfo.BLOCK_SIZE > PhotoInfo.ALBUM_MAX:
-        #             limit = PhotoInfo.ALBUM_MAX - start_entry
-        #             print ("LIMITING ALBUM TO 10000 entries")
-        #         downloading = limit > 0 and PhotoInfo.BLOCK_SIZE == len(
-        #             photos.entry)
+    def download_album_media(self):
+        print('\nDownloading Picasa Only Files ...')
+        for media in DatabaseMedia.get_media_by_id(
+                self.args.root_folder, self.db):
+            # todo add progress bar instead of this print
+            print("  Downloading %s ..." % media.local_full_path)
+            tmp_path = os.path.join(media.local_folder, '.gphoto.tmp')
+            # res = Utils.retry(5, urllib.urlretrieve, media.url, tmp_path)
+            # if res:
+            #     os.rename(tmp_path, media.local_path)
+            # else:
+            #     print("  failed to download %s" % media.local_path)

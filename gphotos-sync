@@ -9,6 +9,7 @@ from GoogleDriveSync import GoogleDriveSync
 from ProgressHandler import ProgressHandler
 from PicasaSync import PicasaSync
 from LocalData import LocalData
+import Utils
 
 APP_NAME = "gphotos-sync"
 
@@ -91,7 +92,6 @@ def main():
 
     data_store = LocalData(cmd_args.root_folder)
     with data_store:
-
         credentials_file = os.path.join(
             app_dirs.user_data_dir, "credentials.json")
         secret_file = os.path.join(
@@ -107,6 +107,7 @@ def main():
         try:
             download_command(google_drive_sync, cmd_args)
             picasa_sync.index_album_media()
+            picasa_sync.download_album_media()
 
         except (KeyboardInterrupt, SystemExit):
             print("\nUser cancelled download")

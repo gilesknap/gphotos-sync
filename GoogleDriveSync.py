@@ -10,7 +10,7 @@ from pydrive.drive import GoogleDrive
 from GoogleDriveMedia import GoogleDriveMedia
 from DatabaseMedia import DatabaseMedia
 from LocalData import LocalData
-from Utils import Utils
+import Utils
 
 
 class NoGooglePhotosFolderError(Exception):
@@ -151,8 +151,8 @@ class GoogleDriveSync(object):
     def is_indexed(self, media):
         # todo switch to using the DB to determine next duplicate number to use
         is_indexed = False
-        db_record = DatabaseMedia(
-            self.root_folder, media.local_full_path, self.db)
+        db_record = DatabaseMedia.get_media_by_filename(
+            media.local_full_path, self.root_folder, self.db)
         if db_record.id:
             if db_record.id == media.id:
                 is_indexed = True
@@ -167,8 +167,8 @@ class GoogleDriveSync(object):
         exists = False
         # recursively check if any existing duplicates have same id
         if os.path.isfile(media.local_full_path):
-            db_record = DatabaseMedia(
-                self.root_folder, media.local_full_path, self.db)
+            db_record = DatabaseMedia.get_media_by_filename(
+                media.local_full_path, self.root_folder, self.db)
             if db_record.id:
                 if db_record.id == media.id:
                     exists = True
