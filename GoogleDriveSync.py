@@ -220,3 +220,4 @@ class GoogleDriveSync(object):
             # print("WARNING, %s is a link to another file" %
             #       media.local_full_path)
             # todo create a symlink in the file system for this
+            # todo put symlink field in the DB too and add this to GoogleMedia
