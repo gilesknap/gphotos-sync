@@ -1,7 +1,21 @@
+drop table if exists DriveFolders
 drop table if exists Albums;
 drop table if exists DriveFiles;
 drop table if exists AlbumFiles;
 drop table if exists Globals;
+
+create table "DriveFolders"
+(
+	"Id" INTEGER
+		primary key,
+	"FolderId" TEXT,
+	"ParentId" TEXT,
+	"Path" TEXT,
+	"FolderName" TEXT,
+	"ModifiedDate" INT
+)
+;
+
 
 create table Albums
 (

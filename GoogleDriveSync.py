@@ -75,7 +75,7 @@ class GoogleDriveSync(object):
                     ' and mimeType="application/vnd.google-apps.folder"')
     AFTER_QUERY = " and modifiedDate >= '%sT00:00:00'"
     BEFORE_QUERY = " and modifiedDate <= '%sT00:00:00'"
-    PAGE_SIZE = 100
+    PAGE_SIZE = 1000
     # TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
     ROOT_FOLDER = "drive"
 
@@ -221,3 +221,41 @@ class GoogleDriveSync(object):
             #       media.local_full_path)
             # todo create a symlink in the file system for this
             # todo put symlink field in the DB too and add this to GoogleMedia
+
+    def scan_folder_hierarchy(self):
+        print('Scanning Drive Folders ...')
+
+        # get the root id
+        query_params = {
+            "q": GoogleDriveSync.MEDIA_QUERY % 'root'
+        }
+        results = Utils.retry(5, self.googleDrive.ListFile, query_params)
+        for page_results in results:
+            for drive_file in page_results:
+                root_id = drive_file['id']
+
+        # now get all folders
+        q = 'trashed=false and mimeType="application/vnd.google-apps.folder"'
+        query_params = {
+            "q": q,
+            "maxResults": GoogleDriveSync.PAGE_SIZE,
+            "orderBy": 'modifiedDate'
+        }
+
+        results = Utils.retry(5, self.googleDrive.ListFile, query_params)
+        for page_results in results:
+            for drive_file in page_results:
+                if len(drive_file['parents']) > 0:
+                    parent_id = drive_file['parents'][0]['id']
+                else:
+                    parent_id = None
+                self.db.put_drive_folder(drive_file['id'], parent_id,
+                                         drive_file['title'])
+        print('resolving paths ...')
+        self.recurse_paths('', root_id)
+        print('Drive Folders scanned.\n')
+
+    def recurse_paths(self, path, folder_id):
+        for folder in self.db.update_drive_folder_path(path, folder_id):
+            print folder
+        # todo add recursion and retrieve folder name to build path

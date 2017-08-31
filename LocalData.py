@@ -78,7 +78,7 @@ class LocalData:
             date_clauses += 'AND ExifDate <= ?'
             params += (end_date,)
 
-        query = "SELECT * FROM DriveFiles WHERE DriveId LIKE ? AND "\
+        query = "SELECT * FROM DriveFiles WHERE DriveId LIKE ? AND " \
                 " PicassaOnly LIKE ? {0};".format(date_clauses)
 
         self.cur.execute(query, params)
@@ -156,6 +156,24 @@ class LocalData:
             "INSERT OR REPLACE INTO AlbumFiles(AlbumRec, DriveRec) VALUES(?,"
             "?) ;",
             (album_rec, file_rec))
+
+    def put_drive_folder(self, drive_id, parent_id, date):
+        self.cur.execute(
+            "INSERT OR REPLACE INTO DriveFolders(FolderId, ParentId, FolderName)"
+            " VALUES(?,?,?) ;", (drive_id, parent_id, date))
+
+    def update_drive_folder_path(self, path, parent_id):
+        self.cur.execute(
+            "UPDATE DriveFolders SET Path = ? WHERE ParentId = ?;",
+            (path, parent_id))
+        results = self.cur.fetchall()
+        
+        self.cur.execute(
+            "SELECT FolderId FROM DriveFolders WHERE ParentId = ?;", (parent_id))
+
+        results = self.cur.fetchall()
+        for result in results:
+            yield result['FolderId']
 
     def store(self):
         print("\nSaving Database ...")

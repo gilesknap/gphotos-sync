@@ -109,8 +109,9 @@ def main():
             # data_store.store()
             # picasa_sync.index_album_media()
             # data_store.store()
-            picasa_sync.download_album_media()
-            data_store.store()
+            # picasa_sync.download_album_media()
+            # data_store.store()
+            google_drive_sync.scan_folder_hierarchy()
 
         except (KeyboardInterrupt, SystemExit):
             print("\nUser cancelled download")
