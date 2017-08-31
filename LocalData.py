@@ -5,6 +5,18 @@ import sqlite3 as lite
 import shutil
 
 
+# todo currently store full path in DriveFiles.Path
+# would be better as relative path and store root once in global table
+# this could be refreshed at start for a portable file system folder
+# also this would remove the need to pass any paths to the GoogleMedia
+# constructors (which is messy)
+
+# todo change database entities
+# DriveID -> RemoteId
+# ExifDate -> ModifyDate
+# PicassaOnly -> MediaType
+# Both dates need to be integers for easy comparison
+# replace OrigFileName with Url
 class LocalData:
     DB_FILE_NAME = 'gphotos.sql'
     BLOCK_SIZE = 10000
@@ -29,7 +41,7 @@ class LocalData:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.con:
-            self.con.commit()
+            self.store()
             self.con.close()
 
     def setup_new_db(self):
@@ -52,10 +64,24 @@ class LocalData:
             data_tuple = None
         return data_tuple
 
-    def get_files_by_id(self, drive_id='%'):
-        self.cur.execute(
-            "SELECT * FROM DriveFiles WHERE DriveId LIKE ?;", drive_id)
+    def get_files_by_search(self, drive_id='%', media_type='%',
+                            start_date=None, end_date=None):
 
+        params = (drive_id, int(media_type))
+        # todo dates wont work since they are strings at present
+        # need to be changed to INT
+        date_clauses = ''
+        if start_date:
+            date_clauses += 'AND ExifDate >= ?'
+            params += (start_date,)
+        if start_date:
+            date_clauses += 'AND ExifDate <= ?'
+            params += (end_date,)
+
+        query = "SELECT * FROM DriveFiles WHERE DriveId LIKE ? AND "\
+                " PicassaOnly LIKE ? {0};".format(date_clauses)
+
+        self.cur.execute(query, params)
         while True:
             records = self.cur.fetchmany(LocalData.BLOCK_SIZE)
             if not records:
@@ -130,3 +156,8 @@ class LocalData:
             "INSERT OR REPLACE INTO AlbumFiles(AlbumRec, DriveRec) VALUES(?,"
             "?) ;",
             (album_rec, file_rec))
+
+    def store(self):
+        print("\nSaving Database ...")
+        self.con.commit()
+        print("Database Saved.\n")

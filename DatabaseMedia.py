@@ -1,8 +1,6 @@
 #!/usr/bin/python
 # coding: utf8
 import os.path
-from datetime import datetime
-from time import gmtime, strftime
 from GoogleMedia import GoogleMedia, MediaType, MediaFolder
 
 
@@ -37,11 +35,12 @@ class DatabaseMedia(GoogleMedia):
         return DatabaseMedia(root_folder, data_tuple)
 
     @classmethod
-    def get_media_by_id(cls, root_folder, db, drive_id='%'):
-        for record in db.get_files_by_id(drive_id):
+    def get_media_by_search(cls, root_folder, db, drive_id='%', media_type='%',
+                            start_date=None, end_date=None):
+        for record in db.get_files_by_search(
+                drive_id, media_type, start_date, end_date):
             new_media = DatabaseMedia(root_folder, record)
             yield new_media
-
 
     # ----- override Properties below -----
     @property

@@ -105,13 +105,15 @@ def main():
                                  cmd_args, data_store)
 
         try:
-            download_command(google_drive_sync, cmd_args)
-            picasa_sync.index_album_media()
+            # download_command(google_drive_sync, cmd_args)
+            # data_store.store()
+            # picasa_sync.index_album_media()
+            # data_store.store()
             picasa_sync.download_album_media()
+            data_store.store()
 
         except (KeyboardInterrupt, SystemExit):
             print("\nUser cancelled download")
-            print("\nSaving Database ...")
             # save the traceback so we can diagnose lockups
             except_file_name = os.path.join(
                 os.path.dirname(os.path.abspath(__file__)),

@@ -9,7 +9,7 @@ import httplib2
 import threading
 import time
 from PicasaMedia import PicasaMedia
-from DatabaseMedia import DatabaseMedia
+from DatabaseMedia import DatabaseMedia, MediaType
 import Utils
 
 
@@ -145,8 +145,8 @@ class PicasaSync(object):
 
     def download_album_media(self):
         print('\nDownloading Picasa Only Files ...')
-        for media in DatabaseMedia.get_media_by_id(
-                self.args.root_folder, self.db):
+        for media in DatabaseMedia.get_media_by_search(
+                self.args.root_folder, self.db, media_type=MediaType.PICASA):
             # todo add progress bar instead of this print
             print("  Downloading %s ..." % media.local_full_path)
             tmp_path = os.path.join(media.local_folder, '.gphoto.tmp')
