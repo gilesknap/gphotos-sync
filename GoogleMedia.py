@@ -36,7 +36,7 @@ class GoogleMedia(object):
         self._relative_folder = relative_folder
         self._root_folder = root_folder
         self._duplicate_number = 0
-        self.symlink = True  # Todo need to implement use of this
+        self.symlink = False  # Todo need to implement use of this
 
     def save_to_db(self, db):
         now_time = strftime(GoogleMedia.TIME_FORMAT, gmtime())
@@ -45,15 +45,16 @@ class GoogleMedia(object):
         else:
             description = unicode(self.description, 'utf8')
         data_tuple = (
-            self.id, self.orig_name, self.local_folder,
-            self.filename, self.duplicate_number, self.date,
+            self.id, self.url, self.local_folder,
+            self.filename, self.duplicate_number,
             self.checksum, description, self.size,
-            self.create_date, now_time, self.media_type,
+            self.date, self.create_date, now_time, self.media_type,
             self.symlink
         )
-        db.put_file(data_tuple)
+        return db.put_file(data_tuple)
 
-    def format_date(self, date):
+    @classmethod
+    def format_date(cls, date):
         return datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
 
     # Path to the local folder in which this media item is stored this
@@ -132,4 +133,8 @@ class GoogleMedia(object):
 
     @property
     def mime_type(self):
+        raise NotImplementedError
+
+    @property
+    def url(self):
         raise NotImplementedError
