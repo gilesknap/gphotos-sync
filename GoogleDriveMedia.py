@@ -47,13 +47,6 @@ class GoogleDriveMedia(GoogleMedia):
             return ''
 
     @property
-    def orig_name(self):
-        try:
-            return self.__drive_file["originalFilename"]
-        except KeyError:
-            return self.__drive_file["title"]
-
-    @property
     def create_date(self):
         # some times are ucase T and non zero millisecs - normalize
         date = datetime.strptime(self.__drive_file["createdDate"].upper()[:-4],
@@ -74,7 +67,12 @@ class GoogleDriveMedia(GoogleMedia):
     def mime_type(self):
         return self.__drive_file.metadata[u'mimeType']
 
-    # ----- Base class custom properties below -----
+
+    @property
+    def url(self):
+        return self.__drive_file.metadata[u'webContentLink']
+
+    # ----- Base class custom properties below (not currently used) -----
     @property
     def camera_owner(self):
         try:
@@ -97,3 +95,10 @@ class GoogleDriveMedia(GoogleMedia):
                 camera_model = None
 
         return camera_model
+
+    @property
+    def orig_name(self):
+        try:
+            return self.__drive_file["originalFilename"]
+        except KeyError:
+            return self.__drive_file["title"]

@@ -13,7 +13,7 @@ class DatabaseMedia(GoogleMedia):
 
         if data_tuple:
             (
-                self._id, self._orig_name, local_folder,
+                self._id, self._url, local_folder,
                 self._filename, self._duplicate_number, self._date,
                 self._checksum, self._description, self._size,
                 self._create_date, _, self._media_type,
@@ -22,7 +22,6 @@ class DatabaseMedia(GoogleMedia):
 
             self.media_folder = MediaFolder[self._media_type]
             media_root = os.path.join(root_folder, self.media_folder)
-            local_folder = os.path.dirname(local_folder)
             self._relative_folder = os.path.relpath(local_folder,
                                                     media_root)
         else:
@@ -78,3 +77,7 @@ class DatabaseMedia(GoogleMedia):
     @property
     def mime_type(self):
         raise NotImplementedError
+
+    @property
+    def url(self):
+        return self._url

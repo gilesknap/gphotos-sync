@@ -113,6 +113,7 @@ def main():
             data_store.store()
             picasa_sync.download_album_media()
             data_store.store()
+            picasa_sync.create_album_content_links()
 
         except (KeyboardInterrupt, SystemExit):
             print("\nUser cancelled download")

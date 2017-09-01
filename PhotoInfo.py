@@ -152,7 +152,7 @@ class PhotoInfo:
                         if not (self.args.index_only or
                                     os.path.exists(local_path)):
                             print('downloading ...')
-                            # todo add a file to DriveFiles and set file_id
+                            # todo add a file to SyncFiles and set file_id
                             tmp_path = os.path.join(self.local_folder,
                                                     '.gphoto.tmp')
                             res = self.retry(5, urllib.urlretrieve, item_url,

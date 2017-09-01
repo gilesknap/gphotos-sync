@@ -5,7 +5,7 @@ import sqlite3 as lite
 import shutil
 
 
-# todo currently store full path in DriveFiles.Path
+# todo currently store full path in SyncFiles.Path
 # would be better as relative path and store root once in global table
 # this could be refreshed at start for a portable file system folder
 # also this would remove the need to pass any paths to the GoogleMedia
@@ -54,10 +54,10 @@ class LocalData:
     def record_to_tuple(cls, rec):
         if rec:
             data_tuple = (
-                rec['DriveId'], rec['OrigFileName'], rec['Path'],
-                rec['FileName'], rec['DuplicateNo'], rec['ExifDate'],
+                rec['RemoteId'], rec['Url'], rec['Path'],
+                rec['FileName'], rec['DuplicateNo'], rec['ModifyDate'],
                 rec['Checksum'], rec['Description'], rec['FileSize'],
-                rec['CreateDate'], rec['SyncDate'], rec['PicassaOnly'],
+                rec['CreateDate'], rec['SyncDate'], rec['MediaType'],
                 rec['SymLink']
             )
         else:
@@ -78,8 +78,8 @@ class LocalData:
             date_clauses += 'AND ExifDate <= ?'
             params += (end_date,)
 
-        query = "SELECT * FROM DriveFiles WHERE DriveId LIKE ? AND " \
-                " PicassaOnly LIKE ? {0};".format(date_clauses)
+        query = "SELECT * FROM SyncFiles WHERE RemoteId LIKE ? AND "\
+                " MediaType LIKE ? {0};".format(date_clauses)
 
         self.cur.execute(query, params)
         while True:
@@ -93,7 +93,7 @@ class LocalData:
         path = os.path.dirname(local_full_path)
         name = os.path.basename(local_full_path)
         self.cur.execute(
-            "SELECT * FROM DriveFiles WHERE Path = ? AND FileName = ?;",
+            "SELECT * FROM SyncFiles WHERE Path = ? AND FileName = ?;",
             (path, name))
         result = self.record_to_tuple(self.cur.fetchone())
         return result
@@ -101,27 +101,28 @@ class LocalData:
     def put_file(self, data_tuple):
         try:
             self.cur.execute(
-                "INSERT INTO DriveFiles VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?) ;",
+                "INSERT INTO SyncFiles VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?) ;",
                 (None,) + data_tuple)
         except lite.IntegrityError as e:
-            if 'DriveId' in e.message:
+            if 'RemoteId' in e.message:
                 # this is an attempt add the same Drive file twice
                 raise LocalData.DuplicateDriveIdException
             else:
                 raise
+        return self.cur.lastrowid
 
-    def find_drive_file_ids(self, orig_name='%', exif_date='%', size='%',
+    def find_drive_file_ids(self, filename='%', exif_date='%', size='%',
                             use_create=False):
         if use_create:
             self.cur.execute(
-                "SELECT Id FROM DriveFiles WHERE OrigFileName LIKE ? AND "
+                "SELECT Id FROM SyncFiles WHERE FileName LIKE ? AND "
                 "CreateDate LIKE ? AND FileSize LIKE ?;",
-                (orig_name, exif_date, size))
+                (filename, exif_date, size))
         else:
             self.cur.execute(
-                "SELECT Id FROM DriveFiles WHERE OrigFileName LIKE ? AND "
-                "ExifDate LIKE ? AND FileSize LIKE ?;",
-                (orig_name, exif_date, size))
+                "SELECT Id FROM SyncFiles WHERE FileName LIKE ? AND "
+                "ModifyDate LIKE ? AND FileSize LIKE ?;",
+                (filename, exif_date, size))
         res = self.cur.fetchall()
 
         if len(res) == 0:
@@ -134,8 +135,10 @@ class LocalData:
         self.cur.execute(
             "SELECT * FROM Albums WHERE Id = ?",
             (table_id,))
-        res = self.cur.fetchone()
-        return res
+        results = self.cur.fetchone()
+        for result in results:
+            yield (result['AlbumId'], result['AlbumName'],
+                   result['StartDate'], result['EndDate'])
 
     def put_album(self, album_id, album_name, start_date, end_end=0):
         self.cur.execute(
@@ -144,12 +147,26 @@ class LocalData:
             (album_id, unicode(album_name, 'utf8'), start_date, end_end))
         return self.cur.lastrowid
 
-    def get_album_files(self, album_id):
+    def get_album_files(self, album_id='%'):
         self.cur.execute(
-            "SELECT * FROM AlbumFiles WHERE Id = ?",
+            "SELECT SyncFiles.Path, SyncFiles.Filename, Albums.AlbumName, "
+            "Albums.EndDate FROM AlbumFiles "
+            "INNER JOIN SyncFiles ON AlbumFiles.DriveRec=SyncFiles.Id "
+            "INNER JOIN Albums ON AlbumFiles.AlbumRec=Albums.Id "
+            "WHERE Albums.Id LIKE ?;",
             (album_id,))
-        res = self.cur.fetchall()
-        return res
+        results = self.cur.fetchall()
+        for result in results:
+            yield (result)
+
+        # # todo probably want a join on this with Albums and SyncFiles
+        # # to get all the data required to make album file links in one query
+        # self.cur.execute(
+        #     "SELECT * FROM AlbumFiles WHERE Id = ?",
+        #     (album_id,))
+        # results = self.cur.fetchall()
+        # for result in results:
+        #     yield (result['AlbumRec'], result['DriveRec'])
 
     def put_album_file(self, album_rec, file_rec):
         self.cur.execute(

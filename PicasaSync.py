@@ -59,12 +59,12 @@ class PicasaSync(object):
         if file_keys and len(file_keys) == 1:
             return file_keys
 
-        file_keys = self.db.find_drive_file_ids(orig_name=media.orig_name)
+        file_keys = self.db.find_drive_file_ids(filename=media.filename)
         if file_keys and len(file_keys) == 1:
             return file_keys
 
         if file_keys and len(file_keys) > 1:
-            file_keys = self.db.find_drive_file_ids(orig_name=media.orig_name,
+            file_keys = self.db.find_drive_file_ids(filename=media.filename,
                                                     size=media.size)
             # multiple matches here represent the same image
             if file_keys:
@@ -76,7 +76,7 @@ class PicasaSync(object):
         for use_create_date in [False, True]:
             for hour_offset in range(-12, 12):
                 dated_file_keys = \
-                    self.db.find_drive_file_ids(orig_name=media.orig_name,
+                    self.db.find_drive_file_ids(filename=media.filename,
                                                 exif_date=media.date,
                                                 use_create=use_create_date)
                 if dated_file_keys:
@@ -89,7 +89,9 @@ class PicasaSync(object):
 
     def index_album_media(self, album_name=None):
         print('\nAlbums index - Reading albums ...')
-        albums = Utils.retry(10, self.gdata_client.GetUserFeed)
+        # Todo see if it is possible to query for mod date > last scan
+        # todo temp max results for faster testing
+        albums = Utils.retry(10, self.gdata_client.GetUserFeed, limit=10)
         total_photos = multiple = picasa_only = 0
         print('Album count %d\n' % len(albums.entry))
 
@@ -125,7 +127,8 @@ class PicasaSync(object):
                     elif file_keys is None:
                         # no match so this exists only in picasa
                         picasa_only += 1
-                        media.save_to_db(self.db)
+                        new_file = media.save_to_db(self.db)
+                        self.db.put_album_file(album_id, new_file)
                         print("  Added %s" % media.local_full_path)
                     else:
                         multiple += 1
@@ -147,11 +150,22 @@ class PicasaSync(object):
         print('\nDownloading Picasa Only Files ...')
         for media in DatabaseMedia.get_media_by_search(
                 self.args.root_folder, self.db, media_type=MediaType.PICASA):
+            if os.path.exists(media.local_full_path):
+                continue
+
             # todo add progress bar instead of this print
             print("  Downloading %s ..." % media.local_full_path)
             tmp_path = os.path.join(media.local_folder, '.gphoto.tmp')
-            # res = Utils.retry(5, urllib.urlretrieve, media.url, tmp_path)
-            # if res:
-            #     os.rename(tmp_path, media.local_path)
-            # else:
-            #     print("  failed to download %s" % media.local_path)
+
+            if not os.path.isdir(media.local_folder):
+                os.makedirs(media.local_folder)
+
+            res = Utils.retry(5, urllib.urlretrieve, media.url, tmp_path)
+            if res:
+                os.rename(tmp_path, media.local_full_path)
+            else:
+                print("  failed to download %s" % media.local_path)
+
+    def create_album_content_links(self):
+        for item in self.db.get_album_files():
+            print item
