@@ -10,13 +10,6 @@ import shutil
 # this could be refreshed at start for a portable file system folder
 # also this would remove the need to pass any paths to the GoogleMedia
 # constructors (which is messy)
-
-# todo change database entities
-# DriveID -> RemoteId
-# ExifDate -> ModifyDate
-# PicassaOnly -> MediaType
-# Both dates need to be integers for easy comparison
-# replace OrigFileName with Url
 class LocalData:
     DB_FILE_NAME = 'gphotos.sql'
     BLOCK_SIZE = 10000
