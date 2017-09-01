@@ -91,7 +91,7 @@ class PicasaSync(object):
         print('\nAlbums index - Reading albums ...')
         # Todo see if it is possible to query for mod date > last scan
         # todo temp max results for faster testing
-        albums = Utils.retry(10, self.gdata_client.GetUserFeed, limit=10)
+        albums = Utils.retry(10, self.gdata_client.GetUserFeed)
         total_photos = multiple = picasa_only = 0
         print('Album count %d\n' % len(albums.entry))
 

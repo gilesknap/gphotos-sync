@@ -1,4 +1,4 @@
-drop table if exists DriveFolders
+drop table if exists DriveFolders;
 drop table if exists Albums;
 drop table if exists SyncFiles;
 drop table if exists AlbumFiles;
