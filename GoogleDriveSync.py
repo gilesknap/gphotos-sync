@@ -212,7 +212,7 @@ class GoogleDriveSync(object):
         try:
             media.save_to_db(self.db)
         except LocalData.DuplicateDriveIdException:
-            pass
+            print media.full_local_file_name, "is duplicate"
             # this error may just mean we already indexed on a previous pass
             #  but could also mean that there are >1 refs t this file on drive
             # in future I will separate index and download anyway and this will
@@ -224,15 +224,12 @@ class GoogleDriveSync(object):
 
     def scan_folder_hierarchy(self):
         print('Scanning Drive Folders ...')
-
         # get the root id
-        query_params = {
-            "q": GoogleDriveSync.MEDIA_QUERY % 'root'
-        }
+        query_params = {'q': self.GOOGLE_PHOTO_FOLDER_QUERY}
         results = Utils.retry(5, self.googleDrive.ListFile, query_params)
         for page_results in results:
             for drive_file in page_results:
-                root_id = drive_file['id']
+                root_id = drive_file['parents'][0]['id']
 
         # now get all folders
         q = 'trashed=false and mimeType="application/vnd.google-apps.folder"'
@@ -256,6 +253,6 @@ class GoogleDriveSync(object):
         print('Drive Folders scanned.\n')
 
     def recurse_paths(self, path, folder_id):
-        for folder in self.db.update_drive_folder_path(path, folder_id):
-            print folder
-        # todo add recursion and retrieve folder name to build path
+        for (fid, name) in self.db.update_drive_folder_path(path, folder_id):
+            next_path = os.path.join(path, name)
+            self.recurse_paths(next_path, fid)

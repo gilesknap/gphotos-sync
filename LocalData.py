@@ -159,7 +159,8 @@ class LocalData:
 
     def put_drive_folder(self, drive_id, parent_id, date):
         self.cur.execute(
-            "INSERT OR REPLACE INTO DriveFolders(FolderId, ParentId, FolderName)"
+            "INSERT OR REPLACE INTO "
+            "DriveFolders(FolderId, ParentId, FolderName)"
             " VALUES(?,?,?) ;", (drive_id, parent_id, date))
 
     def update_drive_folder_path(self, path, parent_id):
@@ -167,13 +168,14 @@ class LocalData:
             "UPDATE DriveFolders SET Path = ? WHERE ParentId = ?;",
             (path, parent_id))
         results = self.cur.fetchall()
-        
+
         self.cur.execute(
-            "SELECT FolderId FROM DriveFolders WHERE ParentId = ?;", (parent_id))
+            "SELECT FolderId, FolderName FROM DriveFolders WHERE ParentId = ?;",
+            (parent_id,))
 
         results = self.cur.fetchall()
         for result in results:
-            yield result['FolderId']
+            yield (result['FolderId'], result['FolderName'])
 
     def store(self):
         print("\nSaving Database ...")
