@@ -9,6 +9,7 @@ import httplib2
 import threading
 import time
 from PicasaMedia import PicasaMedia
+from GoogleMedia import GoogleMedia
 from DatabaseMedia import DatabaseMedia, MediaType
 import Utils
 
@@ -47,13 +48,6 @@ class PicasaSync(object):
         d.setDaemon(True)
         d.start()
 
-    # todo can this be an instance method and not have time_secs parm?
-    def time_from_timestamp(self, time_secs, hour_offset=0):
-        date = datetime.datetime.fromtimestamp(
-            int(time_secs) / 1000 - 3600 * hour_offset).strftime(
-            '%Y-%m-%d %H:%M:%S')
-        return date
-
     def match_drive_photo(self, media):
         file_keys = self.db.find_drive_file_ids(size=media.size)
         if file_keys and len(file_keys) == 1:
@@ -70,20 +64,20 @@ class PicasaSync(object):
             if file_keys:
                 return file_keys[0:1]
 
-        # search with date, but check for timezone slips due to camera not
+        # search with date
+        # todo need to check for timezone slips due to camera not
         # set to correct timezone and missing or corrupted exif_date,
         # in which case revert to create date
+        # todo verify that the above is required in my photos collection
         for use_create_date in [False, True]:
-            for hour_offset in range(-12, 12):
-                dated_file_keys = \
-                    self.db.find_drive_file_ids(filename=media.filename,
-                                                exif_date=media.date,
-                                                use_create=use_create_date)
-                if dated_file_keys:
-                    print("MATCH ON DATE, offset %d (create %r) %s, file: %s" %
-                          (hour_offset, use_create_date, media.date,
-                           media.orig_name))
-                    return dated_file_keys
+            dated_file_keys = \
+                self.db.find_drive_file_ids(filename=media.filename,
+                                            exif_date=media.date,
+                                            use_create=use_create_date)
+            if dated_file_keys:
+                print("MATCH ON DATE create %r %s, file: %s" %
+                      (use_create_date, media.date, media.orig_name))
+                return dated_file_keys
         # not found anything or found >1 result
         return file_keys
 
@@ -104,12 +98,9 @@ class PicasaSync(object):
                     or album.title.text in self.HIDDEN_ALBUMS:
                 continue
 
-            end_date = self.time_from_timestamp(album.timestamp.text, 0)
-            start_date = 0
-            album_id = self.db.put_album(album.gphoto_id.text,
-                                         album.title.text,
-                                         start_date, end_date)
-
+            start_date = PicasaMedia.parse_date_string(album.published.text)
+            end_date = start_date
+            album_id = album.gphoto_id.text
             q = album.GetPhotosUri() + "&imgmax=d"
 
             start_entry = 1
@@ -119,16 +110,22 @@ class PicasaSync(object):
                                      limit=limit, start_index=start_entry)
                 for photo in photos.entry:
                     media = PicasaMedia(None, self.args.root_folder, photo)
-
                     file_keys = self.match_drive_photo(media)
                     if file_keys and len(file_keys) == 1:
                         # store link between album and drive file
-                        self.db.put_album_file(album_id, file_keys[0])
+                        (file_key, date) = file_keys[0]
+                        self.db.put_album_file(album_id, file_key)
+                        file_date = GoogleMedia.format_date(date)
+                        # make the album dates cover the range of its contents
+                        if end_date < file_date:
+                            end_date = file_date
+                        if start_date > file_date:
+                            start_date = file_date
                     elif file_keys is None:
                         # no match so this exists only in picasa
                         picasa_only += 1
-                        new_file = media.save_to_db(self.db)
-                        self.db.put_album_file(album_id, new_file)
+                        new_file_key = media.save_to_db(self.db)
+                        self.db.put_album_file(album_id, new_file_key)
                         print("  Added %s" % media.local_full_path)
                     else:
                         multiple += 1
@@ -142,6 +139,10 @@ class PicasaSync(object):
                     print ("LIMITING ALBUM TO 10000 entries")
                 if limit == 0 or len(photos.entry) < limit:
                     break
+
+            # write the album data down now we know the contents' date range
+            self.db.put_album(album_id, album.title.text,
+                              start_date, end_date)
 
         print('Total Album Photos in Drive %d, Picasa %d, multiples %d' % (
             total_photos, picasa_only, multiple))
@@ -167,5 +168,17 @@ class PicasaSync(object):
                 print("  failed to download %s" % media.local_path)
 
     def create_album_content_links(self):
-        for item in self.db.get_album_files():
-            print item
+        for (path, file_name, album_name, end_date) in \
+                self.db.get_album_files():
+            full_file_name = os.path.join(path, file_name)
+            rel_path = GoogleMedia.format_date(end_date).strftime('%Y/%m%d')
+            "{0} {1}".format(rel_path, album_name)
+            link_folder = os.path.join(self.args.root_folder, 'albums',
+                                       rel_path)
+            link_file = os.path.join(link_folder, file_name)
+
+            if not os.path.isdir(link_folder):
+                os.makedirs(link_folder)
+            print full_file_name, ' --> ', link_file
+            os.symlink(full_file_name, link_file)
+

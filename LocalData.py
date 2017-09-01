@@ -71,7 +71,7 @@ class LocalData:
             date_clauses += 'AND ExifDate <= ?'
             params += (end_date,)
 
-        query = "SELECT * FROM SyncFiles WHERE RemoteId LIKE ? AND "\
+        query = "SELECT * FROM SyncFiles WHERE RemoteId LIKE ? AND " \
                 " MediaType LIKE ? {0};".format(date_clauses)
 
         self.cur.execute(query, params)
@@ -108,12 +108,12 @@ class LocalData:
                             use_create=False):
         if use_create:
             self.cur.execute(
-                "SELECT Id FROM SyncFiles WHERE FileName LIKE ? AND "
-                "CreateDate LIKE ? AND FileSize LIKE ?;",
+                "SELECT Id, CreateDate FROM SyncFiles WHERE FileName LIKE ? "
+                "AND CreateDate LIKE ? AND FileSize LIKE ?;",
                 (filename, exif_date, size))
         else:
             self.cur.execute(
-                "SELECT Id FROM SyncFiles WHERE FileName LIKE ? AND "
+                "SELECT Id, CreateDate FROM SyncFiles WHERE FileName LIKE ? AND "
                 "ModifyDate LIKE ? AND FileSize LIKE ?;",
                 (filename, exif_date, size))
         res = self.cur.fetchall()
@@ -121,8 +121,8 @@ class LocalData:
         if len(res) == 0:
             return None
         else:
-            keys = [key['Id'] for key in res]
-            return keys
+            keys_dates = [(key['Id'], key['CreateDate']) for key in res]
+            return keys_dates
 
     def get_album(self, table_id):
         self.cur.execute(
@@ -145,21 +145,22 @@ class LocalData:
             "SELECT SyncFiles.Path, SyncFiles.Filename, Albums.AlbumName, "
             "Albums.EndDate FROM AlbumFiles "
             "INNER JOIN SyncFiles ON AlbumFiles.DriveRec=SyncFiles.Id "
-            "INNER JOIN Albums ON AlbumFiles.AlbumRec=Albums.Id "
-            "WHERE Albums.Id LIKE ?;",
+            "INNER JOIN Albums ON AlbumFiles.AlbumRec=Albums.AlbumId "
+            "WHERE Albums.AlbumId LIKE ?;",
             (album_id,))
         results = self.cur.fetchall()
         for result in results:
-            yield (result)
+            yield tuple(result)
 
-        # # todo probably want a join on this with Albums and SyncFiles
-        # # to get all the data required to make album file links in one query
-        # self.cur.execute(
-        #     "SELECT * FROM AlbumFiles WHERE Id = ?",
-        #     (album_id,))
-        # results = self.cur.fetchall()
-        # for result in results:
-        #     yield (result['AlbumRec'], result['DriveRec'])
+            # # todo probably want a join on this with Albums and SyncFiles
+            # # to get all the data required to make album file links in one
+            # query
+            # self.cur.execute(
+            #     "SELECT * FROM AlbumFiles WHERE Id = ?",
+            #     (album_id,))
+            # results = self.cur.fetchall()
+            # for result in results:
+            #     yield (result['AlbumRec'], result['DriveRec'])
 
     def put_album_file(self, album_rec, file_rec):
         self.cur.execute(

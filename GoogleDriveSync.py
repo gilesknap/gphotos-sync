@@ -75,7 +75,7 @@ class GoogleDriveSync(object):
                     ' and mimeType="application/vnd.google-apps.folder"')
     AFTER_QUERY = " and modifiedDate >= '%sT00:00:00'"
     BEFORE_QUERY = " and modifiedDate <= '%sT00:00:00'"
-    PAGE_SIZE = 1000
+    PAGE_SIZE = 2000
     # TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
     ROOT_FOLDER = "drive"
 
@@ -212,7 +212,7 @@ class GoogleDriveSync(object):
         try:
             media.save_to_db(self.db)
         except LocalData.DuplicateDriveIdException:
-            print media.full_local_file_name, "is duplicate"
+            print media.local_full_path, "is duplicate"
             # this error may just mean we already indexed on a previous pass
             #  but could also mean that there are >1 refs t this file on drive
             # in future I will separate index and download anyway and this will

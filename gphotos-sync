@@ -105,14 +105,14 @@ def main():
                                  cmd_args, data_store)
 
         try:
-            google_drive_sync.scan_folder_hierarchy()
-            data_store.store()
-            download_command(google_drive_sync, cmd_args)
-            data_store.store()
-            picasa_sync.index_album_media()
-            data_store.store()
-            picasa_sync.download_album_media()
-            data_store.store()
+            # google_drive_sync.scan_folder_hierarchy()
+            # data_store.store()
+            # download_command(google_drive_sync, cmd_args)
+            # data_store.store()
+            # picasa_sync.index_album_media()
+            # data_store.store()
+            # picasa_sync.download_album_media()
+            # data_store.store()
             picasa_sync.create_album_content_links()
 
         except (KeyboardInterrupt, SystemExit):

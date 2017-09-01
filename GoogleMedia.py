@@ -53,6 +53,7 @@ class GoogleMedia(object):
         )
         return db.put_file(data_tuple)
 
+    # todo this is named wrong and sort out picsaSYnc / base date classmethods
     @classmethod
     def format_date(cls, date):
         return datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
