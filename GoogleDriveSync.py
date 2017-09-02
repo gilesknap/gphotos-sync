@@ -122,6 +122,9 @@ class GoogleDriveSync(object):
         }
 
         for results in self.googleDrive.ListFile(query_params):
+            if len(results) == 0:
+                raise NoGooglePhotosFolderError(
+                    'Drive Folder "{}" not found'.format(folder_name))
             this_folder_id = results[0]["id"]
         if len(parts) > 1:
             this_folder_id = self.get_remote_folder(this_folder_id, parts[1])
@@ -147,19 +150,6 @@ class GoogleDriveSync(object):
                 media = GoogleDriveMedia(path, self.root_folder,
                                          drive_file=drive_file)
                 yield media
-
-    def is_indexed(self, media):
-        # todo switch to using the DB to determine next duplicate number to use
-        is_indexed = False
-        db_record = DatabaseMedia.get_media_by_filename(
-            media.local_full_path, self.root_folder, self.db)
-        if db_record.id:
-            if db_record.id == media.id:
-                is_indexed = True
-            else:
-                media.duplicate_number += 1
-                is_indexed = self.is_indexed(media)
-        return is_indexed
 
     def has_local_version(self, media):
         # todo switch to using the DB to determine next duplicate number to use

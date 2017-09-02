@@ -53,6 +53,13 @@ class GoogleMedia(object):
         )
         return db.put_file(data_tuple)
 
+    def is_indexed(self, db):
+        # checking for index has the side effect of setting duplicate no
+        # probably should do this immediately after subclass init
+        num = db.file_duplicate_no(self. id, self.local_full_path)
+        self.duplicate_number = num
+        result = db. find_drive_file_ids(filename=self.orig_name)
+
     # todo this is named wrong and sort out picsaSYnc / base date classmethods
     @classmethod
     def format_date(cls, date):

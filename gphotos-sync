@@ -14,6 +14,10 @@ import Utils
 APP_NAME = "gphotos-sync"
 
 
+# todo global todos
+# switch all string formatting to .format
+# docstings everywhere
+# add logger instead of prints
 def download_folder(folder_id, path, google_photos_sync, args):
     print('-------------------- %s' % path)
     progress_handler = None
@@ -24,7 +28,7 @@ def download_folder(folder_id, path, google_photos_sync, args):
                             google_photos_sync, args)
         elif mime.startswith("video/") or mime.startswith("image/"):
             if args.index_only:
-                if google_photos_sync.is_indexed(remote_media):
+                if remote_media.is_indexed(google_photos_sync.db):
                     continue
             else:
                 if google_photos_sync.has_local_version(remote_media):
@@ -105,14 +109,10 @@ def main():
                                  cmd_args, data_store)
 
         try:
-            # google_drive_sync.scan_folder_hierarchy()
-            # data_store.store()
-            # download_command(google_drive_sync, cmd_args)
-            # data_store.store()
-            # picasa_sync.index_album_media()
-            # data_store.store()
-            # picasa_sync.download_album_media()
-            # data_store.store()
+            google_drive_sync.scan_folder_hierarchy()
+            download_command(google_drive_sync, cmd_args)
+            picasa_sync.index_album_media(limit=10)
+            #picasa_sync.download_album_media()
             picasa_sync.create_album_content_links()
 
         except (KeyboardInterrupt, SystemExit):
@@ -129,5 +129,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# vim: autoindent tabstop=4 shiftwidth=4 expandtab softtabstop=4

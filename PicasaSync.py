@@ -81,11 +81,11 @@ class PicasaSync(object):
         # not found anything or found >1 result
         return file_keys
 
-    def index_album_media(self, album_name=None):
+    def index_album_media(self, album_name=None, limit=None):
         print('\nAlbums index - Reading albums ...')
         # Todo see if it is possible to query for mod date > last scan
         # todo temp max results for faster testing
-        albums = Utils.retry(10, self.gdata_client.GetUserFeed)
+        albums = Utils.retry(10, self.gdata_client.GetUserFeed, limit=limit)
         total_photos = multiple = picasa_only = 0
         print('Album count %d\n' % len(albums.entry))
 
@@ -171,14 +171,17 @@ class PicasaSync(object):
         for (path, file_name, album_name, end_date) in \
                 self.db.get_album_files():
             full_file_name = os.path.join(path, file_name)
-            rel_path = GoogleMedia.format_date(end_date).strftime('%Y/%m%d')
-            "{0} {1}".format(rel_path, album_name)
-            link_folder = os.path.join(self.args.root_folder, 'albums',
-                                       rel_path)
-            link_file = os.path.join(link_folder, file_name)
+            if os.path.exists(full_file_name):
+                print("WARNING. Duplicate {0} in {1}".format(
+                    full_file_name, album_name))
+            else:
+                pref = GoogleMedia.format_date(end_date).strftime('%Y/%m%d')
+                rel_path = "{0} {1}".format(pref, album_name)
+                link_folder = os.path.join(self.args.root_folder, 'albums',
+                                           rel_path)
+                link_file = os.path.join(link_folder, file_name)
 
-            if not os.path.isdir(link_folder):
-                os.makedirs(link_folder)
-            print full_file_name, ' --> ', link_file
-            os.symlink(full_file_name, link_file)
+                if not os.path.isdir(link_folder):
+                    os.makedirs(link_folder)
+                os.symlink(full_file_name, link_file)
 

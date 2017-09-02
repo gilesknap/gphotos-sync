@@ -38,6 +38,7 @@ class LocalData:
             self.con.close()
 
     def setup_new_db(self):
+        # todo should just run gphotos_empty.sqlite
         print("creating new database")
         src_folder = os.path.dirname(os.path.abspath(__file__))
         from_file = os.path.join(src_folder, LocalData.EMPTY_FILE_NAME)
@@ -113,7 +114,8 @@ class LocalData:
                 (filename, exif_date, size))
         else:
             self.cur.execute(
-                "SELECT Id, CreateDate FROM SyncFiles WHERE FileName LIKE ? AND "
+                "SELECT Id, CreateDate FROM SyncFiles WHERE FileName LIKE ? "
+                "AND "
                 "ModifyDate LIKE ? AND FileSize LIKE ?;",
                 (filename, exif_date, size))
         res = self.cur.fetchall()
@@ -152,16 +154,6 @@ class LocalData:
         for result in results:
             yield tuple(result)
 
-            # # todo probably want a join on this with Albums and SyncFiles
-            # # to get all the data required to make album file links in one
-            # query
-            # self.cur.execute(
-            #     "SELECT * FROM AlbumFiles WHERE Id = ?",
-            #     (album_id,))
-            # results = self.cur.fetchall()
-            # for result in results:
-            #     yield (result['AlbumRec'], result['DriveRec'])
-
     def put_album_file(self, album_rec, file_rec):
         self.cur.execute(
             "INSERT OR REPLACE INTO AlbumFiles(AlbumRec, DriveRec) VALUES(?,"
@@ -192,3 +184,24 @@ class LocalData:
         print("\nSaving Database ...")
         self.con.commit()
         print("Database Saved.\n")
+
+    def file_duplicate_no(self, file_id, local_full_path):
+        self.cur.execute(
+            "SELECT DuplicateNo FROM SyncFiles WHERE RemoteId = ?;", (file_id,))
+        results = self.cur.fetchone()
+        if results:
+            # return the existing file entry's duplicate no.
+            return results[0]
+
+        path = os.path.dirname(local_full_path)
+        name = os.path.basename(local_full_path)
+        self.cur.execute(
+            "SELECT MAX(DuplicateNo) FROM SyncFiles "
+            "WHERE Path = ? AND FileName = ?;", (path, name))
+        results = self.cur.fetchone()
+        if results[0]:
+            # assign the next available duplicate no.
+            return results[0] + 1
+        else:
+            # the file is new and has no duplicates
+            return 0
