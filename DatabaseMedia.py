@@ -14,12 +14,12 @@ class DatabaseMedia(GoogleMedia):
         if data_tuple:
             (
                 self._id, self._url, local_folder,
-                self._filename, self._duplicate_number, self._date,
-                self._checksum, self._description, self._size,
+                self._filename, self.orig_name, self._duplicate_number,
+                self._date, self._checksum, self._description, self._size,
                 self._create_date, _, self._media_type,
                 self._sym_link
             ) = data_tuple
-
+            self.duplicate_number = int(self.duplicate_number)
             self.media_folder = MediaFolder[self._media_type]
             media_root = os.path.join(root_folder, self.media_folder)
             self._relative_folder = os.path.relpath(local_folder,

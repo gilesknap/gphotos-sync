@@ -95,7 +95,7 @@ class LocalData:
     def put_file(self, data_tuple):
         try:
             self.cur.execute(
-                "INSERT INTO SyncFiles VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?) ;",
+                "INSERT INTO SyncFiles VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ;",
                 (None,) + data_tuple)
         except lite.IntegrityError as e:
             if 'RemoteId' in e.message:
@@ -185,23 +185,24 @@ class LocalData:
         self.con.commit()
         print("Database Saved.\n")
 
-    def file_duplicate_no(self, file_id, local_full_path):
+    def file_duplicate_no(self, file_id, path, name):
         self.cur.execute(
             "SELECT DuplicateNo FROM SyncFiles WHERE RemoteId = ?;", (file_id,))
         results = self.cur.fetchone()
+
         if results:
             # return the existing file entry's duplicate no.
             return results[0]
 
-        path = os.path.dirname(local_full_path)
-        name = os.path.basename(local_full_path)
+        # todo problem here - need to match ORIGINAL FILENAME
         self.cur.execute(
             "SELECT MAX(DuplicateNo) FROM SyncFiles "
-            "WHERE Path = ? AND FileName = ?;", (path, name))
+            "WHERE Path = ? AND OrigFileName = ?;", (path, name))
         results = self.cur.fetchone()
-        if results[0]:
+        if results[0] is not None:
             # assign the next available duplicate no.
-            return results[0] + 1
+            dup = results[0] + 1
+            return dup
         else:
             # the file is new and has no duplicates
             return 0

@@ -46,7 +46,7 @@ class GoogleMedia(object):
             description = unicode(self.description, 'utf8')
         data_tuple = (
             self.id, self.url, self.local_folder,
-            self.filename, self.duplicate_number,
+            self.filename, self.orig_name, self.duplicate_number,
             self.checksum, description, self.size,
             self.date, self.create_date, now_time, self.media_type,
             self.symlink
@@ -56,7 +56,8 @@ class GoogleMedia(object):
     def is_indexed(self, db):
         # checking for index has the side effect of setting duplicate no
         # probably should do this immediately after subclass init
-        num = db.file_duplicate_no(self. id, self.local_full_path)
+        num = db.file_duplicate_no(
+            self. id, self.local_folder, self.orig_name)
         self.duplicate_number = num
         result = db. find_drive_file_ids(filename=self.orig_name)
 

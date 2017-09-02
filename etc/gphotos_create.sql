@@ -48,6 +48,7 @@ create table SyncFiles
 	Url TEXT,
 	Path TEXT,
 	FileName TEXT,
+	OrigFileName TEXT,
 	DuplicateNo INT,
 	Checksum TEXT,
 	Description TEXT,

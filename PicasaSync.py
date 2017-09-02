@@ -168,6 +168,7 @@ class PicasaSync(object):
                 print("  failed to download %s" % media.local_path)
 
     def create_album_content_links(self):
+        print("creating album folder links to media ...")
         for (path, file_name, album_name, end_date) in \
                 self.db.get_album_files():
             full_file_name = os.path.join(path, file_name)
@@ -184,4 +185,5 @@ class PicasaSync(object):
                 if not os.path.isdir(link_folder):
                     os.makedirs(link_folder)
                 os.symlink(full_file_name, link_file)
+        print("album links done.")
 
