@@ -9,7 +9,7 @@ class MediaType(Enum):
     DRIVE = 0
     PICASA = 1
     ALBUM_LINK = 2
-    DATABASE = 4
+    DATABASE = 3
     NONE = 4
 
 
@@ -56,12 +56,14 @@ class GoogleMedia(object):
         return db.put_file(data_tuple)
 
     def is_indexed(self, db):
+        # todo (this is brittle so fix it)
         # checking for index has the side effect of setting duplicate no
         # probably should do this immediately after subclass init
         num = db.file_duplicate_no(
             self. id, self.local_folder, self.orig_name)
         self.duplicate_number = num
-        result = db. find_file_ids_dates(filename=self.orig_name)
+        result = db.find_file_ids_dates(filename=self.orig_name)
+        return result is not None
 
     # Path to the local folder in which this media item is stored this
     # will include the media type folder which is one of 'drive' 'picasa' or

@@ -7,6 +7,7 @@ import re
 DATE_NORMALIZE = re.compile('(\d\d\d\d).(\d\d).(\d\d).(\d\d).(\d\d).(\d\d)')
 SHORT_DATE_NORMALIZE = re.compile('(\d\d\d\d).(\d\d).(\d\d)')
 
+
 def retry(count, func, *arg, **k_arg):
     last_e = None
     for retry_no in range(count):

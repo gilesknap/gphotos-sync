@@ -9,7 +9,8 @@ from pydrive.drive import GoogleDrive
 
 from GoogleDriveMedia import GoogleDriveMedia
 from DatabaseMedia import DatabaseMedia
-from LocalData import LocalData
+from GoogleMedia import MediaType
+from ProgressHandler import ProgressHandler
 import Utils
 
 
@@ -17,42 +18,7 @@ class NoGooglePhotosFolderError(Exception):
     pass
 
 
-# todo the following todos to go into documentation before removing from here
-#
-# todo separate indexing and downloading into two separate parts
-# instead of scanning through folders do:
-# index all folders so we get a pathname for each folder id
-#  (make this last modified dependent so that it is quick after first pass)
-# get all images (with date filtering as required) and determine their path
-#   from the above index
-# this should make incremental passes as fast as possible
-#
-# todo also
-# start downloading umatched album files using the picassa download
-# the final scheme will have 3 root level folders
-#  drive
-#  photos
-#  albums
-# drive is a download of all drive files (or images/videos only if required)
-#   with original folder hierarchy
-# photos is download of picasa items not found in drive broken down by year
-#   folders (so one level folder depth only)
-# albums is a set of folders named as per picasa album names containing symlinks
-#   to files is the above two areas, again with year folders
-# goal is to have no files in photos if possible (everything in drive)
-#
-# suggest the layout of folders in all 3 is actually controlled by a regex
-# config item
-#
-# todo final breakdown will be the following phases each date gated
-# NOTE: flush the DB between each step
-# * index all drive folders
-# * index drive files
-# * index photos albums (with contents)
-# * download drive files
-# * download photos only files (not found in drive)
-# * create local google albums as folders with links to above
-# * create local albums from my original uploads via title or filename encoding
+# todo create local albums from my original uploads via title encoding
 
 # todo keep in mind that no 'Creations' of gphotos are referenced unless
 #  they appear in an album.
@@ -64,8 +30,6 @@ class NoGooglePhotosFolderError(Exception):
 #   tp backup these by creating a folder and then use Auto Backup to continue
 #   to save new creations (would require that they could be marked as 'do not
 #   delete' once sync of deletions is implemented)
-# todo - check if a search for -PANO, MOVIE.* etc works from picasa API
-
 
 class GoogleDriveSync(object):
     GOOGLE_PHOTO_FOLDER_QUERY = (
@@ -76,12 +40,10 @@ class GoogleDriveSync(object):
     AFTER_QUERY = " and modifiedDate >= '{}T00:00:00'"
     BEFORE_QUERY = " and modifiedDate <= '{}T00:00:00'"
     PAGE_SIZE = 500
-    # TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
     ROOT_FOLDER = "drive"
 
     def __init__(self, args, db=None, client_secret_file="client_secret.json",
                  credentials_json="credentials.json"):
-
         self.db = db
         self.args = args
         self.root_folder = args.root_folder
@@ -103,119 +65,10 @@ class GoogleDriveSync(object):
     def credentials(self):
         return self.g_auth.credentials
 
-    @classmethod
-    def get_photos_folder_id(self):
-        return "root"
-
-    def add_date_filter(self, query_params):
-        if self.args.start_date:
-            query_params[
-                'q'] += GoogleDriveSync.AFTER_QUERY % self.args.start_date
-        elif self.args.end_date:
-            query_params[
-                'q'] += GoogleDriveSync.BEFORE_QUERY % self.args.end_date
-
-    def get_remote_folder(self, parent_id, folder_name):
-        this_folder_id = None
-        parts = folder_name.split('/', 1)
-        query_params = {
-            "q": GoogleDriveSync.FOLDER_QUERY % (parts[0], parent_id)
-        }
-
-        for results in self.googleDrive.ListFile(query_params):
-            if len(results) == 0:
-                raise NoGooglePhotosFolderError(
-                    'Drive Folder "{}" not found'.format(folder_name))
-            this_folder_id = results[0]["id"]
-        if len(parts) > 1:
-            this_folder_id = self.get_remote_folder(this_folder_id, parts[1])
-        return this_folder_id
-
-    def get_remote_medias(self, folder_id, path):
-        query_params = {
-            "q": GoogleDriveSync.MEDIA_QUERY % folder_id,
-            "maxResults": GoogleDriveSync.PAGE_SIZE,
-            # "orderBy": 'createdDate desc, title'
-            "orderBy": 'title'
-        }
-        self.add_date_filter(query_params)
-
-        results = Utils.retry(5, self.googleDrive.ListFile, query_params)
-
-        for page_results in results:
-            for drive_file in page_results:
-                mime = drive_file["mimeType"]
-                if not self.args.include_video:
-                    if mime.startswith("video/"):
-                        continue
-                media = GoogleDriveMedia(path, self.root_folder,
-                                         drive_file=drive_file)
-                yield media
-
-    def has_local_version(self, media):
-        # todo switch to using the DB to determine next duplicate number to use
-        # todo (and can probably combine with is_indexed)
-        exists = False
-        # recursively check if any existing duplicates have same id
-        if os.path.isfile(media.local_full_path):
-            db_record = DatabaseMedia.get_media_by_filename(
-                media.local_full_path, self.root_folder, self.db)
-            if db_record.id:
-                if db_record.id == media.id:
-                    exists = True
-                else:
-                    media.duplicate_number += 1
-                    exists = self.has_local_version(media)
-            return exists
-        return exists
-
-    def download_media(self, media, path, progress_handler=None):
-        temp_filename = os.path.join(self.root_folder, '.temp-photo')
-
-        if not self.args.index_only:
-            if not os.path.isdir(media.local_folder):
-                os.makedirs(media.local_folder)
-            # retry for occasional transient quota errors - http 503
-            for retry in range(10):
-                try:
-                    with io.open(temp_filename, 'bw') as target_file:
-                        request = self.g_auth.service.files().get_media(
-                            fileId=media.id)
-                        download_request = http.MediaIoBaseDownload(target_file,
-                                                                    request)
-
-                        done = False
-                        while not done:
-                            download_status, done = \
-                                download_request.next_chunk()
-                            if progress_handler is not None:
-                                progress_handler.update_progress(
-                                    download_status)
-                except Exception as e:
-                    print("\nRETRYING due to", e)
-                    continue
-
-                os.rename(temp_filename, media.local_full_path)
-                break
-        else:
-            print("Added %s" % media.local_full_path)
-
-        try:
-            media.save_to_db(self.db)
-        except LocalData.DuplicateDriveIdException:
-            print media.local_full_path, "is duplicate"
-            # this error may just mean we already indexed on a previous pass
-            #  but could also mean that there are >1 refs t this file on drive
-            # in future I will separate index and download anyway and this will
-            # be handled differently
-            # print("WARNING, %s is a link to another file" %
-            #       media.local_full_path)
-            # todo create a symlink in the file system for this
-            # todo put symlink field in the DB too and add this to GoogleMedia
-
     def scan_folder_hierarchy(self):
         print('Scanning Drive Folders ...')
         # get the root id
+        root_id = None
         query_params = {'q': self.GOOGLE_PHOTO_FOLDER_QUERY}
         results = Utils.retry(5, self.googleDrive.ListFile, query_params)
         for page_results in results:
@@ -251,6 +104,7 @@ class GoogleDriveSync(object):
             self.recurse_paths(next_path, fid)
 
     def index_drive_media(self):
+        print('\nIndexing Drive Files ...')
         q = "(mimeType contains 'image/' or mimeType contains 'video/')"
         if self.args.start_date:
             q += self.AFTER_QUERY.format(self.args.start_date)
@@ -269,8 +123,40 @@ class GoogleDriveSync(object):
             for drive_file in page_results:
                 media = GoogleDriveMedia(self.folder_paths,
                                          self.args.root_folder, drive_file)
-                n += 1
-                print(u"{} {} Added {}".format(
-                    n, media.date, media.local_full_path))
-                media.save_to_db(self.db)
+                if not media.is_indexed(self.db):
+                    n += 1
+                    print(u"Added {} {}".format(n, media.local_full_path))
+                    media.save_to_db(self.db)
 
+    def download_drive_media(self):
+        print('\nDownloading Drive Files ...')
+        for media in DatabaseMedia.get_media_by_search(
+                self.args.root_folder, self.db, media_type=MediaType.DRIVE,
+                start_date=self.args.start_date, end_date=self.args.end_date):
+            if os.path.exists(media.local_full_path):
+                continue
+
+            if not os.path.isdir(media.local_folder):
+                os.makedirs(media.local_folder)
+            temp_filename = os.path.join(self.root_folder, '.temp-photo')
+
+            if self.args.quiet:
+                progress_handler = None
+            else:
+                progress_handler = ProgressHandler(media)
+
+            with io.open(temp_filename, 'bw') as target_file:
+                request = self.g_auth.service.files().get_media(
+                    fileId=media.id)
+                download_request = http.MediaIoBaseDownload(target_file,
+                                                            request)
+
+                done = False
+                while not done:
+                    download_status, done = \
+                        Utils.retry(10, download_request.next_chunk)
+                    if progress_handler is not None:
+                        progress_handler.update_progress(
+                            download_status)
+
+                os.rename(temp_filename, media.local_full_path)

@@ -10,7 +10,8 @@ import shutil
 # (2) LocalData.record_to_tuple
 # (3) LocalData.put_file
 # (4) DatabaseMedia constructor
-# add or remove column related properties from GoogleMedia (and subclasses)
+# ( add or remove column related properties from GoogleMedia (and subclasses) )
+
 
 # todo currently store full path in SyncFiles.Path
 # would be better as relative path and store root once in this module (runtime)
@@ -67,16 +68,13 @@ class LocalData:
 
     def get_files_by_search(self, drive_id='%', media_type='%',
                             start_date=None, end_date=None):
-
         params = (drive_id, int(media_type))
-        # todo dates wont work since they are strings at present
-        # need to be changed to INT
         date_clauses = ''
         if start_date:
-            date_clauses += 'AND ExifDate >= ?'
+            date_clauses += 'AND ModifyDate >= ?'
             params += (start_date,)
-        if start_date:
-            date_clauses += 'AND ExifDate <= ?'
+        if end_date:
+            date_clauses += 'AND ModifyDate <= ?'
             params += (end_date,)
 
         query = "SELECT * FROM SyncFiles WHERE RemoteId LIKE ? AND " \
@@ -106,7 +104,7 @@ class LocalData:
         # However we will only see the last reference in our local sync of
         # the drive folders (this does not affect Google Photos sub-folders)
         self.cur.execute(
-            "INSERT OR REPLACE INTO SyncFiles "
+            "INSERT INTO SyncFiles "
             "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ;",
             (None,) + data_tuple)
         return self.cur.lastrowid
@@ -186,7 +184,7 @@ class LocalData:
         self.cur.execute(
             "UPDATE DriveFolders SET Path = ? WHERE ParentId = ?;",
             (path, parent_id))
-        results = self.cur.fetchall()
+        self.cur.fetchall()
 
         self.cur.execute(
             "SELECT FolderId, FolderName FROM DriveFolders WHERE ParentId = ?;",
@@ -210,7 +208,6 @@ class LocalData:
             # return the existing file entry's duplicate no.
             return results[0]
 
-        # todo problem here - need to match ORIGINAL FILENAME
         self.cur.execute(
             "SELECT MAX(DuplicateNo) FROM SyncFiles "
             "WHERE Path = ? AND OrigFileName = ?;", (path, name))

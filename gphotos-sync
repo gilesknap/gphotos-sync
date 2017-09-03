@@ -61,6 +61,7 @@ def main():
     app_dirs = AppDirs(APP_NAME)
 
     data_store = LocalData(cmd_args.root_folder)
+
     with data_store:
         credentials_file = os.path.join(
             app_dirs.user_data_dir, "credentials.json")
@@ -77,10 +78,11 @@ def main():
         try:
             google_drive_sync.scan_folder_hierarchy()
             google_drive_sync.index_drive_media()
-            #download_command(google_drive_sync, cmd_args)
-            #picasa_sync.index_album_media(limit=10)
+            if not cmd_args.index_only:
+                google_drive_sync.download_drive_media()
             picasa_sync.index_album_media()
-            picasa_sync.download_album_media()
+            if not cmd_args.index_only:
+                picasa_sync.download_album_media()
             picasa_sync.create_album_content_links()
 
         except (KeyboardInterrupt, SystemExit):

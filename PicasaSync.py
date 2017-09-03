@@ -83,8 +83,6 @@ class PicasaSync(object):
 
     def index_album_media(self, album_name=None, limit=None):
         print('\nAlbums index - Reading albums ...')
-        # Todo see if it is possible to query for mod date > last scan
-        # todo temp max results for faster testing
         albums = Utils.retry(10, self.gdata_client.GetUserFeed, limit=limit)
         total_photos = multiple = picasa_only = 0
         print('Album count %d\n' % len(albums.entry))
@@ -98,9 +96,7 @@ class PicasaSync(object):
                     or album.title.text in self.HIDDEN_ALBUMS:
                 continue
 
-            start_date = Utils.string_to_date(album.published.text)
-            # todo albums by their published date is a bit arbitrary
-            # todo need a modified date (is this avail?)
+            start_date = Utils.string_to_date(album.updated.text)
             if self.args.start_date:
                 if Utils.string_to_date(self.args.start_date) > start_date:
                     continue
@@ -119,6 +115,9 @@ class PicasaSync(object):
                                      limit=limit, start_index=start_entry)
                 for photo in photos.entry:
                     media = PicasaMedia(None, self.args.root_folder, photo)
+                    # calling is_indexed to make sure duplicate_no is correct
+                    # todo remove this when duplicate no handling is moved
+                    media.is_indexed(self.db)
                     results = self.match_drive_photo(media)
                     if results and len(results) == 1:
                         # store link between album and drive file
@@ -135,7 +134,8 @@ class PicasaSync(object):
                         picasa_only += 1
                         new_file_key = media.save_to_db(self.db)
                         self.db.put_album_file(album_id, new_file_key)
-                        print("  Added %s" % media.local_full_path)
+                        print(u"Added {} {}".format(picasa_only,
+                                                    media.local_full_path))
                     else:
                         multiple += 1
                         print ('  WARNING multiple files match %s %s %s' %
@@ -153,13 +153,14 @@ class PicasaSync(object):
             self.db.put_album(album_id, album.title.text,
                               start_date, end_date)
 
-        print('Total Album Photos in Drive %d, Picasa %d, multiples %d' % (
+        print('\nTotal Album Photos in Drive %d, Picasa %d, multiples %d' % (
             total_photos, picasa_only, multiple))
 
     def download_album_media(self):
         print('\nDownloading Picasa Only Files ...')
         for media in DatabaseMedia.get_media_by_search(
-                self.args.root_folder, self.db, media_type=MediaType.PICASA):
+                self.args.root_folder, self.db, media_type=MediaType.PICASA,
+                start_date=self.args.start_date, end_date=self.args.end_date):
             if os.path.exists(media.local_full_path):
                 continue
 
@@ -177,24 +178,20 @@ class PicasaSync(object):
                 print("  failed to download %s" % media.local_path)
 
     def create_album_content_links(self):
-        print("creating album folder links to media ...")
+        print("\nCreating album folder links to media ...")
         for (path, file_name, album_name, end_date) in \
                 self.db.get_album_files():
             full_file_name = os.path.join(path, file_name)
-            if os.path.exists(full_file_name):
-                print("WARNING. Duplicate {0} in {1}".format(
-                    full_file_name, album_name))
-            else:
-                pref = Utils.string_to_date(end_date).strftime('%Y/%m%d')
-                rel_path = u"{0} {1}".format(pref, album_name)
-                link_folder = os.path.join(self.args.root_folder, 'albums',
-                                           rel_path)
-                link_file = os.path.join(link_folder, file_name)
-                if os.path.islink(link_file):
-                    print u"{} already linked".format(link_file)
-                else:
-                    if not os.path.isdir(link_folder):
-                        os.makedirs(link_folder)
-                    os.symlink(full_file_name, link_file)
-        print("album links done.")
 
+            prefix = Utils.string_to_date(end_date).strftime('%Y/%m%d')
+            rel_path = u"{0} {1}".format(prefix, album_name)
+            link_folder = os.path.join(self.args.root_folder, 'albums',
+                                       rel_path)
+
+            link_file = os.path.join(link_folder, file_name)
+            if not os.path.islink(link_file):
+                if not os.path.isdir(link_folder):
+                    os.makedirs(link_folder)
+                os.symlink(full_file_name, link_file)
+
+        print("album links done.\n")

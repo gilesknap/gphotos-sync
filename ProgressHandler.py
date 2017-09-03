@@ -3,6 +3,7 @@
 from progressbar import (AdaptiveETA, AdaptiveTransferSpeed, Bar, Percentage,
                          ProgressBar)
 
+
 class ProgressHandler(object):
     def __init__(self, media):
 
