@@ -66,7 +66,7 @@ class GoogleDriveSync(object):
         return self.g_auth.credentials
 
     def scan_folder_hierarchy(self):
-        print('Scanning Drive Folders ...')
+        print('\nIndexing Drive Folders ...')
         # get the root id
         root_id = None
         query_params = {'q': self.GOOGLE_PHOTO_FOLDER_QUERY}
@@ -92,7 +92,7 @@ class GoogleDriveSync(object):
                     parent_id = None
                 self.db.put_drive_folder(drive_file['id'], parent_id,
                                          drive_file['title'])
-        print('resolving paths ...')
+        print('Resolving paths ...')
         self.folder_paths[root_id] = ''
         self.recurse_paths('', root_id)
         print('Drive Folders scanned.\n')

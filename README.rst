@@ -16,13 +16,32 @@ of files via the drive API counts against Quota.
 If in future a Google Photos API is provided by Google then an update to two
 way sync is possible.
 
+After doing a full sync you will have 3 directories off of the specified root:
+* currently relies on a patch to gdata-python-client see open issue for details of how to patch
+* drive - contains all photos and videos from your google drive with original folder hierarchy and file names
+* picasa - contains any media that was referenced in an album but not found in drive. This will usually include all google photos creations such as ANIMATIONS, EFFECTS etc. These have the original file names and organized into folders by date.
+* albums - contains a folder hierarchy representing the set of albums in your photos (but not shared ones). All the files are symlinks to content in one of the other folders.
+
+In drive and picasa folders duplicate files names are handled by adding (1) etc. (as per Google's drive sync tool for windows)
+
+in the root folder a sqlite database holds an index of all media and albums. Useful to find out about the state of your photo store.
+
+This has been tested against my photo store of nearly 100,000 photos.
+
 Primary Goals
 --------------
 * provide a file system backup so it is possible to monitor for accidental deletions (or deletions caused by bugs) in very large photo collections
 * make it possible to switch to a different photo management system in future if this ever becomes desirable/necessary
+* use the Google Drive API as much as possible and the deprecated picasa web API as little as possible.
+*   picasa is only used to get lists of album contents and to download items that are missing from Google Drive.
 
 Known Issues
 ------------
+* Shared folders are not seen, this is a limitation of picasa web api and is not likely to be fixed
+* Albums of over 10,000 photos are truncated at 10,000 again due to a limitation of the web api. Unfortunately this means you will not automatically retrieve all google photos creations if you have > 10,0000 photos. I suggest creating a 'Creations'
+* To investigate - Download of video files seems slower than it should be
+* Todo - handle deletes and moves
+* Todo - remember last synced date and default to incremental backup
 
 Install and configure
 ---------------------
@@ -78,9 +97,6 @@ optional arguments:
   -h, --help            show this help message and exit
   --quiet               quiet (no output)
   --include-video       include video types in sync
-  --start-folder START_FOLDER
-                        Google Photos folder to sync e.g. "Google
-                        Photos/2017/08", defaults to root
   --start-date START_DATE
                         Set the earliest date of files to sync
   --end-date END_DATE   Set the latest date of files to sync

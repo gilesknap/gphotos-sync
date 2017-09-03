@@ -89,13 +89,17 @@ class PicasaSync(object):
 
         for album in albums.entry:
             total_photos += int(album.numphotos.text)
-            print('Album title: %s, number of photos: %s, id: %s' % (
-                album.title.text, album.numphotos.text, album.gphoto_id.text))
+            print('Album title: {}, number of photos: {}, date: {}'.format(
+                album.title.text, album.numphotos.text, album.updated.text))
 
             if album_name and album_name != album.title.text \
                     or album.title.text in self.HIDDEN_ALBUMS:
                 continue
 
+            # todo date filtering is too crude at present - if I have changed
+            # the title of an old album recently then a scan for recent files
+            # would pick it up but its contents would be skipped in the drive
+            # phase - Only problem for partially indexed photo stores
             start_date = Utils.string_to_date(album.updated.text)
             if self.args.start_date:
                 if Utils.string_to_date(self.args.start_date) > start_date:
