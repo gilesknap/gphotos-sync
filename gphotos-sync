@@ -6,10 +6,8 @@ import traceback
 from appdirs import AppDirs
 
 from GoogleDriveSync import GoogleDriveSync
-from ProgressHandler import ProgressHandler
 from PicasaSync import PicasaSync
 from LocalData import LocalData
-import Utils
 
 APP_NAME = "gphotos-sync"
 
@@ -53,6 +51,19 @@ def parse_arguments():
         "--index-only",
         action='store_true',
         help="Only build the index of files in .gphotos.db - no downloads")
+    parser.add_argument(
+        "--picasa-only",
+        action='store_true',
+        help="skip drive scan, (assume that the db is up to date "
+             "with drive files - for testing)")
+    parser.add_argument(
+        "--album",
+        help="only index a single album (for testing)",
+        default=None)
+    parser.add_argument(
+        "--drive-file",
+        help="only index a single drive file (for testing)",
+        default=None)
     return parser.parse_args()
 
 
@@ -76,11 +87,12 @@ def main():
                                  cmd_args, data_store)
 
         try:
-            google_drive_sync.scan_folder_hierarchy()
-            google_drive_sync.index_drive_media()
+            if not cmd_args.picasa_only:
+                google_drive_sync.scan_folder_hierarchy()
+                google_drive_sync.index_drive_media()
             if not cmd_args.index_only:
                 google_drive_sync.download_drive_media()
-            picasa_sync.index_album_media()
+            picasa_sync.index_album_media(album_name=cmd_args.album)
             if not cmd_args.index_only:
                 picasa_sync.download_album_media()
             picasa_sync.create_album_content_links()

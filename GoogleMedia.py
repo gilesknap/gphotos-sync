@@ -62,7 +62,7 @@ class GoogleMedia(object):
         num = db.file_duplicate_no(
             self. id, self.local_folder, self.orig_name)
         self.duplicate_number = num
-        result = db.find_file_ids_dates(filename=self.orig_name)
+        result = db.get_file_by_id(remote_id=self.id)
         return result is not None
 
     # Path to the local folder in which this media item is stored this

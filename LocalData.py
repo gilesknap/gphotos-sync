@@ -97,6 +97,12 @@ class LocalData:
         result = self.record_to_tuple(self.cur.fetchone())
         return result
 
+    def get_file_by_id(self, remote_id):
+        self.cur.execute(
+            "SELECT * FROM SyncFiles WHERE RemoteId = ?;", (remote_id,))
+        result = self.record_to_tuple(self.cur.fetchone())
+        return result
+
     def put_file(self, data_tuple):
         # note this will overwrite existing entries with new data which fine
         # but we hide the possibility of > 1 reference to a single file from

@@ -39,6 +39,7 @@ class GoogleDriveSync(object):
     MEDIA_QUERY = "(mimeType contains 'image/' or mimeType contains 'video/')"
     AFTER_QUERY = " and modifiedDate >= '{}T00:00:00'"
     BEFORE_QUERY = " and modifiedDate <= '{}T00:00:00'"
+    FILENAME_QUERY = 'title contains "{}"'
     PAGE_SIZE = 500
     ROOT_FOLDER = "drive"
 
@@ -106,6 +107,9 @@ class GoogleDriveSync(object):
     def index_drive_media(self):
         print('\nIndexing Drive Files ...')
         q = "(mimeType contains 'image/' or mimeType contains 'video/')"
+
+        if self.args.drive_file:
+            q = self.FILENAME_QUERY.format(self.args.drive_file)
         if self.args.start_date:
             q += self.AFTER_QUERY.format(self.args.start_date)
         if self.args.end_date:
