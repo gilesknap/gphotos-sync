@@ -18,35 +18,6 @@ APP_NAME = "gphotos-sync"
 # switch all string formatting to .format
 # docstings everywhere
 # add logger instead of prints
-def download_folder(folder_id, path, google_photos_sync, args):
-    print('-------------------- %s' % path)
-    progress_handler = None
-    for remote_media in google_photos_sync.get_remote_medias(folder_id, path):
-        mime = remote_media.mime_type
-        if mime.endswith('folder'):
-            download_folder(remote_media.id, remote_media.relative_path,
-                            google_photos_sync, args)
-        elif mime.startswith("video/") or mime.startswith("image/"):
-            if args.index_only:
-                if remote_media.is_indexed(google_photos_sync.db):
-                    continue
-            else:
-                if google_photos_sync.has_local_version(remote_media):
-                    continue
-
-            if not (args.quiet or args.index_only):
-                progress_handler = ProgressHandler(remote_media)
-            google_photos_sync.download_media(
-                remote_media, path, progress_handler=progress_handler)
-
-
-def download_command(gs, args):
-    folder_id = gs.get_photos_folder_id()
-    if gs.start_folder != '':
-        folder_id = gs.get_remote_folder(folder_id, gs.start_folder)
-
-    download_folder(folder_id, gs.start_folder, gs, args)
-
 
 ###############################################################################
 # Main code
@@ -66,11 +37,6 @@ def parse_arguments():
     parser.add_argument(
         "root_folder",
         help="root of the local folders to download into")
-    parser.add_argument(
-        "--start-folder",
-        help='Google Photos folder to sync e.g. "Google Photos/2017/08", '
-             'defaults to root',
-        default='')
     parser.add_argument(
         "--start-date",
         help="Set the earliest date of files to sync",

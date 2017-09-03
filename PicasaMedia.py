@@ -3,6 +3,7 @@
 import os.path
 from datetime import datetime
 from GoogleMedia import GoogleMedia, MediaType, MediaFolder
+import Utils
 
 
 class PicasaMedia(GoogleMedia):
@@ -13,19 +14,6 @@ class PicasaMedia(GoogleMedia):
         super(PicasaMedia, self).__init__(relative_folder, root_folder)
         self.__photo_xml = photo_xml
         self._relative_folder = self.define_path()
-
-    @classmethod
-    def time_from_timestamp(cls, time_secs, hour_offset=0):
-        date = datetime.fromtimestamp(
-            int(time_secs) / 1000 - 3600 * hour_offset)
-        return date
-
-    @classmethod
-    def parse_date_string(cls, date_string):
-        # some times are ucase T and non zero millisecs - normalize
-        date = datetime.strptime(date_string.upper()[:-4],
-                                 "%Y-%m-%dT%H:%M:%S.")
-        return date
 
     def define_path(self):
         return self.date.strftime('%Y/%m')
@@ -65,14 +53,14 @@ class PicasaMedia(GoogleMedia):
 
     @property
     def create_date(self):
-        return self.parse_date_string(self.__photo_xml.published.text)
+        return Utils.string_to_date(self.__photo_xml.published.text)
 
     @property
     def date(self):
         try:
-            return self.time_from_timestamp(self.__photo_xml.exif.time.text, 0)
-        except AttributeError as e:
-            return self.parse_date_string(self.__photo_xml.updated.text)
+            return Utils.timestamp_to_date(self.__photo_xml.exif.time.text, 0)
+        except AttributeError:
+            return Utils.string_to_date(self.__photo_xml.updated.text)
 
     @property
     def mime_type(self):

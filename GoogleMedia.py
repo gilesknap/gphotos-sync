@@ -2,7 +2,6 @@
 # coding: utf8
 import os.path
 from enum import Enum
-from datetime import datetime
 from time import gmtime, strftime
 
 
@@ -62,12 +61,7 @@ class GoogleMedia(object):
         num = db.file_duplicate_no(
             self. id, self.local_folder, self.orig_name)
         self.duplicate_number = num
-        result = db. find_drive_file_ids(filename=self.orig_name)
-
-    # todo this is named wrong and sort out picsaSYnc / base date classmethods
-    @classmethod
-    def format_date(cls, date):
-        return datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
+        result = db. find_file_ids_dates(filename=self.orig_name)
 
     # Path to the local folder in which this media item is stored this
     # will include the media type folder which is one of 'drive' 'picasa' or

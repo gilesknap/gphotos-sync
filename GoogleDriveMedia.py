@@ -3,6 +3,7 @@
 import re
 from datetime import datetime
 from GoogleMedia import GoogleMedia, MediaType, MediaFolder
+import Utils
 
 
 class GoogleDriveMedia(GoogleMedia):
@@ -73,7 +74,7 @@ class GoogleDriveMedia(GoogleMedia):
     def date(self):
         try:
             exif_date = self.get_exif_value("date")
-            photo_date = self.format_date(exif_date)
+            photo_date = Utils.string_to_date(exif_date)
         except (KeyError, ValueError):
             photo_date = self.create_date
 

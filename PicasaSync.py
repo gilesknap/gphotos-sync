@@ -49,16 +49,16 @@ class PicasaSync(object):
         d.start()
 
     def match_drive_photo(self, media):
-        file_keys = self.db.find_drive_file_ids(size=media.size)
+        file_keys = self.db.find_file_ids_dates(size=media.size)
         if file_keys and len(file_keys) == 1:
             return file_keys
 
-        file_keys = self.db.find_drive_file_ids(filename=media.filename)
+        file_keys = self.db.find_file_ids_dates(filename=media.filename)
         if file_keys and len(file_keys) == 1:
             return file_keys
 
         if file_keys and len(file_keys) > 1:
-            file_keys = self.db.find_drive_file_ids(filename=media.filename,
+            file_keys = self.db.find_file_ids_dates(filename=media.filename,
                                                     size=media.size)
             # multiple matches here represent the same image
             if file_keys:
@@ -71,7 +71,7 @@ class PicasaSync(object):
         # todo verify that the above is required in my photos collection
         for use_create_date in [False, True]:
             dated_file_keys = \
-                self.db.find_drive_file_ids(filename=media.filename,
+                self.db.find_file_ids_dates(filename=media.filename,
                                             exif_date=media.date,
                                             use_create=use_create_date)
             if dated_file_keys:
@@ -98,7 +98,16 @@ class PicasaSync(object):
                     or album.title.text in self.HIDDEN_ALBUMS:
                 continue
 
-            start_date = PicasaMedia.parse_date_string(album.published.text)
+            start_date = Utils.string_to_date(album.published.text)
+            # todo albums by their published date is a bit arbitrary
+            # todo need a modified date (is this avail?)
+            if self.args.start_date:
+                if Utils.string_to_date(self.args.start_date) > start_date:
+                    continue
+            if self.args.end_date:
+                if Utils.string_to_date(self.args.end_date) < start_date:
+                    continue
+
             end_date = start_date
             album_id = album.gphoto_id.text
             q = album.GetPhotosUri() + "&imgmax=d"
@@ -110,18 +119,18 @@ class PicasaSync(object):
                                      limit=limit, start_index=start_entry)
                 for photo in photos.entry:
                     media = PicasaMedia(None, self.args.root_folder, photo)
-                    file_keys = self.match_drive_photo(media)
-                    if file_keys and len(file_keys) == 1:
+                    results = self.match_drive_photo(media)
+                    if results and len(results) == 1:
                         # store link between album and drive file
-                        (file_key, date) = file_keys[0]
+                        (file_key, date) = results[0]
                         self.db.put_album_file(album_id, file_key)
-                        file_date = GoogleMedia.format_date(date)
+                        file_date = Utils.string_to_date(date)
                         # make the album dates cover the range of its contents
                         if end_date < file_date:
                             end_date = file_date
                         if start_date > file_date:
                             start_date = file_date
-                    elif file_keys is None:
+                    elif results is None:
                         # no match so this exists only in picasa
                         picasa_only += 1
                         new_file_key = media.save_to_db(self.db)
@@ -176,7 +185,7 @@ class PicasaSync(object):
                 print("WARNING. Duplicate {0} in {1}".format(
                     full_file_name, album_name))
             else:
-                pref = GoogleMedia.format_date(end_date).strftime('%Y/%m%d')
+                pref = Utils.string_to_date(end_date).strftime('%Y/%m%d')
                 rel_path = u"{0} {1}".format(pref, album_name)
                 link_folder = os.path.join(self.args.root_folder, 'albums',
                                            rel_path)

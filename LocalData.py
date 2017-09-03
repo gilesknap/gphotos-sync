@@ -4,9 +4,16 @@ import os.path
 import sqlite3 as lite
 import shutil
 
+# NOTES on DB Schema changes
+# if adding or removing columns from SyncFiles Table Update:
+# (1) GoogleMedia.save_to_db
+# (2) LocalData.record_to_tuple
+# (3) LocalData.put_file
+# (4) DatabaseMedia constructor
+# add or remove column related properties from GoogleMedia (and subclasses)
 
 # todo currently store full path in SyncFiles.Path
-# would be better as relative path and store root once in global table
+# would be better as relative path and store root once in this module (runtime)
 # this could be refreshed at start for a portable file system folder
 # also this would remove the need to pass any paths to the GoogleMedia
 # constructors (which is messy)
@@ -48,8 +55,8 @@ class LocalData:
     def record_to_tuple(cls, rec):
         if rec:
             data_tuple = (
-                rec['RemoteId'], rec['Url'], rec['Path'],
-                rec['FileName'], rec['DuplicateNo'], rec['ModifyDate'],
+                rec['RemoteId'], rec['Url'], rec['Path'], rec['FileName'],
+                rec['OrigFileName'], rec['DuplicateNo'], rec['ModifyDate'],
                 rec['Checksum'], rec['Description'], rec['FileSize'],
                 rec['CreateDate'], rec['SyncDate'], rec['MediaType'],
                 rec['SymLink']
@@ -104,7 +111,7 @@ class LocalData:
             (None,) + data_tuple)
         return self.cur.lastrowid
 
-    def find_drive_file_ids(self, filename='%', exif_date='%', size='%',
+    def find_file_ids_dates(self, filename='%', exif_date='%', size='%',
                             use_create=False):
         if use_create:
             self.cur.execute(

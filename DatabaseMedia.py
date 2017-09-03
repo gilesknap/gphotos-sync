@@ -14,7 +14,7 @@ class DatabaseMedia(GoogleMedia):
         if data_tuple:
             (
                 self._id, self._url, local_folder,
-                self._filename, self.orig_name, self._duplicate_number,
+                self._filename, self._orig_name, self._duplicate_number,
                 self._date, self._checksum, self._description, self._size,
                 self._create_date, _, self._media_type,
                 self._sym_link

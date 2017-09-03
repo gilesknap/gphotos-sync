@@ -85,7 +85,6 @@ class GoogleDriveSync(object):
         self.db = db
         self.args = args
         self.root_folder = args.root_folder
-        self.start_folder = args.start_folder
 
         if args.new_token:
             os.remove(credentials_json)
