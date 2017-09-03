@@ -4,27 +4,25 @@
 
 Google Photos Sync downloads your Google Photos to the local file system.
 It attempts to backup all the photos as stored in Google Drive, but also
-the album information and additional Google Photos generated content that does
-not appear in Drive. The only API for accessing the latter two is picasa web and
-this is now severely crippled by (Google) design.
+the album information and additional Google Photos 'Creations' (animations, panoramas, movies, effects and collages) that do not appear in Drive. The only API for accessing the latter two is picasa web and this is now severely crippled. Hopefully Google intends to replace it with something like native photos support in Google Drive.
 
-It currently does not have upload features. Uploading of album info is no
+Gphotos-sync currently does not have upload features. Uploading of album info is no
 longer possible since Google deprecated most of the picasa API see details
 here: https://developers.google.com/picasa-web/docs/3.0/releasenotes. Uploading
 of files via the drive API counts against Quota.
 
-If in future a Google Photos API is provided by Google then an update to two
-way sync is possible.
+If in future a Google Photos API is provided by Google then an two
+way sync will be added.
 
 After doing a full sync you will have 3 directories off of the specified root:
-* currently relies on a patch to gdata-python-client see open issue for details of how to patch
+
 * drive - contains all photos and videos from your google drive with original folder hierarchy and file names
-* picasa - contains any media that was referenced in an album but not found in drive. This will usually include all google photos creations such as ANIMATIONS, EFFECTS etc. These have the original file names and organized into folders by date.
+* picasa - contains any media that was referenced in an album but not found in drive. This will usually include all google photos creations such as ANIMATIONS, EFFECTS etc. These have the original file names and are organized into folders by date.
 * albums - contains a folder hierarchy representing the set of albums in your photos (but not shared ones). All the files are symlinks to content in one of the other folders.
 
-In drive and picasa folders duplicate files names are handled by adding (1) etc. (as per Google's drive sync tool for windows)
+In drive and picasa, folders containing duplicate files names are handled by adding (1) etc to the file name. (as per Google's drive sync tool for windows)
 
-in the root folder a sqlite database holds an index of all media and albums. Useful to find out about the state of your photo store.
+In the root folder a sqlite database holds an index of all media and albums. Useful to find out about the state of your photo store. You can open it with the sqlite3 tool and perform any sql queries.
 
 This has been tested against my photo store of nearly 100,000 photos.
 
@@ -33,16 +31,15 @@ Primary Goals
 * provide a file system backup so it is possible to monitor for accidental deletions (or deletions caused by bugs) in very large photo collections
 * make it possible to switch to a different photo management system in future if this ever becomes desirable/necessary
 * use the Google Drive API as much as possible and the deprecated picasa web API as little as possible.
-*   picasa is only used to get lists of album contents and to download items that are missing from Google Drive.
+  * picasa is only used to get lists of album contents and to download items that are missing from Google Drive.
 
 Known Issues
 ------------
 * Shared folders are not seen, this is a limitation of picasa web api and is not likely to be fixed
-* Albums of over 10,000 photos are truncated at 10,000 again due to a limitation of the web api. Unfortunately this means you will not automatically retrieve all google photos creations if you have > 10,0000 photos. I suggest creating a 'Creations'
+* Albums of over 10,000 photos are truncated at 10,000. This is again due to a limitation of the web api. Unfortunately this means you will not automatically retrieve all google photos creations if you have > 10,0000 photos. I suggest creating a 'Creations' album and copying all creations into it, this will then sync (and any future creations will be handled by the gloabl 'Auto Backup' album
 * Todo - handle deletes and moves
 * Todo - remember last synced date and default to incremental backup
 * Todo make python 3 compatible
-* To investigate - Download of video files seems slower than it should be
 
 Install and configure
 ---------------------
@@ -71,8 +68,6 @@ To do so:
 .. _`Activating and Desactivating APIs procedure`: https://developers.google.com/console/help/new/#activating-and-deactivating-apis
 .. _`setting up oauth 2.0 procedure`: https://developers.google.com/console/help/new/#setting-up-oauth-20
 
-Currently photo api relies on a hacked version of gdata: TODO - fork the gdata repo and
-point dependency at it.
 
 How to use it
 -------------
@@ -84,8 +79,9 @@ Once the script is configured, you are now ready to use it using the simple foll
 The first time, it will ask you to go to an url and copy back the authorization code in order
 to authorize the client to access your Google Photos through Google Drive.
 
-usage: gphotos-sync [-h] [--quiet] [--include-video]
-                    [--start-folder START_FOLDER] [--start-date START_DATE]
+Description of the cmdline parameters below:-
+
+usage: gphotos-sync [-h] [--quiet] [--include-video] [--start-date START_DATE]
                     [--end-date END_DATE] [--new-token] [--index-only]
                     root_folder
 
@@ -104,5 +100,3 @@ optional arguments:
   --new-token           Request new token
   --index-only          Only build the index of files in .gphotos.db - no
                         downloads
-
-

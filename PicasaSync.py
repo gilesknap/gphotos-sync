@@ -33,8 +33,10 @@ class PicasaSync(object):
         self.credentials.refresh(httplib2.Http())
 
         gd_client = gdata.photos.service.PhotosService()
+        orig_request = gd_client.http_client.request
         gd_client = self.auth2token.authorize(gd_client)
-        gd_client = Utils.patch_http_client(self.auth2token, gd_client)
+        gd_client = Utils.patch_http_client(self.auth2token, gd_client,
+                                            orig_request)
         gd_client.additional_headers = {
             'Authorization': 'Bearer %s' % self.credentials.access_token}
         self.gdata_client = gd_client
@@ -83,14 +85,15 @@ class PicasaSync(object):
         return file_keys
 
     def index_album_media(self, album_name=None, limit=None):
-        print('\nAlbums index - Reading albums ...')
+        print('\nIndexing Albums ...')
         albums = Utils.retry(10, self.gdata_client.GetUserFeed, limit=limit)
+
         total_photos = multiple = picasa_only = 0
         print('Album count %d\n' % len(albums.entry))
 
         for album in albums.entry:
             total_photos += int(album.numphotos.text)
-            print('Album title: {}, number of photos: {}, date: {}'.format(
+            print('  Album title: {}, number of photos: {}, date: {}'.format(
                 album.title.text, album.numphotos.text, album.updated.text))
 
             if album_name and album_name != album.title.text \
