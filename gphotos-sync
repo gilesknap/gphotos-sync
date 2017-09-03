@@ -76,10 +76,10 @@ def main():
                                  cmd_args, data_store)
 
         try:
-            google_drive_sync.scan_folder_hierarchy()
-            google_drive_sync.index_drive_media()
-            if not cmd_args.index_only:
-                google_drive_sync.download_drive_media()
+            # google_drive_sync.scan_folder_hierarchy()
+            # google_drive_sync.index_drive_media()
+            # if not cmd_args.index_only:
+            #     google_drive_sync.download_drive_media()
             picasa_sync.index_album_media()
             if not cmd_args.index_only:
                 picasa_sync.download_album_media()

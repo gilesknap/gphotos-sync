@@ -1,5 +1,7 @@
+gdata -e https://github.com/google/gdata-python-client.git
 pydrive
 retrying
 appdirs
 progressbar2
 gdata
+enum

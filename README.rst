@@ -39,9 +39,10 @@ Known Issues
 ------------
 * Shared folders are not seen, this is a limitation of picasa web api and is not likely to be fixed
 * Albums of over 10,000 photos are truncated at 10,000 again due to a limitation of the web api. Unfortunately this means you will not automatically retrieve all google photos creations if you have > 10,0000 photos. I suggest creating a 'Creations'
-* To investigate - Download of video files seems slower than it should be
 * Todo - handle deletes and moves
 * Todo - remember last synced date and default to incremental backup
+* Todo make python 3 compatible
+* To investigate - Download of video files seems slower than it should be
 
 Install and configure
 ---------------------

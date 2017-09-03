@@ -63,3 +63,30 @@ def timestamp_to_date(time_secs, hour_offset=0):
     date = datetime.fromtimestamp(
         int(time_secs) / 1000 - 3600 * hour_offset)
     return date
+
+
+# gdata patches the http client to handle token refresh for oauth2
+# but the signature is out of date - here we patch over their patch to fix
+# error 'TypeError: new_request() takes exactly 1 argument (4 given)'
+# todo - I can remove my token refresh thread now.
+# todo - this patch only works in my pycharm virtualenv - still need
+# to do the hack manually for now
+def patch_http_client(oauth, client):
+    print "CLIENT PATCH"
+    def new_request(*args, **k_args):
+        response = request_orig(*args, **k_args)
+        if response.status == 401:
+            refresh_response = oauth._refresh(*args, **k_args)
+            if oauth._invalid:
+                return refresh_response
+            else:
+                oauth.modify_request(*args, **k_args)
+            return request_orig(*args, **k_args)
+        else:
+            return response
+
+    client.auth_token = oauth
+    request_orig = client.http_client.request
+
+    client.http_client.request = new_request
+    return client

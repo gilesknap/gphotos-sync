@@ -34,6 +34,7 @@ class PicasaSync(object):
 
         gd_client = gdata.photos.service.PhotosService()
         gd_client = self.auth2token.authorize(gd_client)
+        gd_client = Utils.patch_http_client(self.auth2token, gd_client)
         gd_client.additional_headers = {
             'Authorization': 'Bearer %s' % self.credentials.access_token}
         self.gdata_client = gd_client
