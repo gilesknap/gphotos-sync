@@ -8,10 +8,17 @@ from GoogleMedia import GoogleMedia, MediaType, MediaFolder
 class GoogleDriveMedia(GoogleMedia):
     MEDIA_TYPE = MediaType.DRIVE
     MEDIA_FOLDER = MediaFolder[MEDIA_TYPE]
+    EXTERNAL_LINKS = 'External-Links'
 
-    def __init__(self, relative_folder, root_folder, drive_file=None):
-        super(GoogleDriveMedia, self).__init__(relative_folder, root_folder)
+    def __init__(self, folder_paths, root_folder, drive_file):
         self.__drive_file = drive_file
+        if self.parent_id in folder_paths:
+            relative_folder = folder_paths[self.parent_id]
+        else:
+            # this means that you have a ref to someone else's Drive
+            # Todo but we could look at the parent list to find our own Folder
+            relative_folder = self.EXTERNAL_LINKS
+        super(GoogleDriveMedia, self).__init__(relative_folder, root_folder)
 
     def get_custom_property_value(self, key):
         for prop in self.__drive_file["properties"]:
@@ -42,9 +49,18 @@ class GoogleDriveMedia(GoogleMedia):
     @property
     def description(self):
         try:
-            return self.__drive_file["description"]
+            return GoogleMedia.validate_encoding(
+                self.__drive_file["description"])
         except KeyError:
             return ''
+
+    @property
+    def orig_name(self):
+        try:
+            name = self.__drive_file["originalFilename"]
+        except KeyError:
+            name = self.__drive_file["title"]
+        return GoogleMedia.validate_encoding(name)
 
     @property
     def create_date(self):
@@ -67,12 +83,16 @@ class GoogleDriveMedia(GoogleMedia):
     def mime_type(self):
         return self.__drive_file.metadata[u'mimeType']
 
-
     @property
     def url(self):
         return self.__drive_file.metadata[u'webContentLink']
 
-    # ----- Base class custom properties below (not currently used) -----
+    # ----- Derived class custom properties below -----
+    @property
+    def parent_id(self):
+        # todo currently we only see first instance of a file in >1 folders
+        return self.__drive_file["parents"][0]["id"]
+
     @property
     def camera_owner(self):
         try:
@@ -95,10 +115,3 @@ class GoogleDriveMedia(GoogleMedia):
                 camera_model = None
 
         return camera_model
-
-    @property
-    def orig_name(self):
-        try:
-            return self.__drive_file["originalFilename"]
-        except KeyError:
-            return self.__drive_file["title"]

@@ -93,16 +93,15 @@ class LocalData:
         return result
 
     def put_file(self, data_tuple):
-        try:
-            self.cur.execute(
-                "INSERT INTO SyncFiles VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ;",
-                (None,) + data_tuple)
-        except lite.IntegrityError as e:
-            if 'RemoteId' in e.message:
-                # this is an attempt add the same Drive file twice
-                raise LocalData.DuplicateDriveIdException
-            else:
-                raise
+        # note this will overwrite existing entries with new data which fine
+        # but we hide the possibility of > 1 reference to a single file from
+        # > 1 Drive folders - again OK since it does represent the same file
+        # However we will only see the last reference in our local sync of
+        # the drive folders (this does not affect Google Photos sub-folders)
+        self.cur.execute(
+            "INSERT OR REPLACE INTO SyncFiles "
+            "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ;",
+            (None,) + data_tuple)
         return self.cur.lastrowid
 
     def find_drive_file_ids(self, filename='%', exif_date='%', size='%',
@@ -159,6 +158,16 @@ class LocalData:
             "INSERT OR REPLACE INTO AlbumFiles(AlbumRec, DriveRec) VALUES(?,"
             "?) ;",
             (album_rec, file_rec))
+
+    def get_drive_folder_path(self, folder_id):
+        self.cur.execute(
+            "SELECT Path FROM DriveFolders "
+            "WHERE FolderId is ?", (folder_id,))
+        result = self.cur.fetchone()
+        if result:
+            return result['Path']
+        else:
+            return None
 
     def put_drive_folder(self, drive_id, parent_id, date):
         self.cur.execute(

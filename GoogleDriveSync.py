@@ -28,7 +28,7 @@ class NoGooglePhotosFolderError(Exception):
 # this should make incremental passes as fast as possible
 #
 # todo also
-# start downloading unmatched album files using the picassa download
+# start downloading umatched album files using the picassa download
 # the final scheme will have 3 root level folders
 #  drive
 #  photos
@@ -70,12 +70,12 @@ class NoGooglePhotosFolderError(Exception):
 class GoogleDriveSync(object):
     GOOGLE_PHOTO_FOLDER_QUERY = (
         'title = "Google Photos" and "root" in parents and trashed=false')
-    MEDIA_QUERY = '"%s" in parents and trashed=false '
     FOLDER_QUERY = ('title = "%s" and "%s" in parents and trashed=false'
                     ' and mimeType="application/vnd.google-apps.folder"')
-    AFTER_QUERY = " and modifiedDate >= '%sT00:00:00'"
-    BEFORE_QUERY = " and modifiedDate <= '%sT00:00:00'"
-    PAGE_SIZE = 2000
+    MEDIA_QUERY = "(mimeType contains 'image/' or mimeType contains 'video/')"
+    AFTER_QUERY = " and modifiedDate >= '{}T00:00:00'"
+    BEFORE_QUERY = " and modifiedDate <= '{}T00:00:00'"
+    PAGE_SIZE = 500
     # TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
     ROOT_FOLDER = "drive"
 
@@ -98,11 +98,13 @@ class GoogleDriveSync(object):
         self.g_auth.CommandLineAuth()
         self.googleDrive = GoogleDrive(self.g_auth)
         self.matchingRemotesCount = 0
+        self.folder_paths = {}
 
     @property
     def credentials(self):
         return self.g_auth.credentials
 
+    @classmethod
     def get_photos_folder_id(self):
         return "root"
 
@@ -239,10 +241,37 @@ class GoogleDriveSync(object):
                 self.db.put_drive_folder(drive_file['id'], parent_id,
                                          drive_file['title'])
         print('resolving paths ...')
+        self.folder_paths[root_id] = ''
         self.recurse_paths('', root_id)
         print('Drive Folders scanned.\n')
 
     def recurse_paths(self, path, folder_id):
+        self.folder_paths[folder_id] = path
         for (fid, name) in self.db.update_drive_folder_path(path, folder_id):
             next_path = os.path.join(path, name)
             self.recurse_paths(next_path, fid)
+
+    def index_drive_media(self):
+        q = "(mimeType contains 'image/' or mimeType contains 'video/')"
+        if self.args.start_date:
+            q += self.AFTER_QUERY.format(self.args.start_date)
+        if self.args.end_date:
+            q += self.BEFORE_QUERY.format(self.args.end_date)
+
+        query_params = {
+            "q": q,
+            "maxResults": GoogleDriveSync.PAGE_SIZE,
+            "orderBy": 'modifiedDate'
+        }
+
+        results = self.googleDrive.ListFile(query_params)
+        n = 0
+        for page_results in Utils.retry_i(5, results):
+            for drive_file in page_results:
+                media = GoogleDriveMedia(self.folder_paths,
+                                         self.args.root_folder, drive_file)
+                n += 1
+                print(u"{} {} Added {}".format(
+                    n, media.date, media.local_full_path))
+                media.save_to_db(self.db)
+

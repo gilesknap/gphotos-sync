@@ -38,16 +38,19 @@ class GoogleMedia(object):
         self._duplicate_number = 0
         self.symlink = False  # Todo need to implement use of this
 
+    @classmethod
+    def validate_encoding(cls, string):
+        if isinstance(string, unicode):
+            return string
+        else:
+            return unicode(string, 'utf8')
+
     def save_to_db(self, db):
         now_time = strftime(GoogleMedia.TIME_FORMAT, gmtime())
-        if isinstance(self.description, unicode):
-            description = self.description
-        else:
-            description = unicode(self.description, 'utf8')
         data_tuple = (
             self.id, self.url, self.local_folder,
             self.filename, self.orig_name, self.duplicate_number,
-            self.checksum, description, self.size,
+            self.checksum, self.description, self.size,
             self.date, self.create_date, now_time, self.media_type,
             self.symlink
         )

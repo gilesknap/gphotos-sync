@@ -177,13 +177,15 @@ class PicasaSync(object):
                     full_file_name, album_name))
             else:
                 pref = GoogleMedia.format_date(end_date).strftime('%Y/%m%d')
-                rel_path = "{0} {1}".format(pref, album_name)
+                rel_path = u"{0} {1}".format(pref, album_name)
                 link_folder = os.path.join(self.args.root_folder, 'albums',
                                            rel_path)
                 link_file = os.path.join(link_folder, file_name)
-
-                if not os.path.isdir(link_folder):
-                    os.makedirs(link_folder)
-                os.symlink(full_file_name, link_file)
+                if os.path.islink(link_file):
+                    print u"{} already linked".format(link_file)
+                else:
+                    if not os.path.isdir(link_folder):
+                        os.makedirs(link_folder)
+                    os.symlink(full_file_name, link_file)
         print("album links done.")
 
