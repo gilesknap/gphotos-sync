@@ -1,4 +1,4 @@
-gdata -e https://github.com/google/gdata-python-client.git
+gdata
 pydrive
 retrying
 appdirs

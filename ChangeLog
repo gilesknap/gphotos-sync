@@ -1,6 +1,50 @@
 CHANGES
 =======
 
+* tried to automate gdata patch - not working
+* tidy for release
+* Added download of indexed drive files and cleanup - ready for release to master
+* implemented date range handling
+* Flat Drive Search complete and its faster
+* new duplicates scheme working
+* new duplicate management scheme
+* album links nearly working - not handling duplicate names
+* repair empty database
+* merged use-drive-folder-hierarchy and albumInfoTry branches
+* merged use-drive-folder-hierarchy and albumInfoTry branches
+* folder scan fully working
+* new DB schema - picasa indexing and downloading done. album file links nearly done
+* developing folder scanning
+* refined search
+* PicasaSync nearly done and DatabaseMedia working well
+* added SymLink column to DB
+* refactor: switching to PicasaSync from PhotoInfo. Indexing done, download todo
+* refine unicode changes
+* support unicode in album and photo titles
+* make DriveID duplicate catching platform agnostic
+* added indexing of album info into DB
+* refactoring: now have a PicassaMedia and interface with DB via base class GoogleMedia
+* tidy date and mimetype handling in GoogleDriveMedia
+* start of refactoring: added base GoogleMedia class in prep for PicasaMedia indexing
+* cope with duplicate drive IDs in drive folders
+* hit limit of 10000 files per folder - added guard
+* fix refresh of gdata token
+* fixed scan of albums larger than 1000 photos
+* switch db initialization to use empty db file
+* removed upload functions, which would use up quota, need alternative approach in future
+* temp code for download of files mising from Drive, fully working
+* get download working with new Db Schema
+* further mods to pick up missing file matches
+* album entry to drive file match all but a few MP4s
+* album entry to drive file matching working on nearly all files
+* first pass of matching album entries to drive files
+* added databse migration for db v 1.3
+* switch to sqlite for local metadata store
+* starting sqlite store
+* refactor into class files
+* Adding --index-only
+* add stack trace on interupt
+* photo service authentication fully working
 * tidy pickledb use - only dump when done
 * switched from extended attributes to pickledb
 * connecting to google photos with oauth2
