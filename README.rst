@@ -83,6 +83,8 @@ Description of the cmdline parameters below:-
 
 usage: gphotos-sync [-h] [--quiet] [--include-video] [--start-date START_DATE]
                     [--end-date END_DATE] [--new-token] [--index-only]
+                    [--picasa-only] [--all-drive] [--album ALBUM]
+                    [--drive-file DRIVE_FILE]
                     root_folder
 
 Google Photos download tool
@@ -100,3 +102,15 @@ optional arguments:
   --new-token           Request new token
   --index-only          Only build the index of files in .gphotos.db - no
                         downloads
+  --picasa-only         skip drive scan, (assume that the db is up to date
+                        with drive files - for testing)
+  --all-drive           when True all folders in drive are scanned for media.
+                        when False only files in the Google Photos folder are
+                        scanned. If you do not use this option then you may
+                        find you have albums that reference media outside of
+                        the Google Photos folder and these would then get
+                        downloaded into the picasa folder. The only downside
+                        is that the folder structure is lost.
+  --album ALBUM         only index a single album (for testing)
+  --drive-file DRIVE_FILE
+                        only index a single drive file (for testing)
