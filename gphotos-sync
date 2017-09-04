@@ -6,6 +6,7 @@ import traceback
 from appdirs import AppDirs
 
 from GoogleDriveSync import GoogleDriveSync
+import GoogleMedia
 from PicasaSync import PicasaSync
 from LocalData import LocalData
 
@@ -57,6 +58,11 @@ def parse_arguments():
         help="skip drive scan, (assume that the db is up to date "
              "with drive files - for testing)")
     parser.add_argument(
+        "--all-drive",
+        action='store_true',
+        help="when True all folders in drive are scanned for media. "
+             "when False only files in the Google Photos folder are scanned")
+    parser.add_argument(
         "--album",
         help="only index a single album (for testing)",
         default=None)
@@ -72,6 +78,8 @@ def main():
     app_dirs = AppDirs(APP_NAME)
 
     data_store = LocalData(cmd_args.root_folder)
+    if not cmd_args.all_drive:
+        GoogleMedia.MediaFolder[0] = 'photos'
 
     with data_store:
         credentials_file = os.path.join(

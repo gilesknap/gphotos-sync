@@ -74,7 +74,12 @@ class GoogleDriveSync(object):
         results = Utils.retry(5, self.googleDrive.ListFile, query_params)
         for page_results in results:
             for drive_file in page_results:
-                root_id = drive_file['parents'][0]['id']
+                if self.args.all_drive:
+                    root_id = drive_file['parents'][0]['id']
+                    root_name = ''
+                else:
+                    root_id = drive_file['id']
+                    root_name = drive_file['title']
 
         # now get all folders
         q = 'trashed=false and mimeType="application/vnd.google-apps.folder"'
@@ -95,7 +100,7 @@ class GoogleDriveSync(object):
                                          drive_file['title'])
         print('Resolving paths ...')
         self.folder_paths[root_id] = ''
-        self.recurse_paths('', root_id)
+        self.recurse_paths(root_name, root_id)
         print('Drive Folders scanned.\n')
 
     def recurse_paths(self, path, folder_id):
@@ -120,6 +125,8 @@ class GoogleDriveSync(object):
             "maxResults": GoogleDriveSync.PAGE_SIZE,
             "orderBy": 'modifiedDate'
         }
+        if not self.args.all_drive:
+            query_params['spaces'] = 'photos'
 
         results = self.googleDrive.ListFile(query_params)
         n = 0
@@ -129,8 +136,9 @@ class GoogleDriveSync(object):
                                          self.args.root_folder, drive_file)
                 if not media.is_indexed(self.db):
                     n += 1
-                    print(u"Added {} {}".format(n, media.local_full_path))
-                    media.save_to_db(self.db)
+                    if not self.args.quiet:
+                        print(u"Added {} {}".format(n, media.local_full_path))
+                        media.save_to_db(self.db)
 
     def download_drive_media(self):
         print('\nDownloading Drive Files ...')

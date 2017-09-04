@@ -11,15 +11,22 @@ class GoogleDriveMedia(GoogleMedia):
     MEDIA_FOLDER = MediaFolder[MEDIA_TYPE]
     EXTERNAL_LINKS = 'External-Links'
 
+    # todo passing folder_paths (and root_folder) here seems messy, refactor?
     def __init__(self, folder_paths, root_folder, drive_file):
+        self.__parent_num = 0
         self.__drive_file = drive_file
+        # self.find_photos_parent(folder_paths)
         if self.parent_id in folder_paths:
             relative_folder = folder_paths[self.parent_id]
         else:
-            # this means that you have a ref to someone else's Drive
-            # Todo but we could look at the parent list to find our own Folder
             relative_folder = self.EXTERNAL_LINKS
         super(GoogleDriveMedia, self).__init__(relative_folder, root_folder)
+
+    def find_photos_parent(self, folder_paths):
+        for i in range(len(self.__drive_file["parents"])):
+            self.__parent_num = i
+            if self.parent_id in folder_paths:
+                break
 
     def get_custom_property_value(self, key):
         for prop in self.__drive_file["properties"]:
@@ -91,8 +98,7 @@ class GoogleDriveMedia(GoogleMedia):
     # ----- Derived class custom properties below -----
     @property
     def parent_id(self):
-        # todo currently we only see first instance of a file in >1 folders
-        return self.__drive_file["parents"][0]["id"]
+        return self.__drive_file["parents"][self.__parent_num]["id"]
 
     @property
     def camera_owner(self):
