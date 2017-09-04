@@ -111,6 +111,10 @@ class PicasaSync(object):
                                      limit=limit, start_index=start_entry)
                 for photo in photos.entry:
                     media = PicasaMedia(None, self.args.root_folder, photo)
+                    if (not self.args.include_video) and \
+                            media.mime_type.startswith('video/'):
+                        continue
+
                     # calling is_indexed to make sure duplicate_no is correct
                     # todo remove this when duplicate no handling is moved
                     media.is_indexed(self.db)

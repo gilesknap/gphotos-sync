@@ -36,7 +36,8 @@ class GoogleDriveSync(object):
         'title = "Google Photos" and "root" in parents and trashed=false')
     FOLDER_QUERY = ('title = "%s" and "%s" in parents and trashed=false'
                     ' and mimeType="application/vnd.google-apps.folder"')
-    MEDIA_QUERY = "(mimeType contains 'image/' or mimeType contains 'video/')"
+    PHOTO_QUERY = "mimeType contains 'image/'"
+    VIDEO_QUERY = "(mimeType contains 'image/' or mimeType contains 'video/')"
     AFTER_QUERY = " and modifiedDate >= '{}T00:00:00'"
     BEFORE_QUERY = " and modifiedDate <= '{}T00:00:00'"
     FILENAME_QUERY = 'title contains "{}"'
@@ -109,7 +110,11 @@ class GoogleDriveSync(object):
 
     def index_drive_media(self):
         print('\nIndexing Drive Files ...')
-        q = "(mimeType contains 'image/' or mimeType contains 'video/')"
+
+        if self.args.include_video:
+            q = self.VIDEO_QUERY
+        else:
+            q = self.PHOTO_QUERY
 
         if self.args.drive_file:
             q = self.FILENAME_QUERY.format(self.args.drive_file)

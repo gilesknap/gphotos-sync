@@ -40,6 +40,6 @@ class LocalMedia(object):
 
     @property
     def mimetype(self):
-        mimetype, _ = mimetypes.guess_type(self.path)
-        return mimetype
+        mime_type, _ = mimetypes.guess_type(self.path)
+        return mime_type
 

@@ -4,6 +4,7 @@ import os.path
 from datetime import datetime
 from GoogleMedia import GoogleMedia, MediaType, MediaFolder
 import Utils
+import mimetypes
 
 
 class PicasaMedia(GoogleMedia):
@@ -64,4 +65,17 @@ class PicasaMedia(GoogleMedia):
 
     @property
     def mime_type(self):
-        return self.__photo_xml.metadata[u'mimeType']
+        try:
+            return self.__photo_xml.metadata[u'mimeType'].text
+        except AttributeError:
+            mime_type, _ = mimetypes.guess_type(self.orig_name)
+            if mime_type:
+                return mime_type
+            # bit of a hack here - picasa does not know the mime_type
+            # and guess does not work on all video extensions
+            # todo this is probably not a complete list
+            if self.orig_name.endswith('.m4v') or \
+                    self.orig_name.endswith('.g3p'):
+                return 'video/dummy'
+            else:
+                return 'unknown'
