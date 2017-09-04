@@ -73,7 +73,9 @@ def patch_http_client(oauth, client, request_orig2):
 
     def new_request2(*args, **k_args):
         response = request_orig2(*args, **k_args)
-        if response.status == 401:
+        # I've added 403 because I have just seen it on token expiry.
+        # Getting 403 is incorrect so it remains to be seen if this will help
+        if response.status == 401 or response.status == 403:
             print 'refresh'
             refresh_response = oauth._refresh(*args, **k_args)
             if oauth._invalid:

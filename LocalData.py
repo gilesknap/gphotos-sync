@@ -19,7 +19,7 @@ import shutil
 # also this would remove the need to pass any paths to the GoogleMedia
 # constructors (which is messy)
 class LocalData:
-    DB_FILE_NAME = 'gphotos.sql'
+    DB_FILE_NAME = 'gphotos.sqlite'
     BLOCK_SIZE = 10000
     EMPTY_FILE_NAME = 'etc/gphotos_empty.sqlite'
     VERSION = "1.4"
@@ -27,11 +27,11 @@ class LocalData:
     class DuplicateDriveIdException(Exception):
         pass
 
-    def __init__(self, root_folder):
+    def __init__(self, root_folder, flush_index=False):
         self.file_name = os.path.join(root_folder, LocalData.DB_FILE_NAME)
         if not os.path.exists(root_folder):
             os.mkdir(root_folder, 0o700)
-        if not os.path.exists(self.file_name):
+        if not os.path.exists(self.file_name) or flush_index:
             self.setup_new_db()
         self.con = lite.connect(self.file_name)
         self.con.row_factory = lite.Row

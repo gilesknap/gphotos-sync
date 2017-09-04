@@ -53,10 +53,18 @@ def parse_arguments():
         action='store_true',
         help="Only build the index of files in .gphotos.db - no downloads")
     parser.add_argument(
+        "--skip-index",
+        action='store_true',
+        help="Use index from previous run and start download immediately")
+    parser.add_argument(
         "--picasa-only",
         action='store_true',
         help="skip drive scan, (assume that the db is up to date "
              "with drive files - for testing)")
+    parser.add_argument(
+        "--flush-index",
+        action='store_true',
+        help="delete the index db, re-scan everything")
     parser.add_argument(
         "--all-drive",
         action='store_true',
@@ -81,9 +89,7 @@ def main():
     cmd_args = parse_arguments()
     app_dirs = AppDirs(APP_NAME)
 
-    data_store = LocalData(cmd_args.root_folder)
-    if not cmd_args.all_drive:
-        GoogleMedia.MediaFolder[0] = 'photos'
+    data_store = LocalData(cmd_args.root_folder, cmd_args.flush_index)
 
     with data_store:
         credentials_file = os.path.join(
@@ -99,14 +105,15 @@ def main():
                                  cmd_args, data_store)
 
         try:
-            if not cmd_args.picasa_only:
-                google_drive_sync.scan_folder_hierarchy()
-                google_drive_sync.index_drive_media()
-            if not cmd_args.index_only:
-                google_drive_sync.download_drive_media()
-            picasa_sync.index_album_media(album_name=cmd_args.album)
+            google_drive_sync.scan_folder_hierarchy()
+            if not cmd_args.skip_index:
+                if not cmd_args.picasa_only:
+                    google_drive_sync.index_drive_media()
+                picasa_sync.index_album_media(album_name=cmd_args.album)
             if not cmd_args.index_only:
                 picasa_sync.download_album_media()
+                if not cmd_args.picasa_only:
+                    google_drive_sync.download_drive_media()
             picasa_sync.create_album_content_links()
 
         except (KeyboardInterrupt):
