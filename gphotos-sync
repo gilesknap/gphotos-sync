@@ -97,7 +97,7 @@ def main():
                 picasa_sync.download_album_media()
             picasa_sync.create_album_content_links()
 
-        except (KeyboardInterrupt, SystemExit):
+        except (KeyboardInterrupt):
             print("\nUser cancelled download")
             # save the traceback so we can diagnose lockups
             except_file_name = os.path.join(

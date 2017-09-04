@@ -26,11 +26,6 @@ class PicasaSync(object):
         self.gdata_client = None
         self.credentials = credentials
         self.auth2token = gdata.gauth.OAuth2TokenFromCredentials(credentials)
-        self.refresh_credentials(0)
-
-    def refresh_credentials(self, sleep):
-        time.sleep(sleep)
-        self.credentials.refresh(httplib2.Http())
 
         gd_client = gdata.photos.service.PhotosService()
         orig_request = gd_client.http_client.request
@@ -40,16 +35,6 @@ class PicasaSync(object):
         gd_client.additional_headers = {
             'Authorization': 'Bearer %s' % self.credentials.access_token}
         self.gdata_client = gd_client
-
-        expires = self.gdata_client.auth_token.credentials.token_expiry
-        now = datetime.datetime.utcnow()
-        expires_seconds = (expires - now).seconds
-
-        d = threading.Thread(name='refresh_credentials',
-                             target=self.refresh_credentials,
-                             args=(expires_seconds - 10,))
-        d.setDaemon(True)
-        d.start()
 
     def match_drive_photo(self, media):
         file_keys = self.db.find_file_ids_dates(size=media.size)

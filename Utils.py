@@ -68,7 +68,6 @@ def timestamp_to_date(time_secs, hour_offset=0):
 # gdata patches the http client to handle token refresh for oauth2
 # but the signature is out of date - here we patch over their patch to fix
 # error 'TypeError: new_request() takes exactly 1 argument (4 given)'
-# todo - I can remove my token refresh thread now.
 def patch_http_client(oauth, client, request_orig2):
     client.auth_token = oauth
 
