@@ -16,7 +16,7 @@ def retry(count, func, *arg, **k_arg):
             return res
         except Exception as e:
             last_e = e
-            print("\nRETRYING due to".format(e))
+            print("\nRETRYING due to {}".format(e))
             print "Call was:", func, arg, k_arg
             time.sleep(.1)
     raise last_e
