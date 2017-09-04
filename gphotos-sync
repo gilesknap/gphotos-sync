@@ -61,7 +61,11 @@ def parse_arguments():
         "--all-drive",
         action='store_true',
         help="when True all folders in drive are scanned for media. "
-             "when False only files in the Google Photos folder are scanned")
+             "when False only files in the Google Photos folder are scanned. "
+             "If you do not use this option then you may find you have albums "
+             "that reference media outside of the Google Photos folder and "
+             "these would then get downloaded into the picasa folder. The "
+             "only downside is that the folder structure is lost.")
     parser.add_argument(
         "--album",
         help="only index a single album (for testing)",

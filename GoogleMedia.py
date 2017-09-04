@@ -27,7 +27,7 @@ class GoogleMedia(object):
     MEDIA_FOLDER = MediaFolder[MEDIA_TYPE]
     TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
-    # todo remove relative path removed and determine it in derived classes
+    # todo remove relative path and determine it in derived classes
     # note that PicasaMedia and DataBaseMedia already do this
     def __init__(self, relative_folder, root_folder, **k_args):
         self.media_type = self.__class__.MEDIA_TYPE

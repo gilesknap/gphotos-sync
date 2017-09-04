@@ -78,8 +78,11 @@ class PicasaSync(object):
 
         for album in albums.entry:
             total_photos += int(album.numphotos.text)
-            print('  Album title: {}, number of photos: {}, date: {}'.format(
-                album.title.text, album.numphotos.text, album.updated.text))
+
+            if not self.args.quiet:
+                print('  Album title: {}, number of photos: {}, date: {}' \
+                      .format(album.title.text, album.numphotos.text,
+                              album.updated.text))
 
             if album_name and album_name != album.title.text \
                     or album.title.text in self.HIDDEN_ALBUMS:
@@ -127,8 +130,10 @@ class PicasaSync(object):
                         picasa_only += 1
                         new_file_key = media.save_to_db(self.db)
                         self.db.put_album_file(album_id, new_file_key)
-                        print(u"Added {} {}".format(picasa_only,
-                                                    media.local_full_path))
+
+                        if not self.args.quiet:
+                            print(u"Added {} {}".format(picasa_only,
+                                                        media.local_full_path))
                     else:
                         multiple += 1
                         print ('  WARNING multiple files match %s %s %s' %
@@ -158,7 +163,9 @@ class PicasaSync(object):
                 continue
 
             # todo add progress bar instead of this print
-            print("  Downloading %s ..." % media.local_full_path)
+
+            if not self.args.quiet:
+                print("  Downloading %s ..." % media.local_full_path)
             tmp_path = os.path.join(media.local_folder, '.gphoto.tmp')
 
             if not os.path.isdir(media.local_folder):

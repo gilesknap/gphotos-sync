@@ -76,10 +76,8 @@ class GoogleDriveSync(object):
             for drive_file in page_results:
                 if self.args.all_drive:
                     root_id = drive_file['parents'][0]['id']
-                    root_name = ''
                 else:
                     root_id = drive_file['id']
-                    root_name = drive_file['title']
 
         # now get all folders
         q = 'trashed=false and mimeType="application/vnd.google-apps.folder"'
@@ -100,7 +98,7 @@ class GoogleDriveSync(object):
                                          drive_file['title'])
         print('Resolving paths ...')
         self.folder_paths[root_id] = ''
-        self.recurse_paths(root_name, root_id)
+        self.recurse_paths('', root_id)
         print('Drive Folders scanned.\n')
 
     def recurse_paths(self, path, folder_id):
