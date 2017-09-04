@@ -5,6 +5,7 @@
 -- and 253 when not. Hence 168 items outside of Google photos are referenced
 --  in albums - it looked like this happened in auto created albums when I
 -- uploaded our travel blog to google Drive.
+
 SELECT * from SyncFiles WHERE SyncFiles.MediaType is 1
 and OrigFileName not LIKE "%COLLAGE.jpg"
 and OrigFileName not LIKE "%EFFECTS.jpg"
