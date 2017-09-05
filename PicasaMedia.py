@@ -74,8 +74,9 @@ class PicasaMedia(GoogleMedia):
             # bit of a hack here - picasa does not know the mime_type
             # and guess does not work on all video extensions
             # todo this is probably not a complete list
-            if self.orig_name.endswith('.m4v') or \
-                    self.orig_name.endswith('.g3p'):
+            if self.orig_name.lower.endswith('.m4v') \
+                    or self.orig_name.endswith('.g3p') \
+                    or self.orig_name.endswith('.avi'):
                 return 'video/dummy'
             else:
                 return 'unknown'
