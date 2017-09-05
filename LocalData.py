@@ -122,6 +122,7 @@ class LocalData:
             (None,) + data_tuple)
         return self.cur.lastrowid
 
+    # noinspection PyTypeChecker
     def find_file_ids_dates(self, filename='%', exif_date='%', size='%',
                             use_create=False):
         if use_create:
@@ -142,15 +143,6 @@ class LocalData:
         else:
             keys_dates = [(key['Id'], key['CreateDate']) for key in res]
             return keys_dates
-
-    def get_album(self, table_id):
-        self.cur.execute(
-            "SELECT * FROM Albums WHERE Id = ?",
-            (table_id,))
-        results = self.cur.fetchone()
-        for result in results:
-            yield (result['AlbumId'], result['AlbumName'],
-                   result['StartDate'], result['EndDate'])
 
     def put_album(self, album_id, album_name, start_date, end_end=0):
         self.cur.execute(
@@ -177,6 +169,7 @@ class LocalData:
             "?) ;",
             (album_rec, file_rec))
 
+    # noinspection PyTypeChecker
     def get_drive_folder_path(self, folder_id):
         self.cur.execute(
             "SELECT Path FROM DriveFolders "
@@ -193,6 +186,7 @@ class LocalData:
             "DriveFolders(FolderId, ParentId, FolderName)"
             " VALUES(?,?,?) ;", (drive_id, parent_id, date))
 
+    # noinspection PyTypeChecker
     def update_drive_folder_path(self, path, parent_id):
         self.cur.execute(
             "UPDATE DriveFolders SET Path = ? WHERE ParentId = ?;",
