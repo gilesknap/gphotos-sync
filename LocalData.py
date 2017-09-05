@@ -52,6 +52,13 @@ class LocalData:
         from_file = os.path.join(src_folder, LocalData.EMPTY_FILE_NAME)
         shutil.copy(from_file, self.file_name)
 
+    def flush_all(self):
+        self.cur.executescript(
+            "DELETE FROM main.AlbumFiles;"
+            "DELETE FROM main.Albums;"
+            "DELETE from main.SyncFiles;"
+        )
+
     @classmethod
     def record_to_tuple(cls, rec):
         if rec:
