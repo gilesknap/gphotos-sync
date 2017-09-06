@@ -5,7 +5,12 @@
 -- and 253 when not. Hence 168 items outside of Google photos are referenced
 --  in albums - it looked like this happened in auto created albums when I
 -- uploaded our travel blog to google Drive.
-
+-- TODO trying to get the 253 down by adding date matching with timezone slip
+-- TODO  tests - running this test on 4/9/17
+-- TODO  at least 2 files suburu?.jpg are in drive and should get a match
+-- but most are genuinely missing
+-- TODO also need to reinstate 'Auto Backup' and see if there are any other
+-- files missing
 SELECT * from SyncFiles WHERE SyncFiles.MediaType is 1
 and OrigFileName not LIKE "%COLLAGE.jpg"
 and OrigFileName not LIKE "%EFFECTS.jpg"
@@ -22,7 +27,7 @@ and (OrigFileName LIKE "%COLLAGE.jpg"
 or OrigFileName LIKE "%EFFECTS.jpg"
 or OrigFileName LIKE "%ANIMATION.gif"
 or OrigFileName LIKE "%PANO.jpg"
-or OrigFileName LIKE "%MOVIE.%");
+or OrigFileName LIKE "MOVIE.%");
 
 -- files in albums that did not get a match but the filename exists in drive
 SELECT FileName
@@ -40,3 +45,4 @@ INNER JOIN SyncFiles ON AlbumFiles.DriveRec=SyncFiles.Id
 INNER JOIN Albums ON AlbumFiles.AlbumRec=Albums.AlbumId
 WHERE SyncFiles.Path not LIKE '%Google Photos%' and SyncFiles.MediaType is 0;
 
+SELECT * from SyncFiles WHERE SyncFiles.MediaType is 1

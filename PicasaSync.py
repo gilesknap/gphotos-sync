@@ -2,6 +2,7 @@
 # coding: utf8
 import gdata.gauth
 import gdata.photos.service
+from datetime import timedelta
 import os.path
 import urllib
 from PicasaMedia import PicasaMedia
@@ -10,6 +11,7 @@ import Utils
 
 
 class PicasaSync(object):
+    # noinspection SpellCheckingInspection
     PHOTOS_QUERY = '/data/feed/api/user/default/albumid/{0}'
     BLOCK_SIZE = 500
     ALBUM_MAX = 10000  # picasa web api gets 500 response after 10000 files
@@ -54,10 +56,10 @@ class PicasaSync(object):
             if file_keys:
                 return file_keys[0:1]
 
-        # search with date
-        # todo need to check for timezone slips due to camera not
+        # search with date need to check for timezone slips due to camera not
         # set to correct timezone and missing or corrupted exif_date,
         # in which case revert to create date
+        # ABOVE DONE
         # todo verify that the above is required in my photos collection
         for use_create_date in [False, True]:
             dated_file_keys = \
@@ -68,6 +70,20 @@ class PicasaSync(object):
                 print("MATCH ON DATE create %r %s, file: %s" %
                       (use_create_date, media.date, media.orig_name))
                 return dated_file_keys
+            for hour_offset in range(-12, 12):
+                date_to_check = media.date + timedelta(hours=hour_offset)
+                dated_file_keys = \
+                    self._db.find_file_ids_dates(
+                        filename=media.filename,
+                        exif_date=date_to_check,
+                        use_create=use_create_date)
+                if dated_file_keys:
+                    print(
+                        "DATE MATCH date:{}, offset: {}, create:{}, "
+                        "name:{}".format(
+                            media.date, hour_offset, use_create_date,
+                            media.orig_name))
+                    return dated_file_keys
         # not found anything or found >1 result
         return file_keys
 
@@ -104,6 +120,7 @@ class PicasaSync(object):
 
             end_date = start_date
             album_id = album.gphoto_id.text
+            # noinspection SpellCheckingInspection
             q = album.GetPhotosUri() + "&imgmax=d"
 
             start_entry = 1
@@ -136,10 +153,14 @@ class PicasaSync(object):
                         picasa_only += 1
                         new_file_key = media.save_to_db(self._db)
                         self._db.put_album_file(album_id, new_file_key)
+                        if not (self.includeVideo or
+                                media.mime_type.startswith('video/')):
+                            new_file_key = media.save_to_db(self._db)
+                            self._db.put_album_file(album_id, new_file_key)
 
-                        if not self.quiet:
-                            print(u"Added {} {}".format(picasa_only,
-                                                        media.local_full_path))
+                            if not self.quiet:
+                                print(u"Added {} {}".format(
+                                    picasa_only, media.local_full_path))
                     else:
                         multiple += 1
                         print ('  WARNING multiple files match %s %s %s' %

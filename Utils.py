@@ -61,7 +61,7 @@ def string_to_date(date_string):
 
 def timestamp_to_date(time_secs, hour_offset=0):
     date = datetime.fromtimestamp(
-        int(time_secs) / 1000 - 3600 * hour_offset)
+        int(time_secs) / 1000 + 3600 * hour_offset)
     return date
 
 
