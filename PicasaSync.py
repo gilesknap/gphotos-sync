@@ -10,6 +10,9 @@ from DatabaseMedia import DatabaseMedia, MediaType
 import Utils
 
 
+# todo add removal local files for deleted picasa and album entries
+# todo store album entry link files in the db for this purpose
+# todo resurrect LocalData(GoogleData) in order to store link files in the db.
 class PicasaSync(object):
     # noinspection SpellCheckingInspection
     PHOTOS_QUERY = '/data/feed/api/user/default/albumid/{0}'
@@ -151,10 +154,8 @@ class PicasaSync(object):
                     elif results is None:
                         # no match so this exists only in picasa
                         picasa_only += 1
-                        new_file_key = media.save_to_db(self._db)
-                        self._db.put_album_file(album_id, new_file_key)
                         if not (self.includeVideo or
-                                media.mime_type.startswith('video/')):
+                                    media.mime_type.startswith('video/')):
                             new_file_key = media.save_to_db(self._db)
                             self._db.put_album_file(album_id, new_file_key)
 

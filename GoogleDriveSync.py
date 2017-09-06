@@ -121,7 +121,6 @@ class GoogleDriveSync(object):
                 if not file_id:
                     print("{}/{} is for deletion.".format(dir_name, file_name))
 
-
     def index_drive_media(self):
         print('\nIndexing Drive Files ...')
 

@@ -19,7 +19,7 @@ and OrigFileName not LIKE "%PANO.jpg"
 and OrigFileName not LIKE "%MOVIE.%";
 
 -- list of files that are outside of the Google Photos folder
-SELECT * from SyncFiles WHERE SyncFiles.Path not like '%Google Photos%'
+SELECT * from SyncFiles WHERE SyncFiles.Path not like '%Google Photos%';
 
 -- files that are in drive but also look like they are 'creations'
 SELECT * from SyncFiles WHERE SyncFiles.MediaType is 0

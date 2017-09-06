@@ -73,9 +73,13 @@ class LocalData:
             data_tuple = None
         return data_tuple
 
-    def get_files_by_search(self, drive_id='%', media_type='%',
+    def get_files_by_search(self, drive_id='%', media_type=None,
                             start_date=None, end_date=None):
-        params = (drive_id, int(media_type))
+        if not media_type:
+            media_type = '%'
+        else:
+            media_type = int(media_type)
+        params = (drive_id, media_type)
         date_clauses = ''
         if start_date:
             date_clauses += 'AND ModifyDate >= ?'

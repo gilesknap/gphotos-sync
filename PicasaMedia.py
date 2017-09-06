@@ -1,7 +1,5 @@
 #!/usr/bin/python
 # coding: utf8
-import os.path
-from datetime import datetime
 from GoogleMedia import GoogleMedia, MediaType, MediaFolder
 import Utils
 import mimetypes

@@ -116,10 +116,7 @@ class GooglePhotosSyncMain:
         self.drive_sync.allDrive = args.all_drive
         self.picasa_sync.album = args.album
 
-    def start(self):
-        args = self.parser.parse_args()
-        self.setup(args)
-
+    def start(self, args):
         with self.data_store:
             try:
                 self.drive_sync.scan_folder_hierarchy()

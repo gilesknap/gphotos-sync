@@ -24,6 +24,7 @@ MediaFolder = [
 # base class for media model classes
 class GoogleMedia(object):
     MEDIA_TYPE = MediaType.NONE
+    # noinspection PyUnresolvedReferences
     MEDIA_FOLDER = MediaFolder[MEDIA_TYPE]
     TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 

@@ -4,4 +4,6 @@ from Main import GooglePhotosSyncMain
 
 if __name__ == "__main__":
     g = GooglePhotosSyncMain()
-    g.start()
+    args = g.parser.parse_args()
+    g.setup(args)
+    g.start(args)
