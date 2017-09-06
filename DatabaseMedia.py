@@ -29,8 +29,8 @@ class DatabaseMedia(GoogleMedia):
             self._id = None
 
     @classmethod
-    def get_media_by_filename(cls, local_full_path, root_folder, db):
-        data_tuple = db.get_file_by_path(local_full_path)
+    def get_media_by_filename(cls, folder, name, root_folder, db):
+        data_tuple = db.get_file_by_path(folder, name)
         return DatabaseMedia(root_folder, data_tuple)
 
     @classmethod

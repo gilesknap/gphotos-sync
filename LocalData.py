@@ -95,14 +95,15 @@ class LocalData:
             for record in records:
                 yield (self.record_to_tuple(record))
 
-    def get_file_by_path(self, local_full_path):
-        path = os.path.dirname(local_full_path)
-        name = os.path.basename(local_full_path)
+    def get_file_by_path(self, folder, name):
         self.cur.execute(
             "SELECT * FROM SyncFiles WHERE Path = ? AND FileName = ?;",
-            (path, name))
-        result = self.record_to_tuple(self.cur.fetchone())
-        return result
+            (folder, name))
+        result = self.cur.fetchone()
+        if result:
+            return self.record_to_tuple(result)
+        else:
+            return None
 
     def get_file_by_id(self, remote_id):
         self.cur.execute(

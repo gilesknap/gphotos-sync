@@ -42,7 +42,6 @@ class GoogleDriveSync(object):
     BEFORE_QUERY = " and modifiedDate <= '{}T00:00:00'"
     FILENAME_QUERY = 'title contains "{}"'
     PAGE_SIZE = 500
-    ROOT_FOLDER = "drive"
 
     def __init__(self, root_folder, db,
                  client_secret_file="client_secret.json",
@@ -112,6 +111,16 @@ class GoogleDriveSync(object):
         for (fid, name) in self._db.update_drive_folder_path(path, folder_id):
             next_path = os.path.join(path, name)
             self.recurse_paths(next_path, fid)
+
+    def check_for_removed(self):
+        print('\nFinding deleted media ...')
+        top_dir = os.path.join(self._root_folder, GoogleDriveMedia.MEDIA_FOLDER)
+        for (dir_name, _, file_names) in os.walk(top_dir):
+            for file_name in file_names:
+                file_id = self._db.get_file_by_path(dir_name, file_name)
+                if not file_id:
+                    print("{}/{} is for deletion.".format(dir_name, file_name))
+
 
     def index_drive_media(self):
         print('\nIndexing Drive Files ...')

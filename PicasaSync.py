@@ -81,11 +81,6 @@ class PicasaSync(object):
         for album in albums.entry:
             total_photos += int(album.numphotos.text)
 
-            if not self.quiet:
-                print('  Album title: {}, number of photos: {}, date: {}'
-                      .format(album.title.text, album.numphotos.text,
-                              album.updated.text))
-
             if album_name and album_name != album.title.text \
                     or album.title.text in self.HIDDEN_ALBUMS:
                 continue
@@ -101,6 +96,11 @@ class PicasaSync(object):
             if self.endDate:
                 if Utils.string_to_date(self.endDate) < start_date:
                     continue
+
+            if not self.quiet:
+                print('  Album title: {}, number of photos: {}, date: {}'
+                      .format(album.title.text, album.numphotos.text,
+                              album.updated.text))
 
             end_date = start_date
             album_id = album.gphoto_id.text
