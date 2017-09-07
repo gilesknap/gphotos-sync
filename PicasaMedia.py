@@ -74,7 +74,7 @@ class PicasaMedia(GoogleMedia):
             # todo this is probably not a complete list
             suffix = self.orig_name.lower().split('.')[-1]
             if suffix == 'm4v' \
-                    or suffix == '3gp' or suffix == 'avi' or suffix == 'jpg':
+                    or suffix == '3gp' or suffix == 'avi':
                 return 'video/dummy'
             else:
                 return 'unknown'

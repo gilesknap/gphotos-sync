@@ -112,14 +112,21 @@ class GoogleDriveSync(object):
             next_path = os.path.join(path, name)
             self.recurse_paths(next_path, fid)
 
+    # todo this will currently do nothing unless using --flush-db
+    # need to look at drive changes api if we want to support deletes and
+    # incremental backup.
     def check_for_removed(self):
+        # note for partial scans using date filters this is still OK because
+        # for a file to exist it must have been indexed in a previous scan
         print('\nFinding deleted media ...')
         top_dir = os.path.join(self._root_folder, GoogleDriveMedia.MEDIA_FOLDER)
         for (dir_name, _, file_names) in os.walk(top_dir):
             for file_name in file_names:
                 file_id = self._db.get_file_by_path(dir_name, file_name)
                 if not file_id:
-                    print("{}/{} is for deletion.".format(dir_name, file_name))
+                    name = os.path.join(dir_name, file_name)
+                    os.remove(name)
+                    print("{} deleted".format(name))
 
     def index_drive_media(self):
         print('\nIndexing Drive Files ...')

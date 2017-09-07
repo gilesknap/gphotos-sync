@@ -105,10 +105,12 @@ class PicasaSync(object):
 
             total_photos += int(album.numphotos.text)
 
-            # todo date filtering is too crude at present - if I have changed
+            # date filtering is crude at present - if I have changed
             # the title of an old album recently then a scan for recent files
             # would pick it up but its contents would be skipped in the drive
-            # phase - Only problem for partially indexed photo stores
+            # phase - I choose to leave this as is because:
+            #   it is only problem for partially indexed photo stores
+            #   the alternative is scanning all contents which is MUCH slower
             start_date = Utils.string_to_date(album.updated.text)
             if self.startDate:
                 if Utils.string_to_date(self.startDate) > start_date:

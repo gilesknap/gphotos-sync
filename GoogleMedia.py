@@ -32,7 +32,7 @@ class GoogleMedia(object):
     # note that PicasaMedia and DataBaseMedia already do this
     def __init__(self, relative_folder, root_folder, **k_args):
         self.media_type = self.__class__.MEDIA_TYPE
-        self.media_folder = self.__class__.MEDIA_FOLDER
+        self._media_folder = self.__class__.MEDIA_FOLDER
         self._relative_folder = relative_folder
         self._root_folder = root_folder
         self._duplicate_number = 0
@@ -71,7 +71,7 @@ class GoogleMedia(object):
     # 'albums'
     @property
     def local_folder(self):
-        return os.path.join(self._root_folder, self.media_folder,
+        return os.path.join(self._root_folder, self._media_folder,
                             self._relative_folder)
 
     # Path to the local file in which this media item is stored
