@@ -2,8 +2,9 @@
 # coding: utf8
 import gdata.gauth
 import gdata.photos.service
-from datetime import timedelta
+from datetime import timedelta, datetime
 import os.path
+import glob
 import urllib
 from PicasaMedia import PicasaMedia
 from DatabaseMedia import DatabaseMedia, MediaType
@@ -98,11 +99,11 @@ class PicasaSync(object):
         print('Album count %d\n' % len(albums.entry))
 
         for album in albums.entry:
-            total_photos += int(album.numphotos.text)
-
             if album_name and album_name != album.title.text \
                     or album.title.text in self.HIDDEN_ALBUMS:
                 continue
+
+            total_photos += int(album.numphotos.text)
 
             # todo date filtering is too crude at present - if I have changed
             # the title of an old album recently then a scan for recent files
@@ -121,7 +122,7 @@ class PicasaSync(object):
                       .format(album.title.text, album.numphotos.text,
                               album.updated.text))
 
-            end_date = start_date
+            end_date = datetime.min
             album_id = album.gphoto_id.text
             # noinspection SpellCheckingInspection
             q = album.GetPhotosUri() + "&imgmax=d"
@@ -154,8 +155,8 @@ class PicasaSync(object):
                     elif results is None:
                         # no match so this exists only in picasa
                         picasa_only += 1
-                        if not (self.includeVideo or
-                                    media.mime_type.startswith('video/')):
+                        if not (self.includeVideo or media.mime_type.startswith(
+                                'video/')):
                             new_file_key = media.save_to_db(self._db)
                             self._db.put_album_file(album_id, new_file_key)
 
@@ -207,14 +208,20 @@ class PicasaSync(object):
 
     def create_album_content_links(self):
         print("\nCreating album folder links to media ...")
+        # the simplest way to handle moves or deletes is to clear out all links
+        # first, these are quickly recreated anyway
+        links_root = os.path.join(self._root_folder, 'albums')
+        if os.path.exists(links_root):
+            backup_count = len(glob.glob(links_root + '-????'))
+            links_backup = '{:s}-{:04d}'.format(links_root, backup_count)
+            os.rename(links_root, links_backup)
         for (path, file_name, album_name, end_date) in \
                 self._db.get_album_files():
             full_file_name = os.path.join(path, file_name)
 
             prefix = Utils.string_to_date(end_date).strftime('%Y/%m%d')
             rel_path = u"{0} {1}".format(prefix, album_name)
-            link_folder = os.path.join(self._root_folder, 'albums',
-                                       rel_path)
+            link_folder = os.path.join(links_root, rel_path)
 
             link_file = os.path.join(link_folder, file_name)
             if not os.path.islink(link_file):

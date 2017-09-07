@@ -12,10 +12,21 @@ from LocalData import LocalData
 APP_NAME = "gphotos-sync"
 
 
-# todo global todo
+# todo todo
 # switch all string formatting to .format
-# doc stings everywhere
 # add logger instead of prints
+# handle deletes
+# handle files switching between picasa and drive (because the matching logic
+#   was changed or because of partial indexing via filters)
+# handle files moving between albums and albums changing date
+#   because I need to refine the album scan and make comparisons on results
+# verify matching logic and investigate date based matching effectiveness
+# switch db content to relative paths
+# write tests to cover all cmd line args combinations
+# attempt to put in continuous integration on github (includes getting auth
+#   working to a test google photos account)
+# extract my old filesystem folders from the exif metadata
+# doc stings everywhere
 
 
 class GooglePhotosSyncMain:
@@ -119,9 +130,9 @@ class GooglePhotosSyncMain:
     def start(self, args):
         with self.data_store:
             try:
-                self.drive_sync.scan_folder_hierarchy()
                 if not args.skip_index:
                     if not args.picasa_only:
+                        self.drive_sync.scan_folder_hierarchy()
                         self.drive_sync.index_drive_media()
                     self.picasa_sync.index_album_media(album_name=args.album)
                 if not args.index_only:
@@ -142,3 +153,8 @@ class GooglePhotosSyncMain:
                     text_file.write(traceback.format_exc())
             finally:
                 print("\nDone.")
+
+    def main(self):
+        args = self.parser.parse_args()
+        self.setup(args)
+        self.start(args)

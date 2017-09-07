@@ -1,3 +1,5 @@
+-- noinspection SqlDialectInspectionForFile
+
 
 -- find files that are not creations but were not found in the drive folders
 ---------------------------------------------------------------------------
@@ -45,4 +47,12 @@ INNER JOIN SyncFiles ON AlbumFiles.DriveRec=SyncFiles.Id
 INNER JOIN Albums ON AlbumFiles.AlbumRec=Albums.AlbumId
 WHERE SyncFiles.Path not LIKE '%Google Photos%' and SyncFiles.MediaType is 0;
 
-SELECT * from SyncFiles WHERE SyncFiles.MediaType is 1
+SELECT * from SyncFiles WHERE SyncFiles.MediaType is 1;
+
+
+-- get all the files in an album
+SELECT SyncFiles.Path, SyncFiles.Filename, SyncFiles.ModifyDate, Albums.AlbumName,
+  Albums.EndDate FROM AlbumFiles
+  INNER JOIN SyncFiles ON AlbumFiles.DriveRec=SyncFiles.Id
+  INNER JOIN Albums ON AlbumFiles.AlbumRec=Albums.AlbumId
+  WHERE Albums.AlbumName LIKE '%Clivedon%';
