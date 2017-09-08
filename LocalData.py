@@ -54,9 +54,9 @@ class LocalData:
 
     def flush_all(self):
         self.cur.executescript(
-            "DELETE FROM main.AlbumFiles;"
-            "DELETE FROM main.Albums;"
-            "DELETE from main.SyncFiles;"
+            "DELETE FROM AlbumFiles;"
+            "DELETE FROM Albums;"
+            "DELETE from SyncFiles;"
         )
 
     @classmethod

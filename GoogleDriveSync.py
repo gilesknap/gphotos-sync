@@ -197,4 +197,4 @@ class GoogleDriveSync(object):
                         progress_handler.update_progress(
                             download_status)
 
-                os.rename(temp_filename, media.local_full_path)
+            os.rename(temp_filename, media.local_full_path)
