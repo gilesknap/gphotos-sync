@@ -1,6 +1,6 @@
-====================
- Google Photos Sync
-====================
+==================
+Google Photos Sync
+==================
 
 Google Photos Sync downloads your Google Photos to the local file system.
 It attempts to backup all the photos as stored in Google Drive, but also
@@ -27,11 +27,11 @@ In the root folder a sqlite database holds an index of all media and albums. Use
 This has been tested against my photo store of nearly 100,000 photos.
 
 Primary Goals
---------------
+-------------
 * provide a file system backup so it is possible to monitor for accidental deletions (or deletions caused by bugs) in very large photo collections
 * make it possible to switch to a different photo management system in future if this ever becomes desirable/necessary
 * use the Google Drive API as much as possible and the deprecated picasa web API as little as possible.
-  * picasa is only used to get lists of album contents and to download items that are missing from Google Drive.
+  (picasa is only used to get lists of album contents and to download items that are missing from Google Drive)
 
 Known Issues
 ------------

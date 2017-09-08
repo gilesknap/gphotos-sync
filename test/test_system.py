@@ -8,14 +8,14 @@ import os
 # todo will try to provide a standalone account and credentials
 class System(TestCase):
 
-    def test_system_index_names(self):
+    def test_system_download_name(self):
         s = SetupDbAndCredentials()
         # get a single file
         args = [
             '--drive-file', '20170102_094337.jpg',
             '--skip-picasa'
         ]
-        s.test_setup('test_system_index_names', args=args, trash_files=True)
+        s.test_setup('test_system_download_name', args=args, trash_files=True)
         s.gp.start(s.parsed_args)
 
         # verify db contents
@@ -92,7 +92,7 @@ class System(TestCase):
         s = SetupDbAndCredentials()
         # this query gets some 'creations' Movies and a folder containing them
         args = [
-            '--album', 'Movies',
+            '--album', 'TestMovies',
             '--include-video',
             '--index-only',
             '--skip-drive'

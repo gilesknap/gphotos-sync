@@ -37,4 +37,5 @@ class SystemMatch(TestCase):
         # you are in the photos 'space'. I may have dropped this folder into
         # google photos using drive web but I think I uploaded them using
         # google photos uploader in which case this is odd.
-        # todo Will try re-upload in the new drive backup tool
+        # tried re-upload in the new drive backup tool
+        # after reupload there are 4 subaru files
