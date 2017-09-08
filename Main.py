@@ -73,7 +73,11 @@ class GooglePhotosSyncMain:
         action='store_true',
         help="Use index from previous run and start download immediately")
     parser.add_argument(
-        "--picasa-only",
+        "--skip-picasa",
+        action='store_true',
+        help="skip picasa scan, albums will not be scanned")
+    parser.add_argument(
+        "--skip-drive",
         action='store_true',
         help="skip drive scan, (assume that the db is up to date "
              "with drive files - for testing)")
@@ -132,17 +136,21 @@ class GooglePhotosSyncMain:
         with self.data_store:
             try:
                 if not args.skip_index:
-                    if not args.picasa_only:
+                    if not args.skip_drive:
                         self.drive_sync.scan_folder_hierarchy()
                         self.drive_sync.index_drive_media()
-                    self.picasa_sync.index_album_media(album_name=args.album)
+                    if not args.skip_picasa:
+                        self.picasa_sync.index_album_media(
+                            album_name=args.album)
                 if not args.index_only:
-                    self.picasa_sync.download_album_media()
-                    if not args.picasa_only:
+                    if not args.skip_picasa:
+                        self.picasa_sync.download_album_media()
+                    if not args.skip_drive:
                         self.drive_sync.download_drive_media()
-                self.picasa_sync.create_album_content_links()
-                if not args.no_deletion:
-                    self.drive_sync.check_for_removed()
+                    if not args.skip_picasa:
+                        self.picasa_sync.create_album_content_links()
+                    if not args.no_deletion:
+                        self.drive_sync.check_for_removed()
 
             except KeyboardInterrupt:
                 print("\nUser cancelled download")

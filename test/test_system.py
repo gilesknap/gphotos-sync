@@ -14,7 +14,7 @@ class System(TestCase):
             '--start-date', '2017-01-02',
             '--end-date', '2017-01-03',
             '--drive-file', '20170102_094337.jpg'
-            '--'
+            '--skip-picasa'
         ]
         s.test_setup('test_system_index_names', args=args, trash_files=True)
         s.gp.start(s.parsed_args)
@@ -91,12 +91,12 @@ class System(TestCase):
 
     def test_system_index_movies(self):
         s = SetupDbAndCredentials()
-        # this date range includes two above albums but excludes the photos
-        # so they will go in the picasa folder
+        # this query gets some 'creations' Movies and a folder containing them
         args = [
             '--album', 'Movies',
             '--include-video',
-            '--index-only', '--picasa-only'
+            '--index-only',
+            '--skip-drive'
         ]
         s.test_setup('test_system_index_movies', args=args, trash_db=True)
         s.gp.start(s.parsed_args)

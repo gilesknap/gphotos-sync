@@ -2,23 +2,21 @@ from unittest import TestCase
 from test_setup import SetupDbAndCredentials
 from LocalData import LocalData
 import os
+import glob
 
 
-# todo currently the system tests work against my personal google drive
-# todo will try to provide a standalone account and credentials
 class SystemMatch(TestCase):
 
     def test_system_match(self):
         s = SetupDbAndCredentials()
-        # this date range includes two above albums but excludes the photos
-        # so they will go in the picasa folder
+        # attempting to select files that have issues with matching in album
+        # references
         args = [
-            '--start-date', '1998-10-07',
-            '--end-date', '1998-10-08',
-            '--drive-file', 'f1.jpg'
-            '--'
+            '--drive-file', 'subaru',
+            '--all-drive',
+            '--skip-picasa'
         ]
-        s.test_setup('test_system_index_names', args=args, trash_files=True)
+        s.test_setup('test_system_match', args=args, trash_files=True)
         s.gp.start(s.parsed_args)
 
         # verify db contents
@@ -27,13 +25,16 @@ class SystemMatch(TestCase):
         count = 0
         for _ in results:
             count += 1
-        self.assertEqual(count, 1)
+        self.assertEqual(count, 2)
 
-        results = db.get_album_files()
-        count = 0
-        for _ in results:
-            count += 1
-        self.assertEqual(count, 0)
-        expected_file = os.path.join(
-            s.root, 'drive/2017/01/20170102_094337.jpg')
-        self.assertEqual(True, os.path.exists(expected_file))
+        expected_files = os.path.join(
+            s.root, 'drive/Google Photos/9999/Cars/subaru?.jpg')
+        count = len(glob.glob(expected_files))
+        self.assertEqual(count, 2)
+
+        # interestingly this test works and these files are not selected when
+        # not using --all-drive so appearing under Google Photos does not mean
+        # you are in the photos 'space'. I may have dropped this folder into
+        # google photos using drive web but I think I uploaded them using
+        # google photos uploader in which case this is odd.
+        # todo Will try re-upload in the new drive backup tool
