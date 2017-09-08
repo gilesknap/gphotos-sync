@@ -5,7 +5,7 @@
 #client_config_backend: settings
 #client_config:
 #  client_id: 9637341109347.apps.googleusercontent.com
-#  client_secret: psDskOoWr1P602PXRTHi
+#  client_secret: x
 
 save_credentials: True
 save_credentials_backend: file
