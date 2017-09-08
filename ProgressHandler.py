@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # coding: utf8
+# noinspection PyPackageRequirements
 from progressbar import (AdaptiveETA, AdaptiveTransferSpeed, Bar, Percentage,
                          ProgressBar)
 

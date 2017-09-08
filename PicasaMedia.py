@@ -1,7 +1,5 @@
 #!/usr/bin/python
 # coding: utf8
-import os.path
-from datetime import datetime
 from GoogleMedia import GoogleMedia, MediaType, MediaFolder
 import Utils
 import mimetypes
@@ -71,12 +69,12 @@ class PicasaMedia(GoogleMedia):
             mime_type, _ = mimetypes.guess_type(self.orig_name)
             if mime_type:
                 return mime_type
-            # bit of a hack here - picasa does not know the mime_type
-            # and guess does not work on all video extensions
+            # a bit of a hack here - picasa does not reveal the mime_type
+            # and guess_type does not work on all video extensions
             # todo this is probably not a complete list
-            if self.orig_name.lower.endswith('.m4v') \
-                    or self.orig_name.endswith('.g3p') \
-                    or self.orig_name.endswith('.avi'):
+            suffix = self.orig_name.lower().split('.')[-1]
+            if suffix == 'm4v' \
+                    or suffix == '3gp' or suffix == 'avi':
                 return 'video/dummy'
             else:
                 return 'unknown'

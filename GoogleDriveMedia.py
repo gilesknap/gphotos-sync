@@ -15,7 +15,7 @@ class GoogleDriveMedia(GoogleMedia):
     def __init__(self, folder_paths, root_folder, drive_file):
         self.__parent_num = 0
         self.__drive_file = drive_file
-        # self.find_photos_parent(folder_paths)
+        self.find_photos_parent(folder_paths)
         if self.parent_id in folder_paths:
             relative_folder = folder_paths[self.parent_id]
         else:
@@ -72,7 +72,6 @@ class GoogleDriveMedia(GoogleMedia):
 
     @property
     def create_date(self):
-        # some times are ucase T and non zero millisecs - normalize
         date = datetime.strptime(self.__drive_file["createdDate"].upper()[:-4],
                                  "%Y-%m-%dT%H:%M:%S.")
         return date

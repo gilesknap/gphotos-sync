@@ -39,7 +39,7 @@ class LocalMedia(object):
         return md5sum.hexdigest()
 
     @property
-    def mimetype(self):
+    def mime_type(self):
         mime_type, _ = mimetypes.guess_type(self.path)
         return mime_type
 

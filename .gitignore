@@ -66,4 +66,6 @@ etc/.gphoto-terminated
 /etc/gphotos_backup.sqlite
 /etc/results_crash.txt
 etc/gphotos_photos_only_backup.sqlite
+etc/albumFolders.txt
 
+.nfs*

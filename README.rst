@@ -36,7 +36,11 @@ Primary Goals
 Known Issues
 ------------
 * Shared folders are not seen, this is a limitation of picasa web api and is not likely to be fixed
-* Albums of over 10,000 photos are truncated at 10,000. This is again due to a limitation of the web api. Unfortunately this means you will not automatically retrieve all google photos creations if you have > 10,0000 photos. I suggest creating a 'Creations' album and copying all creations into it, this will then sync (and any future creations will be handled by the gloabl 'Auto Backup' album
+* Albums of over 10,000 photos are truncated at 10,000. This is again due to a
+limitation of the web api. Unfortunately this means you will not automatically
+retrieve all google photos creations if you have > 10,0000 photos. I suggest
+creating a 'Creations' album and copying all creations into it, this will then
+sync (and any future creations will be handled by the global 'Auto Backup' album
 * Todo - handle deletes and moves
 * Todo - remember last synced date and default to incremental backup
 * Todo make python 3 compatible
@@ -53,7 +57,7 @@ To do so:
 
 * Create a project on `Google Developer Console`_, following the `Creating a project procedure`_,
 
-* Authorize it to use the Google Drive API, following the `Activating and desactivating APIs procedure`_,
+* Authorize it to use the Google Drive API, following the `Activating and deactivating APIs procedure`_,
 
 * Create a Client ID by following the `setting up oauth 2.0 procedure`_ with application type set to `Other`,
 
@@ -65,7 +69,7 @@ To do so:
 
 .. _`Google Developer Console`: https://developers.google.com/console/
 .. _`Creating a project procedure`: https://developers.google.com/console/help/new/#creatingaproject
-.. _`Activating and Desactivating APIs procedure`: https://developers.google.com/console/help/new/#activating-and-deactivating-apis
+.. _`Activating and Deactivating APIs procedure`: https://developers.google.com/console/help/new/#activating-and-deactivating-apis
 .. _`setting up oauth 2.0 procedure`: https://developers.google.com/console/help/new/#setting-up-oauth-20
 
 

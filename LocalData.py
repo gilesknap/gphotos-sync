@@ -30,7 +30,7 @@ class LocalData:
     def __init__(self, root_folder, flush_index=False):
         self.file_name = os.path.join(root_folder, LocalData.DB_FILE_NAME)
         if not os.path.exists(root_folder):
-            os.mkdir(root_folder, 0o700)
+            os.makedirs(root_folder, 0o700)
         if not os.path.exists(self.file_name) or flush_index:
             self.setup_new_db()
         self.con = lite.connect(self.file_name)
@@ -73,9 +73,13 @@ class LocalData:
             data_tuple = None
         return data_tuple
 
-    def get_files_by_search(self, drive_id='%', media_type='%',
+    def get_files_by_search(self, drive_id='%', media_type=None,
                             start_date=None, end_date=None):
-        params = (drive_id, int(media_type))
+        if not media_type:
+            media_type = '%'
+        else:
+            media_type = int(media_type)
+        params = (drive_id, media_type)
         date_clauses = ''
         if start_date:
             date_clauses += 'AND ModifyDate >= ?'
@@ -95,14 +99,15 @@ class LocalData:
             for record in records:
                 yield (self.record_to_tuple(record))
 
-    def get_file_by_path(self, local_full_path):
-        path = os.path.dirname(local_full_path)
-        name = os.path.basename(local_full_path)
+    def get_file_by_path(self, folder, name):
         self.cur.execute(
             "SELECT * FROM SyncFiles WHERE Path = ? AND FileName = ?;",
-            (path, name))
-        result = self.record_to_tuple(self.cur.fetchone())
-        return result
+            (folder, name))
+        result = self.cur.fetchone()
+        if result:
+            return self.record_to_tuple(result)
+        else:
+            return None
 
     def get_file_by_id(self, remote_id):
         self.cur.execute(
