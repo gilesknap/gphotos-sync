@@ -1,6 +1,7 @@
 from unittest import TestCase
 from test_setup import SetupDbAndCredentials
 from LocalData import LocalData
+import os
 
 RUN_LONG_TESTS = False
 
@@ -8,6 +9,37 @@ RUN_LONG_TESTS = False
 # todo currently the system tests work against my personal google drive
 # todo will try to provide a standalone account and credentials
 class Utils(TestCase):
+
+    def test_system_index_names(self):
+        s = SetupDbAndCredentials()
+        # this date range includes two above albums but excludes the photos
+        # so they will go in the picasa folder
+        args = [
+            '--start-date', '2017-01-02',
+            '--end-date', '2017-01-03',
+            '--drive-file', '20170102_094337.jpg'
+            '--'
+        ]
+        s.test_setup('test_system_index_names', args=args, trash_files=True)
+        s.gp.start(s.parsed_args)
+
+        # verify db contents
+        db = LocalData(s.root)
+        results = db.get_files_by_search(media_type=0)
+        count = 0
+        for _ in results:
+            count += 1
+        self.assertEqual(count, 1)
+
+        results = db.get_album_files()
+        count = 0
+        for _ in results:
+            count += 1
+        self.assertEqual(count, 0)
+        expected_file = os.path.join(
+            s.root, 'drive/2017/01/20170102_094337.jpg')
+        self.assertEqual(True, os.path.exists(expected_file))
+
     def test_system_index(self):
         s = SetupDbAndCredentials()
         args = [
@@ -59,3 +91,31 @@ class Utils(TestCase):
         for _ in results:
             count += 1
         self.assertEqual(count, 22)
+
+    def test_system_index_movies(self):
+        s = SetupDbAndCredentials()
+        # this date range includes two above albums but excludes the photos
+        # so they will go in the picasa folder
+        args = [
+            '--album', 'Movies',
+            '--include-video',
+            '--index-only', '--picasa-only'
+        ]
+        s.test_setup('test_system_index_movies', args=args, trash_db=True)
+        s.gp.start(s.parsed_args)
+
+        # verify db contents
+        db = LocalData(s.root)
+        results = db.get_files_by_search(media_type=1)
+        count = 0
+        for _ in results:
+            count += 1
+        self.assertEqual(count, 20)
+
+        results = db.get_album_files()
+        count = 0
+        for _ in results:
+            count += 1
+        self.assertEqual(count, 20)
+
+        # todo also count  albums

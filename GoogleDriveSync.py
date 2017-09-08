@@ -163,6 +163,7 @@ class GoogleDriveSync(object):
                         print(u"Added {} {}".format(n, media.local_full_path))
                         media.save_to_db(self._db)
 
+    # todo set file dates as per downloaded media
     def download_drive_media(self):
         print('\nDownloading Drive Files ...')
         for media in DatabaseMedia.get_media_by_search(

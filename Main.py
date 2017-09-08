@@ -124,7 +124,7 @@ class GooglePhotosSyncMain:
         self.drive_sync.endDate = self.picasa_sync.endDate = args.end_date
         self.drive_sync.includeVideo = self.picasa_sync.includeVideo = \
             args.include_video
-        self.drive_sync.allDrive = args.all_drive
+        self.drive_sync.driveFileName = args.drive_file
         self.picasa_sync.album = args.album
 
     def start(self, args):

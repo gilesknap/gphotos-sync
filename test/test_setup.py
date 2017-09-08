@@ -12,7 +12,8 @@ class SetupDbAndCredentials:
         self.db_file = None
         self.root = None
 
-    def test_setup(self, test_name, init_db=False, args=None, trash_db=False):
+    def test_setup(self, test_name, init_db=False, args=None, trash_db=False,
+                   trash_files=False):
         self.root = '/tmp/gpTests/{}'.format(test_name)
 
         self.db_file = os.path.join(self.root, 'gphotos.sqlite')
@@ -22,6 +23,9 @@ class SetupDbAndCredentials:
             src_folder = os.path.dirname(os.path.abspath(__file__))
             from_file = os.path.join(src_folder, 'testDb1.sqlite')
             shutil.copy(from_file, self.db_file)
+        elif trash_files:
+            if os.path.exists(self.root):
+                shutil.rmtree(self.root)
         elif trash_db:
             if os.path.exists(self.db_file):
                 os.remove(self.db_file)

@@ -124,7 +124,8 @@ class PicasaSync(object):
                       .format(album.title.text, album.numphotos.text,
                               album.updated.text))
 
-            end_date = datetime.min
+            # set initial end date to earliest possibl
+            end_date = datetime.min.replace(year=1900)
             album_id = album.gphoto_id.text
             # noinspection SpellCheckingInspection
             q = album.GetPhotosUri() + "&imgmax=d"
@@ -157,8 +158,8 @@ class PicasaSync(object):
                     elif results is None:
                         # no match so this exists only in picasa
                         picasa_only += 1
-                        if not (self.includeVideo or media.mime_type.startswith(
-                                'video/')):
+                        if self.includeVideo or not media.mime_type.startswith(
+                                'video/'):
                             new_file_key = media.save_to_db(self._db)
                             self._db.put_album_file(album_id, new_file_key)
 
@@ -194,7 +195,6 @@ class PicasaSync(object):
                 continue
 
             # todo add progress bar instead of this print
-
             if not self.quiet:
                 print("  Downloading %s ..." % media.local_full_path)
             tmp_path = os.path.join(media.local_folder, '.gphoto.tmp')

@@ -6,7 +6,7 @@ RUN_LONG_TESTS = False
 
 
 class Utils(TestCase):
-    # long running test which genuinely tests the token refresh
+    # todo fix this to patch a forced refresh into the request code
     @classmethod
     def test_patch_http_client(cls):
         if RUN_LONG_TESTS:
