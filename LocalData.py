@@ -4,6 +4,7 @@ import os.path
 import sqlite3 as lite
 import shutil
 
+
 # NOTES on DB Schema changes
 # if adding or removing columns from SyncFiles Table Update:
 # (1) GoogleMedia.save_to_db
@@ -22,7 +23,7 @@ class LocalData:
     DB_FILE_NAME = 'gphotos.sqlite'
     BLOCK_SIZE = 10000
     EMPTY_FILE_NAME = 'etc/gphotos_empty.sqlite'
-    VERSION = "1.4"
+    VERSION = "2.0"
 
     class DuplicateDriveIdException(Exception):
         pass
@@ -32,10 +33,14 @@ class LocalData:
         if not os.path.exists(root_folder):
             os.makedirs(root_folder, 0o700)
         if not os.path.exists(self.file_name) or flush_index:
-            self.setup_new_db()
+            clean_db = True
+        else:
+            clean_db = False
         self.con = lite.connect(self.file_name)
         self.con.row_factory = lite.Row
         self.cur = self.con.cursor()
+        if clean_db:
+            self.clean_db()
 
     def __enter__(self):
         pass
@@ -45,19 +50,26 @@ class LocalData:
             self.store()
             self.con.close()
 
-    def setup_new_db(self):
-        # todo should just run gphotos_empty.sqlite
-        print("creating new database")
-        src_folder = os.path.dirname(os.path.abspath(__file__))
-        from_file = os.path.join(src_folder, LocalData.EMPTY_FILE_NAME)
-        shutil.copy(from_file, self.file_name)
+    def clean_db(self):
+        sql_file = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                "etc","gphotos_create.sql")
+        qry = open(sql_file, 'r').read()
+        self.cur.executescript(qry)
 
-    def flush_all(self):
-        self.cur.executescript(
-            "DELETE FROM AlbumFiles;"
-            "DELETE FROM Albums;"
-            "DELETE from SyncFiles;"
-        )
+    def set_scan_dates(self, picasa_date=None, drive_date=None):
+        if drive_date:
+            self.cur.execute('REPLACE into Globals(Id, LastIndexDrive)'
+                             ' VALUES(1, ?)', drive_date)
+        if picasa_date:
+            self.cur.execute('REPLACE into Globals(Id, LastIndexPicasa) '
+                             'VALUES(1, ?)', picasa_date)
+
+    def get_scan_dates(self):
+        query = "SELECT LastIndexDrive, LastIndexPicasa FROM  Globals " \
+                "WHERE Id is 1"
+        self.cur.execute(query)
+        res = self.cur.fetchone()
+        return res[0], res[1]
 
     @classmethod
     def record_to_tuple(cls, rec):
@@ -178,7 +190,7 @@ class LocalData:
     def get_drive_folder_path(self, folder_id):
         self.cur.execute(
             "SELECT Path FROM DriveFolders "
-            "WHERE FolderId is ?", (folder_id,))
+            "WHERE FolderId IS ?", (folder_id,))
         result = self.cur.fetchone()
         if result:
             return result['Path']

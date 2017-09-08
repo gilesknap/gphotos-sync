@@ -94,12 +94,15 @@ create unique index AlbumFiles_AlbumRec_DriveRec_uindex
 	on AlbumFiles (AlbumRec, DriveRec);
 
 drop table if exists Globals;
-create table Globals
+CREATE TABLE Globals
 (
-	Version TEXT,
-	Albums INT,
-	Files INT,
-	LastScanDate TEXT
-)
-;
+  Id INTEGER,
+  Version TEXT,
+  Albums INTEGER,
+  Files INTEGER,
+  LastIndexDrive TEXT,
+  LastIndexPicasa TEXT
+);
+CREATE UNIQUE INDEX Globals_Id_uindex ON Globals (Id);
 
+INSERT INTO Globals(Id, Version, Albums, Files) VALUES (1, 2.0, 0, 0);

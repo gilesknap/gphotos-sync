@@ -72,8 +72,7 @@ class GoogleDriveMedia(GoogleMedia):
 
     @property
     def create_date(self):
-        date = datetime.strptime(self.__drive_file["createdDate"].upper()[:-4],
-                                 "%Y-%m-%dT%H:%M:%S.")
+        date = Utils.string_to_date(self.__drive_file["createdDate"])
         return date
 
     @property
@@ -121,3 +120,8 @@ class GoogleDriveMedia(GoogleMedia):
                 camera_model = None
 
         return camera_model
+
+    @property
+    def modified_date(self):
+        date = Utils.string_to_date(self.__drive_file["modifiedDate"])
+        return date

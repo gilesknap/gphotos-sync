@@ -2,7 +2,7 @@
 # coding: utf8
 import io
 import os.path
-
+from datetime import datetime
 # noinspection PyPackageRequirements
 from googleapiclient import http
 from pydrive.auth import GoogleAuth
@@ -12,6 +12,7 @@ from GoogleDriveMedia import GoogleDriveMedia
 from DatabaseMedia import DatabaseMedia
 from GoogleMedia import MediaType
 from ProgressHandler import ProgressHandler
+from LocalData import LocalData
 import Utils
 
 
@@ -37,16 +38,23 @@ class GoogleDriveSync(object):
         'title = "Google Photos" and "root" in parents and trashed=false')
     FOLDER_QUERY = ('title = "%s" and "%s" in parents and trashed=false'
                     ' and mimeType="application/vnd.google-apps.folder"')
-    PHOTO_QUERY = "mimeType contains 'image/'"
-    VIDEO_QUERY = "(mimeType contains 'image/' or mimeType contains 'video/')"
+    PHOTO_QUERY = "mimeType contains 'image/' and trashed=false"
+    VIDEO_QUERY = "(mimeType contains 'image/' or mimeType contains 'video/')" \
+                  " and trashed=false"
     AFTER_QUERY = " and modifiedDate >= '{}T00:00:00'"
     BEFORE_QUERY = " and modifiedDate <= '{}T00:00:00'"
-    FILENAME_QUERY = 'title contains "{}"'
+    FILENAME_QUERY = 'title contains "{}" and trashed=false'
     PAGE_SIZE = 500
 
     def __init__(self, root_folder, db,
                  client_secret_file="client_secret.json",
                  credentials_json="credentials.json"):
+        """
+        :param (str) root_folder:
+        :param (LocalData) db:
+        :param (str) client_secret_file:
+        :param (str) credentials_json:
+        """
         self._db = db
         self._root_folder = root_folder
 
@@ -58,7 +66,7 @@ class GoogleDriveSync(object):
         self._g_auth.settings["get_refresh_token"] = True
         self._g_auth.CommandLineAuth()
         self._googleDrive = GoogleDrive(self._g_auth)
-
+        self._latest_download = datetime.min.replace(year=1900)
         # public members to be set after init
         self.folderPaths = {}
         self.startDate = None
@@ -71,6 +79,10 @@ class GoogleDriveSync(object):
     @property
     def credentials(self):
         return self._g_auth.credentials
+
+    @property
+    def latest_download(self):
+        return self._latest_download
 
     def scan_folder_hierarchy(self):
         print('\nIndexing Drive Folders ...')
@@ -141,6 +153,12 @@ class GoogleDriveSync(object):
             q = self.FILENAME_QUERY.format(self.driveFileName)
         if self.startDate:
             q += self.AFTER_QUERY.format(self.startDate)
+        else:
+            # setup for incremental backup
+            if not self.driveFileName:
+                (start_date, _) = self._db.get_scan_dates()
+                if start_date:
+                    q += self.AFTER_QUERY.format(self.startDate)
         if self.endDate:
             q += self.BEFORE_QUERY.format(self.endDate)
 
@@ -154,15 +172,23 @@ class GoogleDriveSync(object):
 
         results = self._googleDrive.ListFile(query_params)
         n = 0
-        for page_results in Utils.retry_i(5, results):
-            for drive_file in page_results:
-                media = GoogleDriveMedia(self.folderPaths,
-                                         self._root_folder, drive_file)
-                if not media.is_indexed(self._db):
-                    n += 1
-                    if not self.quiet:
-                        print(u"Added {} {}".format(n, media.local_full_path))
-                        media.save_to_db(self._db)
+        try:
+            for page_results in Utils.retry_i(5, results):
+                for drive_file in page_results:
+                    media = GoogleDriveMedia(self.folderPaths,
+                                             self._root_folder, drive_file)
+                    if not media.is_indexed(self._db):
+                        n += 1
+                        if not self.quiet:
+                            print(
+                                u"Added {} {}".format(n, media.local_full_path))
+                            media.save_to_db(self._db)
+                        if media.modified_date > self._latest_download:
+                            self._latest_download = media.modified_date
+        finally:
+            # store latest date for incremental backup only if scanning all
+            if not self.driveFileName or self.startDate:
+                self._db.set_scan_dates(drive_date=self._latest_download)
 
     # todo set file dates as per downloaded media
     def download_drive_media(self):
