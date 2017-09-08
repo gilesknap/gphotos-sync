@@ -1,5 +1,4 @@
--- noinspection SqlDialectInspectionForFile
-
+-- helpful queries for checking the picasa photo to drive file matching
 
 -- find files that are not creations but were not found in the drive folders
 ---------------------------------------------------------------------------
@@ -58,3 +57,5 @@ SELECT SyncFiles.Path, SyncFiles.Filename, SyncFiles.ModifyDate, Albums.AlbumNam
   WHERE Albums.AlbumName LIKE '%Clivedon%';
 
 SELECT * from SyncFiles WHERE SyncFiles.MediaType is not 0;
+SELECT * from SyncFiles WHERE FileName like 'P1040748%';
+SELECT * from SyncFiles WHERE Path like '%Cars%';

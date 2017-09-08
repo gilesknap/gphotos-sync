@@ -124,7 +124,7 @@ class PicasaSync(object):
                       .format(album.title.text, album.numphotos.text,
                               album.updated.text))
 
-            # set initial end date to earliest possibl
+            # set initial end date to earliest possible
             end_date = datetime.min.replace(year=1900)
             album_id = album.gphoto_id.text
             # noinspection SpellCheckingInspection
@@ -188,6 +188,7 @@ class PicasaSync(object):
 
     def download_album_media(self):
         print('\nDownloading Picasa Only Files ...')
+        # noinspection PyTypeChecker
         for media in DatabaseMedia.get_media_by_search(
                 self._root_folder, self._db, media_type=MediaType.PICASA,
                 start_date=self.startDate, end_date=self.endDate):

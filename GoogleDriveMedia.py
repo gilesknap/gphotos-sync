@@ -72,7 +72,6 @@ class GoogleDriveMedia(GoogleMedia):
 
     @property
     def create_date(self):
-        # some times are ucase T and non zero millisecs - normalize
         date = datetime.strptime(self.__drive_file["createdDate"].upper()[:-4],
                                  "%Y-%m-%dT%H:%M:%S.")
         return date

@@ -3,17 +3,13 @@ from test_setup import SetupDbAndCredentials
 from LocalData import LocalData
 import os
 
-RUN_LONG_TESTS = False
-
-
 # todo currently the system tests work against my personal google drive
 # todo will try to provide a standalone account and credentials
-class Utils(TestCase):
+class System(TestCase):
 
     def test_system_index_names(self):
         s = SetupDbAndCredentials()
-        # this date range includes two above albums but excludes the photos
-        # so they will go in the picasa folder
+        # get a single file
         args = [
             '--start-date', '2017-01-02',
             '--end-date', '2017-01-03',
@@ -41,6 +37,7 @@ class Utils(TestCase):
         self.assertEqual(True, os.path.exists(expected_file))
 
     def test_system_index(self):
+        # this will get a few files and two albums which include some of those
         s = SetupDbAndCredentials()
         args = [
             '--start-date', '2017-08-30',

@@ -125,6 +125,7 @@ class GooglePhotosSyncMain:
         self.drive_sync.includeVideo = self.picasa_sync.includeVideo = \
             args.include_video
         self.drive_sync.driveFileName = args.drive_file
+        self.drive_sync.allDrive = args.all_drive
         self.picasa_sync.album = args.album
 
     def start(self, args):

@@ -1,6 +1,4 @@
 from Main import GooglePhotosSyncMain
-import sys
-from mock import patch
 import os.path
 import shutil
 

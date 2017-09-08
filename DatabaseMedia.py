@@ -2,6 +2,8 @@
 # coding: utf8
 import os.path
 from GoogleMedia import GoogleMedia, MediaType, MediaFolder
+from LocalData import LocalData
+from datetime import datetime
 
 
 class DatabaseMedia(GoogleMedia):
@@ -68,12 +70,12 @@ class DatabaseMedia(GoogleMedia):
         """
         A factory method to find any number of rows in SyncFile and yield an
         iterator of DataBaseMedia objects representing the results
-        :param root_folder:
-        :param db:
-        :param drive_id:
-        :param media_type:
-        :param start_date:
-        :param end_date:
+        :param (str) root_folder: the root folder (todo to be removed)
+        :param (LocalData) db: the database wrapper object
+        :param (str) drive_id: optional id of row to find
+        :param (int) media_type: optional type of rows to find
+        :param (datetime) start_date: optional date filter
+        :param (datetime) end_date: optional date filter
         """
         for record in db.get_files_by_search(
                 drive_id, media_type, start_date, end_date):
@@ -149,7 +151,7 @@ class DatabaseMedia(GoogleMedia):
     @property
     def mime_type(self):
         """
-        Mimetype not required at present
+        Mime type not required at present
         :return None:
         """
         raise NotImplementedError

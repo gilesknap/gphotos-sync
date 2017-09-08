@@ -3,6 +3,7 @@
 import io
 import os.path
 
+# noinspection PyPackageRequirements
 from googleapiclient import http
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
@@ -24,8 +25,8 @@ class NoGooglePhotosFolderError(Exception):
 #  they appear in an album.
 # one workaround is to create an album and use google photos to drop all
 # creations in it. This would need redoing every so often but may be the only
-# solution since it seems picassa API cannot see these otherwise
-# UDATE - the global 'Auto Backup' album contains all files including creations
+# solution since it seems picasa API cannot see these otherwise
+# UPDATE - the global 'Auto Backup' album contains all files including creations
 #   however the API fails at the 10000 file mark. Thus it would be possible
 #   tp backup these by creating a folder and then use Auto Backup to continue
 #   to save new creations (would require that they could be marked as 'do not
@@ -166,6 +167,7 @@ class GoogleDriveSync(object):
     # todo set file dates as per downloaded media
     def download_drive_media(self):
         print('\nDownloading Drive Files ...')
+        # noinspection PyTypeChecker
         for media in DatabaseMedia.get_media_by_search(
                 self._root_folder, self._db, media_type=MediaType.DRIVE,
                 start_date=self.startDate, end_date=self.endDate):
