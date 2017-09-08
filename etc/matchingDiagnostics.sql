@@ -6,6 +6,10 @@
 -- and 253 when not. Hence 168 items outside of Google photos are referenced
 --  in albums - it looked like this happened in auto created albums when I
 -- uploaded our travel blog to google Drive.
+-- numbers are down to 253 and 82 after adding Date matching to +-12 hours
+-- which is a paltry gain on 90,000 pics for loads of extra queries
+-- todo still need to do more analysis on how often date matching is being fired
+
 -- TODO trying to get the 253 down by adding date matching with timezone slip
 -- TODO  tests - running this test on 4/9/17
 -- TODO  at least 2 files suburu?.jpg are in drive and should get a match

@@ -3,6 +3,7 @@ from test_setup import SetupDbAndCredentials
 from LocalData import LocalData
 import os
 
+
 # todo currently the system tests work against my personal google drive
 # todo will try to provide a standalone account and credentials
 class System(TestCase):
@@ -11,9 +12,7 @@ class System(TestCase):
         s = SetupDbAndCredentials()
         # get a single file
         args = [
-            '--start-date', '2017-01-02',
-            '--end-date', '2017-01-03',
-            '--drive-file', '20170102_094337.jpg'
+            '--drive-file', '20170102_094337.jpg',
             '--skip-picasa'
         ]
         s.test_setup('test_system_index_names', args=args, trash_files=True)
