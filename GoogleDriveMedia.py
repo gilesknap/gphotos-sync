@@ -1,9 +1,9 @@
 #!/usr/bin/python
 # coding: utf8
 import re
-from datetime import datetime
-from GoogleMedia import GoogleMedia, MediaType, MediaFolder
+
 import Utils
+from GoogleMedia import GoogleMedia, MediaType, MediaFolder
 
 
 class GoogleDriveMedia(GoogleMedia):

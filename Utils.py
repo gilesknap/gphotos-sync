@@ -6,6 +6,8 @@ import re
 
 DATE_NORMALIZE = re.compile('(\d\d\d\d).(\d\d).(\d\d).(\d\d).(\d\d).(\d\d)')
 SHORT_DATE_NORMALIZE = re.compile('(\d\d\d\d).(\d\d).(\d\d)')
+DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
+DATE_ONLY = "%Y-%m-%d"
 
 
 def retry(count, func, *arg, **k_arg):
@@ -45,6 +47,18 @@ def retry_i(count, iterator):
         yield last_item
 
 
+def date_to_string(date_t, date_only=False):
+    """
+    :param (int) date_only:
+    :param (datetime) date_t:
+    :return (str):
+    """
+    if date_only:
+        return date_t.strftime(DATE_ONLY)
+    else:
+        return date_t.strftime(DATE_FORMAT)
+
+
 def string_to_date(date_string):
     m = DATE_NORMALIZE.match(date_string)
     if m:
@@ -54,9 +68,10 @@ def string_to_date(date_string):
         if m:
             normalized = '{}-{}-{} 00:00:00'.format(*m.groups())
         else:
-            raise TypeError('date {} bad format'.format(date_string))
+            return datetime.min
+            # raise TypeError('date {} bad format'.format(date_string))
 
-    return datetime.strptime(normalized, "%Y-%m-%d %H:%M:%S")
+    return datetime.strptime(normalized, DATE_FORMAT)
 
 
 def timestamp_to_date(time_secs, hour_offset=0):

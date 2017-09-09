@@ -156,9 +156,10 @@ class GoogleDriveSync(object):
         else:
             # setup for incremental backup
             if not self.driveFileName:
-                (start_date, _) = self._db.get_scan_dates()
-                if start_date:
-                    q += self.AFTER_QUERY.format(self.startDate)
+                (last_download_date, _) = self._db.get_scan_dates()
+                if last_download_date:
+                    s = Utils.date_to_string(last_download_date, True)
+                    q += self.AFTER_QUERY.format(s)
         if self.endDate:
             q += self.BEFORE_QUERY.format(self.endDate)
 
@@ -180,14 +181,14 @@ class GoogleDriveSync(object):
                     if not media.is_indexed(self._db):
                         n += 1
                         if not self.quiet:
-                            print(
-                                u"Added {} {}".format(n, media.local_full_path))
+                            print(u"Added {} {}".format(n,
+                                                        media.local_full_path))
                             media.save_to_db(self._db)
                         if media.modified_date > self._latest_download:
                             self._latest_download = media.modified_date
         finally:
             # store latest date for incremental backup only if scanning all
-            if not self.driveFileName or self.startDate:
+            if not (self.driveFileName or self.startDate):
                 self._db.set_scan_dates(drive_date=self._latest_download)
 
     # todo set file dates as per downloaded media

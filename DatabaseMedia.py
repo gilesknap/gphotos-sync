@@ -13,12 +13,23 @@ class DatabaseMedia(GoogleMedia):
     from the database using one of the two factory class methods.
 
     Attributes:
-        Public attributes documented on their getters
+        _id (str): remote identifier from picasa or drive
+        _filename (str):
+        _orig_name (str):
+        _duplicate_number (int):
+        _date (datetime):
+        _checksum (str):
+        _description (str):
+        _size (int):
+        _create_date (datetime):
+        _media_type (int):
+        _sym_link (int):
+
     """
     MEDIA_TYPE = MediaType.DATABASE
     MEDIA_FOLDER = MediaFolder[MEDIA_TYPE]
 
-    def __init__(self, root_folder, data_tuple):
+    def __init__(self, root_folder, row):
         """
         This constructor is kept in sync with changes to the SyncFiles table
         and is the only function in this project with knowledge of how to
@@ -27,19 +38,26 @@ class DatabaseMedia(GoogleMedia):
         :param (str) root_folder: the root of the sync folder in which
         the database file is created and below which the synced files are
         stored
-        :param (tuple) data_tuple: a tuple containing a value for each
+        :param (LocalData.SyncRow) row: a tuple containing a value for each
         column in the SyncFiles table.
         """
         super(DatabaseMedia, self).__init__(None, root_folder)
 
-        if data_tuple:
-            (
-                self._id, self._url, local_folder,
-                self._filename, self._orig_name, self._duplicate_number,
-                self._date, self._checksum, self._description, self._size,
-                self._create_date, _, self._media_type,
-                self._sym_link
-            ) = data_tuple
+        if row:
+            self._id = row.RemoteId
+            self._url = row.Url
+            local_folder = row.Path
+            self._filename = row.FileName
+            self._orig_name = row.OrigFileName
+            self._duplicate_number = row.DuplicateNo
+            self._media_type = row.MediaType
+            self._size = row.FileSize
+            self._checksum = row.Checksum
+            self._description = row.Description
+            self._date = row.ModifyDate
+            self._create_date = row.CreateDate
+            self._sym_link = row.SymLink = None
+
             self.duplicate_number = int(self.duplicate_number)
             self._media_folder = MediaFolder[self._media_type]
             media_root = os.path.join(root_folder, self._media_folder)
@@ -95,7 +113,7 @@ class DatabaseMedia(GoogleMedia):
     def checksum(self):
         """
         The md5 checksum of the file
-        :return (string):
+        :return (str):
         """
         return self._checksum
 

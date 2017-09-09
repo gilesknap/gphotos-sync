@@ -25,7 +25,7 @@ class SystemMatch(TestCase):
         count = 0
         for _ in results:
             count += 1
-        self.assertEqual(count, 2)
+        self.assertEqual(count, 4)
 
         expected_files = os.path.join(
             s.root, 'drive/Google Photos/9999/Cars/subaru?.jpg')

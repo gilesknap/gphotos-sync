@@ -157,7 +157,7 @@ class GooglePhotosSyncMain:
                 # save the traceback so we can diagnose lockups
                 except_file_name = os.path.join(
                     os.path.dirname(os.path.abspath(__file__)),
-                    "etc",".gphoto-terminated")
+                    "etc", ".gphoto-terminated")
                 with open(except_file_name, "w") as text_file:
                     text_file.write(traceback.format_exc())
             finally:

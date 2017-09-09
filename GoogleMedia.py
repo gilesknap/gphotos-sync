@@ -3,6 +3,7 @@
 import os.path
 from enum import Enum
 from time import gmtime, strftime
+from LocalData import LocalData
 
 
 class MediaType(Enum):
@@ -48,21 +49,29 @@ class GoogleMedia(object):
 
     def save_to_db(self, db):
         now_time = strftime(GoogleMedia.TIME_FORMAT, gmtime())
-        data_tuple = (
-            self.id, self.url, self.local_folder,
-            self.filename, self.orig_name, self.duplicate_number,
-            self.checksum, self.description, self.size,
-            self.date, self.create_date, now_time, self.media_type,
-            self.symlink
-        )
-        return db.put_file(data_tuple)
+        new_row = LocalData.SyncRow()
+        new_row.RemoteId = self.id
+        new_row.Url = self.url
+        new_row.Path = self.local_folder
+        new_row.FileName = self.filename
+        new_row.OrigFileName = self.orig_name
+        new_row.DuplicateNo = self.duplicate_number
+        new_row.MediaType = self.media_type
+        new_row.FileSize = self.size
+        new_row.Checksum = self.checksum
+        new_row.Description = self.description
+        new_row.ModifyDate = self.date
+        new_row.CreateDate = self.create_date
+        new_row.SyncDate = now_time
+        new_row.SymLink = None
+        return db.put_file(new_row)
 
     def is_indexed(self, db):
         # todo (this is brittle so fix it)
         # checking for index has the side effect of setting duplicate no
         # probably should do this immediately after subclass init
         num = db.file_duplicate_no(
-            self. id, self.local_folder, self.orig_name)
+            self.id, self.local_folder, self.orig_name)
         self.duplicate_number = num
         result = db.get_file_by_id(remote_id=self.id)
         return result is not None

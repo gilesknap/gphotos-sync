@@ -65,7 +65,9 @@ class PicasaSync(object):
         # in which case revert to create date
         # ABOVE DONE
         # todo verify that the above is required in my photos collection
-        for use_create_date in [False, True]:
+        # todo todo temp removed the loop for performance on windows test
+        # todo confirmed windows scan is much faster - leaving for now
+        for use_create_date in [False]:
             dated_file_keys = \
                 self._db.find_file_ids_dates(filename=media.filename,
                                              exif_date=media.date,
@@ -74,7 +76,7 @@ class PicasaSync(object):
                 print("MATCH ON DATE create %r %s, file: %s" %
                       (use_create_date, media.date, media.orig_name))
                 return dated_file_keys
-            for hour_offset in range(-12, 12):
+            for hour_offset in range(-1, 1):
                 date_to_check = media.date + timedelta(hours=hour_offset)
                 dated_file_keys = \
                     self._db.find_file_ids_dates(

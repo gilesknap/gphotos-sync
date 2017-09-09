@@ -2,7 +2,8 @@
 # coding: utf8
 import os.path
 import sqlite3 as lite
-import shutil
+from datetime import datetime
+import Utils
 
 
 # NOTES on DB Schema changes
@@ -52,45 +53,87 @@ class LocalData:
 
     def clean_db(self):
         sql_file = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                "etc","gphotos_create.sql")
+                                "etc", "gphotos_create.sql")
         qry = open(sql_file, 'r').read()
         self.cur.executescript(qry)
 
     def set_scan_dates(self, picasa_date=None, drive_date=None):
         if drive_date:
-            self.cur.execute('REPLACE into Globals(Id, LastIndexDrive)'
-                             ' VALUES(1, ?)', drive_date)
+            d = Utils.date_to_string(drive_date)
+            self.cur.execute('REPLACE INTO Globals(Id, LastIndexDrive)'
+                             ' VALUES(1, ?)', (d,))
         if picasa_date:
-            self.cur.execute('REPLACE into Globals(Id, LastIndexPicasa) '
-                             'VALUES(1, ?)', picasa_date)
+            d = Utils.date_to_string(picasa_date)
+            self.cur.execute('REPLACE INTO Globals(Id, LastIndexPicasa) '
+                             'VALUES(1, ?)', (d,))
 
     def get_scan_dates(self):
         query = "SELECT LastIndexDrive, LastIndexPicasa FROM  Globals " \
-                "WHERE Id is 1"
+                "WHERE Id IS 1"
         self.cur.execute(query)
+        drive_date = picasa_date = None
         res = self.cur.fetchone()
-        return res[0], res[1]
+        if res[0]:
+            drive_date = Utils.string_to_date(res[0])
+        if res[1]:
+            picasa_date = Utils.string_to_date(res[1])
+        return drive_date, picasa_date
+
+    class SyncRow:
+        """
+        generates an object with attributes for each of the columns in the
+        SyncFiles table
+        """
+        _sync_rows = [
+            'RemoteId', 'Url', 'Path', 'FileName', 'OrigFileName',
+            'DuplicateNo', 'MediaType', 'FileSize', 'Checksum', 'Description',
+            'ModifyDate', 'CreateDate', 'SyncDate', 'SymLink']
+        _sync_types = [
+            str, str, str, str, str,
+            int, int, int, str, str,
+            datetime, datetime, datetime, int]
+        sync_query = ','.join(_sync_rows)
+        sync_params = ':' + ',:'.join(_sync_rows)
+
+        def __init__(self, result_row=None):
+            col_no = 0
+            for column in self._sync_rows:
+                if not result_row:
+                    value = None
+                elif self._sync_types[col_no] == datetime:
+                    value = Utils.string_to_date(result_row[column])
+                else:
+                    value = result_row[column]
+                setattr(self, column, value)
+                col_no += 1
+
+        @property
+        def dict(self):
+            return self.__dict__
 
     @classmethod
-    def record_to_tuple(cls, rec):
+    def record_to_object(cls, rec):
+        """
+        :param ([]) rec:
+        :return (SyncRow):
+        """
         if rec:
-            data_tuple = (
-                rec['RemoteId'], rec['Url'], rec['Path'], rec['FileName'],
-                rec['OrigFileName'], rec['DuplicateNo'], rec['ModifyDate'],
-                rec['Checksum'], rec['Description'], rec['FileSize'],
-                rec['CreateDate'], rec['SyncDate'], rec['MediaType'],
-                rec['SymLink']
-            )
+            result = cls.SyncRow(rec)
         else:
-            data_tuple = None
-        return data_tuple
+            result = None
+        return result
 
     def get_files_by_search(self, drive_id='%', media_type=None,
                             start_date=None, end_date=None):
+        """
+        :param (str) drive_id:
+        :param (int) media_type:
+        :param (datetime) start_date:
+        :param (datetime) end_date:
+        :return (SyncRow):
+        """
         if not media_type:
             media_type = '%'
-        else:
-            media_type = int(media_type)
         params = (drive_id, media_type)
         date_clauses = ''
         if start_date:
@@ -100,8 +143,9 @@ class LocalData:
             date_clauses += 'AND ModifyDate <= ?'
             params += (end_date,)
 
-        query = "SELECT * FROM SyncFiles WHERE RemoteId LIKE ? AND " \
-                " MediaType LIKE ? {0};".format(date_clauses)
+        query = "SELECT {0} FROM SyncFiles WHERE RemoteId LIKE ? AND " \
+                " MediaType LIKE ? {1};".format(
+                    self.SyncRow.sync_query, date_clauses)
 
         self.cur.execute(query, params)
         while True:
@@ -109,34 +153,37 @@ class LocalData:
             if not records:
                 break
             for record in records:
-                yield (self.record_to_tuple(record))
+                yield self.SyncRow(record)
 
     def get_file_by_path(self, folder, name):
-        self.cur.execute(
-            "SELECT * FROM SyncFiles WHERE Path = ? AND FileName = ?;",
-            (folder, name))
-        result = self.cur.fetchone()
-        if result:
-            return self.record_to_tuple(result)
+        """
+        :param (str) folder:
+        :param (str) name:
+        :return (SyncRow):
+        """
+        query = "SELECT {0} FROM SyncFiles WHERE Path = ?" \
+                " AND FileName = ?;".format(self.SyncRow.sync_query)
+        self.cur.execute(query, (folder, name))
+        record = self.cur.fetchone()
+        if record:
+            return self.SyncRow(record)
         else:
             return None
 
     def get_file_by_id(self, remote_id):
-        self.cur.execute(
-            "SELECT * FROM SyncFiles WHERE RemoteId = ?;", (remote_id,))
-        result = self.record_to_tuple(self.cur.fetchone())
-        return result
+        query = "SELECT {0} FROM SyncFiles WHERE RemoteId = ?;".format(
+            self.SyncRow.sync_query)
+        self.cur.execute(query, (remote_id,))
+        record = self.cur.fetchone()
+        if record:
+            return self.SyncRow(record)
+        else:
+            return None
 
-    def put_file(self, data_tuple):
-        # note this will overwrite existing entries with new data which fine
-        # but we hide the possibility of > 1 reference to a single file from
-        # > 1 Drive folders - again OK since it does represent the same file
-        # However we will only see the last reference in our local sync of
-        # the drive folders (this does not affect Google Photos sub-folders)
-        self.cur.execute(
-            "INSERT INTO SyncFiles "
-            "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ;",
-            (None,) + data_tuple)
+    def put_file(self, row):
+        query = "INSERT INTO SyncFiles ({0}) VALUES ({1})".format(
+            self.SyncRow.sync_query, self.SyncRow.sync_params)
+        self.cur.execute(query, row.dict)
         return self.cur.lastrowid
 
     # noinspection PyTypeChecker
