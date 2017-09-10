@@ -68,12 +68,13 @@ def date_to_string(date_t, date_only=False):
 
 
 def minimum_date():
-    # this is the minimum acceptable date for drive queries and suprisingly
+    # this is the minimum acceptable date for drive queries and surprisingly
     # datetime.strptime on some platforms
     if os.name == 'nt':
         return datetime.min.replace(year=1970)
     else:
-        return datetime.min
+        # todo - google drive search does not like 1900 but strptime is OK
+        return datetime.min.replace(year=1970)
 
 
 def string_to_date(date_string):
