@@ -1,17 +1,12 @@
 #!/usr/bin/python
 # coding: utf8
-import io
 import os.path
-from datetime import datetime
-# noinspection PyPackageRequirements
-from googleapiclient import http
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 
 from GoogleDriveMedia import GoogleDriveMedia
 from DatabaseMedia import DatabaseMedia
 from GoogleMedia import MediaType
-from ProgressHandler import ProgressHandler
 from LocalData import LocalData
 import Utils
 
@@ -207,23 +202,13 @@ class GoogleDriveSync(object):
                 os.makedirs(media.local_folder)
             temp_filename = os.path.join(self._root_folder, '.temp-photo')
 
-            if self.quiet:
-                progress_handler = None
-            else:
-                progress_handler = ProgressHandler(media)
+            # if self.quiet:
+            #     progress_handler = None
+            # else:
+            #     progress_handler = ProgressHandler(media)
 
-            with io.open(temp_filename, 'bw') as target_file:
-                request = self._g_auth.service.files().get_media(
-                    fileId=media.id)
-                download_request = http.MediaIoBaseDownload(target_file,
-                                                            request)
-
-                done = False
-                while not done:
-                    download_status, done = \
-                        Utils.retry(10, download_request.next_chunk)
-                    if progress_handler is not None:
-                        progress_handler.update_progress(
-                            download_status)
+            print ('downloading {} ...'.format(media.local_full_path))
+            f = self._googleDrive.CreateFile({'id': media.id})
+            Utils.retry(10, f.GetContentFile, temp_filename)
 
             os.rename(temp_filename, media.local_full_path)
