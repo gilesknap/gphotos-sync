@@ -3,7 +3,7 @@
 import time
 from datetime import datetime
 import re
-
+import os
 DATE_NORMALIZE = re.compile('(\d\d\d\d).(\d\d).(\d\d).(\d\d).(\d\d).(\d\d)')
 SHORT_DATE_NORMALIZE = re.compile('(\d\d\d\d).(\d\d).(\d\d)')
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
@@ -47,6 +47,14 @@ def retry_i(count, iterator):
         yield last_item
 
 
+# incredibly windows cannot handle dates below 1970
+def safe_str_time(date_time, date_format):
+    if os.name == 'nt':
+        if date_time < minimum_date():
+            date_time = minimum_date()
+    return date_time.strftime(date_format)
+
+
 def date_to_string(date_t, date_only=False):
     """
     :param (int) date_only:
@@ -59,6 +67,15 @@ def date_to_string(date_t, date_only=False):
         return date_t.strftime(DATE_FORMAT)
 
 
+def minimum_date():
+    # this is the minimum acceptable date for drive queries and suprisingly
+    # datetime.strptime on some platforms
+    if os.name == 'nt':
+        return datetime.min.replace(year=1970)
+    else:
+        return datetime.min
+
+
 def string_to_date(date_string):
     m = DATE_NORMALIZE.match(date_string)
     if m:
@@ -68,15 +85,19 @@ def string_to_date(date_string):
         if m:
             normalized = '{}-{}-{} 00:00:00'.format(*m.groups())
         else:
-            return datetime.min
-            # raise TypeError('date {} bad format'.format(date_string))
+            print('warning: time string {} illegal'.format(date_string))
+            return minimum_date()
 
     return datetime.strptime(normalized, DATE_FORMAT)
 
 
 def timestamp_to_date(time_secs, hour_offset=0):
-    date = datetime.fromtimestamp(
-        int(time_secs) / 1000 + 3600 * hour_offset)
+    try:
+        date = datetime.fromtimestamp(
+            int(time_secs) / 1000 + 3600 * hour_offset)
+    except ValueError:
+        print('warning: time stamp {} illegal'.format(time_secs))
+        date = minimum_date()
     return date
 
 

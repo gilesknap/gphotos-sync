@@ -224,7 +224,8 @@ class PicasaSync(object):
                 self._db.get_album_files():
             full_file_name = os.path.join(path, file_name)
 
-            prefix = Utils.string_to_date(end_date).strftime('%Y/%m%d')
+            prefix = Utils.safe_str_time(Utils.string_to_date(end_date),
+                                         '%Y/%m%d')
             rel_path = u"{0} {1}".format(prefix, album_name)
             link_folder = os.path.join(links_root, rel_path)
 

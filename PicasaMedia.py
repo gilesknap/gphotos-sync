@@ -15,7 +15,7 @@ class PicasaMedia(GoogleMedia):
         self._relative_folder = self.define_path()
 
     def define_path(self):
-        return self.date.strftime('%Y/%m')
+        return Utils.safe_str_time(self.date, '%Y/%m')
 
     # ----- override Properties below -----
     @property

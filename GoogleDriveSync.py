@@ -66,7 +66,7 @@ class GoogleDriveSync(object):
         self._g_auth.settings["get_refresh_token"] = True
         self._g_auth.CommandLineAuth()
         self._googleDrive = GoogleDrive(self._g_auth)
-        self._latest_download = datetime.min.replace(year=1900)
+        self._latest_download = Utils.minimum_date()
         # public members to be set after init
         self.folderPaths = {}
         self.startDate = None
@@ -156,9 +156,11 @@ class GoogleDriveSync(object):
         else:
             # setup for incremental backup
             if not self.driveFileName:
-                (last_download_date, _) = self._db.get_scan_dates()
-                if last_download_date:
-                    s = Utils.date_to_string(last_download_date, True)
+                (self._latest_download, _) = self._db.get_scan_dates()
+                if not self._latest_download:
+                    self._latest_download = Utils.minimum_date()
+                if self._latest_download:
+                    s = Utils.date_to_string(self._latest_download, True)
                     q += self.AFTER_QUERY.format(s)
         if self.endDate:
             q += self.BEFORE_QUERY.format(self.endDate)
