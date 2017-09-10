@@ -13,9 +13,13 @@ APP_NAME = "gphotos-sync"
 
 
 # todo todo
+# incremental albums
+# refactor overly large functions in both Sync modules
+# handle deletes
+# release 1.0, then ...
+# doc stings everywhere
 # switch all string formatting to .format
 # add logger instead of prints
-# handle deletes
 # handle files switching between picasa and drive (because the matching logic
 #   was changed or because of partial indexing via filters)
 # handle files moving between albums and albums changing date
@@ -26,7 +30,6 @@ APP_NAME = "gphotos-sync"
 # attempt to put in continuous integration on github (includes getting auth
 #   working to a test google photos account)
 # extract my old filesystem folders from the exif metadata
-# doc stings everywhere
 
 
 class GooglePhotosSyncMain:
