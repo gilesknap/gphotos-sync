@@ -178,6 +178,8 @@ class GoogleDriveSync(object):
         try:
             for page_results in Utils.retry_i(5, results):
                 for drive_file in page_results:
+                    if not drive_file:
+                        continue
                     media = GoogleDriveMedia(self.folderPaths,
                                              self._root_folder, drive_file)
                     if not media.is_indexed(self._db):
