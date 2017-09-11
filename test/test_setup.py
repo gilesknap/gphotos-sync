@@ -12,7 +12,7 @@ class SetupDbAndCredentials:
 
     def test_setup(self, test_name, init_db=False, args=None, trash_db=False,
                    trash_files=False):
-        self.root = '/tmp/gpTests/{}'.format(test_name)
+        self.root = u'/tmp/gpTests/{}'.format(test_name)
 
         self.db_file = os.path.join(self.root, 'gphotos.sqlite')
         if init_db:

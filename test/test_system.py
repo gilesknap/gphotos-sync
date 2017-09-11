@@ -7,7 +7,6 @@ import os
 # todo currently the system tests work against my personal google drive
 # todo will try to provide a standalone account and credentials
 class System(TestCase):
-
     def test_system_download_name(self):
         s = SetupDbAndCredentials()
         # get a single file
@@ -134,7 +133,7 @@ class System(TestCase):
                 count += 1
             self.assertEqual(count, 680)
 
-            (d_date, _) = db.get_scan_dates()
+            (d_date, _, _) = db.get_scan_dates()
             self.assertEqual(d_date.year, 2015)
             self.assertEqual(d_date.month, 10)
             self.assertEqual(d_date.day, 10)
@@ -156,20 +155,19 @@ class System(TestCase):
                 count += 1
             self.assertEqual(count, 680 + 2229)
 
-            (d_date, _) = db.get_scan_dates()
+            (d_date, _, _) = db.get_scan_dates()
             self.assertEqual(d_date.year, 2015)
             self.assertEqual(d_date.month, 10)
             self.assertEqual(d_date.day, 11)
 
-    def test_system_incremental_picasa(self):
+    def test_system_inc_picasa(self):
         s = SetupDbAndCredentials()
         args = [
-            '--end-date', '2015-10-11',
+            '--end-date', '2016-04-20',
             '--skip-drive',
             '--index-only'
-
         ]
-        s.test_setup('test_system_incremental_picasa', args=args, trash_db=True)
+        s.test_setup('test_system_inc_picasa', args=args, trash_files=True)
         s.gp.start(s.parsed_args)
 
         # verify db contents
@@ -179,20 +177,21 @@ class System(TestCase):
             count = 0
             for _ in results:
                 count += 1
-            # self.assertEqual(count, 680)
+            self.assertEqual(count, 159)
 
-            (d_date, _) = db.get_scan_dates()
-            print d_date
-            # self.assertEqual(d_date.year, 2015)
-            # self.assertEqual(d_date.month, 10)
-            # self.assertEqual(d_date.day, 10)
+            (d_date, p_date, p_first) = db.get_scan_dates()
+            print('**** Drive:{} Picasa:{} PicasaFirst:{}'.format(
+                d_date, p_date, p_first))
+            self.assertEqual(p_date.year, 2016)
+            self.assertEqual(p_date.month, 4)
+            self.assertEqual(p_date.day, 17)
 
         args = [
-            '--end-date', '2015-10-12',
+            '--end-date', '2016-09-20',
             '--skip-drive',
             '--index-only'
         ]
-        s.test_setup('test_system_incremental', args=args)
+        s.test_setup('test_system_inc_picasa', args=args)
         s.gp.start(s.parsed_args)
 
         # verify db contents
@@ -202,10 +201,11 @@ class System(TestCase):
             count = 0
             for _ in results:
                 count += 1
-            # self.assertEqual(count, 680 + 2229)
+            self.assertEqual(count, 159 + 112)
 
-            (d_date, _) = db.get_scan_dates()
-            print d_date
-            # self.assertEqual(d_date.year, 2015)
-            # self.assertEqual(d_date.month, 10)
-            # self.assertEqual(d_date.day, 11)
+            (d_date, p_date, p_first) = db.get_scan_dates()
+            print('**** Drive:{} Picasa:{} PicasaFirst:{}'.format(
+                d_date, p_date, p_first))
+            self.assertEqual(p_date.year, 2016)
+            self.assertEqual(p_date.month, 9)
+            self.assertEqual(p_date.day, 19)

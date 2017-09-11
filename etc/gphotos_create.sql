@@ -101,7 +101,8 @@ CREATE TABLE Globals
   Albums INTEGER,
   Files INTEGER,
   LastIndexDrive TEXT,
-  LastIndexPicasa TEXT
+  LastIndexPicasa TEXT,
+	FirstIndexPicasa TEXT
 );
 CREATE UNIQUE INDEX Globals_Id_uindex ON Globals (Id);
 

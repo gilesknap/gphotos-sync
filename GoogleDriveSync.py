@@ -3,6 +3,7 @@
 import os.path
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
+from pydrive.files import ApiRequestError
 
 from GoogleDriveMedia import GoogleDriveMedia
 from DatabaseMedia import DatabaseMedia
@@ -17,7 +18,7 @@ class NoGooglePhotosFolderError(Exception):
 
 # todo create local albums from my original uploads via title encoding
 
-# todo keep in mind that no 'Creations' of gphotos are referenced unless
+# NOTE: keep in mind that no 'Creations' of gphotos are referenced unless
 #  they appear in an album.
 # one workaround is to create an album and use google photos to drop all
 # creations in it. This would need redoing every so often but may be the only
@@ -30,15 +31,15 @@ class NoGooglePhotosFolderError(Exception):
 
 class GoogleDriveSync(object):
     GOOGLE_PHOTO_FOLDER_QUERY = (
-        'title = "Google Photos" and "root" in parents and trashed=false')
-    FOLDER_QUERY = ('title = "%s" and "%s" in parents and trashed=false'
-                    ' and mimeType="application/vnd.google-apps.folder"')
-    PHOTO_QUERY = "mimeType contains 'image/' and trashed=false"
-    VIDEO_QUERY = "(mimeType contains 'image/' or mimeType contains 'video/')" \
-                  " and trashed=false"
-    AFTER_QUERY = " and modifiedDate >= '{}T00:00:00'"
-    BEFORE_QUERY = " and modifiedDate <= '{}T00:00:00'"
-    FILENAME_QUERY = 'title contains "{}" and trashed=false'
+        u'title = "Google Photos" and "root" in parents and trashed=false')
+    FOLDER_QUERY = u'title = "%s" and "%s" in parents and trashed=false and ' \
+                   u'mimeType="application/vnd.google-apps.folder"'
+    PHOTO_QUERY = u"mimeType contains 'image/' and trashed=false"
+    VIDEO_QUERY = u"(mimeType contains 'image/' or mimeType contains " \
+                  u"'video/') and trashed=false"
+    AFTER_QUERY = u" and modifiedDate >= '{}T00:00:00'"
+    BEFORE_QUERY = u" and modifiedDate <= '{}T00:00:00'"
+    FILENAME_QUERY = u'title contains "{}" and trashed=false'
     PAGE_SIZE = 500
 
     def __init__(self, root_folder, db,
@@ -134,7 +135,7 @@ class GoogleDriveSync(object):
                 if not file_id:
                     name = os.path.join(dir_name, file_name)
                     os.remove(name)
-                    print("{} deleted".format(name))
+                    print(u"{} deleted".format(name))
 
     def index_drive_media(self):
         print('\nIndexing Drive Files ...')
@@ -151,7 +152,7 @@ class GoogleDriveSync(object):
         else:
             # setup for incremental backup
             if not self.driveFileName:
-                (self._latest_download, _) = self._db.get_scan_dates()
+                (self._latest_download, _, _) = self._db.get_scan_dates()
                 if not self._latest_download:
                     self._latest_download = Utils.minimum_date()
                 if self._latest_download:
@@ -188,7 +189,7 @@ class GoogleDriveSync(object):
         finally:
             # store latest date for incremental backup only if scanning all
             if not (self.driveFileName or self.startDate):
-                self._db.set_scan_dates(drive_date=self._latest_download)
+                self._db.set_scan_dates(drive_last_date=self._latest_download)
 
     # todo set file dates as per downloaded media
     def download_drive_media(self):
@@ -204,13 +205,11 @@ class GoogleDriveSync(object):
                 os.makedirs(media.local_folder)
             temp_filename = os.path.join(self._root_folder, '.temp-photo')
 
-            # if self.quiet:
-            #     progress_handler = None
-            # else:
-            #     progress_handler = ProgressHandler(media)
-
-            print ('downloading {} ...'.format(media.local_full_path))
+            print (u'downloading {} ...'.format(media.local_full_path))
             f = self._googleDrive.CreateFile({'id': media.id})
-            Utils.retry(10, f.GetContentFile, temp_filename)
+            try:
+                Utils.retry(10, f.GetContentFile, temp_filename)
 
-            os.rename(temp_filename, media.local_full_path)
+                os.rename(temp_filename, media.local_full_path)
+            except ApiRequestError:
+                print(u'DOWNLOAD FAILURE for {}'.format(media.local_full_path))

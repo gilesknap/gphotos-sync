@@ -57,27 +57,36 @@ class LocalData:
         qry = open(sql_file, 'r').read()
         self.cur.executescript(qry)
 
-    def set_scan_dates(self, picasa_date=None, drive_date=None):
-        if drive_date:
-            d = Utils.date_to_string(drive_date)
-            self.cur.execute('REPLACE INTO Globals(Id, LastIndexDrive)'
-                             ' VALUES(1, ?)', (d,))
-        if picasa_date:
-            d = Utils.date_to_string(picasa_date)
-            self.cur.execute('REPLACE INTO Globals(Id, LastIndexPicasa) '
-                             'VALUES(1, ?)', (d,))
+    def set_scan_dates(self, picasa_last_date=None, drive_last_date=None,
+                       picasa_first_date=None):
+        if drive_last_date:
+            d = Utils.date_to_string(drive_last_date)
+            self.cur.execute('UPDATE Globals SET LastIndexDrive=? '
+                             'WHERE Id is 1', (d,))
+        if picasa_last_date:
+            d = Utils.date_to_string(picasa_last_date)
+            self.cur.execute('UPDATE Globals SET LastIndexPicasa=? '
+                             'WHERE Id is 1', (d,))
+        if picasa_first_date:
+            d = Utils.date_to_string(picasa_first_date)
+            self.cur.execute('UPDATE Globals SET FirstIndexPicasa=? '
+                             'WHERE Id is 1', (d,))
 
     def get_scan_dates(self):
-        query = "SELECT LastIndexDrive, LastIndexPicasa FROM  Globals " \
-                "WHERE Id IS 1"
+        query = "SELECT LastIndexDrive, LastIndexPicasa , FirstIndexPicasa " \
+                "FROM  Globals WHERE Id IS 1"
         self.cur.execute(query)
-        drive_date = picasa_date = None
         res = self.cur.fetchone()
+
+        drive_last_date = picasa_last_date = picasa_first_date = None
         if res[0]:
-            drive_date = Utils.string_to_date(res[0])
+            drive_last_date = Utils.string_to_date(res[0])
         if res[1]:
-            picasa_date = Utils.string_to_date(res[1])
-        return drive_date, picasa_date
+            picasa_last_date = Utils.string_to_date(res[1])
+        if res[2]:
+            picasa_first_date = Utils.string_to_date(res[2])
+
+        return drive_last_date, picasa_last_date, picasa_first_date
 
     class SyncRow:
         """
@@ -145,7 +154,7 @@ class LocalData:
 
         query = "SELECT {0} FROM SyncFiles WHERE RemoteId LIKE ? AND " \
                 " MediaType LIKE ? {1};".format(
-                    self.SyncRow.sync_query, date_clauses)
+            self.SyncRow.sync_query, date_clauses)
 
         self.cur.execute(query, params)
         while True:

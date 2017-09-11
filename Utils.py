@@ -67,6 +67,10 @@ def date_to_string(date_t, date_only=False):
         return date_t.strftime(DATE_FORMAT)
 
 
+def maximum_date():
+    return datetime.max
+
+
 def minimum_date():
     # this is the minimum acceptable date for drive queries and surprisingly
     # datetime.strptime on some platforms
