@@ -17,6 +17,7 @@ APP_NAME = "gphotos-sync"
 # refactor overly large functions in both Sync modules
 # handle deletes
 # release 1.0, then ...
+# probably should distinguish between created / modified / taken dates
 # doc stings everywhere
 # switch all string formatting to .format
 # add logger instead of prints
@@ -133,7 +134,7 @@ class GooglePhotosSyncMain:
             args.include_video
         self.drive_sync.driveFileName = args.drive_file
         self.drive_sync.allDrive = args.all_drive
-        self.picasa_sync.album = args.album
+        self.picasa_sync.album_name = args.album
 
     def start(self, args):
         with self.data_store:

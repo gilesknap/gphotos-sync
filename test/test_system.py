@@ -120,6 +120,7 @@ class System(TestCase):
             '--end-date', '2015-10-11',
             '--skip-picasa',
             '--index-only'
+
         ]
         s.test_setup('test_system_incremental', args=args, trash_db=True)
         s.gp.start(s.parsed_args)
@@ -159,3 +160,52 @@ class System(TestCase):
             self.assertEqual(d_date.year, 2015)
             self.assertEqual(d_date.month, 10)
             self.assertEqual(d_date.day, 11)
+
+    def test_system_incremental_picasa(self):
+        s = SetupDbAndCredentials()
+        args = [
+            '--end-date', '2015-10-11',
+            '--skip-drive',
+            '--index-only'
+
+        ]
+        s.test_setup('test_system_incremental_picasa', args=args, trash_db=True)
+        s.gp.start(s.parsed_args)
+
+        # verify db contents
+        db = LocalData(s.root)
+        with db:
+            results = db.get_files_by_search(media_type=0)
+            count = 0
+            for _ in results:
+                count += 1
+            # self.assertEqual(count, 680)
+
+            (d_date, _) = db.get_scan_dates()
+            print d_date
+            # self.assertEqual(d_date.year, 2015)
+            # self.assertEqual(d_date.month, 10)
+            # self.assertEqual(d_date.day, 10)
+
+        args = [
+            '--end-date', '2015-10-12',
+            '--skip-drive',
+            '--index-only'
+        ]
+        s.test_setup('test_system_incremental', args=args)
+        s.gp.start(s.parsed_args)
+
+        # verify db contents
+        db = LocalData(s.root)
+        with db:
+            results = db.get_files_by_search(media_type=0)
+            count = 0
+            for _ in results:
+                count += 1
+            # self.assertEqual(count, 680 + 2229)
+
+            (d_date, _) = db.get_scan_dates()
+            print d_date
+            # self.assertEqual(d_date.year, 2015)
+            # self.assertEqual(d_date.month, 10)
+            # self.assertEqual(d_date.day, 11)
