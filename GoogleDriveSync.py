@@ -3,6 +3,7 @@
 import os.path
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
+from pydrive.files import ApiRequestError
 
 from GoogleDriveMedia import GoogleDriveMedia
 from DatabaseMedia import DatabaseMedia
@@ -133,7 +134,7 @@ class GoogleDriveSync(object):
                 file_id = self._db.get_file_by_path(dir_name, file_name)
                 if not file_id:
                     name = os.path.join(dir_name, file_name)
-                    os.remove(name)
+                    # os.remove(name)
                     print("{} deleted".format(name))
 
     def index_drive_media(self):
@@ -204,13 +205,11 @@ class GoogleDriveSync(object):
                 os.makedirs(media.local_folder)
             temp_filename = os.path.join(self._root_folder, '.temp-photo')
 
-            # if self.quiet:
-            #     progress_handler = None
-            # else:
-            #     progress_handler = ProgressHandler(media)
-
-            print ('downloading {} ...'.format(media.local_full_path))
+            print (u'downloading {} ...'.format(media.local_full_path))
             f = self._googleDrive.CreateFile({'id': media.id})
-            Utils.retry(10, f.GetContentFile, temp_filename)
+            try:
+                Utils.retry(10, f.GetContentFile, temp_filename)
 
-            os.rename(temp_filename, media.local_full_path)
+                os.rename(temp_filename, media.local_full_path)
+            except ApiRequestError:
+                print(u'DOWNLOAD FAILURE for {}'.format(media.local_full_path))

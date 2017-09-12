@@ -161,6 +161,8 @@ class LocalData:
         :param (str) name:
         :return (SyncRow):
         """
+        folder = unicode(folder, 'utf8')
+        name = unicode(name, 'utf8')
         query = "SELECT {0} FROM SyncFiles WHERE Path = ?" \
                 " AND FileName = ?;".format(self.SyncRow.sync_query)
         self.cur.execute(query, (folder, name))
