@@ -4,10 +4,41 @@ import time
 from datetime import datetime
 import re
 import os
+import ctypes
+
 DATE_NORMALIZE = re.compile('(\d\d\d\d).(\d\d).(\d\d).(\d\d).(\d\d).(\d\d)')
 SHORT_DATE_NORMALIZE = re.compile('(\d\d\d\d).(\d\d).(\d\d)')
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 DATE_ONLY = "%Y-%m-%d"
+
+__CSL = None
+
+# patch os.symlink for windows
+# NOTE: your process will need the correct permissions to use this
+# run 'Local Security Policy' choose
+# "Local Policies->User Rights Assignment->create symbolic links" and add
+# the account that will run this process
+if os.name == 'nt':
+    # noinspection SpellCheckingInspection
+    def symlink(source, link_name):
+        """
+        symlink(source, link_name)
+        Creates a symbolic link pointing to source named link_name
+        """
+        global __CSL
+        if __CSL is None:
+            csl = ctypes.windll.kernel32.CreateSymbolicLinkW
+            csl.argtypes = (ctypes.c_wchar_p, ctypes.c_wchar_p, ctypes.c_uint32)
+            csl.restype = ctypes.c_ubyte
+            __CSL = csl
+        flags = 0
+        if source is not None and os.path.isdir(source):
+            flags = 1
+        print 'link', source, link_name
+        if __CSL(link_name, source, flags) == 0:
+            raise ctypes.WinError()
+
+    os.symlink = symlink
 
 
 def retry(count, func, *arg, **k_arg):

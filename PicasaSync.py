@@ -60,13 +60,17 @@ class PicasaSync(object):
             prefix = Utils.safe_str_time(Utils.string_to_date(end_date),
                                          '%Y/%m%d')
             rel_path = u"{0} {1}".format(prefix, album_name)
-            link_folder = os.path.join(links_root, rel_path)
-
-            link_file = os.path.join(link_folder, file_name)
+            link_folder = unicode(os.path.join(links_root, rel_path))
+            link_file = unicode(os.path.join(link_folder, file_name))
             if not os.path.islink(link_file):
                 if not os.path.isdir(link_folder):
                     os.makedirs(link_folder)
-                os.symlink(full_file_name, link_file)
+                if os.path.exists(link_file):
+                    # todo need duplicate handling here
+                    print(u"Name clash on link {}".format(link_file))
+                else:
+                    os.symlink(full_file_name, link_file)
+
 
         print("album links done.\n")
 

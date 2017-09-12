@@ -134,7 +134,7 @@ class GoogleDriveSync(object):
                 file_id = self._db.get_file_by_path(dir_name, file_name)
                 if not file_id:
                     name = os.path.join(dir_name, file_name)
-                    os.remove(name)
+                    # os.remove(name)
                     print(u"{} deleted".format(name))
 
     def index_drive_media(self):
