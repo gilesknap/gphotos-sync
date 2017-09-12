@@ -29,6 +29,7 @@ class DatabaseMedia(GoogleMedia):
     MEDIA_TYPE = MediaType.DATABASE
     MEDIA_FOLDER = MediaFolder[MEDIA_TYPE]
 
+    # noinspection PyUnresolvedReferences
     def __init__(self, root_folder, row):
         """
         This constructor is kept in sync with changes to the SyncFiles table

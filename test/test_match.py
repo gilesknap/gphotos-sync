@@ -38,4 +38,4 @@ class SystemMatch(TestCase):
         # google photos using drive web but I think I uploaded them using
         # google photos uploader in which case this is odd.
         # tried re-upload in the new drive backup tool
-        # after reupload there are 4 subaru files
+        # after re-upload there are 4 subaru files

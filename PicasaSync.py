@@ -2,7 +2,7 @@
 # coding: utf8
 import gdata.gauth
 import gdata.photos.service
-from datetime import timedelta, datetime
+from datetime import timedelta
 import os.path
 import glob
 import urllib
@@ -44,6 +44,29 @@ class PicasaSync(object):
         self.quiet = False
         self.includeVideo = False
 
+    def download_album_media(self):
+        print('\nDownloading Picasa Only Files ...')
+        # noinspection PyTypeChecker
+        for media in DatabaseMedia.get_media_by_search(
+                self._root_folder, self._db, media_type=MediaType.PICASA,
+                start_date=self.startDate, end_date=self.endDate):
+            if os.path.exists(media.local_full_path):
+                continue
+
+            # todo add progress bar instead of this print
+            if not self.quiet:
+                print("  Downloading %s ..." % media.local_full_path)
+            tmp_path = os.path.join(media.local_folder, '.gphoto.tmp')
+
+            if not os.path.isdir(media.local_folder):
+                os.makedirs(media.local_folder)
+
+            res = Utils.retry(5, urllib.urlretrieve, media.url, tmp_path)
+            if res:
+                os.rename(tmp_path, media.local_full_path)
+            else:
+                print("  failed to download %s" % media.local_path)
+
     def create_album_content_links(self):
         print("\nCreating album folder links to media ...")
         # the simplest way to handle moves or deletes is to clear out all links
@@ -70,7 +93,6 @@ class PicasaSync(object):
                     print(u"Name clash on link {}".format(link_file))
                 else:
                     os.symlink(full_file_name, link_file)
-
 
         print("album links done.\n")
 
@@ -140,16 +162,22 @@ class PicasaSync(object):
         print('Album count %d\n' % len(albums.entry))
 
         helper = IndexAlbumHelper(self)
+        album_log = open('albums.log', 'w')
 
         for album in albums.entry:
+            log = '  Album title: {}, number of photos: {}, update date: {}, ' \
+                  'publish date: {}'.format(album.title.text,
+                                            album.numphotos.text,
+                                            album.updated.text,
+                                            album.published.text)
+            album_log.write(log + '\n')
+
             helper.setup_next_album(album)
             if helper.skip_this_album():
                 continue
-
             if not self.quiet:
-                output = u'  Album title: {}, number of photos: {}, date: {}'
-                print(output.format(album.title.text, album.numphotos.text,
-                                    album.updated.text))
+                print(log)
+
             # noinspection SpellCheckingInspection
             q = album.GetPhotosUri() + "&imgmax=d"
 
@@ -169,33 +197,12 @@ class PicasaSync(object):
                     break
 
             helper.complete_album()
+        helper.complete_scan()
 
         print('\nTotal Album Photos in Drive %d, Picasa %d, multiples %d' % (
             helper.total_photos, helper.picasa_photos,
             helper.multiple_match_count))
-
-    def download_album_media(self):
-        print('\nDownloading Picasa Only Files ...')
-        # noinspection PyTypeChecker
-        for media in DatabaseMedia.get_media_by_search(
-                self._root_folder, self._db, media_type=MediaType.PICASA,
-                start_date=self.startDate, end_date=self.endDate):
-            if os.path.exists(media.local_full_path):
-                continue
-
-            # todo add progress bar instead of this print
-            if not self.quiet:
-                print("  Downloading %s ..." % media.local_full_path)
-            tmp_path = os.path.join(media.local_folder, '.gphoto.tmp')
-
-            if not os.path.isdir(media.local_folder):
-                os.makedirs(media.local_folder)
-
-            res = Utils.retry(5, urllib.urlretrieve, media.url, tmp_path)
-            if res:
-                os.rename(tmp_path, media.local_full_path)
-            else:
-                print("  failed to download %s" % media.local_path)
+        album_log.close()
 
 
 # Making this a 'friend' class of PicasaSync by ignoring protected access
@@ -220,6 +227,7 @@ class IndexAlbumHelper:
             self.latest_download = Utils.minimum_date()
         if not self.earliest_download:
             self.earliest_download = Utils.maximum_date()
+        self.latest_this_scan = self.latest_download
 
         # declare members that are per album within the scan
         self.album = None
@@ -227,6 +235,7 @@ class IndexAlbumHelper:
         self.album_end_photo = None
         self.album_start_photo = None
         self.album_mod_date = None
+        self.album_published_date = None
         self.media = None
 
     def setup_next_album(self, album):
@@ -240,6 +249,7 @@ class IndexAlbumHelper:
         self.album_end_photo = Utils.minimum_date()
         self.album_start_photo = self.album_mod_date = \
             Utils.string_to_date(album.updated.text)
+        self.album.published_date = Utils.string_to_date(album.published.text)
         self.media = None
 
         # start up the album processing
@@ -256,10 +266,10 @@ class IndexAlbumHelper:
         if self.p.startDate:
             if Utils.string_to_date(self.p.startDate) > self.album_mod_date:
                 return True
-        if not self.p.album_name and not self.p.startDate:
-            # handle incremental backup
-            if (self.album_mod_date < self.latest_download) and \
-                    (self.album_mod_date > self.earliest_download):
+        # handle incremental backup when no filters are applied
+        if not self.p.album_name and not self.p.startDate and \
+                not self.p.endDate:
+            if self.album_mod_date < self.latest_this_scan:
                 return True
         if int(self.album.numphotos.text) == 0:
             return True
@@ -307,15 +317,15 @@ class IndexAlbumHelper:
         # write the album data down now we know the contents' date range
         self.p._db.put_album(self.album_id, self.album.title.text,
                              self.album_start_photo, self.album_end_photo)
-        # save the latest and earliest update times
-        # because the picasa api will only deliver albums in most recent first
-        # order we have to keep a window of which have been scanned rather than
-        # just the latest scanned as for drive files
-        if not (self.p.album_name or self.p.startDate):
-            if self.album_mod_date > self.latest_download:
-                self.latest_download = self.album_mod_date
-                self.p._db.set_scan_dates(picasa_last_date=self.latest_download)
-            if self.album_mod_date < self.earliest_download:
-                self.earliest_download = self.album_mod_date
-                self.p._db.set_scan_dates(
-                    picasa_first_date=self.earliest_download)
+        if self.album_mod_date > self.latest_download:
+            self.latest_download = self.album_mod_date
+        if self.album_mod_date < self.earliest_download:
+            self.earliest_download = self.album_mod_date
+
+    def complete_scan(self):
+        # save the latest and earliest update times. We only do this if a
+        # complete scan of all existing albums has completed because the order
+        # of albums is a little randomized (possibly by photo content?)
+        if not (self.p.album_name or self.p.startDate or self.p.endDate):
+            self.p._db.set_scan_dates(picasa_last_date=self.latest_download,
+                                      picasa_first_date=self.earliest_download)

@@ -62,15 +62,15 @@ class LocalData:
         if drive_last_date:
             d = Utils.date_to_string(drive_last_date)
             self.cur.execute('UPDATE Globals SET LastIndexDrive=? '
-                             'WHERE Id is 1', (d,))
+                             'WHERE Id IS 1', (d,))
         if picasa_last_date:
             d = Utils.date_to_string(picasa_last_date)
             self.cur.execute('UPDATE Globals SET LastIndexPicasa=? '
-                             'WHERE Id is 1', (d,))
+                             'WHERE Id IS 1', (d,))
         if picasa_first_date:
             d = Utils.date_to_string(picasa_first_date)
             self.cur.execute('UPDATE Globals SET FirstIndexPicasa=? '
-                             'WHERE Id is 1', (d,))
+                             'WHERE Id IS 1', (d,))
 
     def get_scan_dates(self):
         query = "SELECT LastIndexDrive, LastIndexPicasa , FirstIndexPicasa " \
@@ -153,8 +153,8 @@ class LocalData:
             params += (end_date,)
 
         query = "SELECT {0} FROM SyncFiles WHERE RemoteId LIKE ? AND " \
-                " MediaType LIKE ? {1};".format(
-            self.SyncRow.sync_query, date_clauses)
+                " MediaType LIKE ? {1};".format(self.SyncRow.sync_query,
+                                                date_clauses)
 
         self.cur.execute(query, params)
         while True:
