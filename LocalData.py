@@ -24,7 +24,7 @@ class LocalData:
     DB_FILE_NAME = 'gphotos.sqlite'
     BLOCK_SIZE = 10000
     EMPTY_FILE_NAME = 'etc/gphotos_empty.sqlite'
-    VERSION = 2.2
+    VERSION = 2.3
 
     class DuplicateDriveIdException(Exception):
         pass
@@ -62,7 +62,7 @@ class LocalData:
             print('Database schema out of date. Flushing index ...')
             self.con.commit()
             self.con.close()
-            os.rename(self.file_name, self.file_name+'.old')
+            os.rename(self.file_name, self.file_name + '.old')
             self.con = lite.connect(self.file_name)
             self.con.row_factory = lite.Row
             self.cur = self.con.cursor()
@@ -230,11 +230,19 @@ class LocalData:
             keys_dates = [(key['Id'], key['CreateDate']) for key in res]
             return keys_dates
 
-    def put_album(self, album_id, album_name, start_date, end_end=0):
+    def get_album(self, album_id):
+        self.cur.execute(
+            "SELECT AlbumName, StartDate, EndDate, SyncDate FROM Albums "
+            "WHERE AlbumId = ?;", (album_id,))
+        res = self.cur.fetchone()
+        return (res[0], res[1], res[2], res[3]) if res else (
+            None, None, None, None)
+
+    def put_album(self, album_id, name, start_date, end_date, sync_date):
         self.cur.execute(
             "INSERT OR REPLACE INTO Albums(AlbumId, AlbumName, StartDate, "
-            "EndDate) VALUES(?,?,?,?) ;",
-            (album_id, album_name, start_date, end_end))
+            "EndDate, SyncDate) VALUES(?,?,?,?,?) ;",
+            (album_id, name, start_date, end_date, sync_date))
         return self.cur.lastrowid
 
     def get_album_files(self, album_id='%'):

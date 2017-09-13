@@ -9,10 +9,9 @@ from LocalData import LocalData
 class MediaType(Enum):
     DRIVE = 0
     PICASA = 1
-    ALBUM_LINK = 2
+    ALBUM = 2
     DATABASE = 3
-    ALBUM = 4
-    NONE = 5
+    NONE = 4
 
 
 MediaFolder = [

@@ -12,7 +12,6 @@ from LocalData import LocalData
 APP_NAME = "gphotos-sync"
 
 
-
 class GooglePhotosSyncMain:
     def __init__(self):
         self.data_store = None
@@ -26,9 +25,9 @@ class GooglePhotosSyncMain:
         action='store_true',
         help="quiet (no output)")
     parser.add_argument(
-        "--include-video",
+        "--skip-video",
         action='store_true',
-        help="include video types in sync")
+        help="skip video types in sync")
     parser.add_argument(
         "root_folder",
         help="root of the local folders to download into")
@@ -111,7 +110,7 @@ class GooglePhotosSyncMain:
         self.drive_sync.startDate = self.picasa_sync.startDate = args.start_date
         self.drive_sync.endDate = self.picasa_sync.endDate = args.end_date
         self.drive_sync.includeVideo = self.picasa_sync.includeVideo = \
-            args.include_video
+            not args.skip_video
         self.drive_sync.driveFileName = args.drive_file
         self.drive_sync.allDrive = args.all_drive
         self.picasa_sync.album_name = args.album

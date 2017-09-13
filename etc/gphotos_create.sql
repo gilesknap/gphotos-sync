@@ -21,7 +21,8 @@ create table Albums
 		primary key,
 	AlbumName TEXT,
 	StartDate TEXT not null,
-	EndDate TEXT not null
+	EndDate TEXT not null,
+	SyncDate TEXT not null
 )
 ;
 DROP INDEX IF EXISTS Albums_AlbumId_uindex;
@@ -105,5 +106,5 @@ CREATE TABLE Globals
 );
 CREATE UNIQUE INDEX Globals_Id_uindex ON Globals (Id);
 
-INSERT INTO Globals(Id, Version, Albums, Files) VALUES (1, 2.2, 0, 0);
+INSERT INTO Globals(Id, Version, Albums, Files) VALUES (1, 2.3, 0, 0);
 

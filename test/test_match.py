@@ -14,7 +14,7 @@ class TestSystemMatch(TestCase):
         args = [
             '--drive-file', 'subaru',
             '--all-drive',
-            '--skip-picasa'
+            '--skip-picasa', '--skip-video'
         ]
         s.test_setup('test_system_match', args=args, trash_files=True)
         s.gp.start(s.parsed_args)

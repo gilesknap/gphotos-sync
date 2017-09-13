@@ -1,7 +1,6 @@
 from unittest import TestCase
 from test_setup import SetupDbAndCredentials
 from LocalData import LocalData
-import os
 
 
 class DatabaseTest(TestCase):

@@ -2,9 +2,8 @@
 # coding: utf8
 import gdata.gauth
 import gdata.photos.service
-from datetime import timedelta
+from datetime import timedelta, datetime
 import os.path
-import glob
 import urllib
 from PicasaMedia import PicasaMedia
 from AlbumMedia import AlbumMedia
@@ -70,9 +69,7 @@ class PicasaSync(object):
         # first, these are quickly recreated anyway
         links_root = os.path.join(self._root_folder, 'albums')
         if os.path.exists(links_root):
-            backup_count = len(glob.glob(links_root + '-????'))
-            links_backup = u'{:s}-{:04d}'.format(links_root, backup_count)
-            os.rename(links_root, links_backup)
+            os.rename(links_root, links_root + '.old')
         for (path, file_name, album_name, end_date) in \
                 self._db.get_album_files():
             full_file_name = os.path.join(path, file_name)
@@ -219,13 +216,12 @@ class IndexAlbumHelper:
         (_, self.latest_download) = self.p._db.get_scan_dates()
         if not self.latest_download:
             self.latest_download = Utils.minimum_date()
-        self.latest_this_scan = self.latest_download
 
         # declare members that are per album within the scan
         self.album = None
         self.album_end_photo = None
         self.album_start_photo = None
-        self.media = None
+        self.sync_date = None
 
     def setup_next_album(self, album):
         """
@@ -236,7 +232,11 @@ class IndexAlbumHelper:
         self.album = album
         self.album_end_photo = Utils.minimum_date()
         self.album_start_photo = album.date
-        self.media = None
+        (_, _, _, self.sync_date) = self.p._db.get_album(self.album.id)
+        if self.sync_date:
+            self.sync_date = Utils.string_to_date(self.sync_date)
+        else:
+            self.sync_date = Utils.minimum_date()
 
         # start up the album processing
         self.total_photos += int(album.size)
@@ -252,9 +252,9 @@ class IndexAlbumHelper:
         if self.p.startDate:
             if Utils.string_to_date(self.p.startDate) > self.album.date:
                 return True
-        # handle incremental backup but allow start date to override
+        # handle incremental backup but allow startDate to override
         if not self.p.startDate:
-            if self.album.date < self.latest_this_scan:
+            if self.album.date < self.sync_date:
                 return True
         if int(self.album.size) == 0:
             return True
@@ -301,7 +301,8 @@ class IndexAlbumHelper:
     def complete_album(self):
         # write the album data down now we know the contents' date range
         self.p._db.put_album(self.album.id, self.album.filename,
-                             self.album_start_photo, self.album_end_photo)
+                             self.album_start_photo, self.album_end_photo,
+                             Utils.date_to_string(datetime.now()))
         if self.album.date > self.latest_download:
             self.latest_download = self.album.date
 
