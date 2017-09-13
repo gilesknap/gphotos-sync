@@ -11,9 +11,6 @@ from DatabaseMedia import DatabaseMedia, MediaType
 import Utils
 
 
-# todo add removal local files for deleted picasa and album entries
-# todo store album entry link files in the db for this purpose
-# todo resurrect LocalData(GoogleData) in order to store link files in the db.
 class PicasaSync(object):
     # noinspection SpellCheckingInspection
     PHOTOS_QUERY = '/data/feed/api/user/default/albumid/{0}'
@@ -53,7 +50,6 @@ class PicasaSync(object):
             if os.path.exists(media.local_full_path):
                 continue
 
-            # todo add progress bar instead of this print
             if not self.quiet:
                 print("  Downloading %s ..." % media.local_full_path)
             tmp_path = os.path.join(media.local_folder, '.gphoto.tmp')
@@ -266,9 +262,8 @@ class IndexAlbumHelper:
         if self.p.startDate:
             if Utils.string_to_date(self.p.startDate) > self.album_mod_date:
                 return True
-        # handle incremental backup when no filters are applied
-        if not self.p.album_name and not self.p.startDate and \
-                not self.p.endDate:
+        # handle incremental backup but allow start date to override
+        if not self.p.startDate:
             if self.album_mod_date < self.latest_this_scan:
                 return True
         if int(self.album.numphotos.text) == 0:

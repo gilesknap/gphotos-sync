@@ -12,26 +12,6 @@ from LocalData import LocalData
 APP_NAME = "gphotos-sync"
 
 
-# todo todo
-# incremental albums
-# refactor overly large functions in both Sync modules
-# handle deletes
-# release 1.0, then ...
-# probably should distinguish between created / modified / taken dates
-# doc stings everywhere
-# switch all string formatting to .format
-# add logger instead of prints
-# handle files switching between picasa and drive (because the matching logic
-#   was changed or because of partial indexing via filters)
-# handle files moving between albums and albums changing date
-#   because I need to refine the album scan and make comparisons on results
-# verify matching logic and investigate date based matching effectiveness
-# switch db content to relative paths
-# write tests to cover all cmd line args combinations
-# attempt to put in continuous integration on github (includes getting auth
-#   working to a test google photos account)
-# extract my old filesystem folders from the exif metadata
-
 
 class GooglePhotosSyncMain:
     def __init__(self):
