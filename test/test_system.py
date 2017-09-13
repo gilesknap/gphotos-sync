@@ -30,6 +30,7 @@ class TestSystem(TestCase):
         expected_file = os.path.join(
             s.root, 'drive/2017/01/20170102_094337.jpg')
         self.assertEqual(True, os.path.exists(expected_file))
+        db.con.close()
 
         args = ['--drive-file', '20170102_094337.jpg', '--skip-video',
                 '--skip-picasa', '--all-drive', '--flush-index']

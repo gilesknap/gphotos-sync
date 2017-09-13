@@ -16,6 +16,7 @@ class DatabaseTest(TestCase):
         db.cur.execute(
             'UPDATE Globals SET Version = "1.0" WHERE Id IS 1')
         db.store()
+        db.con.close()
 
         s.test_setup('new_schema', args=args)
         s.gp.start(s.parsed_args)
