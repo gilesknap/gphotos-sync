@@ -152,7 +152,7 @@ class GoogleDriveSync(object):
         else:
             # setup for incremental backup
             if not self.driveFileName:
-                (self._latest_download, _, _) = self._db.get_scan_dates()
+                (self._latest_download, _) = self._db.get_scan_dates()
                 if not self._latest_download:
                     self._latest_download = Utils.minimum_date()
                 if self._latest_download:

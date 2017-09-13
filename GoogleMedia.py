@@ -11,13 +11,15 @@ class MediaType(Enum):
     PICASA = 1
     ALBUM_LINK = 2
     DATABASE = 3
-    NONE = 4
+    ALBUM = 4
+    NONE = 5
 
 
 MediaFolder = [
     'drive',
     'picasa',
     'albums',
+    '',
     '',
     '']
 

@@ -7,6 +7,7 @@ import os.path
 import glob
 import urllib
 from PicasaMedia import PicasaMedia
+from AlbumMedia import AlbumMedia
 from DatabaseMedia import DatabaseMedia, MediaType
 import Utils
 
@@ -160,13 +161,11 @@ class PicasaSync(object):
         helper = IndexAlbumHelper(self)
         album_log = open('albums.log', 'w')
 
-        for album in albums.entry:
-            log = '  Album title: {}, number of photos: {}, update date: {}, ' \
-                  'publish date: {}'.format(album.title.text,
-                                            album.numphotos.text,
-                                            album.updated.text,
-                                            album.published.text)
-            album_log.write(log + '\n')
+        for p_album in albums.entry:
+            album = AlbumMedia(p_album)
+            log = u'  Album: {}, photos: {}, updated: {}, published: {}'.format(
+                album.filename, album.size, album.date, album.create_date)
+            album_log.write((log + u'\n').encode('utf8'))
 
             helper.setup_next_album(album)
             if helper.skip_this_album():
@@ -175,7 +174,7 @@ class PicasaSync(object):
                 print(log)
 
             # noinspection SpellCheckingInspection
-            q = album.GetPhotosUri() + "&imgmax=d"
+            q = p_album.GetPhotosUri() + "&imgmax=d"
 
             # Each iteration below processes a BLOCK_SIZE list of photos
             start_entry = 1
@@ -217,56 +216,47 @@ class IndexAlbumHelper:
         self.picasa_photos = 0
         self.drive_photos = 0
         self.multiple_match_count = 0
-        (_, self.latest_download,
-         self.earliest_download) = self.p._db.get_scan_dates()
+        (_, self.latest_download) = self.p._db.get_scan_dates()
         if not self.latest_download:
             self.latest_download = Utils.minimum_date()
-        if not self.earliest_download:
-            self.earliest_download = Utils.maximum_date()
         self.latest_this_scan = self.latest_download
 
         # declare members that are per album within the scan
         self.album = None
-        self.album_id = None
         self.album_end_photo = None
         self.album_start_photo = None
-        self.album_mod_date = None
-        self.album_published_date = None
         self.media = None
 
     def setup_next_album(self, album):
         """
         Initialize members that are per album within the scan.
 
-        :param (AlbumEntry) album:
+        :param (AlbumMedia) album:
         """
         self.album = album
-        self.album_id = album.gphoto_id.text
         self.album_end_photo = Utils.minimum_date()
-        self.album_start_photo = self.album_mod_date = \
-            Utils.string_to_date(album.updated.text)
-        self.album.published_date = Utils.string_to_date(album.published.text)
+        self.album_start_photo = album.date
         self.media = None
 
         # start up the album processing
-        self.total_photos += int(album.numphotos.text)
+        self.total_photos += int(album.size)
 
     def skip_this_album(self):
         if self.p.album_name and self.p.album_name != \
-                self.album.title.text or self.album.title.text in \
+                self.album.filename or self.album.filename in \
                 PicasaSync.HIDDEN_ALBUMS:
             return True
         if self.p.endDate:
-            if Utils.string_to_date(self.p.endDate) < self.album_mod_date:
+            if Utils.string_to_date(self.p.endDate) < self.album.date:
                 return True
         if self.p.startDate:
-            if Utils.string_to_date(self.p.startDate) > self.album_mod_date:
+            if Utils.string_to_date(self.p.startDate) > self.album.date:
                 return True
         # handle incremental backup but allow start date to override
         if not self.p.startDate:
-            if self.album_mod_date < self.latest_this_scan:
+            if self.album.date < self.latest_this_scan:
                 return True
-        if int(self.album.numphotos.text) == 0:
+        if int(self.album.size) == 0:
             return True
         return False
 
@@ -291,14 +281,14 @@ class IndexAlbumHelper:
             if results and len(results) == 1:
                 # store link between album and drive file
                 (file_key, date_taken) = results[0]
-                self.p._db.put_album_file(self.album_id, file_key)
+                self.p._db.put_album_file(self.album.id, file_key)
                 # drive dates are more reliable so use this for the album
                 self.set_album_dates(Utils.string_to_date(date_taken))
             elif results is None:
                 # no match so this exists only in picasa
                 self.picasa_photos += 1
                 new_file_key = media.save_to_db(self.p._db)
-                self.p._db.put_album_file(self.album_id, new_file_key)
+                self.p._db.put_album_file(self.album.id, new_file_key)
                 self.set_album_dates(media.date)
                 if not self.p.quiet:
                     print(u"Added {} {}".format(self.picasa_photos,
@@ -310,17 +300,14 @@ class IndexAlbumHelper:
 
     def complete_album(self):
         # write the album data down now we know the contents' date range
-        self.p._db.put_album(self.album_id, self.album.title.text,
+        self.p._db.put_album(self.album.id, self.album.filename,
                              self.album_start_photo, self.album_end_photo)
-        if self.album_mod_date > self.latest_download:
-            self.latest_download = self.album_mod_date
-        if self.album_mod_date < self.earliest_download:
-            self.earliest_download = self.album_mod_date
+        if self.album.date > self.latest_download:
+            self.latest_download = self.album.date
 
     def complete_scan(self):
         # save the latest and earliest update times. We only do this if a
         # complete scan of all existing albums has completed because the order
         # of albums is a little randomized (possibly by photo content?)
         if not (self.p.album_name or self.p.startDate or self.p.endDate):
-            self.p._db.set_scan_dates(picasa_last_date=self.latest_download,
-                                      picasa_first_date=self.earliest_download)
+            self.p._db.set_scan_dates(picasa_last_date=self.latest_download)

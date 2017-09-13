@@ -57,8 +57,7 @@ class LocalData:
         qry = open(sql_file, 'r').read()
         self.cur.executescript(qry)
 
-    def set_scan_dates(self, picasa_last_date=None, drive_last_date=None,
-                       picasa_first_date=None):
+    def set_scan_dates(self, picasa_last_date=None, drive_last_date=None):
         if drive_last_date:
             d = Utils.date_to_string(drive_last_date)
             self.cur.execute('UPDATE Globals SET LastIndexDrive=? '
@@ -67,26 +66,23 @@ class LocalData:
             d = Utils.date_to_string(picasa_last_date)
             self.cur.execute('UPDATE Globals SET LastIndexPicasa=? '
                              'WHERE Id IS 1', (d,))
-        if picasa_first_date:
-            d = Utils.date_to_string(picasa_first_date)
-            self.cur.execute('UPDATE Globals SET FirstIndexPicasa=? '
-                             'WHERE Id IS 1', (d,))
 
+    # noinspection PyTypeChecker
     def get_scan_dates(self):
-        query = "SELECT LastIndexDrive, LastIndexPicasa , FirstIndexPicasa " \
+        query = "SELECT LastIndexDrive, LastIndexPicasa " \
                 "FROM  Globals WHERE Id IS 1"
         self.cur.execute(query)
         res = self.cur.fetchone()
 
-        drive_last_date = picasa_last_date = picasa_first_date = None
-        if res[0]:
-            drive_last_date = Utils.string_to_date(res[0])
-        if res[1]:
-            picasa_last_date = Utils.string_to_date(res[1])
-        if res[2]:
-            picasa_first_date = Utils.string_to_date(res[2])
+        drive_last_date = picasa_last_date = None
+        d = res['LastIndexDrive']
+        p = res['LastIndexPicasa']
+        if d:
+            drive_last_date = Utils.string_to_date(d)
+        if p:
+            picasa_last_date = Utils.string_to_date(p)
 
-        return drive_last_date, picasa_last_date, picasa_first_date
+        return drive_last_date, picasa_last_date
 
     class SyncRow:
         """
@@ -221,7 +217,7 @@ class LocalData:
         self.cur.execute(
             "INSERT OR REPLACE INTO Albums(AlbumId, AlbumName, StartDate, "
             "EndDate) VALUES(?,?,?,?) ;",
-            (album_id, unicode(album_name, 'utf8'), start_date, end_end))
+            (album_id, album_name, start_date, end_end))
         return self.cur.lastrowid
 
     def get_album_files(self, album_id='%'):

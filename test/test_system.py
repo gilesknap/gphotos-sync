@@ -116,7 +116,7 @@ class System(TestCase):
         count = db.cur.fetchone()
         self.assertEqual(count[0], 680)
 
-        (d_date, _, _) = db.get_scan_dates()
+        (d_date, _) = db.get_scan_dates()
         self.assertEqual(d_date.date(), datetime.date(2015, 10, 10))
 
         args = [
@@ -131,7 +131,7 @@ class System(TestCase):
         count = db.cur.fetchone()
         self.assertEqual(count[0], 680 + 2229)
 
-        (d_date, _, _) = db.get_scan_dates()
+        (d_date, _) = db.get_scan_dates()
         self.assertEqual(d_date.date(), datetime.date(2015, 10, 11))
 
     def test_system_inc_picasa(self):
@@ -147,10 +147,6 @@ class System(TestCase):
         db.cur.execute("SELECT COUNT() FROM SyncFiles")
         count = db.cur.fetchone()
         self.assertEqual(count[0], 0)
-
-        (d_date, p_date, p_first) = db.get_scan_dates()
-        print 'Dates', (d_date, p_date, p_first)
-        # self.assertEqual(d_date.date(), datetime.date(2015, 10, 10))
 
         # pretend a full scan has occurred on 2017-08-28
         # noinspection SqlResolve
