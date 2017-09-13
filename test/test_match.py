@@ -5,7 +5,7 @@ import os
 import glob
 
 
-class SystemMatch(TestCase):
+class TestSystemMatch(TestCase):
 
     def test_system_match(self):
         s = SetupDbAndCredentials()

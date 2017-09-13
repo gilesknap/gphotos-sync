@@ -36,19 +36,14 @@ Primary Goals
 Known Issues
 ------------
 * Shared folders are not seen, this is a limitation of picasa web api and is not likely to be fixed
-* Albums of over 10,000 photos are truncated at 10,000. This is again due to a
-limitation of the web api. Unfortunately this means you will not automatically
-retrieve all google photos creations if you have > 10,0000 photos. I suggest
-creating a 'Creations' album and copying all creations into it, this will then
-sync (and any future creations will be handled by the global 'Auto Backup' album
+* Albums of over 10,000 photos are truncated at 10,000. This is again due to a limitation of the web api. Unfortunately this means you will not automatically retrieve all google photos creations if you have > 10,0000 photos. I suggest creating a 'Creations' album and copying all creations into it, this will then sync (and any future creations will be handled by the global 'Auto Backup' album
 * Todo - handle deletes and moves
-* Todo - remember last synced date and default to incremental backup
+* Todo - remember last synced date and default to incremental backup - DONE
 * Todo make python 3 compatible
 
 Install and configure
 ---------------------
-
-Just run ``python setup.py`` from the source directory to install it in your system.
+ run ``python setup.py`` from the source directory to install it in your system.
 
 In order to work, ``gphotos-sync`` first needs a valid client id linked to a project
 authorized to use the Google Drive API. It is not provided in the distribution.
@@ -85,12 +80,6 @@ to authorize the client to access your Google Photos through Google Drive.
 
 Description of the cmdline parameters below:-
 
-usage: gphotos-sync [-h] [--quiet] [--include-video] [--start-date START_DATE]
-                    [--end-date END_DATE] [--new-token] [--index-only]
-                    [--picasa-only] [--all-drive] [--album ALBUM]
-                    [--drive-file DRIVE_FILE]
-                    root_folder
-
 Google Photos download tool
 
 positional arguments:
@@ -106,8 +95,14 @@ optional arguments:
   --new-token           Request new token
   --index-only          Only build the index of files in .gphotos.db - no
                         downloads
-  --picasa-only         skip drive scan, (assume that the db is up to date
+  --no-deletion         Keep local copies of files that were deleted from
+                        drive/picasa
+  --skip-index          Use index from previous run and start download
+                        immediately
+  --skip-picasa         skip picasa scan, albums will not be scanned
+  --skip-drive          skip drive scan, (assume that the db is up to date
                         with drive files - for testing)
+  --flush-index         delete the index db, re-scan everything
   --all-drive           when True all folders in drive are scanned for media.
                         when False only files in the Google Photos folder are
                         scanned. If you do not use this option then you may
@@ -118,3 +113,4 @@ optional arguments:
   --album ALBUM         only index a single album (for testing)
   --drive-file DRIVE_FILE
                         only index a single drive file (for testing)
+

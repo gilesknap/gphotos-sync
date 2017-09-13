@@ -24,7 +24,7 @@ class LocalData:
     DB_FILE_NAME = 'gphotos.sqlite'
     BLOCK_SIZE = 10000
     EMPTY_FILE_NAME = 'etc/gphotos_empty.sqlite'
-    VERSION = "2.0"
+    VERSION = 2.2
 
     class DuplicateDriveIdException(Exception):
         pass
@@ -42,6 +42,7 @@ class LocalData:
         self.cur = self.con.cursor()
         if clean_db:
             self.clean_db()
+        self.check_schema_version()
 
     def __enter__(self):
         pass
@@ -50,6 +51,22 @@ class LocalData:
         if self.con:
             self.store()
             self.con.close()
+
+    def check_schema_version(self):
+        query = "SELECT  Version FROM  Globals WHERE Id IS 1"
+        self.cur.execute(query)
+        version = float(self.cur.fetchone()[0])
+        if version > self.VERSION:
+            raise ValueError('Database version is newer than gphotos-sync')
+        elif version < self.VERSION:
+            print('Database schema out of date. Flushing index ...')
+            self.con.commit()
+            self.con.close()
+            os.rename(self.file_name, self.file_name+'.old')
+            self.con = lite.connect(self.file_name)
+            self.con.row_factory = lite.Row
+            self.cur = self.con.cursor()
+            self.clean_db()
 
     def clean_db(self):
         sql_file = os.path.join(os.path.dirname(os.path.abspath(__file__)),

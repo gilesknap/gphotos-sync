@@ -7,7 +7,7 @@ import datetime
 
 # todo currently the system tests work against my personal google drive
 # todo will try to provide a standalone account and credentials for CI
-class System(TestCase):
+class TestSystem(TestCase):
     def test_system_download_name(self):
         s = SetupDbAndCredentials()
         # get a single file
