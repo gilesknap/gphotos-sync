@@ -5,7 +5,6 @@ from GoogleMedia import GoogleMedia, MediaType, MediaFolder
 from LocalData import LocalData
 from datetime import datetime
 
-
 class DatabaseMedia(GoogleMedia):
     """A Class for instantiating a GoogleMedia object from the database
 
@@ -132,7 +131,7 @@ class DatabaseMedia(GoogleMedia):
         The description of the file
         :return (str):
         """
-        return self._description
+        return self.validate_encoding(self._description)
 
     @property
     def orig_name(self):
@@ -141,7 +140,7 @@ class DatabaseMedia(GoogleMedia):
         this is not required)
         :return (str):
         """
-        return self._orig_name
+        return self.validate_encoding(self._orig_name)
 
     @property
     def filename(self):
@@ -149,7 +148,7 @@ class DatabaseMedia(GoogleMedia):
         filename including a suffix to make it unique if duplicates exist
         :return (str):
         """
-        return self._filename
+        return self.validate_encoding(self._filename)
 
     @property
     def create_date(self):

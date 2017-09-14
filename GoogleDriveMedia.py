@@ -87,11 +87,11 @@ class GoogleDriveMedia(GoogleMedia):
 
     @property
     def mime_type(self):
-        return self.__drive_file.metadata[u'mimeType']
+        return self.__drive_file.metadata['mimeType']
 
     @property
     def url(self):
-        return self.__drive_file.metadata[u'webContentLink']
+        return self.__drive_file.metadata['webContentLink']
 
     # ----- Derived class custom properties below -----
     @property

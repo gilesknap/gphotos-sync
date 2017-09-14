@@ -14,7 +14,7 @@ class AlbumMedia(GoogleMedia):
 
     def __init__(self, album_xml=None):
         # albums do not (yet) get saved to the filesystem so require no paths
-        # (album_links on the other had do)
+        # (album_links on the other hand do)
         super(AlbumMedia, self).__init__('', '')
         self.__album_xml = album_xml
 

@@ -15,12 +15,12 @@ class MediaType(Enum):
 
 
 MediaFolder = [
-    'drive',
-    'picasa',
-    'albums',
-    '',
-    '',
-    '']
+    u'drive',
+    u'picasa',
+    u'albums',
+    u'',
+    u'',
+    u'']
 
 
 # base class for media model classes
@@ -36,14 +36,16 @@ class GoogleMedia(object):
     def __init__(self, relative_folder, root_folder, **k_args):
         self.media_type = self.__class__.MEDIA_TYPE
         self._media_folder = self.__class__.MEDIA_FOLDER
-        self._relative_folder = relative_folder
-        self._root_folder = root_folder
+        self._relative_folder = self.validate_encoding(relative_folder)
+        self._root_folder = self.validate_encoding(root_folder)
         self._duplicate_number = 0
         self.symlink = False  # Todo need to implement use of this
 
     @classmethod
     def validate_encoding(cls, string):
-        if isinstance(string, unicode):
+        if not string:
+            return None
+        elif isinstance(string, unicode):
             return string
         else:
             return unicode(string, 'utf8')
@@ -114,13 +116,14 @@ class GoogleMedia(object):
     def filename(self):
         if self.duplicate_number > 0:
             base, ext = os.path.splitext(os.path.basename(self.orig_name))
-            return "%(base)s (%(duplicate)d)%(ext)s" % {
+            filename = "%(base)s (%(duplicate)d)%(ext)s" % {
                 'base': base,
                 'ext': ext,
                 'duplicate': self.duplicate_number
             }
         else:
-            return self.orig_name
+            filename = self.orig_name
+        return self.validate_encoding(filename)
 
     # ----- Properties for override below -----
     @property
