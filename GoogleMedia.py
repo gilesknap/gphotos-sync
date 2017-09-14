@@ -49,6 +49,7 @@ class GoogleMedia(object):
     # regex for illegal characters in file names and database queries
     fix_linux = re.compile(r'[/]|[\x00-\x1f]|\x7f|\x00')
     fix_windows = re.compile(r'[<>:"/\\|?*]|[\x00-\x1f]|\x7f|\x00')
+    fix_windows_ending = re.compile('([ .]+$)')
 
     def validate_encoding(self, string):
         """
@@ -67,6 +68,7 @@ class GoogleMedia(object):
 
         if os.name == 'nt':
             s = self.fix_windows.sub('_', s)
+            s = self.fix_windows_ending.split(s)[0]
         else:
             s = self.fix_linux.sub('_', s)
         return s
