@@ -9,6 +9,7 @@ import shutil
 from PicasaMedia import PicasaMedia
 from AlbumMedia import AlbumMedia
 from DatabaseMedia import DatabaseMedia, MediaType
+from LocalData import LocalData
 import Utils
 
 
@@ -304,9 +305,13 @@ class IndexAlbumHelper:
 
     def complete_album(self):
         # write the album data down now we know the contents' date range
-        self.p._db.put_album(self.album.id, self.album.filename,
-                             self.album_start_photo, self.album_end_photo,
-                             Utils.date_to_string(datetime.now()))
+        row = LocalData.AlbumsRow.make(AlbumId=self.album.id,
+                                       AlbumName=self.album.filename,
+                                       StartDate=self.album_start_photo,
+                                       EndDate=self.album_end_photo,
+                                       SyncDate=Utils.date_to_string(
+                                           datetime.now()))
+        self.p._db.put_album(row)
         if self.album.date > self.latest_download:
             self.latest_download = self.album.date
 

@@ -71,21 +71,18 @@ class GoogleMedia(object):
 
     def save_to_db(self, db):
         now_time = strftime(GoogleMedia.TIME_FORMAT, gmtime())
-        new_row = LocalData.SyncRow()
-        new_row.RemoteId = self.id
-        new_row.Url = self.url
-        new_row.Path = self.local_folder
-        new_row.FileName = self.filename
-        new_row.OrigFileName = self.orig_name
-        new_row.DuplicateNo = self.duplicate_number
-        new_row.MediaType = self.media_type
-        new_row.FileSize = self.size
-        new_row.Checksum = self.checksum
-        new_row.Description = self.description
-        new_row.ModifyDate = self.date
-        new_row.CreateDate = self.create_date
-        new_row.SyncDate = now_time
-        new_row.SymLink = None
+        new_row = LocalData.SyncRow.make(RemoteId=self.id, Url=self.url,
+                                         Path=self.local_folder,
+                                         FileName=self.filename,
+                                         OrigFileName=self.orig_name,
+                                         DuplicateNo=self.duplicate_number,
+                                         MediaType=self.media_type,
+                                         FileSize=self.size,
+                                         Checksum=self.checksum,
+                                         Description=self.description,
+                                         ModifyDate=self.date,
+                                         CreateDate=self.create_date,
+                                         SyncDate=now_time, SymLink=None)
         return db.put_file(new_row)
 
     def is_indexed(self, db):

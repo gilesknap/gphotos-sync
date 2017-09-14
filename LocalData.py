@@ -26,6 +26,17 @@ class DbRow:
     params = None
     dict = None
 
+    # factory method for delivering a DbRow object based on named arguments
+    @classmethod
+    def make(cls, **k_args):
+        new_row = cls()
+        for key, value in k_args.items():
+            if not hasattr(new_row, key):
+                raise ValueError("{0} does not have column {1}".format(
+                    cls, key))
+            setattr(new_row, key, value)
+        return new_row
+
 
 def db_row(row_class):
     """
@@ -106,6 +117,16 @@ class LocalData:
                     'FileSize': int, 'Checksum': str, 'Description': str,
                     'ModifyDate': datetime, 'CreateDate': datetime,
                     'SyncDate': datetime, 'SymLink': int}
+
+    # noinspection PyClassHasNoInit
+    @db_row
+    class AlbumsRow(DbRow):
+        """
+        generates an object with attributes for each of the columns in the
+        SyncFiles table
+        """
+        cols_def = {'AlbumId': str, 'AlbumName': str, 'StartDate': datetime,
+                    'EndDate': datetime, 'SyncDate': datetime}
 
     def check_schema_version(self):
         query = "SELECT  Version FROM  Globals WHERE Id IS 1"
@@ -250,11 +271,11 @@ class LocalData:
         return (res[0], res[1], res[2], res[3]) if res else (
             None, None, None, None)
 
-    def put_album(self, album_id, name, start_date, end_date, sync_date):
+    def put_album(self, row):
         self.cur.execute(
-            "INSERT OR REPLACE INTO Albums(AlbumId, AlbumName, StartDate, "
-            "EndDate, SyncDate) VALUES(?,?,?,?,?) ;",
-            (album_id, name, start_date, end_date, sync_date))
+            "INSERT OR REPLACE INTO Albums ({0}) VALUES ({1}) ;".format(
+                row.query, row.params
+            ), row.dict)
         return self.cur.lastrowid
 
     def get_album_files(self, album_id='%'):
