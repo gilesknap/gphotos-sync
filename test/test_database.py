@@ -1,6 +1,7 @@
 from unittest import TestCase
-from test_setup import SetupDbAndCredentials
+
 from LocalData import LocalData
+from test_setup import SetupDbAndCredentials
 
 
 class DatabaseTest(TestCase):

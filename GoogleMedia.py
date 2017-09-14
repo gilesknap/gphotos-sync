@@ -1,10 +1,12 @@
 #!/usr/bin/python
 # coding: utf8
 import os.path
-from enum import Enum
-from time import gmtime, strftime
-from LocalData import LocalData
 import re
+from time import gmtime, strftime
+
+from enum import Enum
+
+from LocalData import LocalData
 
 
 # an enum for identifying the type of subclass during polymorphic use

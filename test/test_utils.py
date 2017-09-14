@@ -1,6 +1,7 @@
-from unittest import TestCase
-from test_setup import SetupDbAndCredentials
 from datetime import datetime
+from unittest import TestCase
+
+from test_setup import SetupDbAndCredentials
 
 RUN_LONG_TESTS = False
 

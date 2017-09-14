@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # coding: utf8
-from GoogleMedia import GoogleMedia, MediaType, MediaFolder
 import Utils
+from GoogleMedia import GoogleMedia, MediaType, MediaFolder
 
 
 # todo Albums should probably be stored in the SyncFiles table hence and

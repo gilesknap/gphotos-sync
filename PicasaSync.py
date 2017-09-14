@@ -1,16 +1,18 @@
 #!/usr/bin/python
 # coding: utf8
+import os.path
+import shutil
+import urllib
+from datetime import timedelta, datetime
+
 import gdata.gauth
 import gdata.photos.service
-from datetime import timedelta, datetime
-import os.path
-import urllib
-import shutil
-from PicasaMedia import PicasaMedia
+
+import Utils
 from AlbumMedia import AlbumMedia
 from DatabaseMedia import DatabaseMedia, MediaType
 from LocalData import LocalData
-import Utils
+from PicasaMedia import PicasaMedia
 
 
 class PicasaSync(object):

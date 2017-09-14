@@ -1,6 +1,7 @@
-from Main import GooglePhotosSyncMain
 import os.path
 import shutil
+
+from Main import GooglePhotosSyncMain
 
 
 class SetupDbAndCredentials:

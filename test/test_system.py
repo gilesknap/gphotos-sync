@@ -1,9 +1,11 @@
-from unittest import TestCase
-from test_setup import SetupDbAndCredentials
-from LocalData import LocalData
-import os
 import datetime
+import os
+from unittest import TestCase
+
 from mock import patch
+
+from LocalData import LocalData
+from test_setup import SetupDbAndCredentials
 
 
 # todo currently the system tests work against my personal google drive

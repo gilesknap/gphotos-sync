@@ -1,8 +1,9 @@
-from unittest import TestCase
-from test_setup import SetupDbAndCredentials
-from LocalData import LocalData
-import os
 import glob
+import os
+from unittest import TestCase
+
+from LocalData import LocalData
+from test_setup import SetupDbAndCredentials
 
 
 class TestSystemMatch(TestCase):

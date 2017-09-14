@@ -1,10 +1,10 @@
 #!/usr/bin/python
 # coding: utf8
+import ctypes
+import os
+import re
 import time
 from datetime import datetime
-import re
-import os
-import ctypes
 
 DATE_NORMALIZE = re.compile('(\d\d\d\d).(\d\d).(\d\d).(\d\d).(\d\d).(\d\d)')
 SHORT_DATE_NORMALIZE = re.compile('(\d\d\d\d).(\d\d).(\d\d)')

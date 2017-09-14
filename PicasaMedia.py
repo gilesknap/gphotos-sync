@@ -1,8 +1,9 @@
 #!/usr/bin/python
 # coding: utf8
-from GoogleMedia import GoogleMedia, MediaType, MediaFolder
-import Utils
 import mimetypes
+
+import Utils
+from GoogleMedia import GoogleMedia, MediaType, MediaFolder
 
 
 class PicasaMedia(GoogleMedia):

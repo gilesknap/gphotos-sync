@@ -3,11 +3,12 @@
 import argparse
 import os.path
 import traceback
+
 from appdirs import AppDirs
 
 from GoogleDriveSync import GoogleDriveSync
-from PicasaSync import PicasaSync
 from LocalData import LocalData
+from PicasaSync import PicasaSync
 
 APP_NAME = "gphotos-sync"
 

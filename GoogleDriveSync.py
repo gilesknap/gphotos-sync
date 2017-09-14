@@ -1,15 +1,16 @@
 #!/usr/bin/python
 # coding: utf8
 import os.path
+
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 from pydrive.files import ApiRequestError
 
-from GoogleDriveMedia import GoogleDriveMedia
+import Utils
 from DatabaseMedia import DatabaseMedia
+from GoogleDriveMedia import GoogleDriveMedia
 from GoogleMedia import MediaType
 from LocalData import LocalData
-import Utils
 
 
 class NoGooglePhotosFolderError(Exception):
