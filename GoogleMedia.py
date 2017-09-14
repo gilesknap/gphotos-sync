@@ -43,7 +43,7 @@ class GoogleMedia(object):
 
     @classmethod
     def validate_encoding(cls, string):
-        if not string:
+        if string is None:  # a string of '' is valid
             return None
         elif isinstance(string, unicode):
             return string

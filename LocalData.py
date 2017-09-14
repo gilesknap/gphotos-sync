@@ -6,13 +6,55 @@ from datetime import datetime
 import Utils
 
 
-# NOTES on DB Schema changes
-# if adding or removing columns from SyncFiles Table Update:
-# (1) GoogleMedia.save_to_db
-# (2) LocalData.record_to_tuple
-# (3) LocalData.put_file
-# (4) DatabaseMedia constructor
-# ( add or remove column related properties from GoogleMedia (and subclasses) )
+# noinspection PyClassHasNoInit
+class DbRow:
+    """
+    base class for classes representing a row in the database to allow easy
+    generation of queries and an easy interface for callers e.g.
+        q = "INSERT INTO SyncFiles ({0}) VALUES ({1})".format(
+            self.SyncRow.query, self.SyncRow.params)
+        self.cur.execute(query, row.dict)
+    Attributes:
+        (dict) cols_def: keys are names of columns and items are their type
+        (str) query: a string to insert after a SELECT or INSERT INTO {db}
+        (str) params: a string to insert after VALUES in a sql INSERT or UPDATE
+        The remaining attributes are on a per subclass basis and are
+        generated from row_def by the db_row decorator
+    """
+    cols_def = None
+    query = None
+    params = None
+    dict = None
+
+
+def db_row(row_class):
+    """
+    class decorator function to create RowClass classes that represent a row
+    in the database
+
+    :param (DbRow) row_class: the class to decorate
+    :return (DbRow): the decorated class
+    """
+    row_class.query = ','.join(row_class.cols_def.keys())
+    row_class.params = ':' + ',:'.join(row_class.cols_def.keys())
+
+    def init(self, result_row=None):
+        for col, col_type in self.cols_def.items():
+            if not result_row:
+                value = None
+            elif col_type == datetime:
+                value = Utils.string_to_date(result_row[col])
+            else:
+                value = result_row[col]
+            setattr(self, col, value)
+
+    @property
+    def to_dict(self):
+        return self.__dict__
+
+    row_class.__init__ = init
+    row_class.dict = to_dict
+    return row_class
 
 
 # todo currently store full path in SyncFiles.Path
@@ -52,6 +94,19 @@ class LocalData:
             self.store()
             self.con.close()
 
+    # noinspection PyClassHasNoInit
+    @db_row
+    class SyncRow(DbRow):
+        """
+        generates an object with attributes for each of the columns in the
+        SyncFiles table
+        """
+        cols_def = {'RemoteId': str, 'Url': str, 'Path': str, 'FileName': str,
+                    'OrigFileName': str, 'DuplicateNo': int, 'MediaType': int,
+                    'FileSize': int, 'Checksum': str, 'Description': str,
+                    'ModifyDate': datetime, 'CreateDate': datetime,
+                    'SyncDate': datetime, 'SymLink': int}
+
     def check_schema_version(self):
         query = "SELECT  Version FROM  Globals WHERE Id IS 1"
         self.cur.execute(query)
@@ -62,7 +117,7 @@ class LocalData:
             print('Database schema out of date. Flushing index ...')
             self.con.commit()
             self.con.close()
-            os.rename(self.file_name, self.file_name + '.old')
+            os.rename(self.file_name, self.file_name + '.previous')
             self.con = lite.connect(self.file_name)
             self.con.row_factory = lite.Row
             self.cur = self.con.cursor()
@@ -101,50 +156,6 @@ class LocalData:
 
         return drive_last_date, picasa_last_date
 
-    class SyncRow:
-        """
-        generates an object with attributes for each of the columns in the
-        SyncFiles table
-        """
-        _sync_rows = [
-            'RemoteId', 'Url', 'Path', 'FileName', 'OrigFileName',
-            'DuplicateNo', 'MediaType', 'FileSize', 'Checksum', 'Description',
-            'ModifyDate', 'CreateDate', 'SyncDate', 'SymLink']
-        _sync_types = [
-            str, str, str, str, str,
-            int, int, int, str, str,
-            datetime, datetime, datetime, int]
-        sync_query = ','.join(_sync_rows)
-        sync_params = ':' + ',:'.join(_sync_rows)
-
-        def __init__(self, result_row=None):
-            col_no = 0
-            for column in self._sync_rows:
-                if not result_row:
-                    value = None
-                elif self._sync_types[col_no] == datetime:
-                    value = Utils.string_to_date(result_row[column])
-                else:
-                    value = result_row[column]
-                setattr(self, column, value)
-                col_no += 1
-
-        @property
-        def dict(self):
-            return self.__dict__
-
-    @classmethod
-    def record_to_object(cls, rec):
-        """
-        :param ([]) rec:
-        :return (SyncRow):
-        """
-        if rec:
-            result = cls.SyncRow(rec)
-        else:
-            result = None
-        return result
-
     def get_files_by_search(self, drive_id='%', media_type=None,
                             start_date=None, end_date=None):
         """
@@ -152,7 +163,7 @@ class LocalData:
         :param (int) media_type:
         :param (datetime) start_date:
         :param (datetime) end_date:
-        :return (SyncRow):
+        :return (self.SyncRow):
         """
         if not media_type:
             media_type = '%'
@@ -166,7 +177,7 @@ class LocalData:
             params += (end_date,)
 
         query = "SELECT {0} FROM SyncFiles WHERE RemoteId LIKE ? AND " \
-                " MediaType LIKE ? {1};".format(self.SyncRow.sync_query,
+                " MediaType LIKE ? {1};".format(self.SyncRow.query,
                                                 date_clauses)
 
         self.cur.execute(query, params)
@@ -181,10 +192,10 @@ class LocalData:
         """
         :param (str) folder:
         :param (str) name:
-        :return (SyncRow):
+        :return (self.SyncRow):
         """
         query = "SELECT {0} FROM SyncFiles WHERE Path = ?" \
-                " AND FileName = ?;".format(self.SyncRow.sync_query)
+                " AND FileName = ?;".format(self.SyncRow.query)
         self.cur.execute(query, (folder, name))
         record = self.cur.fetchone()
         if record:
@@ -194,7 +205,7 @@ class LocalData:
 
     def get_file_by_id(self, remote_id):
         query = "SELECT {0} FROM SyncFiles WHERE RemoteId = ?;".format(
-            self.SyncRow.sync_query)
+            self.SyncRow.query)
         self.cur.execute(query, (remote_id,))
         record = self.cur.fetchone()
         if record:
@@ -204,7 +215,7 @@ class LocalData:
 
     def put_file(self, row):
         query = "INSERT INTO SyncFiles ({0}) VALUES ({1})".format(
-            self.SyncRow.sync_query, self.SyncRow.sync_params)
+            self.SyncRow.query, self.SyncRow.params)
         self.cur.execute(query, row.dict)
         return self.cur.lastrowid
 

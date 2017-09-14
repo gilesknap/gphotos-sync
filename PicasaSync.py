@@ -5,6 +5,7 @@ import gdata.photos.service
 from datetime import timedelta, datetime
 import os.path
 import urllib
+import shutil
 from PicasaMedia import PicasaMedia
 from AlbumMedia import AlbumMedia
 from DatabaseMedia import DatabaseMedia, MediaType
@@ -69,7 +70,10 @@ class PicasaSync(object):
         # first, these are quickly recreated anyway
         links_root = os.path.join(self._root_folder, 'albums')
         if os.path.exists(links_root):
-            os.rename(links_root, links_root + '.old')
+            single_backup = links_root + '.previous'
+            if os.path.exists(single_backup):
+                shutil.rmtree(single_backup)
+            os.rename(links_root, single_backup)
         for (path, file_name, album_name, end_date) in \
                 self._db.get_album_files():
             full_file_name = os.path.join(path, file_name)
