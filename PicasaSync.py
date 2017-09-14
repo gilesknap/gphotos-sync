@@ -81,10 +81,11 @@ class PicasaSync(object):
                 self._db.get_album_files():
             full_file_name = os.path.join(path, file_name)
 
-            prefix = Utils.safe_str_time(Utils.string_to_date(end_date),
-                                         '%Y/%m%d')
-            rel_path = u"{0} {1}".format(prefix, album_name)
-            link_folder = unicode(os.path.join(links_root, rel_path))
+            year = Utils.safe_str_time(Utils.string_to_date(end_date), '%Y')
+            month = Utils.safe_str_time(Utils.string_to_date(end_date), '%m%d')
+
+            rel_path = u"{0} {1}".format(month, album_name)
+            link_folder = unicode(os.path.join(links_root, year, rel_path))
             link_file = unicode(os.path.join(link_folder, file_name))
             if not os.path.islink(link_file):
                 if not os.path.isdir(link_folder):

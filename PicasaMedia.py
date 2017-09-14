@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # coding: utf8
 import mimetypes
+import os
 
 import Utils
 from GoogleMedia import GoogleMedia, MediaType, MediaFolder
@@ -16,7 +17,9 @@ class PicasaMedia(GoogleMedia):
         self._relative_folder = self.define_path()
 
     def define_path(self):
-        return Utils.safe_str_time(self.date, '%Y/%m')
+        year = Utils.safe_str_time(self.date, '%Y')
+        month = year = Utils.safe_str_time(self.date, '%m')
+        return os.path.join(month, year)
 
     # ----- override Properties below -----
     @property
