@@ -156,7 +156,7 @@ class LocalData:
 
         return drive_last_date, picasa_last_date
 
-    def get_files_by_search(self, drive_id='%', media_type=None,
+    def get_files_by_search(self, drive_id='%', media_type='%',
                             start_date=None, end_date=None):
         """
         :param (str) drive_id:
@@ -165,13 +165,14 @@ class LocalData:
         :param (datetime) end_date:
         :return (self.SyncRow):
         """
-        if not media_type:
-            media_type = '%'
         params = (drive_id, media_type)
         date_clauses = ''
         if start_date:
-            date_clauses += 'AND ModifyDate >= ?'
-            params += (start_date,)
+            # look for create date too since an photo recently uploaded will
+            # keep its original modified date (since that is in the exif)
+            # this clause is specifically to assist in incremental download
+            date_clauses += 'AND (ModifyDate >= ? OR CreateDate >= ?)'
+            params += (start_date, start_date)
         if end_date:
             date_clauses += 'AND ModifyDate <= ?'
             params += (end_date,)

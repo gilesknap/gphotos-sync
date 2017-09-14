@@ -57,7 +57,7 @@ class GoogleDriveMedia(GoogleMedia):
     @property
     def description(self):
         try:
-            return GoogleMedia.validate_encoding(
+            return self.validate_encoding(
                 self.__drive_file["description"])
         except KeyError:
             return ''
@@ -68,7 +68,7 @@ class GoogleDriveMedia(GoogleMedia):
             name = self.__drive_file["originalFilename"]
         except KeyError:
             name = self.__drive_file["title"]
-        return GoogleMedia.validate_encoding(name)
+        return self.validate_encoding(name)
 
     @property
     def create_date(self):

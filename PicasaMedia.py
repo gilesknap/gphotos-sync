@@ -43,12 +43,12 @@ class PicasaMedia(GoogleMedia):
     @property
     def description(self):
         # NOTE: picasa API returns empty description field, use title
-        return GoogleMedia.validate_encoding(
+        return self.validate_encoding(
             self.__photo_xml.title.text)
 
     @property
     def orig_name(self):
-        return GoogleMedia.validate_encoding(self.__photo_xml.title.text)
+        return self.validate_encoding(self.__photo_xml.title.text)
 
     @property
     def create_date(self):

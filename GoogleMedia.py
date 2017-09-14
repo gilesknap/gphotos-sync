@@ -4,8 +4,11 @@ import os.path
 from enum import Enum
 from time import gmtime, strftime
 from LocalData import LocalData
+import re
 
 
+# an enum for identifying the type of subclass during polymorphic use
+# only used for identifying the root folder the media should occupy locally
 class MediaType(Enum):
     DRIVE = 0
     PICASA = 1
@@ -14,11 +17,11 @@ class MediaType(Enum):
     NONE = 4
 
 
+# folder names for each of rhe types of media specified above
 MediaFolder = [
     u'drive',
     u'picasa',
     u'albums',
-    u'',
     u'',
     u'']
 
@@ -36,19 +39,35 @@ class GoogleMedia(object):
     def __init__(self, relative_folder, root_folder, **k_args):
         self.media_type = self.__class__.MEDIA_TYPE
         self._media_folder = self.__class__.MEDIA_FOLDER
-        self._relative_folder = self.validate_encoding(relative_folder)
-        self._root_folder = self.validate_encoding(root_folder)
+        self._relative_folder = relative_folder
+        self._root_folder = root_folder
         self._duplicate_number = 0
         self.symlink = False  # Todo need to implement use of this
 
-    @classmethod
-    def validate_encoding(cls, string):
+    # regex for illegal characters in file names and database queries
+    fix_linux = re.compile(r'[/]|[\x00-\x1f]|\x7f|\x00')
+    fix_windows = re.compile(r'[<>:"/\\|?*]|[\x00-\x1f]|\x7f|\x00')
+
+    def validate_encoding(self, string):
+        """
+        makes sure a string is valid for creating file names and converts to
+        unicode assuming utf8 encoding if necessary
+
+        :param (str) string: input string (or unicode string)
+        :return: (unicode): sanitized string
+        """
         if string is None:  # a string of '' is valid
             return None
         elif isinstance(string, unicode):
-            return string
+            s = string
         else:
-            return unicode(string, 'utf8')
+            s = unicode(string, 'utf8')
+
+        if os.name == 'nt':
+            s = self.fix_windows.sub('_', s)
+        else:
+            s = self.fix_linux.sub('_', s)
+        return s
 
     def save_to_db(self, db):
         now_time = strftime(GoogleMedia.TIME_FORMAT, gmtime())

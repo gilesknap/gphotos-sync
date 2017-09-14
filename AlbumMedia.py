@@ -30,7 +30,7 @@ class AlbumMedia(GoogleMedia):
     @property
     def description(self):
         # NOTE: picasa API returns empty description field, use title
-        return GoogleMedia.validate_encoding(
+        return self.validate_encoding(
             self.__album_xml.title.text)
 
     @property
@@ -43,7 +43,7 @@ class AlbumMedia(GoogleMedia):
 
     @property
     def orig_name(self):
-        return GoogleMedia.validate_encoding(self.__album_xml.title.text)
+        return self.validate_encoding(self.__album_xml.title.text)
 
     # the below base class abstract properties are not relevant to album
     @property

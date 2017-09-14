@@ -5,6 +5,7 @@ from GoogleMedia import GoogleMedia, MediaType, MediaFolder
 from LocalData import LocalData
 from datetime import datetime
 
+
 class DatabaseMedia(GoogleMedia):
     """A Class for instantiating a GoogleMedia object from the database
 
