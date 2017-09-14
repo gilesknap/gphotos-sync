@@ -334,10 +334,6 @@ class LocalData:
         self.con.commit()
         print("Database Saved.\n")
 
-    # todo - keeping origFileName and FileName is bobbins
-    # we only need original filename and duplicate number to determine
-    # what the local filename is so that is how it should be
-    # this refactor should be combined with making paths stored in db relative
     def file_duplicate_no(self, file_id, path, name):
         self.cur.execute(
             "SELECT DuplicateNo FROM SyncFiles WHERE RemoteId = ?;", (file_id,))

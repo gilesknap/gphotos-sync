@@ -1,4 +1,5 @@
 import datetime
+import glob
 import os
 from unittest import TestCase
 
@@ -170,3 +171,41 @@ class TestSystem(TestCase):
         db.cur.execute("SELECT COUNT() FROM Albums;")
         count = db.cur.fetchone()
         self.assertEqual(count[0], 4)
+
+    def test_picasa_delete(self):
+        s = SetupDbAndCredentials()
+        args = ['--album', 'Bats',
+                '--skip-drive', '--do-delete']
+        s.test_setup('test_picasa_delete', args=args, trash_files=True)
+        s.gp.start(s.parsed_args)
+
+        pat = os.path.join(s.root, 'picasa', '2017', '09', '*.*')
+        self.assertEqual(2, len(glob.glob(pat)))
+
+        db = LocalData(s.root)
+        db.cur.execute("DELETE FROM SyncFiles WHERE MediaType = 1;")
+
+        s.test_setup('test_picasa_delete', args=args, trash_files=True)
+        s.gp.picasa_sync.check_for_removed()
+
+        self.assertEqual(0, len(glob.glob(pat)))
+
+    def test_drive_delete(self):
+        s = SetupDbAndCredentials()
+        args = ['--start-date', '2017-09-13', '--end-date', '2017-09-15',
+                '--skip-picasa', '--do-delete']
+        s.test_setup('test_drive_delete', args=args, trash_files=True)
+        s.gp.start(s.parsed_args)
+
+        pat = os.path.join(s.root, 'drive', '2017', '09', '*.*')
+        count = len(glob.glob(pat))
+        print count
+
+        db = LocalData(s.root)
+        db.cur.execute("DELETE FROM SyncFiles WHERE MediaType = 0;")
+
+        s.test_setup('test_drive_delete', args=args, trash_files=True)
+        s.gp.drive_sync.check_for_removed()
+
+        count = len(glob.glob(pat))
+        print count
