@@ -49,9 +49,9 @@ class GooglePhotosSyncMain:
         action='store_true',
         help="Only build the index of files in .gphotos.db - no downloads")
     parser.add_argument(
-        "--no-deletion",
+        "--do-delete",
         action='store_true',
-        help="Keep local copies of files that were deleted from drive/picasa")
+        help="remove local copies of files that were deleted from drive/picasa")
     parser.add_argument(
         "--skip-index",
         action='store_true',
@@ -130,10 +130,12 @@ class GooglePhotosSyncMain:
                         self.picasa_sync.download_album_media()
                     if not args.skip_drive:
                         self.drive_sync.download_drive_media()
+                        if args.do_delete:
+                            self.drive_sync.check_for_removed()
                     if not args.skip_picasa:
                         self.picasa_sync.create_album_content_links()
-                    if not args.no_deletion:
-                        self.drive_sync.check_for_removed()
+                        if args.do_delete:
+                            self.picasa_sync.check_for_removed()
 
             except KeyboardInterrupt:
                 print("\nUser cancelled download")

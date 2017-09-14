@@ -98,6 +98,20 @@ class PicasaSync(object):
 
         print("album links done.\n")
 
+    # todo this will currently do nothing unless using --flush-db
+    def check_for_removed(self):
+        # note for partial scans using date filters this is still OK because
+        # for a file to exist it must have been indexed in a previous scan
+        print('\nFinding deleted media ...')
+        top_dir = os.path.join(self._root_folder, PicasaMedia.MEDIA_FOLDER)
+        for (dir_name, _, file_names) in os.walk(top_dir):
+            for file_name in file_names:
+                file_id = self._db.get_file_by_path(dir_name, file_name)
+                if not file_id:
+                    name = os.path.join(dir_name, file_name)
+                    os.remove(name)
+                    print(u"{} deleted".format(name))
+
     def match_drive_photo(self, media):
         file_keys = self._db.find_file_ids_dates(size=media.size)
         if file_keys and len(file_keys) == 1:
