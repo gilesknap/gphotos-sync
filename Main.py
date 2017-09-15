@@ -99,6 +99,9 @@ class GooglePhotosSyncMain:
         if args.new_token:
             os.remove(credentials_file)
 
+        if not os.path.exists(app_dirs.user_data_dir):
+            os.makedirs(app_dirs.user_data_dir)
+
         self.drive_sync = GoogleDriveSync(args.root_folder, self.data_store,
                                           client_secret_file=secret_file,
                                           credentials_json=credentials_file)

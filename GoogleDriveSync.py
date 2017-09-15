@@ -121,6 +121,11 @@ class GoogleDriveSync(object):
         print('Resolving paths ...')
         self.folderPaths[root_id] = ''
         self.recurse_paths('', root_id)
+        if len(self.folderPaths) == 1:
+            raise ValueError(
+                "No folders found. Please enable Google Photos in Google "
+                "drive (see https://support.google.com/photos/answer/6156103"
+                "). Or use one of the options --all-drive --skip-drive.")
         print('Drive Folders scanned.\n')
 
     def recurse_paths(self, path, folder_id):
@@ -142,7 +147,7 @@ class GoogleDriveSync(object):
                 file_row = self._db.get_file_by_path(dir_name, file_name)
                 if not file_row:
                     name = os.path.join(dir_name, file_name)
-                    os.remove(name)
+                    # os.remove(name)
                     print(u"{} deleted".format(name))
 
     def index_drive_media(self):
