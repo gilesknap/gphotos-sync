@@ -68,7 +68,7 @@ class GoogleDriveSync(object):
         self._g_auth.settings["save_credentials"] = True
         self._g_auth.settings["save_credentials_backend"] = "file"
         self._g_auth.settings["get_refresh_token"] = True
-        self._g_auth.CommandLineAuth()
+        self._g_auth.LocalWebserverAuth()
         self._googleDrive = GoogleDrive(self._g_auth)
         self._latest_download = Utils.minimum_date()
         # public members to be set after init

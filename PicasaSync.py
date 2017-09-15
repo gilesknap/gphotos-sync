@@ -261,7 +261,7 @@ class IndexAlbumHelper:
         self.album_start_photo = album.modify_date
         self.sync_date = self.p._db.get_album(self.album.id).SyncDate
         if self.sync_date:
-            self.sync_date = Utils.string_to_date(self.sync_date)
+            self.sync_date = self.sync_date
         else:
             self.sync_date = Utils.minimum_date()
 

@@ -8,6 +8,10 @@ from mock import patch
 from LocalData import LocalData
 from test_setup import SetupDbAndCredentials
 
+# todo add a test that reads in Sync Date from the Db
+# todo add code coverage tests
+# todo Fix initial setup of credentials file (' cannot be synbolic link ')
+
 
 # todo currently the system tests work against my personal google drive
 # todo will try to provide a standalone account and credentials for CI
