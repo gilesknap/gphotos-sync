@@ -254,7 +254,7 @@ class IndexAlbumHelper:
         self.album = album
         self.album_end_photo = Utils.minimum_date()
         self.album_start_photo = album.date
-        (_, _, _, self.sync_date) = self.p._db.get_album(self.album.id)
+        self.sync_date = self.p._db.get_album(self.album.id).SyncDate
         if self.sync_date:
             self.sync_date = Utils.string_to_date(self.sync_date)
         else:

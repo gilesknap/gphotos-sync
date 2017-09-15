@@ -165,7 +165,8 @@ class TestSystem(TestCase):
         s = SetupDbAndCredentials()
 
         # mock get album to pretend a full scan has occurred on 2020-08-28
-        get_album.return_value = (None, None, None, "2020-08-28 00:00:00")
+        get_album.return_value = LocalData.AlbumsRow.make(
+            SyncDate='2020-08-28 00:00:00')
         args = ['--end-date', '2000-01-01',
                 '--skip-drive',
                 '--index-only']
@@ -178,8 +179,9 @@ class TestSystem(TestCase):
         count = db.cur.fetchone()
         self.assertEqual(count[0], 0)
 
-        # mock get album to pretend a full scan has occurred on 2017-08-28
-        get_album.return_value = (None, None, None, "2017-08-28 00:00:00")
+        # mock get album to pretend a full scan has occurred on
+        get_album.return_value = LocalData.AlbumsRow.make(
+            SyncDate='2017-08-28 00:00:00')
         args = ['--skip-drive', '--end-date', '2017-09-12',
                 '--index-only', '--skip-video']
         s.test_setup('system_inc_picasa', args=args)

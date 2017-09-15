@@ -23,7 +23,7 @@ class DbRow:
         generated from row_def by the db_row decorator
     """
     cols_def = None
-    query = None
+    columns = None
     params = None
     dict = None
     empty = False
@@ -53,7 +53,7 @@ def db_row(row_class):
     :param (DbRow) row_class: the class to decorate
     :return (DbRow): the decorated class
     """
-    row_class.query = ','.join(row_class.cols_def.keys())
+    row_class.columns = ','.join(row_class.cols_def.keys())
     row_class.params = ':' + ',:'.join(row_class.cols_def.keys())
 
     def init(self, result_row=None):
@@ -207,9 +207,9 @@ class LocalData:
             date_clauses += 'AND ModifyDate <= ?'
             params += (end_date,)
 
-        query = "SELECT {0} FROM SyncFiles WHERE RemoteId LIKE ? AND " \
-                " MediaType LIKE ? {1};".format(self.SyncRow.query,
-                                                date_clauses)
+        query = "SELECT {0} FROM SyncFiles WHERE RemoteId LIKE ? AND  " \
+                "MediaType LIKE ? {1};". \
+            format(self.SyncRow.columns, date_clauses)
 
         self.cur.execute(query, params)
         while True:
@@ -226,21 +226,21 @@ class LocalData:
         :return (self.SyncRow):
         """
         query = "SELECT {0} FROM SyncFiles WHERE Path = ?" \
-                " AND FileName = ?;".format(self.SyncRow.query)
+                " AND FileName = ?;".format(self.SyncRow.columns)
         self.cur.execute(query, (folder, name))
         record = self.cur.fetchone()
         return self.SyncRow(record)
 
     def get_file_by_id(self, remote_id):
         query = "SELECT {0} FROM SyncFiles WHERE RemoteId = ?;".format(
-            self.SyncRow.query)
+            self.SyncRow.columns)
         self.cur.execute(query, (remote_id,))
         record = self.cur.fetchone()
         return self.SyncRow(record)
 
     def put_file(self, row):
         query = "INSERT INTO SyncFiles ({0}) VALUES ({1})".format(
-            self.SyncRow.query, self.SyncRow.params)
+            self.SyncRow.columns, self.SyncRow.params)
         self.cur.execute(query, row.dict)
         return self.cur.lastrowid
 
@@ -267,18 +267,16 @@ class LocalData:
             return keys_dates
 
     def get_album(self, album_id):
-        self.cur.execute(
-            "SELECT AlbumName, StartDate, EndDate, SyncDate FROM Albums "
-            "WHERE AlbumId = ?;", (album_id,))
+        query = "SELECT {0} FROM Albums WHERE AlbumId = ?;".format(
+            self.AlbumsRow.columns)
+        self.cur.execute(query, (album_id,))
         res = self.cur.fetchone()
-        return (res[0], res[1], res[2], res[3]) if res else (
-            None, None, None, None)
+        return self.AlbumsRow(res)
 
     def put_album(self, row):
-        self.cur.execute(
-            "INSERT OR REPLACE INTO Albums ({0}) VALUES ({1}) ;".format(
-                row.query, row.params
-            ), row.dict)
+        query = "INSERT OR REPLACE INTO Albums ({0}) VALUES ({1}) ;".format(
+            row.columns, row.params)
+        self.cur.execute(query, row.dict)
         return self.cur.lastrowid
 
     def get_album_files(self, album_id='%'):
@@ -310,11 +308,11 @@ class LocalData:
         else:
             return None
 
-    def put_drive_folder(self, drive_id, parent_id, date):
+    def put_drive_folder(self, drive_id, parent_id, folder_name):
         self.cur.execute(
             "INSERT OR REPLACE INTO "
             "DriveFolders(FolderId, ParentId, FolderName)"
-            " VALUES(?,?,?) ;", (drive_id, parent_id, date))
+            " VALUES(?,?,?) ;", (drive_id, parent_id, folder_name))
 
     # noinspection PyTypeChecker
     def update_drive_folder_path(self, path, parent_id):
