@@ -18,8 +18,8 @@ class PicasaMedia(GoogleMedia):
 
     def define_path(self):
         year = Utils.safe_str_time(self.date, '%Y')
-        month = year = Utils.safe_str_time(self.date, '%m')
-        return os.path.join(month, year)
+        month = Utils.safe_str_time(self.date, '%m')
+        return os.path.join(year, month)
 
     # ----- override Properties below -----
     @property

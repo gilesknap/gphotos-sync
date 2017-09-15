@@ -97,7 +97,7 @@ class GoogleMedia(object):
             self.id, self.local_folder, self.orig_name)
         self.duplicate_number = num
         result = db.get_file_by_id(remote_id=self.id)
-        return result is not None
+        return result
 
     # Path to the local folder in which this media item is stored this
     # will include the media type folder which is one of 'drive' 'picasa' or

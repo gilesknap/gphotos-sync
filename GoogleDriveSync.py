@@ -132,8 +132,8 @@ class GoogleDriveSync(object):
         top_dir = os.path.join(self._root_folder, GoogleDriveMedia.MEDIA_FOLDER)
         for (dir_name, _, file_names) in os.walk(top_dir):
             for file_name in file_names:
-                file_id = self._db.get_file_by_path(dir_name, file_name)
-                if not file_id:
+                file_row = self._db.get_file_by_path(dir_name, file_name)
+                if not file_row:
                     name = os.path.join(dir_name, file_name)
                     os.remove(name)
                     print(u"{} deleted".format(name))

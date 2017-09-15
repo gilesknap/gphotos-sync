@@ -12,6 +12,26 @@ from test_setup import SetupDbAndCredentials
 # todo currently the system tests work against my personal google drive
 # todo will try to provide a standalone account and credentials for CI
 class TestSystem(TestCase):
+    def test_system_download_album(self):
+        s = SetupDbAndCredentials()
+        # get a small Album
+        args = ['--album', 'Bats',
+                '--skip-drive']
+        s.test_setup('system_download_album', args=args, trash_files=True)
+        s.gp.start(s.parsed_args)
+
+        db = LocalData(s.root)
+        db.cur.execute("SELECT COUNT() FROM SyncFiles WHERE MediaType = 1;")
+        count = db.cur.fetchone()
+        self.assertEqual(count[0], 2)
+
+        expected_file = os.path.join(s.root, 'albums', '2017', '0901 Bats')
+        print(expected_file)
+        self.assertEqual(True, os.path.exists(expected_file))
+
+        pat = os.path.join(s.root, 'picasa', '2017', '09', '*.*')
+        self.assertEqual(2, len(glob.glob(pat)))
+
     def test_system_download_name(self):
         s = SetupDbAndCredentials()
         # get a single file
@@ -182,12 +202,15 @@ class TestSystem(TestCase):
         pat = os.path.join(s.root, 'picasa', '2017', '09', '*.*')
         self.assertEqual(2, len(glob.glob(pat)))
 
+        s.test_setup('test_picasa_delete', args=args)
+        s.gp.picasa_sync.check_for_removed()
+        self.assertEqual(2, len(glob.glob(pat)))
+
         db = LocalData(s.root)
         db.cur.execute("DELETE FROM SyncFiles WHERE MediaType = 1;")
+        db.store()
 
-        s.test_setup('test_picasa_delete', args=args, trash_files=True)
         s.gp.picasa_sync.check_for_removed()
-
         self.assertEqual(0, len(glob.glob(pat)))
 
     def test_drive_delete(self):
@@ -198,14 +221,16 @@ class TestSystem(TestCase):
         s.gp.start(s.parsed_args)
 
         pat = os.path.join(s.root, 'drive', '2017', '09', '*.*')
-        count = len(glob.glob(pat))
-        print count
+        self.assertEqual(7, len(glob.glob(pat)))
+
+        s.test_setup('test_drive_delete', args=args)
+        s.gp.drive_sync.check_for_removed()
+        self.assertEqual(7, len(glob.glob(pat)))
 
         db = LocalData(s.root)
-        db.cur.execute("DELETE FROM SyncFiles WHERE MediaType = 0;")
+        db.cur.execute("DELETE FROM SyncFiles WHERE MediaType = 0 "
+                       "AND ModifyDate LIKE '2017-09-14_08%';")
+        db.store()
 
-        s.test_setup('test_drive_delete', args=args, trash_files=True)
         s.gp.drive_sync.check_for_removed()
-
-        count = len(glob.glob(pat))
-        print count
+        self.assertEqual(3, len(glob.glob(pat)))

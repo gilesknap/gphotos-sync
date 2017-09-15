@@ -26,6 +26,11 @@ class DbRow:
     query = None
     params = None
     dict = None
+    empty = False
+
+    # allows us to do boolean checks on the row object and return True i
+    def __nonzero__(self):
+        return not self.empty
 
     # factory method for delivering a DbRow object based on named arguments
     @classmethod
@@ -36,6 +41,7 @@ class DbRow:
                 raise ValueError("{0} does not have column {1}".format(
                     cls, key))
             setattr(new_row, key, value)
+        new_row.empty = False
         return new_row
 
 
@@ -59,6 +65,8 @@ def db_row(row_class):
             else:
                 value = result_row[col]
             setattr(self, col, value)
+            if not result_row:
+                self.empty = True
 
     @property
     def to_dict(self):
@@ -221,20 +229,14 @@ class LocalData:
                 " AND FileName = ?;".format(self.SyncRow.query)
         self.cur.execute(query, (folder, name))
         record = self.cur.fetchone()
-        if record:
-            return self.SyncRow(record)
-        else:
-            return None
+        return self.SyncRow(record)
 
     def get_file_by_id(self, remote_id):
         query = "SELECT {0} FROM SyncFiles WHERE RemoteId = ?;".format(
             self.SyncRow.query)
         self.cur.execute(query, (remote_id,))
         record = self.cur.fetchone()
-        if record:
-            return self.SyncRow(record)
-        else:
-            return None
+        return self.SyncRow(record)
 
     def put_file(self, row):
         query = "INSERT INTO SyncFiles ({0}) VALUES ({1})".format(
