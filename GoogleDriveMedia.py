@@ -76,7 +76,7 @@ class GoogleDriveMedia(GoogleMedia):
         return date
 
     @property
-    def date(self):
+    def modify_date(self):
         try:
             exif_date = self.get_exif_value("date")
             photo_date = Utils.string_to_date(exif_date)

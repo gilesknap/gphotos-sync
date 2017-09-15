@@ -96,6 +96,7 @@ class DatabaseMedia(GoogleMedia):
         :param (int) media_type: optional type of rows to find
         :param (datetime) start_date: optional date filter
         :param (datetime) end_date: optional date filter
+        :returns (GoogleMedia): yields GoogleMedia object filled from database
         """
         for record in db.get_files_by_search(
                 drive_id, media_type, start_date, end_date):
@@ -161,7 +162,7 @@ class DatabaseMedia(GoogleMedia):
         return self._create_date
 
     @property
-    def date(self):
+    def modify_date(self):
         """
         Modify Date
         :return (datetime):

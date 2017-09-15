@@ -38,7 +38,7 @@ class AlbumMedia(GoogleMedia):
         return Utils.string_to_date(self.__album_xml.published.text)
 
     @property
-    def date(self):
+    def modify_date(self):
         return Utils.string_to_date(self.__album_xml.updated.text)
 
     @property

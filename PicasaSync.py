@@ -64,6 +64,11 @@ class PicasaSync(object):
             res = Utils.retry(5, urllib.urlretrieve, media.url, tmp_path)
             if res:
                 os.rename(tmp_path, media.local_full_path)
+                # set the access date to create date since there is nowhere
+                # else to put it on linux (and is useful for debugging)
+                os.utime(media.local_full_path,
+                         (Utils.to_timestamp(media.modify_date),
+                          Utils.to_timestamp(media.create_date)))
             else:
                 print("  failed to download %s" % media.local_path)
 
@@ -130,7 +135,7 @@ class PicasaSync(object):
 
         dated_file_keys = self._match_by_date(media)
         if file_keys:
-            print(u'MATCH BY DATE on {} {}'.format(media.filename, media.date))
+            print(u'MATCH BY DATE on {} {}'.format(media.filename, media.modify_date))
             return dated_file_keys
 
         # not found anything or found >1 result
@@ -152,12 +157,12 @@ class PicasaSync(object):
         for use_create_date in [False]:
             dated_file_keys = \
                 self._db.find_file_ids_dates(filename=media.filename,
-                                             exif_date=media.date,
+                                             exif_date=media.modify_date,
                                              use_create=use_create_date)
             if dated_file_keys:
                 return dated_file_keys
             for hour_offset in range(-1, 1):
-                date_to_check = media.date + timedelta(hours=hour_offset)
+                date_to_check = media.modify_date + timedelta(hours=hour_offset)
                 dated_file_keys = \
                     self._db.find_file_ids_dates(
                         filename=media.filename,
@@ -183,7 +188,7 @@ class PicasaSync(object):
         for p_album in albums.entry:
             album = AlbumMedia(p_album)
             log = u'  Album: {}, photos: {}, updated: {}, published: {}'.format(
-                album.filename, album.size, album.date, album.create_date)
+                album.filename, album.size, album.modify_date, album.create_date)
             album_log.write((log + u'\n').encode('utf8'))
 
             helper.setup_next_album(album)
@@ -253,7 +258,7 @@ class IndexAlbumHelper:
         """
         self.album = album
         self.album_end_photo = Utils.minimum_date()
-        self.album_start_photo = album.date
+        self.album_start_photo = album.modify_date
         self.sync_date = self.p._db.get_album(self.album.id).SyncDate
         if self.sync_date:
             self.sync_date = Utils.string_to_date(self.sync_date)
@@ -269,14 +274,14 @@ class IndexAlbumHelper:
                 PicasaSync.HIDDEN_ALBUMS:
             return True
         if self.p.endDate:
-            if Utils.string_to_date(self.p.endDate) < self.album.date:
+            if Utils.string_to_date(self.p.endDate) < self.album.modify_date:
                 return True
         if self.p.startDate:
-            if Utils.string_to_date(self.p.startDate) > self.album.date:
+            if Utils.string_to_date(self.p.startDate) > self.album.modify_date:
                 return True
         # handle incremental backup but allow startDate to override
         if not self.p.startDate:
-            if self.album.date < self.sync_date:
+            if self.album.modify_date < self.sync_date:
                 return True
         if int(self.album.size) == 0:
             return True
@@ -311,14 +316,14 @@ class IndexAlbumHelper:
                 self.picasa_photos += 1
                 new_file_key = media.save_to_db(self.p._db)
                 self.p._db.put_album_file(self.album.id, new_file_key)
-                self.set_album_dates(media.date)
+                self.set_album_dates(media.modify_date)
                 if not self.p.quiet:
                     print(u"Added {} {}".format(self.picasa_photos,
                                                 media.local_full_path))
             else:
                 self.multiple_match_count += 1
                 print ('  WARNING multiple files match %s %s %s' %
-                       (media.orig_name, media.date, media.size))
+                       (media.orig_name, media.modify_date, media.size))
 
     def complete_album(self):
         # write the album data down now we know the contents' date range
@@ -329,8 +334,8 @@ class IndexAlbumHelper:
                                        SyncDate=Utils.date_to_string(
                                            datetime.now()))
         self.p._db.put_album(row)
-        if self.album.date > self.latest_download:
-            self.latest_download = self.album.date
+        if self.album.modify_date > self.latest_download:
+            self.latest_download = self.album.modify_date
 
     def complete_scan(self):
         # save the latest and earliest update times. We only do this if a

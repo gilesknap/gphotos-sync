@@ -84,7 +84,7 @@ class GoogleMedia(object):
                                          FileSize=self.size,
                                          Checksum=self.checksum,
                                          Description=self.description,
-                                         ModifyDate=self.date,
+                                         ModifyDate=self.modify_date,
                                          CreateDate=self.create_date,
                                          SyncDate=now_time, SymLink=None)
         return db.put_file(new_row)
@@ -171,7 +171,7 @@ class GoogleMedia(object):
         raise NotImplementedError
 
     @property
-    def date(self):
+    def modify_date(self):
         raise NotImplementedError
 
     @property

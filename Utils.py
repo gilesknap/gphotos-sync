@@ -1,10 +1,11 @@
 #!/usr/bin/python
 # coding: utf8
+from __future__ import division
 import ctypes
 import os
 import re
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 
 DATE_NORMALIZE = re.compile('(\d\d\d\d).(\d\d).(\d\d).(\d\d).(\d\d).(\d\d)')
 SHORT_DATE_NORMALIZE = re.compile('(\d\d\d\d).(\d\d).(\d\d)')
@@ -34,7 +35,7 @@ if os.name == 'nt':
         flags = 0
         if source is not None and os.path.isdir(source):
             flags = 1
-        print 'link', source, link_name
+        print('link {} {}'.format(source, link_name))
         if __CSL(link_name, source, flags) == 0:
             raise ctypes.WinError()
 
@@ -50,7 +51,7 @@ def retry(count, func, *arg, **k_arg):
         except Exception as e:
             last_e = e
             print("\nRETRYING due to {}".format(e))
-            print "Call was:", func, arg, k_arg
+            print("Call was:".format(func, arg, k_arg))
             time.sleep(.1)
     raise last_e
 
@@ -110,6 +111,11 @@ def minimum_date():
     else:
         # todo - google drive search does not like 1900 but strptime is OK
         return datetime.min.replace(year=1970)
+
+
+def to_timestamp(dt, epoch=datetime(1970,1,1)):
+    td = dt - epoch
+    return td.total_seconds()
 
 
 def string_to_date(date_string):

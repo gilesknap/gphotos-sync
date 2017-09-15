@@ -40,6 +40,13 @@ class GoogleDriveSync(object):
                   u"'video/') and trashed=false"
     AFTER_QUERY = u" and modifiedDate >= '{}T00:00:00'"
     BEFORE_QUERY = u" and modifiedDate <= '{}T00:00:00'"
+
+    # todo these are the queries I'd like to use but they are for drive api v3
+    # todo see what is needed in PyDrive to use v3
+    AFTER_QUERY2 = u" and (modifiedTime >= '{0}T00:00:00' or " \
+                   u"createdTime >= '{0}T00:00:00') "
+    BEFORE_QUERY2 = u" and (modifiedTime <= '{0}T00:00:00' or " \
+                    u"createdTime <= '{0}T00:00:00') "
     FILENAME_QUERY = u'title contains "{}" and trashed=false'
     PAGE_SIZE = 500
 
@@ -210,7 +217,11 @@ class GoogleDriveSync(object):
             f = self._googleDrive.CreateFile({'id': media.id})
             try:
                 Utils.retry(10, f.GetContentFile, temp_filename)
-
                 os.rename(temp_filename, media.local_full_path)
+                # set the access date to create date since there is nowhere
+                # else to put it on linux (and is useful for debugging)
+                os.utime(media.local_full_path,
+                         (Utils.to_timestamp(media.modify_date),
+                          Utils.to_timestamp(media.create_date)))
             except ApiRequestError:
                 print(u'DOWNLOAD FAILURE for {}'.format(media.local_full_path))
