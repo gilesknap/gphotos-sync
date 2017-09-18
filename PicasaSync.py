@@ -20,7 +20,8 @@ class PicasaSync(object):
     PHOTOS_QUERY = '/data/feed/api/user/default/albumid/{0}'
     BLOCK_SIZE = 500
     ALBUM_MAX = 10000  # picasa web api gets 500 response after 10000 files
-    HIDDEN_ALBUMS = ['Auto-Backup', 'Profile Photos']
+    # HIDDEN_ALBUMS = ['Auto-Backup', 'Profile Photos']
+    HIDDEN_ALBUMS = ['Profile Photos']
 
     def __init__(self, credentials, root_folder, db):
         self._root_folder = root_folder

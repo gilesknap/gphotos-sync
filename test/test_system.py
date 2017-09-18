@@ -7,11 +7,11 @@ from mock import patch
 
 from LocalData import LocalData
 from test_setup import SetupDbAndCredentials
+import Utils
+
 
 # todo add a test that reads in Sync Date from the Db
 # todo add code coverage tests
-# todo Fix initial setup of credentials file (' cannot be synbolic link ')
-
 
 # todo currently the system tests work against my personal google drive
 # todo will try to provide a standalone account and credentials for CI
@@ -19,7 +19,7 @@ class TestSystem(TestCase):
     def test_system_download_album(self):
         s = SetupDbAndCredentials()
         # get a small Album
-        args = ['--album', 'Bats',
+        args = ['--album', 'Bats!',
                 '--skip-drive']
         s.test_setup('system_download_album', args=args, trash_files=True)
         s.gp.start(s.parsed_args)
@@ -29,7 +29,7 @@ class TestSystem(TestCase):
         count = db.cur.fetchone()
         self.assertEqual(count[0], 2)
 
-        expected_file = os.path.join(s.root, 'albums', '2017', '0901 Bats')
+        expected_file = os.path.join(s.root, 'albums', '2017', '0901 Bats!')
         print(expected_file)
         self.assertEqual(True, os.path.exists(expected_file))
 
@@ -85,11 +85,11 @@ class TestSystem(TestCase):
 
         db.cur.execute("SELECT COUNT() FROM AlbumFiles;")
         count = db.cur.fetchone()
-        self.assertEqual(count[0], 22)
+        self.assertEqual(count[0], 20)
 
         db.cur.execute("SELECT COUNT() FROM Albums;")
         count = db.cur.fetchone()
-        self.assertEqual(count[0], 2)
+        self.assertEqual(count[0], 1)
 
     def test_system_index_picasa(self):
         s = SetupDbAndCredentials()
@@ -105,11 +105,11 @@ class TestSystem(TestCase):
 
         db.cur.execute("SELECT COUNT() FROM SyncFiles WHERE MediaType = 1;")
         count = db.cur.fetchone()
-        self.assertEqual(count[0], 22)
+        self.assertEqual(count[0], 20)
 
         db.cur.execute("SELECT COUNT() FROM AlbumFiles;")
         count = db.cur.fetchone()
-        self.assertEqual(count[0], 22)
+        self.assertEqual(count[0], 20)
 
     def test_system_index_movies(self):
         s = SetupDbAndCredentials()
@@ -124,11 +124,11 @@ class TestSystem(TestCase):
 
         db.cur.execute("SELECT COUNT() FROM SyncFiles WHERE MediaType = 1;")
         count = db.cur.fetchone()
-        self.assertEqual(count[0], 20)
+        self.assertEqual(count[0], 19)
 
         db.cur.execute("SELECT COUNT() FROM AlbumFiles;")
         count = db.cur.fetchone()
-        self.assertEqual(count[0], 20)
+        self.assertEqual(count[0], 19)
 
     def test_system_incremental(self):
         s = SetupDbAndCredentials()
@@ -170,7 +170,7 @@ class TestSystem(TestCase):
 
         # mock get album to pretend a full scan has occurred on 2020-08-28
         get_album.return_value = LocalData.AlbumsRow.make(
-            SyncDate='2020-08-28 00:00:00')
+            SyncDate=Utils.string_to_date('2020-08-28 00:00:00'))
         args = ['--end-date', '2000-01-01',
                 '--skip-drive',
                 '--index-only']
@@ -185,7 +185,7 @@ class TestSystem(TestCase):
 
         # mock get album to pretend a full scan has occurred on
         get_album.return_value = LocalData.AlbumsRow.make(
-            SyncDate='2017-08-28 00:00:00')
+            SyncDate=Utils.string_to_date('2017-08-28 00:00:00'))
         args = ['--skip-drive', '--end-date', '2017-09-12',
                 '--index-only', '--skip-video']
         s.test_setup('system_inc_picasa', args=args)
@@ -193,14 +193,14 @@ class TestSystem(TestCase):
 
         db.cur.execute("SELECT COUNT() FROM SyncFiles")
         count = db.cur.fetchone()
-        self.assertEqual(count[0], 82)
+        self.assertEqual(count[0], 80)
         db.cur.execute("SELECT COUNT() FROM Albums;")
         count = db.cur.fetchone()
-        self.assertEqual(count[0], 4)
+        self.assertEqual(count[0], 2)
 
     def test_picasa_delete(self):
         s = SetupDbAndCredentials()
-        args = ['--album', 'Bats',
+        args = ['--album', 'Bats!',
                 '--skip-drive', '--do-delete']
         s.test_setup('test_picasa_delete', args=args, trash_files=True)
         s.gp.start(s.parsed_args)
@@ -227,16 +227,16 @@ class TestSystem(TestCase):
         s.gp.start(s.parsed_args)
 
         pat = os.path.join(s.root, 'drive', '2017', '09', '*.*')
-        self.assertEqual(7, len(glob.glob(pat)))
+        self.assertEqual(6, len(glob.glob(pat)))
 
         s.test_setup('test_drive_delete', args=args)
         s.gp.drive_sync.check_for_removed()
-        self.assertEqual(7, len(glob.glob(pat)))
+        self.assertEqual(6, len(glob.glob(pat)))
 
         db = LocalData(s.root)
         db.cur.execute("DELETE FROM SyncFiles WHERE MediaType = 0 "
-                       "AND ModifyDate LIKE '2017-09-14_08%';")
+                       "AND Filename LIKE 'IMG_20170914_08%';")
         db.store()
 
         s.gp.drive_sync.check_for_removed()
-        self.assertEqual(3, len(glob.glob(pat)))
+        self.assertEqual(2, len(glob.glob(pat)))
