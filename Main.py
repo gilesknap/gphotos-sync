@@ -130,7 +130,7 @@ class GooglePhotosSyncMain:
                         self.picasa_sync.index_album_media()
                 if not args.index_only:
                     if not args.skip_picasa:
-                        self.picasa_sync.download_album_media()
+                        self.picasa_sync.download_picasa_media()
                     if not args.skip_drive:
                         self.drive_sync.download_drive_media()
                         if args.do_delete:

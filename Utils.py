@@ -1,6 +1,10 @@
 #!/usr/bin/python
 # coding: utf8
 from __future__ import division
+import pydrive.auth
+import httplib2
+import googleapiclient
+from apiclient.discovery import build
 import ctypes
 import os
 import re
@@ -175,3 +179,19 @@ def patch_http_client(oauth, client, request_orig2):
 
     client.http_client.request = new_request2
     return client
+
+
+def patch_pydrive():
+    def Authorize(self):
+        """Authorizes and builds service.
+
+        :raises: AuthenticationError
+        """
+        if self.http is None:
+            self.http = httplib2.Http(timeout=self.http_timeout)
+        if self.access_token_expired:
+            raise AuthenticationError('No valid credentials provided to authorize')
+        self.http = self.credentials.authorize(self.http)
+        self.service = build('drive', 'v3', http=self.http)
+
+    pydrive.auth.GoogleAuth.Authorize = Authorize

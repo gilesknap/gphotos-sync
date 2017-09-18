@@ -18,10 +18,10 @@ from PicasaMedia import PicasaMedia
 class PicasaSync(object):
     # noinspection SpellCheckingInspection
     PHOTOS_QUERY = '/data/feed/api/user/default/albumid/{0}'
-    BLOCK_SIZE = 500
+    BLOCK_SIZE = 1000
     ALBUM_MAX = 10000  # picasa web api gets 500 response after 10000 files
-    # HIDDEN_ALBUMS = ['Auto-Backup', 'Profile Photos']
-    HIDDEN_ALBUMS = ['Profile Photos']
+    HIDDEN_ALBUMS = [u'Auto Backup', u'Profile Photos']
+    FEED_URI = '/data/feed/api/user/default?kind={0}'
 
     def __init__(self, credentials, root_folder, db):
         self._root_folder = root_folder
@@ -46,7 +46,22 @@ class PicasaSync(object):
         self.quiet = False
         self.includeVideo = False
 
-    def download_album_media(self):
+    def index_picasa_media(self):
+        print('\nIndexing Picasa Files ...')
+        uri = self.FEED_URI.format('photo')
+        start_entry = 1
+        limit = PicasaSync.BLOCK_SIZE
+        while True:
+            photos = Utils.retry(10, self._gdata_client.GetFeed, uri,
+                                 limit=limit, start_index=start_entry)
+            count = len(photos.entry)
+            start_entry += count
+            print('indexing {0} photos ...'.format(count))
+
+            if count < 1:
+                break
+
+    def download_picasa_media(self):
         print('\nDownloading Picasa Only Files ...')
         # noinspection PyTypeChecker
         for media in DatabaseMedia.get_media_by_search(
@@ -136,7 +151,9 @@ class PicasaSync(object):
 
         dated_file_keys = self._match_by_date(media)
         if file_keys:
-            print(u'MATCH BY DATE on {} {}'.format(media.filename, media.modify_date))
+            print(
+                u'MATCH BY DATE on {} {}'.format(media.filename,
+                                                 media.modify_date))
             return dated_file_keys
 
         # not found anything or found >1 result
@@ -189,7 +206,8 @@ class PicasaSync(object):
         for p_album in albums.entry:
             album = AlbumMedia(p_album)
             log = u'  Album: {}, photos: {}, updated: {}, published: {}'.format(
-                album.filename, album.size, album.modify_date, album.create_date)
+                album.filename, album.size, album.modify_date,
+                album.create_date)
             album_log.write((log + u'\n').encode('utf8'))
 
             helper.setup_next_album(album)
@@ -270,8 +288,8 @@ class IndexAlbumHelper:
         self.total_photos += int(album.size)
 
     def skip_this_album(self):
-        if self.p.album_name and self.p.album_name != \
-                self.album.filename or self.album.filename in \
+        if (self.p.album_name and self.p.album_name !=
+            self.album.filename) or self.album.filename in \
                 PicasaSync.HIDDEN_ALBUMS:
             return True
         if self.p.endDate:
