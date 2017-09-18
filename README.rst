@@ -1,3 +1,5 @@
+https://travis-ci.org/gilesknap/gphotos-sync.svg?branch=rc1
+
 ==================
 Google Photos Sync
 ==================
