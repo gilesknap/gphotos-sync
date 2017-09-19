@@ -1,11 +1,4 @@
-.. |build_status| image:: https://travis-ci.org/gilesknap/gphotos-sync.svg?branch=rc1&style=flat
-    :target: https://travis-ci.org/dls-controls/pymalcolm
-    :alt: Build Status
-
-.. |coverage| image:: https://coveralls.io/repos/gilesknap/gphotos-sync.svg?branch=rc1&service=github
-    :target: https://coveralls.io/github/dls-controls/pymalcolm?branch=master
-    :alt: Test coverage
-
+[![Build Status](https://travis-ci.org/gilesknap/gphotos-sync.svg?branch=master)](https://travis-ci.org/gilesknap/gphotos-sync)
 
 ==================
 Google Photos Sync
