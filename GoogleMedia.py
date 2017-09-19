@@ -1,31 +1,40 @@
 #!/usr/bin/python
 # coding: utf8
 import os.path
-from enum import Enum
+import re
 from time import gmtime, strftime
 
+from enum import Enum
 
-class MediaType(Enum):
+from LocalData import LocalData
+
+
+class IntEnum(int, Enum):
+    pass
+
+
+# an enum for identifying the type of subclass during polymorphic use
+# only used for identifying the root folder the media should occupy locally
+class MediaType(IntEnum):
     DRIVE = 0
     PICASA = 1
-    ALBUM_LINK = 2
+    ALBUM = 2
     DATABASE = 3
     NONE = 4
 
 
+# folder names for each of rhe types of media specified above
 MediaFolder = [
-    'drive',
-    'picasa',
-    'albums',
-    '',
-    '']
+    u'drive',
+    u'picasa',
+    u'albums',
+    u'',
+    u'']
 
 
 # base class for media model classes
 class GoogleMedia(object):
     MEDIA_TYPE = MediaType.NONE
-    # todo below is nice and concise and works but the type checker fails
-    # noinspection PyTypeChecker
     MEDIA_FOLDER = MediaFolder[MEDIA_TYPE]
     TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
@@ -39,33 +48,58 @@ class GoogleMedia(object):
         self._duplicate_number = 0
         self.symlink = False  # Todo need to implement use of this
 
-    @classmethod
-    def validate_encoding(cls, string):
-        if isinstance(string, unicode):
-            return string
+    # regex for illegal characters in file names and database queries
+    fix_linux = re.compile(r'[/]|[\x00-\x1f]|\x7f|\x00')
+    fix_windows = re.compile(r'[<>:"/\\|?*]|[\x00-\x1f]|\x7f|\x00')
+    fix_windows_ending = re.compile('([ .]+$)')
+
+    def validate_encoding(self, string):
+        """
+        makes sure a string is valid for creating file names and converts to
+        unicode assuming utf8 encoding if necessary
+
+        :param (str) string: input string (or unicode string)
+        :return: (unicode): sanitized string
+        """
+        if string is None:  # a string of '' is valid
+            return None
+        elif isinstance(string, unicode):
+            s = string
         else:
-            return unicode(string, 'utf8')
+            s = unicode(string, 'utf8')
+
+        if os.name == 'nt':
+            s = self.fix_windows.sub('_', s)
+            s = self.fix_windows_ending.split(s)[0]
+        else:
+            s = self.fix_linux.sub('_', s)
+        return s
 
     def save_to_db(self, db):
         now_time = strftime(GoogleMedia.TIME_FORMAT, gmtime())
-        data_tuple = (
-            self.id, self.url, self.local_folder,
-            self.filename, self.orig_name, self.duplicate_number,
-            self.checksum, self.description, self.size,
-            self.date, self.create_date, now_time, self.media_type,
-            self.symlink
-        )
-        return db.put_file(data_tuple)
+        new_row = LocalData.SyncRow.make(RemoteId=self.id, Url=self.url,
+                                         Path=self.local_folder,
+                                         FileName=self.filename,
+                                         OrigFileName=self.orig_name,
+                                         DuplicateNo=self.duplicate_number,
+                                         MediaType=self.media_type,
+                                         FileSize=self.size,
+                                         Checksum=self.checksum,
+                                         Description=self.description,
+                                         ModifyDate=self.modify_date,
+                                         CreateDate=self.create_date,
+                                         SyncDate=now_time, SymLink=None)
+        return db.put_file(new_row)
 
     def is_indexed(self, db):
         # todo (this is brittle so fix it)
         # checking for index has the side effect of setting duplicate no
         # probably should do this immediately after subclass init
         num = db.file_duplicate_no(
-            self. id, self.local_folder, self.orig_name)
+            self.id, self.local_folder, self.orig_name)
         self.duplicate_number = num
         result = db.get_file_by_id(remote_id=self.id)
-        return result is not None
+        return result
 
     # Path to the local folder in which this media item is stored this
     # will include the media type folder which is one of 'drive' 'picasa' or
@@ -104,13 +138,14 @@ class GoogleMedia(object):
     def filename(self):
         if self.duplicate_number > 0:
             base, ext = os.path.splitext(os.path.basename(self.orig_name))
-            return "%(base)s (%(duplicate)d)%(ext)s" % {
+            filename = "%(base)s (%(duplicate)d)%(ext)s" % {
                 'base': base,
                 'ext': ext,
                 'duplicate': self.duplicate_number
             }
         else:
-            return self.orig_name
+            filename = self.orig_name
+        return self.validate_encoding(filename)
 
     # ----- Properties for override below -----
     @property
@@ -138,7 +173,7 @@ class GoogleMedia(object):
         raise NotImplementedError
 
     @property
-    def date(self):
+    def modify_date(self):
         raise NotImplementedError
 
     @property

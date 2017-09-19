@@ -1,11 +1,49 @@
 #!/usr/bin/python
 # coding: utf8
-import time
-from datetime import datetime
+from __future__ import division
+import pydrive.auth
+import httplib2
+import googleapiclient
+from apiclient.discovery import build
+import ctypes
+import os
 import re
+import time
+from datetime import datetime, timedelta
 
 DATE_NORMALIZE = re.compile('(\d\d\d\d).(\d\d).(\d\d).(\d\d).(\d\d).(\d\d)')
 SHORT_DATE_NORMALIZE = re.compile('(\d\d\d\d).(\d\d).(\d\d)')
+DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
+DATE_ONLY = "%Y-%m-%d"
+
+__CSL = None
+
+# patch os.symlink for windows
+# NOTE: your process will need the correct permissions to use this
+# run 'Local Security Policy' choose
+# "Local Policies->User Rights Assignment->create symbolic links" and add
+# the account that will run this process
+if os.name == 'nt':
+    # noinspection SpellCheckingInspection
+    def symlink(source, link_name):
+        """
+        symlink(source, link_name)
+        Creates a symbolic link pointing to source named link_name
+        """
+        global __CSL
+        if __CSL is None:
+            csl = ctypes.windll.kernel32.CreateSymbolicLinkW
+            csl.argtypes = (ctypes.c_wchar_p, ctypes.c_wchar_p, ctypes.c_uint32)
+            csl.restype = ctypes.c_ubyte
+            __CSL = csl
+        flags = 0
+        if source is not None and os.path.isdir(source):
+            flags = 1
+        print('link {} {}'.format(source, link_name))
+        if __CSL(link_name, source, flags) == 0:
+            raise ctypes.WinError()
+
+    os.symlink = symlink
 
 
 def retry(count, func, *arg, **k_arg):
@@ -17,7 +55,7 @@ def retry(count, func, *arg, **k_arg):
         except Exception as e:
             last_e = e
             print("\nRETRYING due to {}".format(e))
-            print "Call was:", func, arg, k_arg
+            print("Call was:".format(func, arg, k_arg))
             time.sleep(.1)
     raise last_e
 
@@ -45,6 +83,45 @@ def retry_i(count, iterator):
         yield last_item
 
 
+# incredibly windows cannot handle dates below 1970
+def safe_str_time(date_time, date_format):
+    if os.name == 'nt':
+        if date_time < minimum_date():
+            date_time = minimum_date()
+    return date_time.strftime(date_format)
+
+
+def date_to_string(date_t, date_only=False):
+    """
+    :param (int) date_only:
+    :param (datetime) date_t:
+    :return (str):
+    """
+    if date_only:
+        return date_t.strftime(DATE_ONLY)
+    else:
+        return date_t.strftime(DATE_FORMAT)
+
+
+def maximum_date():
+    return datetime.max
+
+
+def minimum_date():
+    # this is the minimum acceptable date for drive queries and surprisingly
+    # datetime.strptime on some platforms
+    if os.name == 'nt':
+        return datetime.min.replace(year=1970)
+    else:
+        # todo - google drive search does not like 1900 but strptime is OK
+        return datetime.min.replace(year=1970)
+
+
+def to_timestamp(dt, epoch=datetime(1970,1,1)):
+    td = dt - epoch
+    return td.total_seconds()
+
+
 def string_to_date(date_string):
     m = DATE_NORMALIZE.match(date_string)
     if m:
@@ -54,14 +131,19 @@ def string_to_date(date_string):
         if m:
             normalized = '{}-{}-{} 00:00:00'.format(*m.groups())
         else:
-            raise TypeError('date {} bad format'.format(date_string))
+            print('warning: time string {} illegal'.format(date_string))
+            return minimum_date()
 
-    return datetime.strptime(normalized, "%Y-%m-%d %H:%M:%S")
+    return datetime.strptime(normalized, DATE_FORMAT)
 
 
 def timestamp_to_date(time_secs, hour_offset=0):
-    date = datetime.fromtimestamp(
-        int(time_secs) / 1000 + 3600 * hour_offset)
+    try:
+        date = datetime.fromtimestamp(
+            int(time_secs) / 1000 + 3600 * hour_offset)
+    except ValueError:
+        print('warning: time stamp {} illegal'.format(time_secs))
+        date = minimum_date()
     return date
 
 
@@ -97,3 +179,19 @@ def patch_http_client(oauth, client, request_orig2):
 
     client.http_client.request = new_request2
     return client
+
+
+def patch_pydrive():
+    def Authorize(self):
+        """Authorizes and builds service.
+
+        :raises: AuthenticationError
+        """
+        if self.http is None:
+            self.http = httplib2.Http(timeout=self.http_timeout)
+        if self.access_token_expired:
+            raise AuthenticationError('No valid credentials provided to authorize')
+        self.http = self.credentials.authorize(self.http)
+        self.service = build('drive', 'v3', http=self.http)
+
+    pydrive.auth.GoogleAuth.Authorize = Authorize

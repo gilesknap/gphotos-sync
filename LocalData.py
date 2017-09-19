@@ -2,15 +2,79 @@
 # coding: utf8
 import os.path
 import sqlite3 as lite
-import shutil
+from datetime import datetime
 
-# NOTES on DB Schema changes
-# if adding or removing columns from SyncFiles Table Update:
-# (1) GoogleMedia.save_to_db
-# (2) LocalData.record_to_tuple
-# (3) LocalData.put_file
-# (4) DatabaseMedia constructor
-# ( add or remove column related properties from GoogleMedia (and subclasses) )
+import Utils
+
+
+# noinspection PyClassHasNoInit
+class DbRow:
+    """
+    base class for classes representing a row in the database to allow easy
+    generation of queries and an easy interface for callers e.g.
+        q = "INSERT INTO SyncFiles ({0}) VALUES ({1})".format(
+            self.SyncRow.query, self.SyncRow.params)
+        self.cur.execute(query, row.dict)
+    Attributes:
+        (dict) cols_def: keys are names of columns and items are their type
+        (str) query: a string to insert after a SELECT or INSERT INTO {db}
+        (str) params: a string to insert after VALUES in a sql INSERT or UPDATE
+        The remaining attributes are on a per subclass basis and are
+        generated from row_def by the db_row decorator
+    """
+    cols_def = None
+    columns = None
+    params = None
+    dict = None
+    empty = False
+
+    # allows us to do boolean checks on the row object and return True i
+    def __nonzero__(self):
+        return not self.empty
+
+    # factory method for delivering a DbRow object based on named arguments
+    @classmethod
+    def make(cls, **k_args):
+        new_row = cls()
+        for key, value in k_args.items():
+            if not hasattr(new_row, key):
+                raise ValueError("{0} does not have column {1}".format(
+                    cls, key))
+            setattr(new_row, key, value)
+        new_row.empty = False
+        return new_row
+
+
+def db_row(row_class):
+    """
+    class decorator function to create RowClass classes that represent a row
+    in the database
+
+    :param (DbRow) row_class: the class to decorate
+    :return (DbRow): the decorated class
+    """
+    row_class.columns = ','.join(row_class.cols_def.keys())
+    row_class.params = ':' + ',:'.join(row_class.cols_def.keys())
+
+    def init(self, result_row=None):
+        for col, col_type in self.cols_def.items():
+            if not result_row:
+                value = None
+            elif col_type == datetime:
+                value = Utils.string_to_date(result_row[col])
+            else:
+                value = result_row[col]
+            setattr(self, col, value)
+            if not result_row:
+                self.empty = True
+
+    @property
+    def to_dict(self):
+        return self.__dict__
+
+    row_class.__init__ = init
+    row_class.dict = to_dict
+    return row_class
 
 
 # todo currently store full path in SyncFiles.Path
@@ -22,7 +86,7 @@ class LocalData:
     DB_FILE_NAME = 'gphotos.sqlite'
     BLOCK_SIZE = 10000
     EMPTY_FILE_NAME = 'etc/gphotos_empty.sqlite'
-    VERSION = "1.4"
+    VERSION = 2.3
 
     class DuplicateDriveIdException(Exception):
         pass
@@ -32,10 +96,15 @@ class LocalData:
         if not os.path.exists(root_folder):
             os.makedirs(root_folder, 0o700)
         if not os.path.exists(self.file_name) or flush_index:
-            self.setup_new_db()
+            clean_db = True
+        else:
+            clean_db = False
         self.con = lite.connect(self.file_name)
         self.con.row_factory = lite.Row
         self.cur = self.con.cursor()
+        if clean_db:
+            self.clean_db()
+        self.check_schema_version()
 
     def __enter__(self):
         pass
@@ -45,51 +114,102 @@ class LocalData:
             self.store()
             self.con.close()
 
-    def setup_new_db(self):
-        # todo should just run gphotos_empty.sqlite
-        print("creating new database")
-        src_folder = os.path.dirname(os.path.abspath(__file__))
-        from_file = os.path.join(src_folder, LocalData.EMPTY_FILE_NAME)
-        shutil.copy(from_file, self.file_name)
+    # noinspection PyClassHasNoInit
+    @db_row
+    class SyncRow(DbRow):
+        """
+        generates an object with attributes for each of the columns in the
+        SyncFiles table
+        """
+        cols_def = {'RemoteId': str, 'Url': str, 'Path': str, 'FileName': str,
+                    'OrigFileName': str, 'DuplicateNo': int, 'MediaType': int,
+                    'FileSize': int, 'Checksum': str, 'Description': str,
+                    'ModifyDate': datetime, 'CreateDate': datetime,
+                    'SyncDate': datetime, 'SymLink': int}
 
-    def flush_all(self):
-        self.cur.executescript(
-            "DELETE FROM main.AlbumFiles;"
-            "DELETE FROM main.Albums;"
-            "DELETE from main.SyncFiles;"
-        )
+    # noinspection PyClassHasNoInit
+    @db_row
+    class AlbumsRow(DbRow):
+        """
+        generates an object with attributes for each of the columns in the
+        SyncFiles table
+        """
+        cols_def = {'AlbumId': str, 'AlbumName': str, 'StartDate': datetime,
+                    'EndDate': datetime, 'SyncDate': datetime}
 
-    @classmethod
-    def record_to_tuple(cls, rec):
-        if rec:
-            data_tuple = (
-                rec['RemoteId'], rec['Url'], rec['Path'], rec['FileName'],
-                rec['OrigFileName'], rec['DuplicateNo'], rec['ModifyDate'],
-                rec['Checksum'], rec['Description'], rec['FileSize'],
-                rec['CreateDate'], rec['SyncDate'], rec['MediaType'],
-                rec['SymLink']
-            )
-        else:
-            data_tuple = None
-        return data_tuple
+    def check_schema_version(self):
+        query = "SELECT  Version FROM  Globals WHERE Id IS 1"
+        self.cur.execute(query)
+        version = float(self.cur.fetchone()[0])
+        if version > self.VERSION:
+            raise ValueError('Database version is newer than gphotos-sync')
+        elif version < self.VERSION:
+            print('Database schema out of date. Flushing index ...')
+            self.con.commit()
+            self.con.close()
+            os.rename(self.file_name, self.file_name + '.previous')
+            self.con = lite.connect(self.file_name)
+            self.con.row_factory = lite.Row
+            self.cur = self.con.cursor()
+            self.clean_db()
 
-    def get_files_by_search(self, drive_id='%', media_type=None,
+    def clean_db(self):
+        sql_file = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                "etc", "gphotos_create.sql")
+        qry = open(sql_file, 'r').read()
+        self.cur.executescript(qry)
+
+    def set_scan_dates(self, picasa_last_date=None, drive_last_date=None):
+        if drive_last_date:
+            d = Utils.date_to_string(drive_last_date)
+            self.cur.execute('UPDATE Globals SET LastIndexDrive=? '
+                             'WHERE Id IS 1', (d,))
+        if picasa_last_date:
+            d = Utils.date_to_string(picasa_last_date)
+            self.cur.execute('UPDATE Globals SET LastIndexPicasa=? '
+                             'WHERE Id IS 1', (d,))
+
+    # noinspection PyTypeChecker
+    def get_scan_dates(self):
+        query = "SELECT LastIndexDrive, LastIndexPicasa " \
+                "FROM  Globals WHERE Id IS 1"
+        self.cur.execute(query)
+        res = self.cur.fetchone()
+
+        drive_last_date = picasa_last_date = None
+        d = res['LastIndexDrive']
+        p = res['LastIndexPicasa']
+        if d:
+            drive_last_date = Utils.string_to_date(d)
+        if p:
+            picasa_last_date = Utils.string_to_date(p)
+
+        return drive_last_date, picasa_last_date
+
+    def get_files_by_search(self, drive_id='%', media_type='%',
                             start_date=None, end_date=None):
-        if not media_type:
-            media_type = '%'
-        else:
-            media_type = int(media_type)
+        """
+        :param (str) drive_id:
+        :param (int) media_type:
+        :param (datetime) start_date:
+        :param (datetime) end_date:
+        :return (self.SyncRow):
+        """
         params = (drive_id, media_type)
         date_clauses = ''
         if start_date:
-            date_clauses += 'AND ModifyDate >= ?'
-            params += (start_date,)
+            # look for create date too since an photo recently uploaded will
+            # keep its original modified date (since that is in the exif)
+            # this clause is specifically to assist in incremental download
+            date_clauses += 'AND (ModifyDate >= ? OR CreateDate >= ?)'
+            params += (start_date, start_date)
         if end_date:
             date_clauses += 'AND ModifyDate <= ?'
             params += (end_date,)
 
-        query = "SELECT * FROM SyncFiles WHERE RemoteId LIKE ? AND " \
-                " MediaType LIKE ? {0};".format(date_clauses)
+        query = "SELECT {0} FROM SyncFiles WHERE RemoteId LIKE ? AND  " \
+                "MediaType LIKE ? {1};". \
+            format(self.SyncRow.columns, date_clauses)
 
         self.cur.execute(query, params)
         while True:
@@ -97,34 +217,31 @@ class LocalData:
             if not records:
                 break
             for record in records:
-                yield (self.record_to_tuple(record))
+                yield self.SyncRow(record)
 
     def get_file_by_path(self, folder, name):
-        self.cur.execute(
-            "SELECT * FROM SyncFiles WHERE Path = ? AND FileName = ?;",
-            (folder, name))
-        result = self.cur.fetchone()
-        if result:
-            return self.record_to_tuple(result)
-        else:
-            return None
+        """
+        :param (str) folder:
+        :param (str) name:
+        :return (self.SyncRow):
+        """
+        query = "SELECT {0} FROM SyncFiles WHERE Path = ?" \
+                " AND FileName = ?;".format(self.SyncRow.columns)
+        self.cur.execute(query, (folder, name))
+        record = self.cur.fetchone()
+        return self.SyncRow(record)
 
     def get_file_by_id(self, remote_id):
-        self.cur.execute(
-            "SELECT * FROM SyncFiles WHERE RemoteId = ?;", (remote_id,))
-        result = self.record_to_tuple(self.cur.fetchone())
-        return result
+        query = "SELECT {0} FROM SyncFiles WHERE RemoteId = ?;".format(
+            self.SyncRow.columns)
+        self.cur.execute(query, (remote_id,))
+        record = self.cur.fetchone()
+        return self.SyncRow(record)
 
-    def put_file(self, data_tuple):
-        # note this will overwrite existing entries with new data which fine
-        # but we hide the possibility of > 1 reference to a single file from
-        # > 1 Drive folders - again OK since it does represent the same file
-        # However we will only see the last reference in our local sync of
-        # the drive folders (this does not affect Google Photos sub-folders)
-        self.cur.execute(
-            "INSERT INTO SyncFiles "
-            "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ;",
-            (None,) + data_tuple)
+    def put_file(self, row):
+        query = "INSERT INTO SyncFiles ({0}) VALUES ({1})".format(
+            self.SyncRow.columns, self.SyncRow.params)
+        self.cur.execute(query, row.dict)
         return self.cur.lastrowid
 
     # noinspection PyTypeChecker
@@ -149,11 +266,17 @@ class LocalData:
             keys_dates = [(key['Id'], key['CreateDate']) for key in res]
             return keys_dates
 
-    def put_album(self, album_id, album_name, start_date, end_end=0):
-        self.cur.execute(
-            "INSERT OR REPLACE INTO Albums(AlbumId, AlbumName, StartDate, "
-            "EndDate) VALUES(?,?,?,?) ;",
-            (album_id, unicode(album_name, 'utf8'), start_date, end_end))
+    def get_album(self, album_id):
+        query = "SELECT {0} FROM Albums WHERE AlbumId = ?;".format(
+            self.AlbumsRow.columns)
+        self.cur.execute(query, (album_id,))
+        res = self.cur.fetchone()
+        return self.AlbumsRow(res)
+
+    def put_album(self, row):
+        query = "INSERT OR REPLACE INTO Albums ({0}) VALUES ({1}) ;".format(
+            row.columns, row.params)
+        self.cur.execute(query, row.dict)
         return self.cur.lastrowid
 
     def get_album_files(self, album_id='%'):
@@ -178,18 +301,18 @@ class LocalData:
     def get_drive_folder_path(self, folder_id):
         self.cur.execute(
             "SELECT Path FROM DriveFolders "
-            "WHERE FolderId is ?", (folder_id,))
+            "WHERE FolderId IS ?", (folder_id,))
         result = self.cur.fetchone()
         if result:
             return result['Path']
         else:
             return None
 
-    def put_drive_folder(self, drive_id, parent_id, date):
+    def put_drive_folder(self, drive_id, parent_id, folder_name):
         self.cur.execute(
             "INSERT OR REPLACE INTO "
             "DriveFolders(FolderId, ParentId, FolderName)"
-            " VALUES(?,?,?) ;", (drive_id, parent_id, date))
+            " VALUES(?,?,?) ;", (drive_id, parent_id, folder_name))
 
     # noinspection PyTypeChecker
     def update_drive_folder_path(self, path, parent_id):
@@ -211,10 +334,6 @@ class LocalData:
         self.con.commit()
         print("Database Saved.\n")
 
-    # todo - keeping origFileName and FileName is bobbins
-    # we only need original filename and duplicate number to determine
-    # what the local filename is so that is how it should be
-    # this refactor should be combined with making paths stored in db relative
     def file_duplicate_no(self, file_id, path, name):
         self.cur.execute(
             "SELECT DuplicateNo FROM SyncFiles WHERE RemoteId = ?;", (file_id,))

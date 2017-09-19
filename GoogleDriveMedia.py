@@ -1,9 +1,9 @@
 #!/usr/bin/python
 # coding: utf8
 import re
-from datetime import datetime
-from GoogleMedia import GoogleMedia, MediaType, MediaFolder
+
 import Utils
+from GoogleMedia import GoogleMedia, MediaType, MediaFolder
 
 
 class GoogleDriveMedia(GoogleMedia):
@@ -57,7 +57,7 @@ class GoogleDriveMedia(GoogleMedia):
     @property
     def description(self):
         try:
-            return GoogleMedia.validate_encoding(
+            return self.validate_encoding(
                 self.__drive_file["description"])
         except KeyError:
             return ''
@@ -68,16 +68,15 @@ class GoogleDriveMedia(GoogleMedia):
             name = self.__drive_file["originalFilename"]
         except KeyError:
             name = self.__drive_file["title"]
-        return GoogleMedia.validate_encoding(name)
+        return self.validate_encoding(name)
 
     @property
     def create_date(self):
-        date = datetime.strptime(self.__drive_file["createdDate"].upper()[:-4],
-                                 "%Y-%m-%dT%H:%M:%S.")
+        date = Utils.string_to_date(self.__drive_file["createdDate"])
         return date
 
     @property
-    def date(self):
+    def modify_date(self):
         try:
             exif_date = self.get_exif_value("date")
             photo_date = Utils.string_to_date(exif_date)
@@ -88,11 +87,11 @@ class GoogleDriveMedia(GoogleMedia):
 
     @property
     def mime_type(self):
-        return self.__drive_file.metadata[u'mimeType']
+        return self.__drive_file.metadata['mimeType']
 
     @property
     def url(self):
-        return self.__drive_file.metadata[u'webContentLink']
+        return self.__drive_file.metadata['webContentLink']
 
     # ----- Derived class custom properties below -----
     @property
@@ -121,3 +120,8 @@ class GoogleDriveMedia(GoogleMedia):
                 camera_model = None
 
         return camera_model
+
+    @property
+    def modified_date(self):
+        date = Utils.string_to_date(self.__drive_file["modifiedDate"])
+        return date

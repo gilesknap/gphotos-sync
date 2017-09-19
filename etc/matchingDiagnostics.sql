@@ -12,7 +12,7 @@
 
 -- TODO trying to get the 253 down by adding date matching with timezone slip
 -- TODO  tests - running this test on 4/9/17
--- TODO  at least 2 files suburu?.jpg are in drive and should get a match
+-- TODO  at least 2 files subaru?.jpg are in drive and should get a match
 -- but most are genuinely missing
 -- TODO also need to reinstate 'Auto Backup' and see if there are any other
 -- files missing

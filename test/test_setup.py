@@ -1,10 +1,29 @@
-from Main import GooglePhotosSyncMain
 import os.path
 import shutil
+
+from appdirs import AppDirs
+
+import Main
+from Main import GooglePhotosSyncMain
 
 
 class SetupDbAndCredentials:
     def __init__(self):
+        # set up the test account credentials
+        Main.APP_NAME = 'gphotos-sync-test'
+        app_dirs = AppDirs(Main.APP_NAME)
+        test_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                   'test_credentials')
+        if not os.path.exists(app_dirs.user_data_dir):
+            os.makedirs(app_dirs.user_data_dir)
+        if not os.path.exists(app_dirs.user_config_dir):
+            os.makedirs(app_dirs.user_config_dir)
+
+        credentials_file = os.path.join(test_folder, "credentials.json")
+        secret_file = os.path.join(test_folder, "client_secret.json")
+        shutil.copy(secret_file, app_dirs.user_config_dir)
+        shutil.copy(credentials_file, app_dirs.user_data_dir)
+
         self.gp = GooglePhotosSyncMain()
         self.parsed_args = None
         self.db_file = None
@@ -12,7 +31,7 @@ class SetupDbAndCredentials:
 
     def test_setup(self, test_name, init_db=False, args=None, trash_db=False,
                    trash_files=False):
-        self.root = '/tmp/gpTests/{}'.format(test_name)
+        self.root = u'/tmp/gpTests/{}'.format(test_name)
 
         self.db_file = os.path.join(self.root, 'gphotos.sqlite')
         if init_db:

@@ -1,11 +1,12 @@
-from unittest import TestCase
-from test_setup import SetupDbAndCredentials
-from LocalData import LocalData
-import os
 import glob
+import os
+from unittest import TestCase
+
+from LocalData import LocalData
+from test_setup import SetupDbAndCredentials
 
 
-class SystemMatch(TestCase):
+class TestSystemMatch(TestCase):
 
     def test_system_match(self):
         s = SetupDbAndCredentials()
@@ -14,7 +15,7 @@ class SystemMatch(TestCase):
         args = [
             '--drive-file', 'subaru',
             '--all-drive',
-            '--skip-picasa'
+            '--skip-picasa', '--skip-video'
         ]
         s.test_setup('test_system_match', args=args, trash_files=True)
         s.gp.start(s.parsed_args)
@@ -37,4 +38,5 @@ class SystemMatch(TestCase):
         # you are in the photos 'space'. I may have dropped this folder into
         # google photos using drive web but I think I uploaded them using
         # google photos uploader in which case this is odd.
-        # todo Will try re-upload in the new drive backup tool
+        # tried re-upload in the new drive backup tool
+        # after re-upload there are 4 subaru files

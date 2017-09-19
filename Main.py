@@ -3,30 +3,13 @@
 import argparse
 import os.path
 import traceback
-from appdirs import AppDirs
 
+from appdirs import AppDirs
 from GoogleDriveSync import GoogleDriveSync
-from PicasaSync import PicasaSync
 from LocalData import LocalData
+from PicasaSync import PicasaSync
 
 APP_NAME = "gphotos-sync"
-
-
-# todo todo
-# switch all string formatting to .format
-# add logger instead of prints
-# handle deletes
-# handle files switching between picasa and drive (because the matching logic
-#   was changed or because of partial indexing via filters)
-# handle files moving between albums and albums changing date
-#   because I need to refine the album scan and make comparisons on results
-# verify matching logic and investigate date based matching effectiveness
-# switch db content to relative paths
-# write tests to cover all cmd line args combinations
-# attempt to put in continuous integration on github (includes getting auth
-#   working to a test google photos account)
-# extract my old filesystem folders from the exif metadata
-# doc stings everywhere
 
 
 class GooglePhotosSyncMain:
@@ -42,9 +25,9 @@ class GooglePhotosSyncMain:
         action='store_true',
         help="quiet (no output)")
     parser.add_argument(
-        "--include-video",
+        "--skip-video",
         action='store_true',
-        help="include video types in sync")
+        help="skip video types in sync")
     parser.add_argument(
         "root_folder",
         help="root of the local folders to download into")
@@ -65,9 +48,9 @@ class GooglePhotosSyncMain:
         action='store_true',
         help="Only build the index of files in .gphotos.db - no downloads")
     parser.add_argument(
-        "--no-deletion",
+        "--do-delete",
         action='store_true',
-        help="Keep local copies of files that were deleted from drive/picasa")
+        help="remove local copies of files that were deleted from drive/picasa")
     parser.add_argument(
         "--skip-index",
         action='store_true',
@@ -115,6 +98,9 @@ class GooglePhotosSyncMain:
         if args.new_token:
             os.remove(credentials_file)
 
+        if not os.path.exists(app_dirs.user_data_dir):
+            os.makedirs(app_dirs.user_data_dir)
+
         self.drive_sync = GoogleDriveSync(args.root_folder, self.data_store,
                                           client_secret_file=secret_file,
                                           credentials_json=credentials_file)
@@ -127,10 +113,10 @@ class GooglePhotosSyncMain:
         self.drive_sync.startDate = self.picasa_sync.startDate = args.start_date
         self.drive_sync.endDate = self.picasa_sync.endDate = args.end_date
         self.drive_sync.includeVideo = self.picasa_sync.includeVideo = \
-            args.include_video
+            not args.skip_video
         self.drive_sync.driveFileName = args.drive_file
         self.drive_sync.allDrive = args.all_drive
-        self.picasa_sync.album = args.album
+        self.picasa_sync.album_name = args.album
 
     def start(self, args):
         with self.data_store:
@@ -140,24 +126,25 @@ class GooglePhotosSyncMain:
                         self.drive_sync.scan_folder_hierarchy()
                         self.drive_sync.index_drive_media()
                     if not args.skip_picasa:
-                        self.picasa_sync.index_album_media(
-                            album_name=args.album)
+                        self.picasa_sync.index_album_media()
                 if not args.index_only:
                     if not args.skip_picasa:
-                        self.picasa_sync.download_album_media()
+                        self.picasa_sync.download_picasa_media()
                     if not args.skip_drive:
                         self.drive_sync.download_drive_media()
+                        if args.do_delete:
+                            self.drive_sync.check_for_removed()
                     if not args.skip_picasa:
                         self.picasa_sync.create_album_content_links()
-                    if not args.no_deletion:
-                        self.drive_sync.check_for_removed()
+                        if args.do_delete:
+                            self.picasa_sync.check_for_removed()
 
             except KeyboardInterrupt:
                 print("\nUser cancelled download")
                 # save the traceback so we can diagnose lockups
                 except_file_name = os.path.join(
                     os.path.dirname(os.path.abspath(__file__)),
-                    "etc/.gphoto-terminated")
+                    "etc", ".gphoto-terminated")
                 with open(except_file_name, "w") as text_file:
                     text_file.write(traceback.format_exc())
             finally:

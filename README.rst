@@ -1,7 +1,57 @@
-====================
- Google Photos Sync
-====================
+.. |build_status| image:: https://travis-ci.org/gilesknap/gphotos-sync.svg?branch=rc1&style=flat
+    :target: https://travis-ci.org/dls-controls/pymalcolm
+    :alt: Build Status
 
+.. |coverage| image:: https://coveralls.io/repos/gilesknap/gphotos-sync.svg?branch=rc1&service=github
+    :target: https://coveralls.io/github/dls-controls/pymalcolm?branch=master
+    :alt: Test coverage
+
+
+==================
+Google Photos Sync
+==================
+
+Quick Warning
+"""""""""""""
+This software does work as advertised but currently has the
+following limitations:
+
+* If you edit a photo using Google Photos the modified version pf the photo will not be synchronised
+* if you edit a photo in Google Drive it will be synchronized but you wont see the change in Google Photos
+* The date filtering features are not yet timezone aware and only work on modified date (not photo taken date)
+* if you have moved or deleted photos they will not be deleted locally unless you specify --flush-index --do-delete
+* if you are using the new 'Backup and Sync for Google Photos and Google Drive' I suggest using --all-drive option as this will preserve the folder structure of photos uploaded from your Windows PCs
+* shared albums will not be synchronized
+
+The intention of this project was to be able to back up everything
+in my 100,000 photo collection in Google Photos. I assumed that all I needed was
+a backup of the Google Photos folder in Drive and then get the album info
+from the picasa API. However this is not adequate for the following reasons:-
+
+* Your photo files in drive will diverge from those in Google Photos itself
+* edits in google photos are not reflected in the drive folder
+* edits in the drive folder are not reflected in Google Photos
+* you are at liberty to delete subfolders of Drive's Google Photos folder and this does not affect Google Photos itself
+* all 'creations' that Google Photos makes are not seen in Drive (Movies, Animations, Panoramas etc.)
+* about 0.01% of my Google Photos photos are not seen in Drive for no apparent reason
+
+A good discussion on the issue is here https://productforums.google.com/forum/#!topic/photos/8FWyZhdIFNU
+
+I am going to try and resolve the above but it will most likely involve
+downloading two copies of a photo which has diverged between Google Photos and
+Drive. The shared folders issue cannot be fixed at all.
+
+I persist with this project because it looks likely that the picasa API will go
+away completely at some point and hopefully be replaced an alternative that integrates well with
+Drive. Otherwise I might as well capitulate and just use the old mostly
+deprecated picasa API.
+
+TODO: to avoid all 'Drive confusion' I have provided the --skip-drive option.
+BUT at present this only accesses photos that are referenced in an album. I will
+fix this soon.
+
+Description
+===========
 Google Photos Sync downloads your Google Photos to the local file system.
 It attempts to backup all the photos as stored in Google Drive, but also
 the album information and additional Google Photos 'Creations' (animations, panoramas, movies, effects and collages) that do not appear in Drive. The only API for accessing the latter two is picasa web and this is now severely crippled. Hopefully Google intends to replace it with something like native photos support in Google Drive.
@@ -27,28 +77,23 @@ In the root folder a sqlite database holds an index of all media and albums. Use
 This has been tested against my photo store of nearly 100,000 photos.
 
 Primary Goals
---------------
+-------------
 * provide a file system backup so it is possible to monitor for accidental deletions (or deletions caused by bugs) in very large photo collections
 * make it possible to switch to a different photo management system in future if this ever becomes desirable/necessary
 * use the Google Drive API as much as possible and the deprecated picasa web API as little as possible.
-  * picasa is only used to get lists of album contents and to download items that are missing from Google Drive.
+  (picasa is only used to get lists of album contents and to download items that are missing from Google Drive)
 
 Known Issues
 ------------
 * Shared folders are not seen, this is a limitation of picasa web api and is not likely to be fixed
-* Albums of over 10,000 photos are truncated at 10,000. This is again due to a
-limitation of the web api. Unfortunately this means you will not automatically
-retrieve all google photos creations if you have > 10,0000 photos. I suggest
-creating a 'Creations' album and copying all creations into it, this will then
-sync (and any future creations will be handled by the global 'Auto Backup' album
-* Todo - handle deletes and moves
-* Todo - remember last synced date and default to incremental backup
+* Albums of over 10,000 photos are truncated at 10,000. This is again due to a limitation of the web api. Unfortunately this means you will not automatically retrieve all google photos creations if you have > 10,0000 photos. I suggest creating a 'Creations' album and copying all creations into it, this will then sync (and any future creations will be handled by the global 'Auto Backup' album
+* Todo - handle deletes and moves -DONE (but requires --flush-index)
+* Todo - remember last synced date and default to incremental backup - DONE
 * Todo make python 3 compatible
 
 Install and configure
 ---------------------
-
-Just run ``python setup.py`` from the source directory to install it in your system.
+ run ``python setup.py`` from the source directory to install it in your system.
 
 In order to work, ``gphotos-sync`` first needs a valid client id linked to a project
 authorized to use the Google Drive API. It is not provided in the distribution.
@@ -61,7 +106,7 @@ To do so:
 
 * Create a Client ID by following the `setting up oauth 2.0 procedure`_ with application type set to `Other`,
 
-* Once the client ID is created, download it as ``client_secret.json`` and save it under the application 
+* Once the client ID is created, download it as ``client_secret.json`` and save it under the application
   configuration directory:
 
   - ``~/Library/Application Support/gphotos-sync/`` under Mac OS X,
@@ -80,15 +125,16 @@ Once the script is configured, you are now ready to use it using the simple foll
 
     gphotos-sync TARGET_DIRECTORY
 
-The first time, it will ask you to go to an url and copy back the authorization code in order
-to authorize the client to access your Google Photos through Google Drive.
+The first time, it will send your browser to an authorization page in order
+to authorize the client to access your Google Photos and Google Drive.
 
 Description of the cmdline parameters below:-
 
-usage: gphotos-sync [-h] [--quiet] [--include-video] [--start-date START_DATE]
+usage: gphotos-sync [-h] [--quiet] [--skip-video] [--start-date START_DATE]
                     [--end-date END_DATE] [--new-token] [--index-only]
-                    [--picasa-only] [--all-drive] [--album ALBUM]
-                    [--drive-file DRIVE_FILE]
+                    [--do-delete] [--skip-index] [--skip-picasa]
+                    [--skip-drive] [--flush-index] [--all-drive]
+                    [--album ALBUM] [--drive-file DRIVE_FILE]
                     root_folder
 
 Google Photos download tool
@@ -99,15 +145,21 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   --quiet               quiet (no output)
-  --include-video       include video types in sync
+  --skip-video          skip video types in sync
   --start-date START_DATE
                         Set the earliest date of files to sync
   --end-date END_DATE   Set the latest date of files to sync
   --new-token           Request new token
   --index-only          Only build the index of files in .gphotos.db - no
                         downloads
-  --picasa-only         skip drive scan, (assume that the db is up to date
+  --do-delete           remove local copies of files that were deleted from
+                        drive/picasa
+  --skip-index          Use index from previous run and start download
+                        immediately
+  --skip-picasa         skip picasa scan, albums will not be scanned
+  --skip-drive          skip drive scan, (assume that the db is up to date
                         with drive files - for testing)
+  --flush-index         delete the index db, re-scan everything
   --all-drive           when True all folders in drive are scanned for media.
                         when False only files in the Google Photos folder are
                         scanned. If you do not use this option then you may

@@ -1,0 +1,16 @@
+language: python
+rvm:
+ - 2.7.3
+
+install:
+  - pip install -r requirements.txt
+  - pip install coveralls
+  - pip install pytest
+
+# command to run tests
+script:
+ - pytest
+
+# submit coverage
+after_script:
+ - coveralls

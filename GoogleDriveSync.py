@@ -1,18 +1,16 @@
 #!/usr/bin/python
 # coding: utf8
-import io
 import os.path
 
-# noinspection PyPackageRequirements
-from googleapiclient import http
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
+from pydrive.files import ApiRequestError
 
-from GoogleDriveMedia import GoogleDriveMedia
-from DatabaseMedia import DatabaseMedia
-from GoogleMedia import MediaType
-from ProgressHandler import ProgressHandler
 import Utils
+from DatabaseMedia import DatabaseMedia
+from GoogleDriveMedia import GoogleDriveMedia
+from GoogleMedia import MediaType
+from LocalData import LocalData
 
 
 class NoGooglePhotosFolderError(Exception):
@@ -21,7 +19,7 @@ class NoGooglePhotosFolderError(Exception):
 
 # todo create local albums from my original uploads via title encoding
 
-# todo keep in mind that no 'Creations' of gphotos are referenced unless
+# NOTE: keep in mind that no 'Creations' of gphotos are referenced unless
 #  they appear in an album.
 # one workaround is to create an album and use google photos to drop all
 # creations in it. This would need redoing every so often but may be the only
@@ -34,19 +32,34 @@ class NoGooglePhotosFolderError(Exception):
 
 class GoogleDriveSync(object):
     GOOGLE_PHOTO_FOLDER_QUERY = (
-        'title = "Google Photos" and "root" in parents and trashed=false')
-    FOLDER_QUERY = ('title = "%s" and "%s" in parents and trashed=false'
-                    ' and mimeType="application/vnd.google-apps.folder"')
-    PHOTO_QUERY = "mimeType contains 'image/'"
-    VIDEO_QUERY = "(mimeType contains 'image/' or mimeType contains 'video/')"
-    AFTER_QUERY = " and modifiedDate >= '{}T00:00:00'"
-    BEFORE_QUERY = " and modifiedDate <= '{}T00:00:00'"
-    FILENAME_QUERY = 'title contains "{}"'
+        u'title = "Google Photos" and "root" in parents and trashed=false')
+    FOLDER_QUERY = u'title = "%s" and "%s" in parents and trashed=false and ' \
+                   u'mimeType="application/vnd.google-apps.folder"'
+    PHOTO_QUERY = u"mimeType contains 'image/' and trashed=false"
+    VIDEO_QUERY = u"(mimeType contains 'image/' or mimeType contains " \
+                  u"'video/') and trashed=false"
+
+    AFTER_QUERY = u" and modifiedDate >= '{}T00:00:00'"
+    BEFORE_QUERY = u" and modifiedDate <= '{}T00:00:00'"
+
+    # todo these are the queries I'd like to use but they are for drive api v3
+    # todo see what is needed in PyDrive to use v3
+    AFTER_QUERY2 = u" and (modifiedTime >= '{0}T00:00:00' or " \
+                   u"createdTime >= '{0}T00:00:00') "
+    BEFORE_QUERY2 = u" and (modifiedTime <= '{0}T00:00:00' or " \
+                    u"createdTime <= '{0}T00:00:00') "
+    FILENAME_QUERY = u'title contains "{}" and trashed=false'
     PAGE_SIZE = 500
 
     def __init__(self, root_folder, db,
                  client_secret_file="client_secret.json",
                  credentials_json="credentials.json"):
+        """
+        :param (str) root_folder:
+        :param (LocalData) db:
+        :param (str) client_secret_file:
+        :param (str) credentials_json:
+        """
         self._db = db
         self._root_folder = root_folder
 
@@ -56,9 +69,9 @@ class GoogleDriveSync(object):
         self._g_auth.settings["save_credentials"] = True
         self._g_auth.settings["save_credentials_backend"] = "file"
         self._g_auth.settings["get_refresh_token"] = True
-        self._g_auth.CommandLineAuth()
+        self._g_auth.LocalWebserverAuth()
         self._googleDrive = GoogleDrive(self._g_auth)
-
+        self._latest_download = Utils.minimum_date()
         # public members to be set after init
         self.folderPaths = {}
         self.startDate = None
@@ -71,6 +84,10 @@ class GoogleDriveSync(object):
     @property
     def credentials(self):
         return self._g_auth.credentials
+
+    @property
+    def latest_download(self):
+        return self._latest_download
 
     def scan_folder_hierarchy(self):
         print('\nIndexing Drive Folders ...')
@@ -105,6 +122,11 @@ class GoogleDriveSync(object):
         print('Resolving paths ...')
         self.folderPaths[root_id] = ''
         self.recurse_paths('', root_id)
+        if len(self.folderPaths) == 1:
+            raise ValueError(
+                "No folders found. Please enable Google Photos in Google "
+                "drive (see https://support.google.com/photos/answer/6156103"
+                "). Or use one of the options --all-drive --skip-drive.")
         print('Drive Folders scanned.\n')
 
     def recurse_paths(self, path, folder_id):
@@ -123,11 +145,11 @@ class GoogleDriveSync(object):
         top_dir = os.path.join(self._root_folder, GoogleDriveMedia.MEDIA_FOLDER)
         for (dir_name, _, file_names) in os.walk(top_dir):
             for file_name in file_names:
-                file_id = self._db.get_file_by_path(dir_name, file_name)
-                if not file_id:
+                file_row = self._db.get_file_by_path(dir_name, file_name)
+                if not file_row:
                     name = os.path.join(dir_name, file_name)
                     os.remove(name)
-                    print("{} deleted".format(name))
+                    print(u"{} deleted".format(name))
 
     def index_drive_media(self):
         print('\nIndexing Drive Files ...')
@@ -141,6 +163,15 @@ class GoogleDriveSync(object):
             q = self.FILENAME_QUERY.format(self.driveFileName)
         if self.startDate:
             q += self.AFTER_QUERY.format(self.startDate)
+        else:
+            # setup for incremental backup
+            if not self.driveFileName:
+                (self._latest_download, _) = self._db.get_scan_dates()
+                if not self._latest_download:
+                    self._latest_download = Utils.minimum_date()
+                if self._latest_download:
+                    s = Utils.date_to_string(self._latest_download, True)
+                    q += self.AFTER_QUERY.format(s)
         if self.endDate:
             q += self.BEFORE_QUERY.format(self.endDate)
 
@@ -154,15 +185,23 @@ class GoogleDriveSync(object):
 
         results = self._googleDrive.ListFile(query_params)
         n = 0
-        for page_results in Utils.retry_i(5, results):
-            for drive_file in page_results:
-                media = GoogleDriveMedia(self.folderPaths,
-                                         self._root_folder, drive_file)
-                if not media.is_indexed(self._db):
-                    n += 1
-                    if not self.quiet:
-                        print(u"Added {} {}".format(n, media.local_full_path))
-                        media.save_to_db(self._db)
+        try:
+            for page_results in Utils.retry_i(5, results):
+                for drive_file in page_results:
+                    media = GoogleDriveMedia(self.folderPaths,
+                                             self._root_folder, drive_file)
+                    if not media.is_indexed(self._db):
+                        n += 1
+                        if not self.quiet:
+                            print(u"Added {} {}".format(n,
+                                                        media.local_full_path))
+                            media.save_to_db(self._db)
+                        if media.modified_date > self._latest_download:
+                            self._latest_download = media.modified_date
+        finally:
+            # store latest date for incremental backup only if scanning all
+            if not (self.driveFileName or self.startDate):
+                self._db.set_scan_dates(drive_last_date=self._latest_download)
 
     # todo set file dates as per downloaded media
     def download_drive_media(self):
@@ -178,23 +217,15 @@ class GoogleDriveSync(object):
                 os.makedirs(media.local_folder)
             temp_filename = os.path.join(self._root_folder, '.temp-photo')
 
-            if self.quiet:
-                progress_handler = None
-            else:
-                progress_handler = ProgressHandler(media)
-
-            with io.open(temp_filename, 'bw') as target_file:
-                request = self._g_auth.service.files().get_media(
-                    fileId=media.id)
-                download_request = http.MediaIoBaseDownload(target_file,
-                                                            request)
-
-                done = False
-                while not done:
-                    download_status, done = \
-                        Utils.retry(10, download_request.next_chunk)
-                    if progress_handler is not None:
-                        progress_handler.update_progress(
-                            download_status)
-
+            print (u'downloading {} ...'.format(media.local_full_path))
+            f = self._googleDrive.CreateFile({'id': media.id})
+            try:
+                Utils.retry(10, f.GetContentFile, temp_filename)
                 os.rename(temp_filename, media.local_full_path)
+                # set the access date to create date since there is nowhere
+                # else to put it on linux (and is useful for debugging)
+                os.utime(media.local_full_path,
+                         (Utils.to_timestamp(media.modify_date),
+                          Utils.to_timestamp(media.create_date)))
+            except ApiRequestError:
+                print(u'DOWNLOAD FAILURE for {}'.format(media.local_full_path))

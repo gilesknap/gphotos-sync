@@ -1,8 +1,10 @@
 #!/usr/bin/python
 # coding: utf8
-from GoogleMedia import GoogleMedia, MediaType, MediaFolder
-import Utils
 import mimetypes
+import os
+
+import Utils
+from GoogleMedia import GoogleMedia, MediaType, MediaFolder
 
 
 class PicasaMedia(GoogleMedia):
@@ -15,7 +17,9 @@ class PicasaMedia(GoogleMedia):
         self._relative_folder = self.define_path()
 
     def define_path(self):
-        return self.date.strftime('%Y/%m')
+        year = Utils.safe_str_time(self.modify_date, '%Y')
+        month = Utils.safe_str_time(self.modify_date, '%m')
+        return os.path.join(year, month)
 
     # ----- override Properties below -----
     @property
@@ -43,19 +47,19 @@ class PicasaMedia(GoogleMedia):
     @property
     def description(self):
         # NOTE: picasa API returns empty description field, use title
-        return GoogleMedia.validate_encoding(
+        return self.validate_encoding(
             self.__photo_xml.title.text)
 
     @property
     def orig_name(self):
-        return GoogleMedia.validate_encoding(self.__photo_xml.title.text)
+        return self.validate_encoding(self.__photo_xml.title.text)
 
     @property
     def create_date(self):
         return Utils.string_to_date(self.__photo_xml.published.text)
 
     @property
-    def date(self):
+    def modify_date(self):
         try:
             return Utils.timestamp_to_date(self.__photo_xml.exif.time.text, 0)
         except AttributeError:
