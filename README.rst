@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/gilesknap/gphotos-sync.svg?branch=master)](https://travis-ci.org/gilesknap/gphotos-sync)
+|build_status| |coverage|
 
 ==================
 Google Photos Sync
@@ -163,3 +163,14 @@ optional arguments:
   --album ALBUM         only index a single album (for testing)
   --drive-file DRIVE_FILE
                         only index a single drive file (for testing)
+                        
+
+.. |build_status| image:: https://travis-ci.org/gilesknap/gphotos-sync.svg?style=flat
+    :target: https://travis-ci.org/gilesknap/gphotos-sync
+    :alt: Build Status
+
+.. |coverage| image:: https://coveralls.io/repos/gilesknap/gphotos-sync/badge.svg?branch=master&service=github
+    :target: https://coveralls.io/github/gilesknap/gphotos-sync?branch=master
+    :alt: Test coverage
+                     
+
