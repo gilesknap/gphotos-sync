@@ -9,9 +9,13 @@ from enum import Enum
 from LocalData import LocalData
 
 
+class IntEnum(int, Enum):
+    pass
+
+
 # an enum for identifying the type of subclass during polymorphic use
 # only used for identifying the root folder the media should occupy locally
-class MediaType(Enum):
+class MediaType(IntEnum):
     DRIVE = 0
     PICASA = 1
     ALBUM = 2
@@ -31,8 +35,6 @@ MediaFolder = [
 # base class for media model classes
 class GoogleMedia(object):
     MEDIA_TYPE = MediaType.NONE
-    # todo below is nice and concise and works but the type checker fails
-    # noinspection PyTypeChecker
     MEDIA_FOLDER = MediaFolder[MEDIA_TYPE]
     TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
