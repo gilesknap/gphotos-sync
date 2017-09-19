@@ -1,6 +1,68 @@
 CHANGES
 =======
 
+* make media type IntEnum to fix travis
+* added test credentials for travis testing
+* add travis header to readme
+* configure travis
+* tests now run against gphotos.sync.test acount
+* added travis
+* fix tests to match changes to the test data
+* Put in fix/check for the issues reported by arkpoah
+* added interactive login via broswer
+* added setting of modified date on local files to match remote
+* fix mocking of AlbumRow in tests
+* refactor: add boolean handling of empty DbRow objects
+* Windows path fixes
+* Added local deletion of removed remote files
+* Completed filename validation for windows
+* optimized imports
+* Refactor - added AlbumsRow class
+* Added filtering of illegal filename characters
+* Refactor of database layer interface
+* Unicode everywhere stage 1
+* Fix tests on windows
+* much improved incremental sync of album data
+* Added DB schema check
+* refactor - added AlbumMedia
+* System tests now cover all command line options
+* PicasaSync Refactor continues
+* Get symlinks working on windows
+* PicasaSync refactor done. Picasa Incremental backup done
+* PicasaSync Refactor continues
+* work in progress - PicasaSync refactor
+* Remove progress handler due to download lock-ups
+* fix minimum date handling on linux too
+* Fixes to date handling for windows platform (yuk)
+* New tighter db layer API and fixed incremental backup
+* added Incremental scanning of drive files
+* add dictionary for spelling inspections
+* Fixes to run on windows (just removed one tab!)
+* fix failing system test
+* new testing flags --skip-picasa and --skip-drive
+* clean up ALL inspections warnings
+* fix indexing of picasa files - add more system tests
+* add docstrings to DatabaseMedia
+* fix album dating
+* added a system test
+* added test framework and merged, args removal and token refresh
+* Add scanning of Drive items for deletion
+* removed dependency on args object in DriveSync and PicasaSync
+* gdata ouath2 token refresh now fully working
+* tidy LocalData
+* fix to gdata token refresh patch (still testing)
+* handle AVIs in --include-video
+* added some diagnostics command line options
+* implement --include-video flag (now dont include videos by default)
+* fix to exception reporting in retries
+* Update readme cmd line parms
+* add some diagnostics sql for testing
+* fix --quiet option
+* allow scanning of Google Photos only (not all of drive) this is now the default
+* remove token refresh thread since gdata patch is working
+* fix occasional false positives on is\_indexed
+* fixed gdata patching
+* restore 1st 3 phases
 * tried to automate gdata patch - not working
 * tidy for release
 * Added download of indexed drive files and cleanup - ready for release to master

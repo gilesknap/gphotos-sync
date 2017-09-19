@@ -1,6 +1,11 @@
 #!/usr/bin/env python
-import setuptools
 
-setuptools.setup(
+from setuptools import setup, find_packages
+module_name = "gphotos-sync"
+
+packages = [x for x in find_packages()]
+setup(
     setup_requires=['pbr'],
-    pbr=True)
+    pbr=True,
+    packages=packages)
+
