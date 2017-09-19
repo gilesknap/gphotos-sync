@@ -5,7 +5,6 @@ import os.path
 import traceback
 
 from appdirs import AppDirs
-
 from GoogleDriveSync import GoogleDriveSync
 from LocalData import LocalData
 from PicasaSync import PicasaSync

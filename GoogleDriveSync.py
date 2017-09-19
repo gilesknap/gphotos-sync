@@ -38,6 +38,7 @@ class GoogleDriveSync(object):
     PHOTO_QUERY = u"mimeType contains 'image/' and trashed=false"
     VIDEO_QUERY = u"(mimeType contains 'image/' or mimeType contains " \
                   u"'video/') and trashed=false"
+
     AFTER_QUERY = u" and modifiedDate >= '{}T00:00:00'"
     BEFORE_QUERY = u" and modifiedDate <= '{}T00:00:00'"
 
