@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from LocalData import LocalData
+from gphotos.LocalData import LocalData
 from test_setup import SetupDbAndCredentials
 
 

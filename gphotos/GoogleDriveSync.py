@@ -7,10 +7,10 @@ from pydrive.drive import GoogleDrive
 from pydrive.files import ApiRequestError
 
 import Utils
-from DatabaseMedia import DatabaseMedia
 from GoogleDriveMedia import GoogleDriveMedia
 from GoogleMedia import MediaType
 from LocalData import LocalData
+from gphotos.DatabaseMedia import DatabaseMedia
 
 
 class NoGooglePhotosFolderError(Exception):

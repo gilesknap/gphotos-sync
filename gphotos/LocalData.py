@@ -155,7 +155,7 @@ class LocalData:
 
     def clean_db(self):
         sql_file = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                "etc", "gphotos_create.sql")
+                                "..", "etc", "gphotos_create.sql")
         qry = open(sql_file, 'r').read()
         self.cur.executescript(qry)
 

@@ -10,9 +10,9 @@ import gdata.photos.service
 
 import Utils
 from AlbumMedia import AlbumMedia
-from DatabaseMedia import DatabaseMedia, MediaType
 from LocalData import LocalData
 from PicasaMedia import PicasaMedia
+from gphotos.DatabaseMedia import DatabaseMedia, MediaType
 
 
 class PicasaSync(object):
@@ -208,8 +208,6 @@ class PicasaSync(object):
             log = u'  Album: {}, photos: {}, updated: {}, published: {}'.format(
                 album.filename, album.size, album.modify_date,
                 album.create_date)
-            album_log.write((log + u'\n').encode('utf8'))
-
             helper.setup_next_album(album)
             if helper.skip_this_album():
                 continue
