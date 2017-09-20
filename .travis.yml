@@ -10,7 +10,7 @@ install:
 
 # command to run tests
 script:
- - pytest --cov=photos
+ - pytest --cov=gphotos
 
 # submit coverage
 after_script:
