@@ -5,9 +5,9 @@ from unittest import TestCase
 
 from mock import patch
 
-from LocalData import LocalData
+import gphotos.Utils as Utils
+from gphotos.LocalData import LocalData
 from test_setup import SetupDbAndCredentials
-import Utils
 
 
 # todo add a test that reads in Sync Date from the Db

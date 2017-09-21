@@ -10,9 +10,9 @@ import gdata.photos.service
 
 import Utils
 from AlbumMedia import AlbumMedia
-from DatabaseMedia import DatabaseMedia, MediaType
 from LocalData import LocalData
 from PicasaMedia import PicasaMedia
+from gphotos.DatabaseMedia import DatabaseMedia, MediaType
 
 
 class PicasaSync(object):
@@ -21,7 +21,7 @@ class PicasaSync(object):
     """
     # noinspection SpellCheckingInspection
     PHOTOS_QUERY = '/data/feed/api/user/default/albumid/{0}'
-    BLOCK_SIZE = 50
+    BLOCK_SIZE = 1000
     ALBUM_MAX = 10000  # picasa web api gets 500 response after 10000 files
     HIDDEN_ALBUMS = [u'Auto Backup', u'Profile Photos']
 
@@ -222,7 +222,6 @@ class PicasaSync(object):
             log = u'  Album: {}, photos: {}, updated: {}, published: {}'.format(
                 album.filename, album.size, album.modify_date,
                 album.create_date)
-
             helper.setup_next_album(album)
             if helper.skip_this_album():
                 continue

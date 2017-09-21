@@ -6,10 +6,11 @@ install:
   - pip install -r requirements.txt
   - pip install coveralls
   - pip install pytest
+  - pip install pytest-cov
 
 # command to run tests
 script:
- - pytest
+ - pytest --cov=gphotos
 
 # submit coverage
 after_script:
