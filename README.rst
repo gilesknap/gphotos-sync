@@ -11,12 +11,13 @@
 Google Photos Sync
 ==================
 
-Quick Warning
-"""""""""""""
+-------
+Caveats
+-------
 This software does work as advertised but currently has the
 following limitations:
 
-* If you edit a photo using Google Photos the modified version pf the photo will not be synchronised
+* If you edit a photo using Google Photos the modified version of the photo will not be synchronised
 * if you edit a photo in Google Drive it will be synchronized but you wont see the change in Google Photos
 * The date filtering features are not yet timezone aware and only work on modified date (not photo taken date)
 * if you have moved or deleted photos they will not be deleted locally unless you specify --flush-index --do-delete
@@ -43,7 +44,7 @@ Drive. The shared folders issue cannot be fixed at all.
 
 I persist with this project because it looks likely that the picasa API will go
 away completely at some point and hopefully be replaced an alternative that integrates well with
-Drive. Otherwise I might as well capitulate and just use the old mostly
+Drive. Otherwise I might as well capitulate and just use the old, mostly
 deprecated picasa API.
 
 TODO: to avoid all 'Drive confusion' I have provided the --skip-drive option.
@@ -52,6 +53,7 @@ fix this soon.
 
 Description
 ===========
+
 Google Photos Sync downloads your Google Photos to the local file system.
 It attempts to backup all the photos as stored in Google Drive, but also
 the album information and additional Google Photos 'Creations' (animations, panoramas, movies, effects and collages) that do not appear in Drive. The only API for accessing the latter two is picasa web and this is now severely crippled. Hopefully Google intends to replace it with something like native photos support in Google Drive.
@@ -93,7 +95,7 @@ Known Issues
 
 Install and configure
 ---------------------
- run ``python setup.py`` from the source directory to install it in your system.
+run ``python setup.py`` from the source directory to install it in your system.
 
 In order to work, ``gphotos-sync`` first needs a valid client id linked to a project
 authorized to use the Google Drive API. It is not provided in the distribution.

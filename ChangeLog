@@ -1,6 +1,7 @@
 CHANGES
 =======
 
+* fix setup and update readme
 * make media type IntEnum to fix travis
 * added test credentials for travis testing
 * add travis header to readme

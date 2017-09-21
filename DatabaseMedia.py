@@ -34,8 +34,6 @@ class DatabaseMedia(GoogleMedia):
     def __init__(self, root_folder, row):
         """
         This constructor is kept in sync with changes to the SyncFiles table
-        and is the only function in this project with knowledge of how to
-        interpret a select * on the table.
 
         :param (str) root_folder: the root of the sync folder in which
         the database file is created and below which the synced files are

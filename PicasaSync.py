@@ -16,14 +16,21 @@ from PicasaMedia import PicasaMedia
 
 
 class PicasaSync(object):
+    """A Class for managing the indexing and download of media via the
+    picasa web API.
+    """
     # noinspection SpellCheckingInspection
     PHOTOS_QUERY = '/data/feed/api/user/default/albumid/{0}'
-    BLOCK_SIZE = 1000
+    BLOCK_SIZE = 50
     ALBUM_MAX = 10000  # picasa web api gets 500 response after 10000 files
     HIDDEN_ALBUMS = [u'Auto Backup', u'Profile Photos']
-    FEED_URI = '/data/feed/api/user/default?kind={0}'
 
     def __init__(self, credentials, root_folder, db):
+        """
+        :param (OAutCredentials) credentials:
+        :param (str) root_folder:
+        :param (LocalData) db:
+        """
         self._root_folder = root_folder
         self._db = db
         self._gdata_client = None
@@ -46,6 +53,8 @@ class PicasaSync(object):
         self.quiet = False
         self.includeVideo = False
 
+    FEED_URI = '/data/feed/api/user/default?kind={0}'
+
     def index_picasa_media(self):
         print('\nIndexing Picasa Files ...')
         uri = self.FEED_URI.format('photo')
@@ -58,7 +67,13 @@ class PicasaSync(object):
             start_entry += count
             print('indexing {0} photos ...'.format(count))
 
-            if count < 1:
+            for photo in photos.entry:
+                media = PicasaMedia(None, self._root_folder, photo)
+                results = self._db.get_file_by_id(media.id)
+                if not results:
+                    media.save_to_db(self._db)
+
+            if count < 48:
                 break
 
     def download_picasa_media(self):
@@ -201,14 +216,12 @@ class PicasaSync(object):
         print('Album count %d\n' % len(albums.entry))
 
         helper = IndexAlbumHelper(self)
-        album_log = open('albums.log', 'w')
 
         for p_album in albums.entry:
             album = AlbumMedia(p_album)
             log = u'  Album: {}, photos: {}, updated: {}, published: {}'.format(
                 album.filename, album.size, album.modify_date,
                 album.create_date)
-            album_log.write((log + u'\n').encode('utf8'))
 
             helper.setup_next_album(album)
             if helper.skip_this_album():

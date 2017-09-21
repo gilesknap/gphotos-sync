@@ -1,4 +1,4 @@
-#!/usr/bin/python
+
 # coding: utf8
 import argparse
 import os.path
@@ -120,6 +120,10 @@ class GooglePhotosSyncMain:
 
     def start(self, args):
         with self.data_store:
+            # self.picasa_sync.index_picasa_media()
+            # self.picasa_sync.download_picasa_media()
+            # exit(0)
+
             try:
                 if not args.skip_index:
                     if not args.skip_drive:
