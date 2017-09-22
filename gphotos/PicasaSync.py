@@ -336,9 +336,11 @@ class IndexAlbumHelper:
                     media.mime_type.startswith('video/'):
                 continue
 
-            # calling is_indexed to make sure duplicate_no is correct
-            # todo remove this when duplicate no handling is moved
-            media.is_indexed(self.p._db)
+            row = media.is_indexed(self.p._db)
+            if row and media.modify_date > row.ModifyDate:
+                print(u"Updated {}".format(media.local_full_path))
+                media.save_to_db(self.p._db, update=True)
+
             results = self.p.match_drive_photo(media)
             if results and len(results) == 1:
                 # store link between album and drive file

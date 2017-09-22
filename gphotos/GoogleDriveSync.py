@@ -155,8 +155,8 @@ class GoogleDriveSync(object):
         if not self.quiet:
             print(msg)
         media.save_to_db(self._db, update)
-        if media.modified_date > self._latest_download:
-            self._latest_download = media.modified_date
+        if media.modify_date > self._latest_download:
+            self._latest_download = media.modify_date
 
     def index_drive_media(self):
         print('\nIndexing Drive Files ...')
@@ -202,7 +202,7 @@ class GoogleDriveSync(object):
                         n += 1
                         msg = u"Added {} {}".format(n, media.local_full_path)
                         self.write_media(media, msg, False)
-                    elif media.modified_date > row.ModifyDate:
+                    elif media.modify_date > row.ModifyDate:
                         msg = u"Updated {}".format(media.local_full_path)
                         self.write_media(media, msg, True)
         finally:
@@ -218,7 +218,11 @@ class GoogleDriveSync(object):
                 self._root_folder, self._db, media_type=MediaType.DRIVE,
                 start_date=self.startDate, end_date=self.endDate):
             if os.path.exists(media.local_full_path):
-                continue
+                if Utils.to_timestamp(media.modify_date) > \
+                        os.path.getctime(media.local_full_path):
+                    print('{} was modified'.format(media.local_full_path))
+                else:
+                    continue
 
             if not os.path.isdir(media.local_folder):
                 os.makedirs(media.local_folder)
