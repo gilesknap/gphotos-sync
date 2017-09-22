@@ -151,6 +151,13 @@ class GoogleDriveSync(object):
                     os.remove(name)
                     print(u"{} deleted".format(name))
 
+    def write_media(self, media, msg, update=True):
+        if not self.quiet:
+            print(msg)
+        media.save_to_db(self._db, update)
+        if media.modified_date > self._latest_download:
+            self._latest_download = media.modified_date
+
     def index_drive_media(self):
         print('\nIndexing Drive Files ...')
 
@@ -190,14 +197,14 @@ class GoogleDriveSync(object):
                 for drive_file in page_results:
                     media = GoogleDriveMedia(self.folderPaths,
                                              self._root_folder, drive_file)
-                    if not media.is_indexed(self._db):
+                    row = media.is_indexed(self._db)
+                    if not row:
                         n += 1
-                        if not self.quiet:
-                            print(u"Added {} {}".format(n,
-                                                        media.local_full_path))
-                            media.save_to_db(self._db)
-                        if media.modified_date > self._latest_download:
-                            self._latest_download = media.modified_date
+                        msg = u"Added {} {}".format(n, media.local_full_path)
+                        self.write_media(media, msg, False)
+                    elif media.modified_date > row.ModifyDate:
+                        msg = u"Updated {}".format(media.local_full_path)
+                        self.write_media(media, msg, True)
         finally:
             # store latest date for incremental backup only if scanning all
             if not (self.driveFileName or self.startDate):
@@ -228,4 +235,6 @@ class GoogleDriveSync(object):
                          (Utils.to_timestamp(media.modify_date),
                           Utils.to_timestamp(media.create_date)))
             except ApiRequestError:
-                print(u'DOWNLOAD FAILURE for {}'.format(media.local_full_path))
+                print(
+                    u'DOWNLOAD FAILURE for {}'.format(
+                        media.local_full_path))

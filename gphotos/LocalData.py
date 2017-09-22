@@ -55,6 +55,8 @@ def db_row(row_class):
     """
     row_class.columns = ','.join(row_class.cols_def.keys())
     row_class.params = ':' + ',:'.join(row_class.cols_def.keys())
+    row_class.update = ','.join( '{0}=:{0}'.format(col) for
+                                col in row_class.cols_def.keys())
 
     def init(self, result_row=None):
         for col, col_type in self.cols_def.items():
@@ -238,11 +240,16 @@ class LocalData:
         record = self.cur.fetchone()
         return self.SyncRow(record)
 
-    def put_file(self, row):
-        query = "INSERT INTO SyncFiles ({0}) VALUES ({1})".format(
-            self.SyncRow.columns, self.SyncRow.params)
+    def put_file(self, row, update=False):
+        if update:
+            query = "UPDATE SyncFiles Set {0} WHERE RemoteId = '{1}'".format(
+                self.SyncRow.update, row.RemoteId)
+        else:
+            query = "INSERT INTO SyncFiles ({0}) VALUES ({1})".format(
+                self.SyncRow.columns, self.SyncRow.params)
         self.cur.execute(query, row.dict)
-        return self.cur.lastrowid
+        row_id = self.cur.lastrowid
+        return row_id
 
     # noinspection PyTypeChecker
     def find_file_ids_dates(self, filename='%', exif_date='%', size='%',

@@ -23,7 +23,8 @@ class PicasaSync(object):
     PHOTOS_QUERY = '/data/feed/api/user/default/albumid/{0}'
     BLOCK_SIZE = 1000
     ALBUM_MAX = 10000  # picasa web api gets 500 response after 10000 files
-    HIDDEN_ALBUMS = [u'Auto Backup', u'Profile Photos']
+    HIDDEN_ALBUMS = [u'Profile Photos']
+    NON_SYNC_ALBUMS = [u'Auto Backup']
 
     def __init__(self, credentials, root_folder, db):
         """
@@ -113,8 +114,12 @@ class PicasaSync(object):
             if os.path.exists(single_backup):
                 shutil.rmtree(single_backup)
             os.rename(links_root, single_backup)
+
         for (path, file_name, album_name, end_date) in \
                 self._db.get_album_files():
+            if album_name in self.NON_SYNC_ALBUMS:
+                continue
+
             full_file_name = os.path.join(path, file_name)
 
             year = Utils.safe_str_time(Utils.string_to_date(end_date), '%Y')
@@ -252,7 +257,6 @@ class PicasaSync(object):
         print('\nTotal Album Photos in Drive %d, Picasa %d, multiples %d' % (
             helper.total_photos, helper.picasa_photos,
             helper.multiple_match_count))
-        album_log.close()
 
 
 # Making this a 'friend' class of PicasaSync by ignoring protected access

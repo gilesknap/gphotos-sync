@@ -75,7 +75,7 @@ class GoogleMedia(object):
             s = self.fix_linux.sub('_', s)
         return s
 
-    def save_to_db(self, db):
+    def save_to_db(self, db, update=False):
         now_time = strftime(GoogleMedia.TIME_FORMAT, gmtime())
         new_row = LocalData.SyncRow.make(RemoteId=self.id, Url=self.url,
                                          Path=self.local_folder,
@@ -89,7 +89,7 @@ class GoogleMedia(object):
                                          ModifyDate=self.modify_date,
                                          CreateDate=self.create_date,
                                          SyncDate=now_time, SymLink=None)
-        return db.put_file(new_row)
+        return db.put_file(new_row, update)
 
     def is_indexed(self, db):
         # todo (this is brittle so fix it)
