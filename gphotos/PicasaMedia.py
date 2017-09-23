@@ -56,13 +56,13 @@ class PicasaMedia(GoogleMedia):
 
     @property
     def create_date(self):
-        return Utils.string_to_date(self.__photo_xml.published.text)
-
-    @property
-    def modify_date(self):
         try:
             return Utils.timestamp_to_date(self.__photo_xml.exif.time.text, 0)
         except AttributeError:
+            return Utils.timestamp_to_date(self.__photo_xml.timestamp.text)
+
+    @property
+    def modify_date(self):
             return Utils.string_to_date(self.__photo_xml.updated.text)
 
     @property

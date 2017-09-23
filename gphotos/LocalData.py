@@ -55,7 +55,7 @@ def db_row(row_class):
     """
     row_class.columns = ','.join(row_class.cols_def.keys())
     row_class.params = ':' + ',:'.join(row_class.cols_def.keys())
-    row_class.update = ','.join( '{0}=:{0}'.format(col) for
+    row_class.update = ','.join('{0}=:{0}'.format(col) for
                                 col in row_class.cols_def.keys())
 
     def init(self, result_row=None):
@@ -123,11 +123,12 @@ class LocalData:
         generates an object with attributes for each of the columns in the
         SyncFiles table
         """
-        cols_def = {'RemoteId': str, 'Url': str, 'Path': str, 'FileName': str,
-                    'OrigFileName': str, 'DuplicateNo': int, 'MediaType': int,
-                    'FileSize': int, 'Checksum': str, 'Description': str,
-                    'ModifyDate': datetime, 'CreateDate': datetime,
-                    'SyncDate': datetime, 'SymLink': int}
+        cols_def = {'Id': int, 'RemoteId': str, 'Url': str, 'Path': str,
+                    'FileName': str, 'OrigFileName': str, 'DuplicateNo': int,
+                    'MediaType': int, 'FileSize': int, 'Checksum': str,
+                    'Description': str, 'ModifyDate': datetime,
+                    'CreateDate': datetime, 'SyncDate': datetime,
+                    'SymLink': int}
 
     # noinspection PyClassHasNoInit
     @db_row
@@ -255,23 +256,20 @@ class LocalData:
     def find_file_ids_dates(self, filename='%', exif_date='%', size='%',
                             use_create=False):
         if use_create:
-            self.cur.execute(
-                "SELECT Id, CreateDate FROM SyncFiles WHERE FileName LIKE ? "
-                "AND CreateDate LIKE ? AND FileSize LIKE ?;",
-                (filename, exif_date, size))
+            query = "SELECT {0} FROM SyncFiles WHERE FileName LIKE ? AND " \
+                    "CreateDate LIKE ? AND FileSize LIKE ?;" \
+                .format(self.SyncRow.columns)
+            self.cur.execute(query, (filename, exif_date, size))
         else:
-            self.cur.execute(
-                "SELECT Id, CreateDate FROM SyncFiles WHERE FileName LIKE ? "
-                "AND "
-                "ModifyDate LIKE ? AND FileSize LIKE ?;",
-                (filename, exif_date, size))
+            query = "SELECT {0} FROM SyncFiles WHERE FileName LIKE ? AND " \
+                    "ModifyDate LIKE ? AND FileSize LIKE ?;" \
+                .format(self.SyncRow.columns)
+            self.cur.execute(query, (filename, exif_date, size))
         res = self.cur.fetchall()
-
-        if len(res) == 0:
-            return None
-        else:
-            keys_dates = [(key['Id'], key['CreateDate']) for key in res]
-            return keys_dates
+        results = []
+        for row in res:
+            results.append(self.SyncRow(row))
+        return results
 
     def get_album(self, album_id):
         query = "SELECT {0} FROM Albums WHERE AlbumId = ?;".format(
@@ -300,7 +298,8 @@ class LocalData:
 
     def put_album_file(self, album_rec, file_rec):
         self.cur.execute(
-            "INSERT OR REPLACE INTO AlbumFiles(AlbumRec, DriveRec) VALUES(?,"
+            "INSERT OR REPLACE INTO AlbumFiles(AlbumRec, DriveRec) "
+            "VALUES(?,"
             "?) ;",
             (album_rec, file_rec))
 
@@ -329,7 +328,8 @@ class LocalData:
         self.cur.fetchall()
 
         self.cur.execute(
-            "SELECT FolderId, FolderName FROM DriveFolders WHERE ParentId = ?;",
+            "SELECT FolderId, FolderName FROM DriveFolders WHERE ParentId "
+            "= ?;",
             (parent_id,))
 
         results = self.cur.fetchall()
@@ -343,7 +343,8 @@ class LocalData:
 
     def file_duplicate_no(self, file_id, path, name):
         self.cur.execute(
-            "SELECT DuplicateNo FROM SyncFiles WHERE RemoteId = ?;", (file_id,))
+            "SELECT DuplicateNo FROM SyncFiles WHERE RemoteId = ?;",
+            (file_id,))
         results = self.cur.fetchone()
 
         if results:

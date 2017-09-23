@@ -27,11 +27,10 @@ class TestSystem(TestCase):
         count = db.cur.fetchone()
         self.assertEqual(count[0], 2)
 
-        expected_file = os.path.join(s.root, 'albums', '2016', '0109 2Photos')
-        print(expected_file)
+        expected_file = os.path.join(s.root, 'albums', '2017', '0919 2Photos')
         self.assertEqual(True, os.path.exists(expected_file))
 
-        pat = os.path.join(s.root, 'picasa', '2016', '01', '*.*')
+        pat = os.path.join(s.root, 'picasa', '2017', '09', '*.*')
         self.assertEqual(2, len(glob.glob(pat)))
 
     def test_system_download_name(self):
@@ -79,7 +78,7 @@ class TestSystem(TestCase):
         # 70 items but 10 are videos = 60
         db.cur.execute("SELECT COUNT() FROM SyncFiles WHERE MediaType = 0;")
         count = db.cur.fetchone()
-        self.assertEqual(count[0], 60)
+        self.assertEqual(count[0], 57)
 
         # 4 albums with 26 files and 10 of them overlap = 16
         db.cur.execute("SELECT COUNT() FROM AlbumFiles;")
@@ -159,7 +158,7 @@ class TestSystem(TestCase):
         db.cur.execute("SELECT COUNT() FROM SyncFiles WHERE MediaType = 0;")
         count = db.cur.fetchone()
         # todo why is this 60 not 70?
-        self.assertEqual(count[0], 60)
+        self.assertEqual(count[0], 57)
 
         (d_date, _) = db.get_scan_dates()
         self.assertEqual(d_date.date(), datetime.date(2017, 9, 18))
@@ -211,7 +210,7 @@ class TestSystem(TestCase):
         s.test_setup('test_picasa_delete', args=args, trash_files=True)
         s.gp.start(s.parsed_args)
 
-        pat = os.path.join(s.root, 'picasa', '2016', '01', '*.*')
+        pat = os.path.join(s.root, 'picasa', '2017', '09', '*.*')
         self.assertEqual(2, len(glob.glob(pat)))
 
         s.test_setup('test_picasa_delete', args=args)

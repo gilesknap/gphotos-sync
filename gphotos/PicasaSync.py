@@ -154,30 +154,29 @@ class PicasaSync(object):
                     print(u"{} deleted".format(name))
 
     def match_drive_photo(self, media):
-        file_keys = self._db.find_file_ids_dates(size=media.size)
-        if file_keys and len(file_keys) == 1:
-            return file_keys
+        sync_row = self._db.find_file_ids_dates(size=media.size)
+        if sync_row and len(sync_row) == 1:
+            return sync_row
 
-        file_keys = self._db.find_file_ids_dates(filename=media.filename)
-        if file_keys and len(file_keys) == 1:
-            return file_keys
+        sync_row = self._db.find_file_ids_dates(filename=media.filename)
+        if sync_row and len(sync_row) == 1:
+            return sync_row
 
-        if file_keys and len(file_keys) > 1:
-            file_keys = self._db.find_file_ids_dates(filename=media.filename,
-                                                     size=media.size)
+        if sync_row and len(sync_row) > 1:
+            sync_row = self._db.find_file_ids_dates(filename=media.filename,
+                                                    size=media.size)
             # multiple matches here represent the same image (almost certainly!)
-            if file_keys:
-                return file_keys[0:1]
+            if sync_row:
+                return sync_row[0:1]
 
-        dated_file_keys = self._match_by_date(media)
-        if file_keys:
-            print(
-                u'MATCH BY DATE on {} {}'.format(media.filename,
-                                                 media.modify_date))
-            return dated_file_keys
+        sync_row = self._match_by_date(media)
+        if sync_row:
+            print(u'MATCH BY DATE on {} {}'.format(media.filename,
+                                                   media.modify_date))
+            return sync_row
 
         # not found anything or found >1 result
-        return file_keys
+        return sync_row
 
     def _match_by_date(self, media):
         """
@@ -193,21 +192,20 @@ class PicasaSync(object):
         :return ([(str, str)]): list of (file_id, date)
         """
         for use_create_date in [False]:
-            dated_file_keys = \
-                self._db.find_file_ids_dates(filename=media.filename,
-                                             exif_date=media.modify_date,
-                                             use_create=use_create_date)
-            if dated_file_keys:
-                return dated_file_keys
+            sync_row = self._db.find_file_ids_dates(filename=media.filename,
+                                                    exif_date=media.modify_date,
+                                                    use_create=use_create_date)
+            if sync_row:
+                return sync_row
             for hour_offset in range(-1, 1):
                 date_to_check = media.modify_date + timedelta(hours=hour_offset)
-                dated_file_keys = \
-                    self._db.find_file_ids_dates(
-                        filename=media.filename,
-                        exif_date=date_to_check,
-                        use_create=use_create_date)
-                if dated_file_keys:
-                    return dated_file_keys
+                sync_row = self._db.find_file_ids_dates(
+                    filename=media.filename,
+                    exif_date=date_to_check,
+                    use_create=use_create_date)
+            if sync_row:
+                return sync_row
+
         return None
 
     def index_album_media(self, limit=None):
@@ -256,10 +254,10 @@ class PicasaSync(object):
 
         print('\nTotal Album Photos in Drive %d, Picasa %d, multiples %d' % (
             helper.total_photos, helper.picasa_photos,
-            helper.multiple_match_count))
+            helper.multiple_match_count))  # Making this a 'friend' class of
+        # PicasaSync by ignoring protected access
 
 
-# Making this a 'friend' class of PicasaSync by ignoring protected access
 # noinspection PyProtectedMember
 class IndexAlbumHelper:
     """
@@ -316,7 +314,7 @@ class IndexAlbumHelper:
                 return True
         # handle incremental backup but allow startDate to override
         if not self.p.startDate:
-            if self.album.modify_date < self.sync_date or \
+            if self.album.modify_date < self.sync_date and not \
                             self.album.filename in PicasaSync.ALL_FILES_ALBUMS:
                 # Always scan ALL_FILES for updates to last 10000 picasa photos
                 return True
@@ -331,6 +329,16 @@ class IndexAlbumHelper:
         if self.album_start_photo > photo_date:
             self.album_start_photo = photo_date
 
+    def put_new_picasa_media(self, media):
+        self.picasa_photos += 1
+        new_file_key = media.save_to_db(self.p._db)
+        # store link between album and drive file
+        self.p._db.put_album_file(self.album.id, new_file_key)
+        self.set_album_dates(media.modify_date)
+        if not self.p.quiet:
+            print(u"Added {} {}".format(self.picasa_photos,
+                                        media.local_full_path))
+
     def index_photos(self, photos):
         for photo in photos.entry:
             media = PicasaMedia(None, self.p._root_folder, photo)
@@ -338,27 +346,39 @@ class IndexAlbumHelper:
                     media.mime_type.startswith('video/'):
                 continue
 
-            row = media.is_indexed(self.p._db)
-            if row and media.modify_date > row.ModifyDate:
-                print(u"Updated {}".format(media.local_full_path))
-                media.save_to_db(self.p._db, update=True)
+            picasa_row = media.is_indexed(self.p._db)
+            if picasa_row:
+                if media.modify_date > picasa_row.ModifyDate:
+                    print(u"Updated {}".format(media.local_full_path))
+                    media.save_to_db(self.p._db, update=True)
+                else:
+                    continue
 
-            results = self.p.match_drive_photo(media)
-            if results and len(results) == 1:
-                # store link between album and drive file
-                (file_key, date_taken) = results[0]
-                self.p._db.put_album_file(self.album.id, file_key)
-                # drive dates are more reliable so use this for the album
-                self.set_album_dates(Utils.string_to_date(date_taken))
-            elif results is None:
+            rows = self.p.match_drive_photo(media)
+            if rows and len(rows) == 1:
+                row = rows[0]
+                if media.modify_date > row.SyncDate:
+                    # photo has been edited in picasa - create new picasa
+                    # entry - note we do not delete the old drive entry
+                    # because this still exists and diverges from now on
+                    # Todo IMPORTANT - this approach of using SyncDate WILL NOT
+                    # todo pick up edited files on the first ever sync
+                    # this is a bit shit - but I can find no correlation
+                    #  between modify dates on picsasa and drive as yet.
+                    print(
+                        'file {} dates are out by {}, picasa date {}, drive '
+                        'date {}, drive SyncDate {}'.format(
+                            media.filename, media.modify_date - row.SyncDate,
+                            media.modify_date, row.ModifyDate, row.SyncDate
+                        ))
+                    self.put_new_picasa_media(media)
+                else:
+                    # store link between album and drive file
+                    self.p._db.put_album_file(self.album.id, row.Id)
+                    self.set_album_dates(row.CreateDate)
+            elif rows is None:
                 # no match so this exists only in picasa
-                self.picasa_photos += 1
-                new_file_key = media.save_to_db(self.p._db)
-                self.p._db.put_album_file(self.album.id, new_file_key)
-                self.set_album_dates(media.modify_date)
-                if not self.p.quiet:
-                    print(u"Added {} {}".format(self.picasa_photos,
-                                                media.local_full_path))
+                self.put_new_picasa_media(media)
             else:
                 self.multiple_match_count += 1
                 print ('  WARNING multiple files match %s %s %s' %

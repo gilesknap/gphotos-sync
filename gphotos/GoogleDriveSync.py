@@ -35,12 +35,6 @@ class GoogleDriveSync(object):
         u'title = "Google Photos" and "root" in parents and trashed=false')
     FOLDER_QUERY = u'title = "%s" and "%s" in parents and trashed=false and ' \
                    u'mimeType="application/vnd.google-apps.folder"'
-    PHOTO_QUERY = u"mimeType contains 'image/' and trashed=false"
-    VIDEO_QUERY = u"(mimeType contains 'image/' or mimeType contains " \
-                  u"'video/') and trashed=false"
-
-    AFTER_QUERY = u" and modifiedDate >= '{}T00:00:00'"
-    BEFORE_QUERY = u" and modifiedDate <= '{}T00:00:00'"
 
     # todo these are the queries I'd like to use but they are for drive api v3
     # todo see what is needed in PyDrive to use v3
@@ -48,7 +42,6 @@ class GoogleDriveSync(object):
                    u"createdTime >= '{0}T00:00:00') "
     BEFORE_QUERY2 = u" and (modifiedTime <= '{0}T00:00:00' or " \
                     u"createdTime <= '{0}T00:00:00') "
-    FILENAME_QUERY = u'title contains "{}" and trashed=false'
     PAGE_SIZE = 500
 
     def __init__(self, root_folder, db,
@@ -158,6 +151,13 @@ class GoogleDriveSync(object):
         if media.modify_date > self._latest_download:
             self._latest_download = media.modify_date
 
+    PHOTO_QUERY = u"mimeType contains 'image/' and trashed=false"
+    VIDEO_QUERY = u"(mimeType contains 'image/' or mimeType contains " \
+                  u"'video/') and trashed=false"
+    AFTER_QUERY = u" and modifiedDate >= '{}T00:00:00'"
+    BEFORE_QUERY = u" and modifiedDate <= '{}T00:00:00'"
+    FILENAME_QUERY = u'title contains "{}" and trashed=false'
+
     def index_drive_media(self):
         print('\nIndexing Drive Files ...')
 
@@ -176,7 +176,7 @@ class GoogleDriveSync(object):
                 (self._latest_download, _) = self._db.get_scan_dates()
                 if not self._latest_download:
                     self._latest_download = Utils.minimum_date()
-                if self._latest_download:
+                else:
                     s = Utils.date_to_string(self._latest_download, True)
                     q += self.AFTER_QUERY.format(s)
         if self.endDate:
