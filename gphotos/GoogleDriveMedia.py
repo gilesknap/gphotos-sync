@@ -65,9 +65,11 @@ class GoogleDriveMedia(GoogleMedia):
     @property
     def orig_name(self):
         try:
-            name = self.__drive_file["originalFilename"]
-        except KeyError:
             name = self.__drive_file["title"]
+        except KeyError:
+            name = ''
+        if not name:
+            name = self.__drive_file["originalFilename"]
         return self.validate_encoding(name)
 
     @property

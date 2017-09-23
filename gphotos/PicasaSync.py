@@ -24,7 +24,7 @@ class PicasaSync(object):
     BLOCK_SIZE = 1000
     ALBUM_MAX = 10000  # picasa web api gets 500 response after 10000 files
     HIDDEN_ALBUMS = [u'Profile Photos']
-    NON_SYNC_ALBUMS = [u'Auto Backup']
+    ALL_FILES_ALBUMS = [u'Auto Backup']
 
     def __init__(self, credentials, root_folder, db):
         """
@@ -117,7 +117,7 @@ class PicasaSync(object):
 
         for (path, file_name, album_name, end_date) in \
                 self._db.get_album_files():
-            if album_name in self.NON_SYNC_ALBUMS:
+            if album_name in self.ALL_FILES_ALBUMS:
                 continue
 
             full_file_name = os.path.join(path, file_name)
@@ -316,7 +316,9 @@ class IndexAlbumHelper:
                 return True
         # handle incremental backup but allow startDate to override
         if not self.p.startDate:
-            if self.album.modify_date < self.sync_date:
+            if self.album.modify_date < self.sync_date or \
+                            self.album.filename in PicasaSync.ALL_FILES_ALBUMS:
+                # Always scan ALL_FILES for updates to last 10000 picasa photos
                 return True
         if int(self.album.size) == 0:
             return True

@@ -232,6 +232,8 @@ class GoogleDriveSync(object):
             f = self._googleDrive.CreateFile({'id': media.id})
             try:
                 Utils.retry(10, f.GetContentFile, temp_filename)
+                if os.path.exists(media.local_full_path):
+                    os.remove(media.local_full_path)
                 os.rename(temp_filename, media.local_full_path)
                 # set the access date to create date since there is nowhere
                 # else to put it on linux (and is useful for debugging)
