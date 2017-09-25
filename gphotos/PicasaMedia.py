@@ -17,8 +17,8 @@ class PicasaMedia(GoogleMedia):
         self._relative_folder = self.define_path()
 
     def define_path(self):
-        year = Utils.safe_str_time(self.modify_date, '%Y')
-        month = Utils.safe_str_time(self.modify_date, '%m')
+        year = Utils.safe_str_time(self.create_date, '%Y')
+        month = Utils.safe_str_time(self.create_date, '%m')
         return os.path.join(year, month)
 
     # ----- override Properties below -----

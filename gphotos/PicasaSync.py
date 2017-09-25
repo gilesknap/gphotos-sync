@@ -348,6 +348,10 @@ class IndexAlbumHelper:
 
             picasa_row = media.is_indexed(self.p._db)
             if picasa_row:
+                print('indexed:-created {}, modified {}, size {}, name {},'
+                      ' id {}'
+                      .format(media.create_date, media.modify_date, media.size,
+                              media.filename, picasa_row.Id))
                 if media.modify_date > picasa_row.ModifyDate:
                     print(u"Updated {}".format(media.local_full_path))
                     media.save_to_db(self.p._db, update=True)
@@ -357,6 +361,13 @@ class IndexAlbumHelper:
             rows = self.p.match_drive_photo(media)
             if rows and len(rows) == 1:
                 row = rows[0]
+                # print('picasa:- created {}, modified {}, size {}, name {}'
+                #       .format(media.create_date, media.modify_date, media.size,
+                #               media.filename))
+                # print('drive:-          {}           {}       {}       {}'
+                #       .format(row.CreateDate, row.ModifyDate, row.FileSize,
+                #               row.FileName))
+                # print('diff {}'.format(media.modify_date - row.ModifyDate))
                 if media.modify_date > row.SyncDate:
                     # photo has been edited in picasa - create new picasa
                     # entry - note we do not delete the old drive entry
@@ -365,12 +376,8 @@ class IndexAlbumHelper:
                     # todo pick up edited files on the first ever sync
                     # this is a bit shit - but I can find no correlation
                     #  between modify dates on picsasa and drive as yet.
-                    print(
-                        'file {} dates are out by {}, picasa date {}, drive '
-                        'date {}, drive SyncDate {}'.format(
-                            media.filename, media.modify_date - row.SyncDate,
-                            media.modify_date, row.ModifyDate, row.SyncDate
-                        ))
+                    # Todo - this blows up currently because of index integrety
+                    # Todo need to transform the Mediatype 1 to 0, not add new
                     self.put_new_picasa_media(media)
                 else:
                     # store link between album and drive file
