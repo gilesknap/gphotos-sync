@@ -27,10 +27,10 @@ class TestSystem(TestCase):
         count = db.cur.fetchone()
         self.assertEqual(count[0], 2)
 
-        expected_file = os.path.join(s.root, 'albums', '2017', '0919 2Photos')
+        expected_file = os.path.join(s.root, 'albums', '2016', '0109 2Photos')
         self.assertEqual(True, os.path.exists(expected_file))
 
-        pat = os.path.join(s.root, 'picasa', '2017', '09', '*.*')
+        pat = os.path.join(s.root, 'picasa', '2016', '01', '*.*')
         self.assertEqual(2, len(glob.glob(pat)))
 
     def test_system_download_name(self):
@@ -80,7 +80,7 @@ class TestSystem(TestCase):
         count = db.cur.fetchone()
         self.assertEqual(count[0], 57)
 
-        # 4 albums with 26 files and 10 of them overlap = 16
+        # 4 albums with 26 files 10 are videos = 16
         db.cur.execute("SELECT COUNT() FROM AlbumFiles;")
         count = db.cur.fetchone()
         self.assertEqual(count[0], 16)
@@ -88,6 +88,11 @@ class TestSystem(TestCase):
         db.cur.execute("SELECT COUNT() FROM Albums;")
         count = db.cur.fetchone()
         self.assertEqual(count[0], 4)
+
+        # 16 picasa files from albums but 6 overlap
+        db.cur.execute("SELECT COUNT() FROM SyncFiles WHERE MediaType = 1;")
+        count = db.cur.fetchone()
+        self.assertEqual(count[0], 10)
 
     def test_system_index_picasa(self):
         s = SetupDbAndCredentials()
@@ -210,7 +215,7 @@ class TestSystem(TestCase):
         s.test_setup('test_picasa_delete', args=args, trash_files=True)
         s.gp.start(s.parsed_args)
 
-        pat = os.path.join(s.root, 'picasa', '2017', '09', '*.*')
+        pat = os.path.join(s.root, 'picasa', '2016', '01', '*.*')
         self.assertEqual(2, len(glob.glob(pat)))
 
         s.test_setup('test_picasa_delete', args=args)

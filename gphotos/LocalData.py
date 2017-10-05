@@ -23,6 +23,7 @@ class DbRow:
         generated from row_def by the db_row decorator
     """
     cols_def = None
+    no_update = []
     columns = None
     params = None
     dict = None
@@ -56,7 +57,8 @@ def db_row(row_class):
     row_class.columns = ','.join(row_class.cols_def.keys())
     row_class.params = ':' + ',:'.join(row_class.cols_def.keys())
     row_class.update = ','.join('{0}=:{0}'.format(col) for
-                                col in row_class.cols_def.keys())
+                                col in row_class.cols_def.keys() if
+                                col not in row_class.no_update)
 
     def init(self, result_row=None):
         for col, col_type in self.cols_def.items():
@@ -129,6 +131,7 @@ class LocalData:
                     'Description': str, 'ModifyDate': datetime,
                     'CreateDate': datetime, 'SyncDate': datetime,
                     'SymLink': int}
+        no_update = ['Id']
 
     # noinspection PyClassHasNoInit
     @db_row
@@ -172,7 +175,6 @@ class LocalData:
             self.cur.execute('UPDATE Globals SET LastIndexPicasa=? '
                              'WHERE Id IS 1', (d,))
 
-    # noinspection PyTypeChecker
     def get_scan_dates(self):
         query = "SELECT LastIndexDrive, LastIndexPicasa " \
                 "FROM  Globals WHERE Id IS 1"
@@ -180,7 +182,9 @@ class LocalData:
         res = self.cur.fetchone()
 
         drive_last_date = picasa_last_date = None
+        # noinspection PyTypeChecker
         d = res['LastIndexDrive']
+        # noinspection PyTypeChecker
         p = res['LastIndexPicasa']
         if d:
             drive_last_date = Utils.string_to_date(d)
@@ -189,13 +193,18 @@ class LocalData:
 
         return drive_last_date, picasa_last_date
 
+    # todo to implement in_album use:
+    # select syncfiles.filename, syncfiles.path from albumfiles inner join
+    # syncfiles on albumfiles.driverec=syncfiles.id where Albumfiles.AlbumRec
+    #  = 6467080022807768241;
     def get_files_by_search(self, drive_id='%', media_type='%',
-                            start_date=None, end_date=None):
+                            start_date=None, end_date=None, in_album=False):
         """
         :param (str) drive_id:
         :param (int) media_type:
         :param (datetime) start_date:
         :param (datetime) end_date:
+        :param (bool) in_album:
         :return (self.SyncRow):
         """
         params = (drive_id, media_type)
@@ -252,7 +261,42 @@ class LocalData:
         row_id = self.cur.lastrowid
         return row_id
 
-    # noinspection PyTypeChecker
+    def file_duplicate_no(self, create_date, name, size, path, media_type):
+        """
+        determine if there is already an entry for file. If not determine
+        if other entries share the same path/filename and determine a duplicate
+        number for providing a unique local filename suffix
+
+        :param (datetime) create_date:
+        :param (str) name:
+        :param (int) size:
+        :param (str) path:
+        :return (int, SyncRow): the next available duplicate number or 0 if
+        file is unique
+        """
+        query = "SELECT {0} FROM SyncFiles WHERE CreateDate= ? AND " \
+                "FileSize = ? AND FileName = ? AND MediaType = ?;". \
+            format(self.SyncRow.columns)
+        self.cur.execute(query, (create_date, size, name, media_type))
+        result = self.cur.fetchone()
+
+        if result:
+            # return the existing file entry's duplicate no.
+            # noinspection PyTypeChecker
+            return result['DuplicateNo'], self.SyncRow(result)
+
+        self.cur.execute(
+            "SELECT MAX(DuplicateNo) FROM SyncFiles "
+            "WHERE Path = ? AND OrigFileName = ?;", (path, name))
+        results = self.cur.fetchone()
+        if results[0] is not None:
+            # assign the next available duplicate no.
+            dup = results[0] + 1
+            return dup, None
+        else:
+            # the file is new and has no duplicates
+            return 0, None
+
     def find_file_ids_dates(self, filename='%', exif_date='%', size='%',
                             use_create=False):
         if use_create:
@@ -303,13 +347,16 @@ class LocalData:
             "?) ;",
             (album_rec, file_rec))
 
-    # noinspection PyTypeChecker
+    def remove_all_album_files(self):
+        self.cur.execute("DELETE FROM AlbumFiles")
+
     def get_drive_folder_path(self, folder_id):
         self.cur.execute(
             "SELECT Path FROM DriveFolders "
             "WHERE FolderId IS ?", (folder_id,))
         result = self.cur.fetchone()
         if result:
+            # noinspection PyTypeChecker
             return result['Path']
         else:
             return None
@@ -320,7 +367,6 @@ class LocalData:
             "DriveFolders(FolderId, ParentId, FolderName)"
             " VALUES(?,?,?) ;", (drive_id, parent_id, folder_name))
 
-    # noinspection PyTypeChecker
     def update_drive_folder_path(self, path, parent_id):
         self.cur.execute(
             "UPDATE DriveFolders SET Path = ? WHERE ParentId = ?;",
@@ -334,31 +380,10 @@ class LocalData:
 
         results = self.cur.fetchall()
         for result in results:
+            # noinspection PyTypeChecker
             yield (result['FolderId'], result['FolderName'])
 
     def store(self):
         print("\nSaving Database ...")
         self.con.commit()
         print("Database Saved.\n")
-
-    def file_duplicate_no(self, file_id, path, name):
-        self.cur.execute(
-            "SELECT DuplicateNo FROM SyncFiles WHERE RemoteId = ?;",
-            (file_id,))
-        results = self.cur.fetchone()
-
-        if results:
-            # return the existing file entry's duplicate no.
-            return results[0]
-
-        self.cur.execute(
-            "SELECT MAX(DuplicateNo) FROM SyncFiles "
-            "WHERE Path = ? AND OrigFileName = ?;", (path, name))
-        results = self.cur.fetchone()
-        if results[0] is not None:
-            # assign the next available duplicate no.
-            dup = results[0] + 1
-            return dup
-        else:
-            # the file is new and has no duplicates
-            return 0

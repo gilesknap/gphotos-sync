@@ -3,7 +3,7 @@
 import os.path
 import re
 from time import gmtime, strftime
-
+from datetime import datetime
 from enum import Enum
 
 from LocalData import LocalData
@@ -92,14 +92,13 @@ class GoogleMedia(object):
         return db.put_file(new_row, update)
 
     def is_indexed(self, db):
-        # todo (this is brittle so fix it)
-        # checking for index has the side effect of setting duplicate no
-        # probably should do this immediately after subclass init
-        num = db.file_duplicate_no(
-            self.id, self.local_folder, self.orig_name)
+        # checking for index has the side effect of setting duplicate number as
+        # it is when we discover if other entries share path and filename
+        (num, row) = db.file_duplicate_no(self.create_date, self.filename,
+                                          self.size, self.local_full_path,
+                                          self.media_type)
         self.duplicate_number = num
-        result = db.get_file_by_id(remote_id=self.id)
-        return result
+        return row
 
     # Path to the local folder in which this media item is stored this
     # will include the media type folder which is one of 'drive' 'picasa' or
@@ -150,36 +149,63 @@ class GoogleMedia(object):
     # ----- Properties for override below -----
     @property
     def size(self):
+        """
+        :rtype: int
+        """
         raise NotImplementedError
 
     @property
     def checksum(self):
+        """
+        :rtype: str
+        """
         raise NotImplementedError
 
     @property
     def id(self):
+        """
+        :rtype: int
+        """
         raise NotImplementedError
 
     @property
     def description(self):
+        """
+        :rtype: str
+        """
         raise NotImplementedError
 
     @property
     def orig_name(self):
+        """
+        :rtype: str
+        """
         raise NotImplementedError
 
     @property
     def create_date(self):
+        """
+        :rtype: datetime
+        """
         raise NotImplementedError
 
     @property
     def modify_date(self):
+        """
+        :rtype: datetime
+        """
         raise NotImplementedError
 
     @property
     def mime_type(self):
+        """
+        :rtype: str
+        """
         raise NotImplementedError
 
     @property
     def url(self):
+        """
+        :rtype: str
+        """
         raise NotImplementedError

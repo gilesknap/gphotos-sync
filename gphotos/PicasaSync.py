@@ -56,6 +56,11 @@ class PicasaSync(object):
 
     FEED_URI = '/data/feed/api/user/default?kind={0}'
 
+    # this function was written to try out downloading photos feed rather than
+    # via albums. It is not useful because (a) GetFeed returns less items than
+    # you ask for despite there being more left. (b) even if you work around
+    # this by guessing how many items to ask for next, the api blows up at the
+    # 1000 photos mark. This is considerably worse than 'Auto Upload' album.
     def index_picasa_media(self):
         print('\nIndexing Picasa Files ...')
         uri = self.FEED_URI.format('photo')
@@ -218,6 +223,9 @@ class PicasaSync(object):
         albums = Utils.retry(10, self._gdata_client.GetUserFeed, limit=limit)
         print('Album count %d\n' % len(albums.entry))
 
+        # we rebuild the index of albums to files completely in this function
+        self._db.remove_all_album_files()
+
         helper = IndexAlbumHelper(self)
 
         for p_album in albums.entry:
@@ -314,8 +322,9 @@ class IndexAlbumHelper:
                 return True
         # handle incremental backup but allow startDate to override
         if not self.p.startDate:
-            if self.album.modify_date < self.sync_date and not \
-                            self.album.filename in PicasaSync.ALL_FILES_ALBUMS:
+            if self.album.modify_date < self.sync_date and \
+                            self.album.filename not in \
+                            PicasaSync.ALL_FILES_ALBUMS:
                 # Always scan ALL_FILES for updates to last 10000 picasa photos
                 return True
         if int(self.album.size) == 0:
@@ -329,67 +338,46 @@ class IndexAlbumHelper:
         if self.album_start_photo > photo_date:
             self.album_start_photo = photo_date
 
-    def put_new_picasa_media(self, media):
-        self.picasa_photos += 1
-        new_file_key = media.save_to_db(self.p._db)
-        # store link between album and drive file
-        self.p._db.put_album_file(self.album.id, new_file_key)
-        self.set_album_dates(media.modify_date)
-        if not self.p.quiet:
-            print(u"Added {} {}".format(self.picasa_photos,
-                                        media.local_full_path))
-
+    # TODO - create  'no-album' album for each year
+    # TODO - create albums based on my original upload tags for pre 2015 photos
     def index_photos(self, photos):
         for photo in photos.entry:
-            media = PicasaMedia(None, self.p._root_folder, photo)
+            picasa_media = PicasaMedia(None, self.p._root_folder, photo)
             if (not self.p.includeVideo) and \
-                    media.mime_type.startswith('video/'):
+                    picasa_media.mime_type.startswith('video/'):
                 continue
 
-            picasa_row = media.is_indexed(self.p._db)
+            self.set_album_dates(picasa_media.create_date)
+            picasa_row = picasa_media.is_indexed(self.p._db)
             if picasa_row:
-                print('indexed:-created {}, modified {}, size {}, name {},'
-                      ' id {}'
-                      .format(media.create_date, media.modify_date, media.size,
-                              media.filename, picasa_row.Id))
-                if media.modify_date > picasa_row.ModifyDate:
-                    print(u"Updated {}".format(media.local_full_path))
-                    media.save_to_db(self.p._db, update=True)
+                if picasa_media.modify_date > picasa_row.ModifyDate:
+                    print(u"Updated {}".format(picasa_media.local_full_path))
+                    picasa_row_id = picasa_media.save_to_db(self.p._db,
+                                                            update=True)
                 else:
-                    continue
-
-            rows = self.p.match_drive_photo(media)
-            if rows and len(rows) == 1:
-                row = rows[0]
-                # print('picasa:- created {}, modified {}, size {}, name {}'
-                #       .format(media.create_date, media.modify_date, media.size,
-                #               media.filename))
-                # print('drive:-          {}           {}       {}       {}'
-                #       .format(row.CreateDate, row.ModifyDate, row.FileSize,
-                #               row.FileName))
-                # print('diff {}'.format(media.modify_date - row.ModifyDate))
-                if media.modify_date > row.SyncDate:
-                    # photo has been edited in picasa - create new picasa
-                    # entry - note we do not delete the old drive entry
-                    # because this still exists and diverges from now on
-                    # Todo IMPORTANT - this approach of using SyncDate WILL NOT
-                    # todo pick up edited files on the first ever sync
-                    # this is a bit shit - but I can find no correlation
-                    #  between modify dates on picsasa and drive as yet.
-                    # Todo - this blows up currently because of index integrety
-                    # Todo need to transform the Mediatype 1 to 0, not add new
-                    self.put_new_picasa_media(media)
-                else:
-                    # store link between album and drive file
-                    self.p._db.put_album_file(self.album.id, row.Id)
-                    self.set_album_dates(row.CreateDate)
-            elif rows is None:
-                # no match so this exists only in picasa
-                self.put_new_picasa_media(media)
+                    picasa_row_id = picasa_row.Id
+                    print(u"Skipped {} {}".format(picasa_row_id,
+                                                  picasa_media.local_full_path))
             else:
+                self.picasa_photos += 1
+                print(u"Added {}".format(picasa_media.local_full_path))
+                picasa_row_id = picasa_media.save_to_db(self.p._db)
+
+            drive_rows = self.p.match_drive_photo(picasa_media)
+            count, row = (len(drive_rows), drive_rows[0]) if drive_rows \
+                else (0, None)
+            if count > 1:
                 self.multiple_match_count += 1
                 print ('  WARNING multiple files match %s %s %s' %
-                       (media.orig_name, media.modify_date, media.size))
+                       (picasa_media.orig_name, picasa_media.modify_date,
+                        picasa_media.size))
+            elif count == 1 and row.SyncDate >= picasa_media.modify_date:
+                # store link between album and drive file
+                self.p._db.put_album_file(self.album.id, drive_rows[0].Id)
+            else:
+                # photo has been edited in picasa and now overrides drive
+                # or it is only in picasa - store album link to picasa file
+                self.p._db.put_album_file(self.album.id, picasa_row_id)
 
     def complete_album(self):
         # write the album data down now we know the contents' date range

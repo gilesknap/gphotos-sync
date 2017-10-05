@@ -51,5 +51,13 @@ It looks like some of my uploads in my test account have very old modify dates i
 
 Conclusion - use of modified date in Drive vs Picasweb is not viable.
 
+PicasaWeb IDs
+=============
+The unique Id provided by the picasaweb API is not the same for two references to the same photo. If a photo appears in
+more than one folder (and they always do since they all appear in 'Auto Upload' - well the last 10,000 can be seen there anyway),
+then each reference has a different Id.
+
+I have verified that editing in one album does modify the photo for all albums. So we do have a single entry only and
+can match them up by date, name and size to verify they are the same item.
 
 
