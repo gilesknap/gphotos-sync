@@ -161,7 +161,7 @@ class LocalData:
 
     def clean_db(self):
         sql_file = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                "..", "etc", "gphotos_create.sql")
+                                "sql", "gphotos_create.sql")
         qry = open(sql_file, 'r').read()
         self.cur.executescript(qry)
 
@@ -198,7 +198,8 @@ class LocalData:
     # syncfiles on albumfiles.driverec=syncfiles.id where Albumfiles.AlbumRec
     #  = 6467080022807768241;
     def get_files_by_search(self, drive_id='%', media_type='%',
-                            start_date=None, end_date=None, in_album=False):
+                            start_date=None, end_date=None, in_album=False,
+                            skip_linked=False):
         """
         :param (str) drive_id:
         :param (int) media_type:
@@ -208,20 +209,22 @@ class LocalData:
         :return (self.SyncRow):
         """
         params = (drive_id, media_type)
-        date_clauses = ''
+        extra_clauses = ''
         if start_date:
             # look for create date too since an photo recently uploaded will
             # keep its original modified date (since that is in the exif)
             # this clause is specifically to assist in incremental download
-            date_clauses += 'AND (ModifyDate >= ? OR CreateDate >= ?)'
+            extra_clauses += 'AND (ModifyDate >= ? OR CreateDate >= ?)'
             params += (start_date, start_date)
         if end_date:
-            date_clauses += 'AND ModifyDate <= ?'
+            extra_clauses += 'AND ModifyDate <= ?'
             params += (end_date,)
+        if skip_linked:
+            extra_clauses += 'AND SymLink IS NULL'
 
         query = "SELECT {0} FROM SyncFiles WHERE RemoteId LIKE ? AND  " \
                 "MediaType LIKE ? {1};". \
-            format(self.SyncRow.columns, date_clauses)
+            format(self.SyncRow.columns, extra_clauses)
 
         self.cur.execute(query, params)
         while True:
@@ -298,17 +301,19 @@ class LocalData:
             return 0, None
 
     def find_file_ids_dates(self, filename='%', exif_date='%', size='%',
-                            use_create=False):
+                            media_type='%', use_create=False):
         if use_create:
             query = "SELECT {0} FROM SyncFiles WHERE FileName LIKE ? AND " \
-                    "CreateDate LIKE ? AND FileSize LIKE ?;" \
+                    "CreateDate LIKE ? AND FileSize LIKE ? " \
+                    "AND MediaType LIKE ?;" \
                 .format(self.SyncRow.columns)
-            self.cur.execute(query, (filename, exif_date, size))
+            self.cur.execute(query, (filename, exif_date, size, media_type))
         else:
             query = "SELECT {0} FROM SyncFiles WHERE FileName LIKE ? AND " \
-                    "ModifyDate LIKE ? AND FileSize LIKE ?;" \
+                    "ModifyDate LIKE ? AND FileSize LIKE ? " \
+                    "AND MediaType LIKE ?;" \
                 .format(self.SyncRow.columns)
-            self.cur.execute(query, (filename, exif_date, size))
+            self.cur.execute(query, (filename, exif_date, size, media_type))
         res = self.cur.fetchall()
         results = []
         for row in res:
@@ -366,6 +371,11 @@ class LocalData:
             "INSERT OR REPLACE INTO "
             "DriveFolders(FolderId, ParentId, FolderName)"
             " VALUES(?,?,?) ;", (drive_id, parent_id, folder_name))
+
+    def put_symlink(self, sync_file_id, link_id):
+        self.cur.execute(
+            "UPDATE SyncFiles SET SymLink=? "
+            "WHERE Id is ?;", (link_id, sync_file_id))
 
     def update_drive_folder_path(self, path, parent_id):
         self.cur.execute(

@@ -46,7 +46,8 @@ class GoogleDriveSync(object):
 
     def __init__(self, root_folder, db,
                  client_secret_file="client_secret.json",
-                 credentials_json="credentials.json"):
+                 credentials_json="credentials.json",
+                 no_browser=False):
         """
         :param (str) root_folder:
         :param (LocalData) db:
@@ -62,7 +63,10 @@ class GoogleDriveSync(object):
         self._g_auth.settings["save_credentials"] = True
         self._g_auth.settings["save_credentials_backend"] = "file"
         self._g_auth.settings["get_refresh_token"] = True
-        self._g_auth.LocalWebserverAuth()
+        if no_browser:
+            self._g_auth.CommandLineAuth()
+        else:
+            self._g_auth.LocalWebserverAuth()
         self._googleDrive = GoogleDrive(self._g_auth)
         self._latest_download = Utils.minimum_date()
         # public members to be set after init

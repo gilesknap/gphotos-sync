@@ -70,6 +70,10 @@ class GooglePhotosSyncMain:
         action='store_true',
         help="delete the index db, re-scan everything")
     parser.add_argument(
+        "--no-browser",
+        action='store_true',
+        help="use cut and paste for auth instead of invoking a browser")
+    parser.add_argument(
         "--all-drive",
         action='store_true',
         help="when True all folders in drive are scanned for media. "
@@ -96,7 +100,7 @@ class GooglePhotosSyncMain:
             app_dirs.user_data_dir, "credentials.json")
         secret_file = os.path.join(
             app_dirs.user_config_dir, "client_secret.json")
-        if args.new_token:
+        if args.new_token and os._exists(credentials_file):
             os.remove(credentials_file)
 
         if not os.path.exists(app_dirs.user_data_dir):
@@ -104,7 +108,8 @@ class GooglePhotosSyncMain:
 
         self.drive_sync = GoogleDriveSync(args.root_folder, self.data_store,
                                           client_secret_file=secret_file,
-                                          credentials_json=credentials_file)
+                                          credentials_json=credentials_file,
+                                          no_browser=args.no_browser)
 
         self.picasa_sync = PicasaSync(self.drive_sync.credentials,
                                       args.root_folder, self.data_store)

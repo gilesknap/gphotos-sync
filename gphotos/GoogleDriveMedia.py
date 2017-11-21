@@ -98,7 +98,10 @@ class GoogleDriveMedia(GoogleMedia):
     # ----- Derived class custom properties below -----
     @property
     def parent_id(self):
-        return self.__drive_file["parents"][self.__parent_num]["id"]
+        try:
+            return self.__drive_file["parents"][self.__parent_num]["id"]
+        except IndexError:
+            return 0
 
     @property
     def camera_owner(self):

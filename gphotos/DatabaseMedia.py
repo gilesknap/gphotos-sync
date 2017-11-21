@@ -84,7 +84,8 @@ class DatabaseMedia(GoogleMedia):
 
     @classmethod
     def get_media_by_search(cls, root_folder, db, drive_id='%', media_type='%',
-                            start_date=None, end_date=None, in_album=False):
+                            start_date=None, end_date=None, in_album=False,
+                            skip_linked=False):
         """
         A factory method to find any number of rows in SyncFile and yield an
         iterator of DataBaseMedia objects representing the results
@@ -98,7 +99,8 @@ class DatabaseMedia(GoogleMedia):
         :returns (GoogleMedia): yields GoogleMedia object filled from database
         """
         for record in db.get_files_by_search(
-                drive_id, media_type, start_date, end_date, in_album):
+                drive_id, media_type, start_date, end_date,
+                in_album, skip_linked):
             new_media = DatabaseMedia(root_folder, record)
             yield new_media
 

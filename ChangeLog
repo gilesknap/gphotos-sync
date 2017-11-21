@@ -1,6 +1,16 @@
 CHANGES
 =======
 
+* rework is\_indexed to index all picasaweb files
+* Added documentation on the picasaweb drive integration issue
+* No handle file edits in picasa but ONLY after the initial sync :-(
+* Cope with drive filename changes on edits
+* Added handling of remote photos modifications in drive and picasa
+* (re) added update on remote file changes
+* update to index\_picasa\_media
+* update to index\_picasa\_media
+* get coverage module correct
+* resturcture project to add coveralls
 * fix setup and update readme
 * make media type IntEnum to fix travis
 * added test credentials for travis testing

@@ -87,7 +87,8 @@ class PicasaSync(object):
         # noinspection PyTypeChecker
         for media in DatabaseMedia.get_media_by_search(
                 self._root_folder, self._db, media_type=MediaType.PICASA,
-                start_date=self.startDate, end_date=self.endDate):
+                start_date=self.startDate, end_date=self.endDate,
+                skip_linked=True):
             if os.path.exists(media.local_full_path):
                 continue
 
@@ -159,17 +160,20 @@ class PicasaSync(object):
                     print(u"{} deleted".format(name))
 
     def match_drive_photo(self, media):
-        sync_row = self._db.find_file_ids_dates(size=media.size)
+        sync_row = self._db.find_file_ids_dates(size=media.size,
+                                                media_type=MediaType.DRIVE)
         if sync_row and len(sync_row) == 1:
             return sync_row
 
-        sync_row = self._db.find_file_ids_dates(filename=media.filename)
+        sync_row = self._db.find_file_ids_dates(filename=media.filename,
+                                                media_type=MediaType.DRIVE)
         if sync_row and len(sync_row) == 1:
             return sync_row
 
         if sync_row and len(sync_row) > 1:
             sync_row = self._db.find_file_ids_dates(filename=media.filename,
-                                                    size=media.size)
+                                                    size=media.size,
+                                                    media_type=MediaType.DRIVE)
             # multiple matches here represent the same image (almost certainly!)
             if sync_row:
                 return sync_row[0:1]
@@ -183,7 +187,7 @@ class PicasaSync(object):
         # not found anything or found >1 result
         return sync_row
 
-    def _match_by_date(self, media):
+    def _match_by_date(self, media, media_type=None):
         """
         search with date need to check for timezone slips due to camera not
         set to correct timezone and missing or corrupted exif_date,
@@ -199,7 +203,8 @@ class PicasaSync(object):
         for use_create_date in [False]:
             sync_row = self._db.find_file_ids_dates(filename=media.filename,
                                                     exif_date=media.modify_date,
-                                                    use_create=use_create_date)
+                                                    use_create=use_create_date,
+                                                    media_type=media_type)
             if sync_row:
                 return sync_row
             for hour_offset in range(-1, 1):
@@ -207,7 +212,8 @@ class PicasaSync(object):
                 sync_row = self._db.find_file_ids_dates(
                     filename=media.filename,
                     exif_date=date_to_check,
-                    use_create=use_create_date)
+                    use_create=use_create_date,
+                    media_type=media_type)
             if sync_row:
                 return sync_row
 
@@ -350,14 +356,18 @@ class IndexAlbumHelper:
             self.set_album_dates(picasa_media.create_date)
             picasa_row = picasa_media.is_indexed(self.p._db)
             if picasa_row:
-                if picasa_media.modify_date > picasa_row.ModifyDate:
-                    print(u"Updated {}".format(picasa_media.local_full_path))
-                    picasa_row_id = picasa_media.save_to_db(self.p._db,
-                                                            update=True)
-                else:
-                    picasa_row_id = picasa_row.Id
-                    print(u"Skipped {} {}".format(picasa_row_id,
-                                                  picasa_media.local_full_path))
+                # see comment re experiments below
+                # this code to be re-instated if a solution to date matching
+                # is found
+                #
+                # if picasa_media.modify_date > picasa_row.ModifyDate:
+                #     print(u"Updated {}".format(picasa_media.local_full_path))
+                #     picasa_row_id = picasa_media.save_to_db(self.p._db,
+                #                                             update=True)
+                # else:
+                picasa_row_id = picasa_row.Id
+                print(u"Skipped {} {}".format(picasa_row_id,
+                                              picasa_media.local_full_path))
             else:
                 self.picasa_photos += 1
                 print(u"Added {}".format(picasa_media.local_full_path))
@@ -366,18 +376,30 @@ class IndexAlbumHelper:
             drive_rows = self.p.match_drive_photo(picasa_media)
             count, row = (len(drive_rows), drive_rows[0]) if drive_rows \
                 else (0, None)
-            if count > 1:
-                self.multiple_match_count += 1
-                print ('  WARNING multiple files match %s %s %s' %
-                       (picasa_media.orig_name, picasa_media.modify_date,
-                        picasa_media.size))
-            elif count == 1 and row.SyncDate >= picasa_media.modify_date:
+
+            # experiments have proved that dates of matching drive and picasa
+            # files can be out by a matter of days and in either direction
+            # even if the files have not been edited in either. Thus I take the
+            # decision to always choose drive if there is a match and any edits
+            # in google photos are not backed up
+            #
+            # if a workaround is found then the below should have date
+            # comparison restored
+            if count == 0:
+                # no match, link to the picasa file
+                self.p._db.put_album_file(self.album.id, picasa_row_id)
+            else:
                 # store link between album and drive file
                 self.p._db.put_album_file(self.album.id, drive_rows[0].Id)
-            else:
-                # photo has been edited in picasa and now overrides drive
-                # or it is only in picasa - store album link to picasa file
-                self.p._db.put_album_file(self.album.id, picasa_row_id)
+                # store the link between picasa and related drive file
+                # this also flags it to not requiring download
+                self.p._db.put_symlink(picasa_row_id, drive_rows[0].Id)
+
+                if count > 1:
+                    self.multiple_match_count += 1
+                    print ('  WARNING multiple files match %s %s %s' %
+                           (picasa_media.orig_name, picasa_media.modify_date,
+                            picasa_media.size))
 
     def complete_album(self):
         # write the album data down now we know the contents' date range
