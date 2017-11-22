@@ -264,7 +264,8 @@ class LocalData:
         row_id = self.cur.lastrowid
         return row_id
 
-    def file_duplicate_no(self, create_date, name, size, path, media_type):
+    def file_duplicate_no(self, create_date, name, size, path, media_type,
+                          remote_id):
         """
         determine if there is already an entry for file. If not determine
         if other entries share the same path/filename and determine a duplicate
@@ -274,13 +275,17 @@ class LocalData:
         :param (str) name:
         :param (int) size:
         :param (str) path:
+        :param (MediaType) media_type:
+        :param (str) remote_id:
         :return (int, SyncRow): the next available duplicate number or 0 if
         file is unique
         """
-        query = "SELECT {0} FROM SyncFiles WHERE CreateDate= ? AND " \
-                "FileSize = ? AND FileName = ? AND MediaType = ?;". \
+        query = "SELECT {0} FROM SyncFiles WHERE (CreateDate= ? AND " \
+                "FileSize = ? AND FileName = ? AND MediaType = ?) " \
+                "OR RemoteId = ?;". \
             format(self.SyncRow.columns)
-        self.cur.execute(query, (create_date, size, name, media_type))
+        self.cur.execute(query,
+                         (create_date, size, name, media_type, remote_id))
         result = self.cur.fetchone()
 
         if result:
@@ -375,7 +380,7 @@ class LocalData:
     def put_symlink(self, sync_file_id, link_id):
         self.cur.execute(
             "UPDATE SyncFiles SET SymLink=? "
-            "WHERE Id is ?;", (link_id, sync_file_id))
+            "WHERE Id IS ?;", (link_id, sync_file_id))
 
     def update_drive_folder_path(self, path, parent_id):
         self.cur.execute(

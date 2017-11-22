@@ -94,9 +94,12 @@ class GoogleMedia(object):
     def is_indexed(self, db):
         # checking for index has the side effect of setting duplicate number as
         # it is when we discover if other entries share path and filename
+        # IMPORTANT - it would seem logical to use remoteId to verify if the
+        # item is already indexed BUT remote id varies in picasa API
+        # for the same item in more than one album
         (num, row) = db.file_duplicate_no(self.create_date, self.filename,
-                                          self.size, self.local_full_path,
-                                          self.media_type)
+                                          self.size, self.local_folder,
+                                          self.media_type, self.id)
         self.duplicate_number = num
         return row
 

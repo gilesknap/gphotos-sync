@@ -100,7 +100,7 @@ class GooglePhotosSyncMain:
             app_dirs.user_data_dir, "credentials.json")
         secret_file = os.path.join(
             app_dirs.user_config_dir, "client_secret.json")
-        if args.new_token and os._exists(credentials_file):
+        if args.new_token and os.path.exists(credentials_file):
             os.remove(credentials_file)
 
         if not os.path.exists(app_dirs.user_data_dir):
