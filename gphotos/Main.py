@@ -135,8 +135,10 @@ class GooglePhotosSyncMain:
                     if not args.skip_drive:
                         self.drive_sync.scan_folder_hierarchy()
                         self.drive_sync.index_drive_media()
+                        self.data_store.store()
                     if not args.skip_picasa:
                         self.picasa_sync.index_album_media()
+                        self.data_store.store()
                 if not args.index_only:
                     if not args.skip_picasa:
                         self.picasa_sync.download_picasa_media()

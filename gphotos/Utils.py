@@ -52,8 +52,8 @@ def retry(count, func, *arg, **k_arg):
             return res
         except Exception as e:
             last_e = e
-            print("\nRETRYING due to {}".format(e))
-            print("Call was:".format(func, arg, k_arg))
+            print("\nRETRYING due to: {}".format(repr(e)))
+            print("Call was: {}".format(func, arg, k_arg))
             time.sleep(.1)
     raise last_e
 
@@ -76,7 +76,7 @@ def retry_i(count, iterator):
                 more_data = False
                 break
             except Exception as e:
-                print("\nRETRYING iterator due to {}".format(e))
+                print("\nRETRYING iterator due to: {}".format(repr(e)))
                 time.sleep(.1)
         yield last_item
 

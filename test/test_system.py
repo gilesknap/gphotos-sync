@@ -78,7 +78,7 @@ class TestSystem(TestCase):
         # 70 items but 10 are videos = 60
         db.cur.execute("SELECT COUNT() FROM SyncFiles WHERE MediaType = 0;")
         count = db.cur.fetchone()
-        self.assertEqual(count[0], 57)
+        self.assertEqual(count[0], 56)
 
         # 4 albums with 26 files 10 are videos = 16
         db.cur.execute("SELECT COUNT() FROM AlbumFiles;")
@@ -163,7 +163,7 @@ class TestSystem(TestCase):
         db.cur.execute("SELECT COUNT() FROM SyncFiles WHERE MediaType = 0;")
         count = db.cur.fetchone()
         # todo why is this 60 not 70?
-        self.assertEqual(count[0], 57)
+        self.assertEqual(count[0], 56)
 
         (d_date, _) = db.get_scan_dates()
         self.assertEqual(d_date.date(), datetime.date(2017, 9, 18))

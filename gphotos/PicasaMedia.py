@@ -63,7 +63,13 @@ class PicasaMedia(GoogleMedia):
 
     @property
     def modify_date(self):
-            return Utils.string_to_date(self.__photo_xml.updated.text)
+            if self.mime_type.startswith('video'):
+                # for some reason the updated field is weird in picasa API
+                # use created here instead - this means edits to videos in
+                # picasa won't get backed up
+                return Utils.timestamp_to_date(self.__photo_xml.timestamp.text)
+            else:
+                return Utils.string_to_date(self.__photo_xml.updated.text)
 
     @property
     def mime_type(self):

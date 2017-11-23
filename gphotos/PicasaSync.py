@@ -22,7 +22,7 @@ class PicasaSync(object):
     # noinspection SpellCheckingInspection
     PHOTOS_QUERY = '/data/feed/api/user/default/albumid/{0}'
     BLOCK_SIZE = 1000
-    ALBUM_MAX = 10000  # picasa web api gets 500 response after 10000 files
+    ALBUM_MAX = 10000  # picasa web api gets 500 err after approx 10000 files
     HIDDEN_ALBUMS = [u'Profile Photos']
     ALL_FILES_ALBUMS = [u'Auto Backup']
 
@@ -256,12 +256,15 @@ class PicasaSync(object):
                                      limit=limit, start_index=start_entry)
                 helper.index_photos(photos)
 
-                start_entry += PicasaSync.BLOCK_SIZE
+                start_entry += limit
+                if len(photos.entry) < limit:
+                    break;
+                if start_entry >= PicasaSync.ALBUM_MAX:
+                    print ("LIMITING ALBUM TO {} entries".format(
+                        PicasaSync.ALBUM_MAX))
+                    break
                 if start_entry + PicasaSync.BLOCK_SIZE > PicasaSync.ALBUM_MAX:
                     limit = PicasaSync.ALBUM_MAX - start_entry
-                    print ("LIMITING ALBUM TO 10000 entries")
-                if limit == 0 or len(photos.entry) < limit:
-                    break
 
             helper.complete_album()
         helper.complete_scan()
@@ -356,22 +359,17 @@ class IndexAlbumHelper:
             self.set_album_dates(picasa_media.create_date)
             picasa_row = picasa_media.is_indexed(self.p._db)
             if picasa_row:
-                # see comment re experiments below
-                # this code to be re-instated if a solution to date matching
-                # is found
-                #
-                # if picasa_media.modify_date > picasa_row.ModifyDate:
-                #     print(u"Updated {}".format(picasa_media.local_full_path))
-                #     picasa_row_id = picasa_media.save_to_db(self.p._db,
-                #                                             update=True)
-                # else:
-                picasa_row_id = picasa_row.Id
-                print(u"Skipped {} {}".format(picasa_row_id,
-                                              picasa_media.local_full_path))
+                if picasa_media.modify_date > picasa_row.ModifyDate:
+                    picasa_row_id = picasa_media.save_to_db(self.p._db,
+                                                            update=True)
+                    print(u"Updated {}".format(picasa_media.local_full_path))
+                else:
+                    picasa_row_id = picasa_row.Id
+                    print(u"Skipped {}".format(picasa_media.local_full_path))
             else:
                 self.picasa_photos += 1
-                print(u"Added {}".format(picasa_media.local_full_path))
                 picasa_row_id = picasa_media.save_to_db(self.p._db)
+                print(u"Added {}".format(picasa_media.local_full_path))
 
             drive_rows = self.p.match_drive_photo(picasa_media)
             count, row = (len(drive_rows), drive_rows[0]) if drive_rows \
@@ -380,8 +378,8 @@ class IndexAlbumHelper:
             # experiments have proved that dates of matching drive and picasa
             # files can be out by a matter of days and in either direction
             # even if the files have not been edited in either. Thus I take the
-            # decision to always choose drive if there is a match and any edits
-            # in google photos are not backed up
+            # decision to always choose drive if there is a match and thus
+            # any edits in google photos are not backed up
             #
             # if a workaround is found then the below should have date
             # comparison restored
@@ -392,7 +390,7 @@ class IndexAlbumHelper:
                 # store link between album and drive file
                 self.p._db.put_album_file(self.album.id, drive_rows[0].Id)
                 # store the link between picasa and related drive file
-                # this also flags it to not requiring download
+                # this also flags it as not requiring download
                 self.p._db.put_symlink(picasa_row_id, drive_rows[0].Id)
 
                 if count > 1:

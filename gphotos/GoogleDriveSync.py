@@ -42,7 +42,7 @@ class GoogleDriveSync(object):
                    u"createdTime >= '{0}T00:00:00') "
     BEFORE_QUERY2 = u" and (modifiedTime <= '{0}T00:00:00' or " \
                     u"createdTime <= '{0}T00:00:00') "
-    PAGE_SIZE = 500
+    PAGE_SIZE = 100
 
     def __init__(self, root_folder, db,
                  client_secret_file="client_secret.json",
