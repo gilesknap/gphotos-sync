@@ -142,14 +142,14 @@ class GooglePhotosSyncMain:
                 if not args.index_only:
                     if not args.skip_picasa:
                         self.picasa_sync.download_picasa_media()
+                        if args.do_delete:
+                            self.picasa_sync.check_for_removed()
                     if not args.skip_drive:
                         self.drive_sync.download_drive_media()
                         if args.do_delete:
                             self.drive_sync.check_for_removed()
-                    if not args.skip_picasa:
-                        self.picasa_sync.create_album_content_links()
-                        if args.do_delete:
-                            self.picasa_sync.check_for_removed()
+                if not args.skip_picasa:
+                    self.picasa_sync.create_album_content_links()
 
             except KeyboardInterrupt:
                 print("\nUser cancelled download")

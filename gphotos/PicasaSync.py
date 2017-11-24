@@ -258,7 +258,7 @@ class PicasaSync(object):
 
                 start_entry += limit
                 if len(photos.entry) < limit:
-                    break;
+                    break
                 if start_entry >= PicasaSync.ALBUM_MAX:
                     print ("LIMITING ALBUM TO {} entries".format(
                         PicasaSync.ALBUM_MAX))

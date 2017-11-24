@@ -63,6 +63,10 @@ class GoogleDriveSync(object):
         self._g_auth.settings["save_credentials"] = True
         self._g_auth.settings["save_credentials_backend"] = "file"
         self._g_auth.settings["get_refresh_token"] = True
+        self._g_auth.settings["oauth_scope"] = [
+            'https://www.googleapis.com/auth/drive.photos.readonly',
+            'https://picasaweb.google.com/data/',
+            'https://www.googleapis.com/auth/drive']
         if no_browser:
             self._g_auth.CommandLineAuth()
         else:

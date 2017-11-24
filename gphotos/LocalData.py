@@ -193,19 +193,14 @@ class LocalData:
 
         return drive_last_date, picasa_last_date
 
-    # todo to implement in_album use:
-    # select syncfiles.filename, syncfiles.path from albumfiles inner join
-    # syncfiles on albumfiles.driverec=syncfiles.id where Albumfiles.AlbumRec
-    #  = 6467080022807768241;
     def get_files_by_search(self, drive_id='%', media_type='%',
-                            start_date=None, end_date=None, in_album=False,
-                            skip_linked=False):
+                            start_date=None, end_date=None, skip_linked=False):
         """
         :param (str) drive_id:
         :param (int) media_type:
         :param (datetime) start_date:
         :param (datetime) end_date:
-        :param (bool) in_album:
+        :param (bool) skip_linked: Don't return entries with non-null SymLink
         :return (self.SyncRow):
         """
         params = (drive_id, media_type)
