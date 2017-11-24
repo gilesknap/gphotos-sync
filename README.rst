@@ -1,10 +1,4 @@
-.. |build_status| image:: https://travis-ci.org/gilesknap/gphotos-sync.svg?branch=rc1&style=flat
-    :target: https://travis-ci.org/dls-controls/pymalcolm
-    :alt: Build Status
-
-.. |coverage| image:: https://coveralls.io/repos/gilesknap/gphotos-sync.svg?branch=rc1&service=github
-    :target: https://coveralls.io/github/dls-controls/pymalcolm?branch=master
-    :alt: Test coverage
+|build_status| |coverage|
 
 
 ==================
@@ -123,19 +117,17 @@ from the picasa API. However this is not adequate for the following reasons:-
 * edits in the drive folder are not reflected in Google Photos
 * you are at liberty to delete subfolders of Drive's Google Photos folder and this does not affect Google Photos itself
 * all 'creations' that Google Photos makes are not seen in Drive (Movies, Animations, Panoramas etc.)
-* about 0.01% of my Google Photos photos are not seen in Drive for no apparent reason
 
-A good discussion on the issue is here https://productforums.google.com/forum/#!topic/photos/8FWyZhdIFNU
-
-I am going to try and resolve the above but it will most likely involve
-downloading two copies of a photo which has diverged between Google Photos and
-Drive. The shared folders issue cannot be fixed at all.
-
-I persist with this project because it looks likely that the picasa API will go
-away completely at some point and hopefully be replaced an alternative that integrates well with
 Drive. Otherwise I might as well capitulate and just use the old, mostly
 deprecated picasa API.
 
 To avoid all 'Drive confusion' I have provided the --skip-drive option.
 BUT at present this only accesses photos that are referenced in an album AND the most recent 10,000 items. This is a hard limitation of the Deprecated Picasa API.
 
+.. |build_status| image:: https://travis-ci.org/gilesknap/gphotos-sync.svg?style=flat
+    :target: https://travis-ci.org/gilesknap/gphotos-sync
+    :alt: Build Status
+
+.. |coverage| image:: https://coveralls.io/repos/gilesknap/gphotos-sync/badge.svg?branch=master&service=github
+    :target: https://coveralls.io/github/gilesknap/gphotos-sync?branch=master
+    :alt: Test coverage
