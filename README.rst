@@ -21,7 +21,7 @@ After doing a full sync you will have 3 directories off of the specified root:
 
 * **albums** - contains a folder hierarchy representing the set of albums in your photos (but not shared ones). All the files are symlinks to content in one of the other folders.
 
-In drive and picasa, folders containing duplicate files names are handled by adding (1) etc to the file name. (as per Google's drive sync tool for windows). If you have used the official Backup tool on Windows your **drive** folder should match that backup (but the order of duplicate files may vary occasionaly).
+In drive and picasa, folders containing duplicate files names are handled by adding (1) etc to the file name. (as per Google's drive sync tool for windows). If you have used the official Backup tool on Windows your **drive** folder should match that backup (but the order of duplicate files may vary occasionally).
 
 In the root folder a sqlite database holds an index of all media and albums. Useful to find out about the state of your photo store. You can open it with the sqlite3 tool and perform any sql queries.
 
@@ -130,11 +130,11 @@ from the picasa API. However there are a number of issues with this idea:-
 
   - edits in google photos are not reflected in the drive folder
   - edits in the drive folder are not reflected in Google Photos
-  - you are at liberty to delete subfolders of Drive's Google Photos folder and this does not affect Google Photos itself
+  - you are at liberty to delete sub folders of Drive's Google Photos folder and this does not affect Google Photos itself
 - all 'creations' that Google Photos makes are not seen in Drive (Movies, Animations, Panoramas etc.)
 - about 0.01% of my Google Photos photos are not seen in Drive for no apparent reason
 
-A good discussion on the issues with divergance of Drive/Photos stores is here https://productforums.google.com/forum/#!topic/photos/8FWyZhdIFNU
+A good discussion on the issues with divergence of Drive/Photos stores is here https://productforums.google.com/forum/#!topic/photos/8FWyZhdIFNU
 
 I have tried to use a comparison of modified date to determine if the Google Photos or Drive held the latest version of a file. However, when uploading a new photo the modified date in Photos/Drive differ in either direction by up to a day or so! Also picasa API reports random modified dates for video files. 
 
@@ -144,7 +144,7 @@ My approach to dealing with these issues is as follows:-
 
   - This means that the **drive** folder looks exactly the same as the result of the official Windows Google Backup and Sync.
 
-  - Just like the official sync, edits to metadata in Google Photos do not get seen in the local synchroized files
+  - Just like the official sync, edits to metadata in Google Photos do not get seen in the local synchronized files
 
 - However because I use file size in the matching algorithm
 - 

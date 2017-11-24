@@ -66,7 +66,8 @@ class GoogleDriveSync(object):
                 self._g_auth.LocalWebserverAuth()
         except InvalidConfigError:
             print("ERROR: No client secrets file found.\nPlease see "
-            "https://github.com/gilesknap/gphotos-sync#install-and-configure")
+                  "https://github.com/gilesknap/gphotos-sync#install-and"
+                  "-configure")
             exit(1)
 
         self._googleDrive = GoogleDrive(self._g_auth)

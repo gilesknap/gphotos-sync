@@ -94,7 +94,7 @@ class DatabaseMedia(GoogleMedia):
         :param (int) media_type: optional type of rows to find
         :param (datetime) start_date: optional date filter
         :param (datetime) end_date: optional date filter
-        :param (bool) in_album: if true then only return items from albums
+        :param (bool) skip_linked: skip files with non-null SymLink
         :returns (GoogleMedia): yields GoogleMedia object filled from database
         """
         for record in db.get_files_by_search(

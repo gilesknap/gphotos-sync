@@ -1,3 +1,5 @@
+-- noinspection SqlResolveForFile
+
 -- helpful queries for checking the picasa photo to drive file matching
 
 -- find files that are not creations but were not found in the drive folders
@@ -53,7 +55,7 @@ SELECT SyncFiles.Path, SyncFiles.Filename, SyncFiles.ModifyDate, Albums.AlbumNam
   Albums.EndDate FROM AlbumFiles
   INNER JOIN SyncFiles ON AlbumFiles.DriveRec=SyncFiles.Id
   INNER JOIN Albums ON AlbumFiles.AlbumRec=Albums.AlbumId
-  WHERE Albums.AlbumName LIKE '%Clivedon%';
+  WHERE Albums.AlbumName LIKE '%Test%';
 
 SELECT * from SyncFiles WHERE SyncFiles.MediaType is not 0;
 SELECT * from SyncFiles WHERE FileName like 'P1040748%';

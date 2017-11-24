@@ -33,6 +33,7 @@ MediaFolder = [
 
 
 # base class for media model classes
+# noinspection PyCompatibility
 class GoogleMedia(object):
     MEDIA_TYPE = MediaType.NONE
     MEDIA_FOLDER = MediaFolder[MEDIA_TYPE]

@@ -150,7 +150,7 @@ class TestSystem(TestCase):
         self.assertEqual(count[0], 0)
 
         (d_date, _) = db.get_scan_dates()
-        self.assertEqual(d_date.date(), datetime.date(1970, 01, 01))
+        self.assertEqual(d_date.date(), datetime.date(1970, 1, 1))
 
         args = [
             '--end-date', '2017-09-19',

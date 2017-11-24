@@ -1,3 +1,5 @@
+-- noinspection SpellCheckingInspectionForFile
+
 drop table if exists DriveFolders;
 create table DriveFolders
 (

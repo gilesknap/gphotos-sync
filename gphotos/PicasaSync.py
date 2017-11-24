@@ -15,6 +15,7 @@ from PicasaMedia import PicasaMedia
 from gphotos.DatabaseMedia import DatabaseMedia, MediaType
 
 
+# noinspection PyCompatibility
 class PicasaSync(object):
     """A Class for managing the indexing and download of media via the
     picasa web API.
@@ -94,7 +95,7 @@ class PicasaSync(object):
 
             if not self.quiet:
                 print("  Downloading %s ..." % media.local_full_path)
-            tmp_path = os.path.join(media.local_folder, '.gphoto.tmp')
+            tmp_path = os.path.join(media.local_folder, '.gphotos.tmp')
 
             if not os.path.isdir(media.local_folder):
                 os.makedirs(media.local_folder)

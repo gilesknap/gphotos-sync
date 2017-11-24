@@ -4,6 +4,7 @@ from gphotos.LocalData import LocalData
 from test_setup import SetupDbAndCredentials
 
 
+# noinspection SqlResolve
 class DatabaseTest(TestCase):
     def test_new_schema(self):
         s = SetupDbAndCredentials()
