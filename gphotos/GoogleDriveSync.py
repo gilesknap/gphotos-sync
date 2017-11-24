@@ -5,6 +5,7 @@ import os.path
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 from pydrive.files import ApiRequestError
+from pydrive.settings import InvalidConfigError
 
 import Utils
 from GoogleDriveMedia import GoogleDriveMedia
@@ -67,10 +68,16 @@ class GoogleDriveSync(object):
             'https://www.googleapis.com/auth/drive.photos.readonly',
             'https://picasaweb.google.com/data/',
             'https://www.googleapis.com/auth/drive']
-        if no_browser:
-            self._g_auth.CommandLineAuth()
-        else:
-            self._g_auth.LocalWebserverAuth()
+        try:
+            if no_browser:
+                self._g_auth.CommandLineAuth()
+            else:
+                self._g_auth.LocalWebserverAuth()
+        except InvalidConfigError:
+            print("ERROR: No client secrets file found.\nPlease see "
+            "https://github.com/gilesknap/gphotos-sync#install-and-configure")
+            exit(1)
+
         self._googleDrive = GoogleDrive(self._g_auth)
         self._latest_download = Utils.minimum_date()
         # public members to be set after init
