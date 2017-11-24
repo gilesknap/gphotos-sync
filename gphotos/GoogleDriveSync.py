@@ -18,8 +18,6 @@ class NoGooglePhotosFolderError(Exception):
     pass
 
 
-# todo create local albums from my original uploads via title encoding
-
 # NOTE: keep in mind that no 'Creations' of gphotos are referenced unless
 #  they appear in an album.
 # one workaround is to create an album and use google photos to drop all
@@ -36,13 +34,6 @@ class GoogleDriveSync(object):
         u'title = "Google Photos" and "root" in parents and trashed=false')
     FOLDER_QUERY = u'title = "%s" and "%s" in parents and trashed=false and ' \
                    u'mimeType="application/vnd.google-apps.folder"'
-
-    # todo these are the queries I'd like to use but they are for drive api v3
-    # todo see what is needed in PyDrive to use v3
-    AFTER_QUERY2 = u" and (modifiedTime >= '{0}T00:00:00' or " \
-                   u"createdTime >= '{0}T00:00:00') "
-    BEFORE_QUERY2 = u" and (modifiedTime <= '{0}T00:00:00' or " \
-                    u"createdTime <= '{0}T00:00:00') "
     PAGE_SIZE = 100
 
     def __init__(self, root_folder, db,
@@ -173,6 +164,12 @@ class GoogleDriveSync(object):
     BEFORE_QUERY = u" and modifiedDate <= '{}T00:00:00'"
     FILENAME_QUERY = u'title contains "{}" and trashed=false'
 
+    # these are the queries I'd like to use but they are for drive api v3
+    AFTER_QUERY2 = u" and (modifiedTime >= '{0}T00:00:00' or " \
+                   u"createdTime >= '{0}T00:00:00') "
+    BEFORE_QUERY2 = u" and (modifiedTime <= '{0}T00:00:00' or " \
+                    u"createdTime <= '{0}T00:00:00') "
+
     def index_drive_media(self):
         print('\nIndexing Drive Files ...')
 
@@ -225,7 +222,6 @@ class GoogleDriveSync(object):
             if not (self.driveFileName or self.startDate):
                 self._db.set_scan_dates(drive_last_date=self._latest_download)
 
-    # todo set file dates as per downloaded media
     def download_drive_media(self):
         print('\nDownloading Drive Files ...')
         # noinspection PyTypeChecker

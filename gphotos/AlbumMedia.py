@@ -5,16 +5,12 @@ from GoogleMedia import GoogleMedia, MediaType, MediaFolder
 from gphotos import Utils
 
 
-# todo Albums should probably be stored in the SyncFiles table hence and
-# become a fully fledged GoogleMedia subclass. This would also allow us to
-# manage duplicate Album names, using this class to define the 'FileName'
-# as per PicasaMedia and DriveMedia (plus use DatabaseMedia to instantiate)
 class AlbumMedia(GoogleMedia):
     MEDIA_TYPE = MediaType.ALBUM
     MEDIA_FOLDER = MediaFolder[MEDIA_TYPE]
 
     def __init__(self, album_xml=None):
-        # albums do not (yet) get saved to the filesystem so require no paths
+        # albums do not get saved to the filesystem so require no paths
         # (album_links on the other hand do)
         super(AlbumMedia, self).__init__('', '')
         self.__album_xml = album_xml

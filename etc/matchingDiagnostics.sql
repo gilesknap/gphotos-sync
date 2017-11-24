@@ -8,14 +8,9 @@
 -- uploaded our travel blog to google Drive.
 -- numbers are down to 253 and 82 after adding Date matching to +-12 hours
 -- which is a paltry gain on 90,000 pics for loads of extra queries
--- todo still need to do more analysis on how often date matching is being fired
-
--- TODO trying to get the 253 down by adding date matching with timezone slip
--- TODO  tests - running this test on 4/9/17
--- TODO  at least 2 files subaru?.jpg are in drive and should get a match
--- but most are genuinely missing
--- TODO also need to reinstate 'Auto Backup' and see if there are any other
--- files missing
+-- update:- 1.0 eschews date matching and there are 104 out of 100,000 files
+-- missing from drive and most seem to be genuinely missing - now use picasa to
+-- download these
 SELECT * from SyncFiles WHERE SyncFiles.MediaType is 1
 and OrigFileName not LIKE "%COLLAGE.jpg"
 and OrigFileName not LIKE "%EFFECTS.jpg"

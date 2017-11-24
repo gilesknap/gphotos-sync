@@ -1,0 +1,29 @@
+Tidy Up
+=======
++ DONE review todos in code
++ review inspections
++ remove print and add logging instead
++ make paths in db relative 
++ make paths in symlinks relative
++ get rid of 'Original Filename' column in SyncFiles Column (requires duplicate name handling refactor)
++ remove passing of path to Data Model Objects
++ more review of affect of edits of photos
++ handle duplicate names in album links
+
+
+Cool Stuff
+==========
++ upgrade pydrive to Drive API v3
++ review queries in gphotos-sync now we have v3 queries
++ implement my old albums via the description tags
++ also do a 'no-album for each year (or month)'
++ remove gdata dependency (not possible) and make python 3 compatible
+
+Long Term
+=========
++ Two way sync of google drive (but not Google Photos - need to be cautious of jpgs in Computers too)
++ change monitoring on Google Drive
++ change monitoring on local filesystem
++ run as a service
++ use Google Photos upload API to put quota free photos up (copy Backup and Sync tool semantics even though they are a bit rubbish)
+

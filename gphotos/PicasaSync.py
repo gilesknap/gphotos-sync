@@ -138,14 +138,13 @@ class PicasaSync(object):
                 if not os.path.isdir(link_folder):
                     os.makedirs(link_folder)
                 if os.path.exists(link_file):
-                    # todo need duplicate handling here
                     print(u"Name clash on link {}".format(link_file))
                 else:
                     os.symlink(full_file_name, link_file)
 
         print("album links done.\n")
 
-    # todo this will currently do nothing unless using --flush-db
+    # this will currently do nothing unless using --flush-db
     def check_for_removed(self):
         # note for partial scans using date filters this is still OK because
         # for a file to exist it must have been indexed in a previous scan
@@ -347,8 +346,6 @@ class IndexAlbumHelper:
         if self.album_start_photo > photo_date:
             self.album_start_photo = photo_date
 
-    # TODO - create  'no-album' album for each year
-    # TODO - create albums based on my original upload tags for pre 2015 photos
     def index_photos(self, photos):
         for photo in photos.entry:
             picasa_media = PicasaMedia(None, self.p._root_folder, photo)

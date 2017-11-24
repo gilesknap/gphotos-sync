@@ -81,7 +81,6 @@ class PicasaMedia(GoogleMedia):
                 return mime_type
             # a bit of a hack here - picasa does not reveal the mime_type
             # and guess_type does not work on all video extensions
-            # todo this is probably not a complete list
             suffix = self.orig_name.lower().split('.')[-1]
             if suffix == 'm4v' \
                     or suffix == '3gp' or suffix == 'avi':

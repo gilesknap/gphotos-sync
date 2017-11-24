@@ -46,7 +46,7 @@ class GoogleMedia(object):
         self._relative_folder = relative_folder
         self._root_folder = root_folder
         self._duplicate_number = 0
-        self.symlink = False  # Todo need to implement use of this
+        self.symlink = False
 
     # regex for illegal characters in file names and database queries
     fix_linux = re.compile(r'[/]|[\x00-\x1f]|\x7f|\x00')

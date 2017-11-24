@@ -111,7 +111,8 @@ def minimum_date():
     if os.name == 'nt':
         return datetime.min.replace(year=1970)
     else:
-        # todo - google drive search does not like 1900 but strptime is OK
+        # google drive search does not like 1900 but strptime is OK
+        # this is annoying for my 1964 dated files - will v3 API fix this?
         return datetime.min.replace(year=1970)
 
 
