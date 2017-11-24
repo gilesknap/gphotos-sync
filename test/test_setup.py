@@ -3,8 +3,8 @@ import shutil
 
 from appdirs import AppDirs
 
-import Main
-from Main import GooglePhotosSyncMain
+from gphotos import Main
+from gphotos.Main import GooglePhotosSyncMain
 
 
 class SetupDbAndCredentials:

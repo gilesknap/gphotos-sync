@@ -65,25 +65,27 @@ class GoogleDriveMedia(GoogleMedia):
     @property
     def orig_name(self):
         try:
-            name = self.__drive_file["originalFilename"]
-        except KeyError:
             name = self.__drive_file["title"]
+        except KeyError:
+            name = ''
+        if not name:
+            name = self.__drive_file["originalFilename"]
         return self.validate_encoding(name)
 
     @property
     def create_date(self):
-        date = Utils.string_to_date(self.__drive_file["createdDate"])
-        return date
-
-    @property
-    def modify_date(self):
         try:
             exif_date = self.get_exif_value("date")
             photo_date = Utils.string_to_date(exif_date)
         except (KeyError, ValueError):
-            photo_date = self.create_date
+            photo_date = Utils.string_to_date(self.__drive_file["createdDate"])
 
         return photo_date
+
+    @property
+    def modify_date(self):
+        date = Utils.string_to_date(self.__drive_file["modifiedDate"])
+        return date
 
     @property
     def mime_type(self):
@@ -96,7 +98,10 @@ class GoogleDriveMedia(GoogleMedia):
     # ----- Derived class custom properties below -----
     @property
     def parent_id(self):
-        return self.__drive_file["parents"][self.__parent_num]["id"]
+        try:
+            return self.__drive_file["parents"][self.__parent_num]["id"]
+        except IndexError:
+            return 0
 
     @property
     def camera_owner(self):
@@ -118,10 +123,4 @@ class GoogleDriveMedia(GoogleMedia):
                 camera_model = "WhatsApp"
             else:
                 camera_model = None
-
         return camera_model
-
-    @property
-    def modified_date(self):
-        date = Utils.string_to_date(self.__drive_file["modifiedDate"])
-        return date

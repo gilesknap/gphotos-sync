@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # coding: utf8
-from Main import GooglePhotosSyncMain
+from gphotos.Main import GooglePhotosSyncMain
 
 if __name__ == "__main__":
     g = GooglePhotosSyncMain()

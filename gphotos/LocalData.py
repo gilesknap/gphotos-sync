@@ -23,6 +23,7 @@ class DbRow:
         generated from row_def by the db_row decorator
     """
     cols_def = None
+    no_update = []
     columns = None
     params = None
     dict = None
@@ -55,6 +56,9 @@ def db_row(row_class):
     """
     row_class.columns = ','.join(row_class.cols_def.keys())
     row_class.params = ':' + ',:'.join(row_class.cols_def.keys())
+    row_class.update = ','.join('{0}=:{0}'.format(col) for
+                                col in row_class.cols_def.keys() if
+                                col not in row_class.no_update)
 
     def init(self, result_row=None):
         for col, col_type in self.cols_def.items():
@@ -121,11 +125,13 @@ class LocalData:
         generates an object with attributes for each of the columns in the
         SyncFiles table
         """
-        cols_def = {'RemoteId': str, 'Url': str, 'Path': str, 'FileName': str,
-                    'OrigFileName': str, 'DuplicateNo': int, 'MediaType': int,
-                    'FileSize': int, 'Checksum': str, 'Description': str,
-                    'ModifyDate': datetime, 'CreateDate': datetime,
-                    'SyncDate': datetime, 'SymLink': int}
+        cols_def = {'Id': int, 'RemoteId': str, 'Url': str, 'Path': str,
+                    'FileName': str, 'OrigFileName': str, 'DuplicateNo': int,
+                    'MediaType': int, 'FileSize': int, 'Checksum': str,
+                    'Description': str, 'ModifyDate': datetime,
+                    'CreateDate': datetime, 'SyncDate': datetime,
+                    'SymLink': int}
+        no_update = ['Id']
 
     # noinspection PyClassHasNoInit
     @db_row
@@ -155,7 +161,7 @@ class LocalData:
 
     def clean_db(self):
         sql_file = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                "etc", "gphotos_create.sql")
+                                "sql", "gphotos_create.sql")
         qry = open(sql_file, 'r').read()
         self.cur.executescript(qry)
 
@@ -169,7 +175,6 @@ class LocalData:
             self.cur.execute('UPDATE Globals SET LastIndexPicasa=? '
                              'WHERE Id IS 1', (d,))
 
-    # noinspection PyTypeChecker
     def get_scan_dates(self):
         query = "SELECT LastIndexDrive, LastIndexPicasa " \
                 "FROM  Globals WHERE Id IS 1"
@@ -177,7 +182,9 @@ class LocalData:
         res = self.cur.fetchone()
 
         drive_last_date = picasa_last_date = None
+        # noinspection PyTypeChecker
         d = res['LastIndexDrive']
+        # noinspection PyTypeChecker
         p = res['LastIndexPicasa']
         if d:
             drive_last_date = Utils.string_to_date(d)
@@ -187,29 +194,32 @@ class LocalData:
         return drive_last_date, picasa_last_date
 
     def get_files_by_search(self, drive_id='%', media_type='%',
-                            start_date=None, end_date=None):
+                            start_date=None, end_date=None, skip_linked=False):
         """
         :param (str) drive_id:
         :param (int) media_type:
         :param (datetime) start_date:
         :param (datetime) end_date:
+        :param (bool) skip_linked: Don't return entries with non-null SymLink
         :return (self.SyncRow):
         """
         params = (drive_id, media_type)
-        date_clauses = ''
+        extra_clauses = ''
         if start_date:
             # look for create date too since an photo recently uploaded will
             # keep its original modified date (since that is in the exif)
             # this clause is specifically to assist in incremental download
-            date_clauses += 'AND (ModifyDate >= ? OR CreateDate >= ?)'
+            extra_clauses += 'AND (ModifyDate >= ? OR CreateDate >= ?)'
             params += (start_date, start_date)
         if end_date:
-            date_clauses += 'AND ModifyDate <= ?'
+            extra_clauses += 'AND ModifyDate <= ?'
             params += (end_date,)
+        if skip_linked:
+            extra_clauses += 'AND SymLink IS NULL'
 
         query = "SELECT {0} FROM SyncFiles WHERE RemoteId LIKE ? AND  " \
                 "MediaType LIKE ? {1};". \
-            format(self.SyncRow.columns, date_clauses)
+            format(self.SyncRow.columns, extra_clauses)
 
         self.cur.execute(query, params)
         while True:
@@ -238,33 +248,77 @@ class LocalData:
         record = self.cur.fetchone()
         return self.SyncRow(record)
 
-    def put_file(self, row):
-        query = "INSERT INTO SyncFiles ({0}) VALUES ({1})".format(
-            self.SyncRow.columns, self.SyncRow.params)
+    def put_file(self, row, update=False):
+        if update:
+            query = "UPDATE SyncFiles Set {0} WHERE RemoteId = '{1}'".format(
+                self.SyncRow.update, row.RemoteId)
+        else:
+            query = "INSERT INTO SyncFiles ({0}) VALUES ({1})".format(
+                self.SyncRow.columns, self.SyncRow.params)
         self.cur.execute(query, row.dict)
-        return self.cur.lastrowid
+        row_id = self.cur.lastrowid
+        return row_id
 
-    # noinspection PyTypeChecker
+    def file_duplicate_no(self, create_date, name, size, path, media_type,
+                          remote_id):
+        """
+        determine if there is already an entry for file. If not determine
+        if other entries share the same path/filename and determine a duplicate
+        number for providing a unique local filename suffix
+
+        :param (datetime) create_date:
+        :param (str) name:
+        :param (int) size:
+        :param (str) path:
+        :param (MediaType) media_type:
+        :param (str) remote_id:
+        :return (int, SyncRow): the next available duplicate number or 0 if
+        file is unique
+        """
+        query = "SELECT {0} FROM SyncFiles WHERE (CreateDate= ? AND " \
+                "FileSize = ? AND FileName = ? AND MediaType = ?) " \
+                "OR RemoteId = ?;". \
+            format(self.SyncRow.columns)
+        self.cur.execute(query,
+                         (create_date, size, name, media_type, remote_id))
+        result = self.cur.fetchone()
+
+        if result:
+            # return the existing file entry's duplicate no.
+            # noinspection PyTypeChecker
+            return result['DuplicateNo'], self.SyncRow(result)
+
+        self.cur.execute(
+            "SELECT MAX(DuplicateNo) FROM SyncFiles "
+            "WHERE Path = ? AND OrigFileName = ?;", (path, name))
+        results = self.cur.fetchone()
+        if results[0] is not None:
+            # assign the next available duplicate no.
+            dup = results[0] + 1
+            return dup, None
+        else:
+            # the file is new and has no duplicates
+            return 0, None
+
     def find_file_ids_dates(self, filename='%', exif_date='%', size='%',
-                            use_create=False):
+                            media_type='%', use_create=False):
         if use_create:
-            self.cur.execute(
-                "SELECT Id, CreateDate FROM SyncFiles WHERE FileName LIKE ? "
-                "AND CreateDate LIKE ? AND FileSize LIKE ?;",
-                (filename, exif_date, size))
+            query = "SELECT {0} FROM SyncFiles WHERE FileName LIKE ? AND " \
+                    "CreateDate LIKE ? AND FileSize LIKE ? " \
+                    "AND MediaType LIKE ?;" \
+                .format(self.SyncRow.columns)
+            self.cur.execute(query, (filename, exif_date, size, media_type))
         else:
-            self.cur.execute(
-                "SELECT Id, CreateDate FROM SyncFiles WHERE FileName LIKE ? "
-                "AND "
-                "ModifyDate LIKE ? AND FileSize LIKE ?;",
-                (filename, exif_date, size))
+            query = "SELECT {0} FROM SyncFiles WHERE FileName LIKE ? AND " \
+                    "ModifyDate LIKE ? AND FileSize LIKE ? " \
+                    "AND MediaType LIKE ?;" \
+                .format(self.SyncRow.columns)
+            self.cur.execute(query, (filename, exif_date, size, media_type))
         res = self.cur.fetchall()
-
-        if len(res) == 0:
-            return None
-        else:
-            keys_dates = [(key['Id'], key['CreateDate']) for key in res]
-            return keys_dates
+        results = []
+        for row in res:
+            results.append(self.SyncRow(row))
+        return results
 
     def get_album(self, album_id):
         query = "SELECT {0} FROM Albums WHERE AlbumId = ?;".format(
@@ -293,17 +347,21 @@ class LocalData:
 
     def put_album_file(self, album_rec, file_rec):
         self.cur.execute(
-            "INSERT OR REPLACE INTO AlbumFiles(AlbumRec, DriveRec) VALUES(?,"
+            "INSERT OR REPLACE INTO AlbumFiles(AlbumRec, DriveRec) "
+            "VALUES(?,"
             "?) ;",
             (album_rec, file_rec))
 
-    # noinspection PyTypeChecker
+    def remove_all_album_files(self):
+        self.cur.execute("DELETE FROM AlbumFiles")
+
     def get_drive_folder_path(self, folder_id):
         self.cur.execute(
             "SELECT Path FROM DriveFolders "
             "WHERE FolderId IS ?", (folder_id,))
         result = self.cur.fetchone()
         if result:
+            # noinspection PyTypeChecker
             return result['Path']
         else:
             return None
@@ -314,7 +372,11 @@ class LocalData:
             "DriveFolders(FolderId, ParentId, FolderName)"
             " VALUES(?,?,?) ;", (drive_id, parent_id, folder_name))
 
-    # noinspection PyTypeChecker
+    def put_symlink(self, sync_file_id, link_id):
+        self.cur.execute(
+            "UPDATE SyncFiles SET SymLink=? "
+            "WHERE Id IS ?;", (link_id, sync_file_id))
+
     def update_drive_folder_path(self, path, parent_id):
         self.cur.execute(
             "UPDATE DriveFolders SET Path = ? WHERE ParentId = ?;",
@@ -322,35 +384,16 @@ class LocalData:
         self.cur.fetchall()
 
         self.cur.execute(
-            "SELECT FolderId, FolderName FROM DriveFolders WHERE ParentId = ?;",
+            "SELECT FolderId, FolderName FROM DriveFolders WHERE ParentId "
+            "= ?;",
             (parent_id,))
 
         results = self.cur.fetchall()
         for result in results:
+            # noinspection PyTypeChecker
             yield (result['FolderId'], result['FolderName'])
 
     def store(self):
         print("\nSaving Database ...")
         self.con.commit()
         print("Database Saved.\n")
-
-    def file_duplicate_no(self, file_id, path, name):
-        self.cur.execute(
-            "SELECT DuplicateNo FROM SyncFiles WHERE RemoteId = ?;", (file_id,))
-        results = self.cur.fetchone()
-
-        if results:
-            # return the existing file entry's duplicate no.
-            return results[0]
-
-        self.cur.execute(
-            "SELECT MAX(DuplicateNo) FROM SyncFiles "
-            "WHERE Path = ? AND OrigFileName = ?;", (path, name))
-        results = self.cur.fetchone()
-        if results[0] is not None:
-            # assign the next available duplicate no.
-            dup = results[0] + 1
-            return dup
-        else:
-            # the file is new and has no duplicates
-            return 0

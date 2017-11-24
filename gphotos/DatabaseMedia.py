@@ -34,8 +34,6 @@ class DatabaseMedia(GoogleMedia):
     def __init__(self, root_folder, row):
         """
         This constructor is kept in sync with changes to the SyncFiles table
-        and is the only function in this project with knowledge of how to
-        interpret a select * on the table.
 
         :param (str) root_folder: the root of the sync folder in which
         the database file is created and below which the synced files are
@@ -86,7 +84,7 @@ class DatabaseMedia(GoogleMedia):
 
     @classmethod
     def get_media_by_search(cls, root_folder, db, drive_id='%', media_type='%',
-                            start_date=None, end_date=None):
+                            start_date=None, end_date=None, skip_linked=False):
         """
         A factory method to find any number of rows in SyncFile and yield an
         iterator of DataBaseMedia objects representing the results
@@ -96,10 +94,11 @@ class DatabaseMedia(GoogleMedia):
         :param (int) media_type: optional type of rows to find
         :param (datetime) start_date: optional date filter
         :param (datetime) end_date: optional date filter
+        :param (bool) in_album: if true then only return items from albums
         :returns (GoogleMedia): yields GoogleMedia object filled from database
         """
         for record in db.get_files_by_search(
-                drive_id, media_type, start_date, end_date):
+                drive_id, media_type, start_date, end_date, skip_linked):
             new_media = DatabaseMedia(root_folder, record)
             yield new_media
 
@@ -108,16 +107,12 @@ class DatabaseMedia(GoogleMedia):
     def size(self):
         """
         The size of the file
-        :return (int):
+        :return int:
         """
         return self._size
 
     @property
     def checksum(self):
-        """
-        The md5 checksum of the file
-        :return (str):
-        """
         return self._checksum
 
     @property

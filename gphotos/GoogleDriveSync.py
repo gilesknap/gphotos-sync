@@ -7,10 +7,10 @@ from pydrive.drive import GoogleDrive
 from pydrive.files import ApiRequestError
 
 import Utils
-from DatabaseMedia import DatabaseMedia
 from GoogleDriveMedia import GoogleDriveMedia
 from GoogleMedia import MediaType
 from LocalData import LocalData
+from gphotos.DatabaseMedia import DatabaseMedia
 
 
 class NoGooglePhotosFolderError(Exception):
@@ -35,12 +35,6 @@ class GoogleDriveSync(object):
         u'title = "Google Photos" and "root" in parents and trashed=false')
     FOLDER_QUERY = u'title = "%s" and "%s" in parents and trashed=false and ' \
                    u'mimeType="application/vnd.google-apps.folder"'
-    PHOTO_QUERY = u"mimeType contains 'image/' and trashed=false"
-    VIDEO_QUERY = u"(mimeType contains 'image/' or mimeType contains " \
-                  u"'video/') and trashed=false"
-
-    AFTER_QUERY = u" and modifiedDate >= '{}T00:00:00'"
-    BEFORE_QUERY = u" and modifiedDate <= '{}T00:00:00'"
 
     # todo these are the queries I'd like to use but they are for drive api v3
     # todo see what is needed in PyDrive to use v3
@@ -48,12 +42,12 @@ class GoogleDriveSync(object):
                    u"createdTime >= '{0}T00:00:00') "
     BEFORE_QUERY2 = u" and (modifiedTime <= '{0}T00:00:00' or " \
                     u"createdTime <= '{0}T00:00:00') "
-    FILENAME_QUERY = u'title contains "{}" and trashed=false'
-    PAGE_SIZE = 500
+    PAGE_SIZE = 100
 
     def __init__(self, root_folder, db,
                  client_secret_file="client_secret.json",
-                 credentials_json="credentials.json"):
+                 credentials_json="credentials.json",
+                 no_browser=False):
         """
         :param (str) root_folder:
         :param (LocalData) db:
@@ -69,7 +63,14 @@ class GoogleDriveSync(object):
         self._g_auth.settings["save_credentials"] = True
         self._g_auth.settings["save_credentials_backend"] = "file"
         self._g_auth.settings["get_refresh_token"] = True
-        self._g_auth.LocalWebserverAuth()
+        self._g_auth.settings["oauth_scope"] = [
+            'https://www.googleapis.com/auth/drive.photos.readonly',
+            'https://picasaweb.google.com/data/',
+            'https://www.googleapis.com/auth/drive']
+        if no_browser:
+            self._g_auth.CommandLineAuth()
+        else:
+            self._g_auth.LocalWebserverAuth()
         self._googleDrive = GoogleDrive(self._g_auth)
         self._latest_download = Utils.minimum_date()
         # public members to be set after init
@@ -151,6 +152,20 @@ class GoogleDriveSync(object):
                     os.remove(name)
                     print(u"{} deleted".format(name))
 
+    def write_media(self, media, msg, update=True):
+        if not self.quiet:
+            print(msg)
+        media.save_to_db(self._db, update)
+        if media.modify_date > self._latest_download:
+            self._latest_download = media.modify_date
+
+    PHOTO_QUERY = u"mimeType contains 'image/' and trashed=false"
+    VIDEO_QUERY = u"(mimeType contains 'image/' or mimeType contains " \
+                  u"'video/') and trashed=false"
+    AFTER_QUERY = u" and modifiedDate >= '{}T00:00:00'"
+    BEFORE_QUERY = u" and modifiedDate <= '{}T00:00:00'"
+    FILENAME_QUERY = u'title contains "{}" and trashed=false'
+
     def index_drive_media(self):
         print('\nIndexing Drive Files ...')
 
@@ -169,7 +184,7 @@ class GoogleDriveSync(object):
                 (self._latest_download, _) = self._db.get_scan_dates()
                 if not self._latest_download:
                     self._latest_download = Utils.minimum_date()
-                if self._latest_download:
+                else:
                     s = Utils.date_to_string(self._latest_download, True)
                     q += self.AFTER_QUERY.format(s)
         if self.endDate:
@@ -190,14 +205,14 @@ class GoogleDriveSync(object):
                 for drive_file in page_results:
                     media = GoogleDriveMedia(self.folderPaths,
                                              self._root_folder, drive_file)
-                    if not media.is_indexed(self._db):
+                    row = media.is_indexed(self._db)
+                    if not row:
                         n += 1
-                        if not self.quiet:
-                            print(u"Added {} {}".format(n,
-                                                        media.local_full_path))
-                            media.save_to_db(self._db)
-                        if media.modified_date > self._latest_download:
-                            self._latest_download = media.modified_date
+                        msg = u"Added {} {}".format(n, media.local_full_path)
+                        self.write_media(media, msg, False)
+                    elif media.modify_date > row.ModifyDate:
+                        msg = u"Updated {}".format(media.local_full_path)
+                        self.write_media(media, msg, True)
         finally:
             # store latest date for incremental backup only if scanning all
             if not (self.driveFileName or self.startDate):
@@ -211,7 +226,11 @@ class GoogleDriveSync(object):
                 self._root_folder, self._db, media_type=MediaType.DRIVE,
                 start_date=self.startDate, end_date=self.endDate):
             if os.path.exists(media.local_full_path):
-                continue
+                if Utils.to_timestamp(media.modify_date) > \
+                        os.path.getctime(media.local_full_path):
+                    print('{} was modified'.format(media.local_full_path))
+                else:
+                    continue
 
             if not os.path.isdir(media.local_folder):
                 os.makedirs(media.local_folder)
@@ -221,6 +240,8 @@ class GoogleDriveSync(object):
             f = self._googleDrive.CreateFile({'id': media.id})
             try:
                 Utils.retry(10, f.GetContentFile, temp_filename)
+                if os.path.exists(media.local_full_path):
+                    os.remove(media.local_full_path)
                 os.rename(temp_filename, media.local_full_path)
                 # set the access date to create date since there is nowhere
                 # else to put it on linux (and is useful for debugging)
@@ -228,4 +249,6 @@ class GoogleDriveSync(object):
                          (Utils.to_timestamp(media.modify_date),
                           Utils.to_timestamp(media.create_date)))
             except ApiRequestError:
-                print(u'DOWNLOAD FAILURE for {}'.format(media.local_full_path))
+                print(
+                    u'DOWNLOAD FAILURE for {}'.format(
+                        media.local_full_path))

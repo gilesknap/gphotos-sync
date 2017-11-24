@@ -1,10 +1,11 @@
-#!/usr/bin/python
+
 # coding: utf8
 import argparse
 import os.path
 import traceback
 
 from appdirs import AppDirs
+
 from GoogleDriveSync import GoogleDriveSync
 from LocalData import LocalData
 from PicasaSync import PicasaSync
@@ -69,6 +70,10 @@ class GooglePhotosSyncMain:
         action='store_true',
         help="delete the index db, re-scan everything")
     parser.add_argument(
+        "--no-browser",
+        action='store_true',
+        help="use cut and paste for auth instead of invoking a browser")
+    parser.add_argument(
         "--all-drive",
         action='store_true',
         help="when True all folders in drive are scanned for media. "
@@ -95,7 +100,7 @@ class GooglePhotosSyncMain:
             app_dirs.user_data_dir, "credentials.json")
         secret_file = os.path.join(
             app_dirs.user_config_dir, "client_secret.json")
-        if args.new_token:
+        if args.new_token and os.path.exists(credentials_file):
             os.remove(credentials_file)
 
         if not os.path.exists(app_dirs.user_data_dir):
@@ -103,7 +108,8 @@ class GooglePhotosSyncMain:
 
         self.drive_sync = GoogleDriveSync(args.root_folder, self.data_store,
                                           client_secret_file=secret_file,
-                                          credentials_json=credentials_file)
+                                          credentials_json=credentials_file,
+                                          no_browser=args.no_browser)
 
         self.picasa_sync = PicasaSync(self.drive_sync.credentials,
                                       args.root_folder, self.data_store)
@@ -120,31 +126,37 @@ class GooglePhotosSyncMain:
 
     def start(self, args):
         with self.data_store:
+            # self.picasa_sync.index_picasa_media()
+            # self.picasa_sync.download_picasa_media()
+            # exit(0)
+
             try:
                 if not args.skip_index:
                     if not args.skip_drive:
                         self.drive_sync.scan_folder_hierarchy()
                         self.drive_sync.index_drive_media()
+                        self.data_store.store()
                     if not args.skip_picasa:
                         self.picasa_sync.index_album_media()
+                        self.data_store.store()
                 if not args.index_only:
                     if not args.skip_picasa:
                         self.picasa_sync.download_picasa_media()
+                        if args.do_delete:
+                            self.picasa_sync.check_for_removed()
                     if not args.skip_drive:
                         self.drive_sync.download_drive_media()
                         if args.do_delete:
                             self.drive_sync.check_for_removed()
-                    if not args.skip_picasa:
-                        self.picasa_sync.create_album_content_links()
-                        if args.do_delete:
-                            self.picasa_sync.check_for_removed()
+                if not args.skip_picasa:
+                    self.picasa_sync.create_album_content_links()
 
             except KeyboardInterrupt:
                 print("\nUser cancelled download")
                 # save the traceback so we can diagnose lockups
                 except_file_name = os.path.join(
                     os.path.dirname(os.path.abspath(__file__)),
-                    "etc", ".gphoto-terminated")
+                    "..", "etc", ".gphoto-terminated")
                 with open(except_file_name, "w") as text_file:
                     text_file.write(traceback.format_exc())
             finally:

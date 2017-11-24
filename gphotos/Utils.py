@@ -1,15 +1,12 @@
 #!/usr/bin/python
 # coding: utf8
 from __future__ import division
-import pydrive.auth
-import httplib2
-import googleapiclient
-from apiclient.discovery import build
+
 import ctypes
 import os
 import re
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
 
 DATE_NORMALIZE = re.compile('(\d\d\d\d).(\d\d).(\d\d).(\d\d).(\d\d).(\d\d)')
 SHORT_DATE_NORMALIZE = re.compile('(\d\d\d\d).(\d\d).(\d\d)')
@@ -43,6 +40,7 @@ if os.name == 'nt':
         if __CSL(link_name, source, flags) == 0:
             raise ctypes.WinError()
 
+
     os.symlink = symlink
 
 
@@ -54,8 +52,8 @@ def retry(count, func, *arg, **k_arg):
             return res
         except Exception as e:
             last_e = e
-            print("\nRETRYING due to {}".format(e))
-            print("Call was:".format(func, arg, k_arg))
+            print("\nRETRYING due to: {}".format(repr(e)))
+            print("Call was: {}".format(func, arg, k_arg))
             time.sleep(.1)
     raise last_e
 
@@ -78,7 +76,7 @@ def retry_i(count, iterator):
                 more_data = False
                 break
             except Exception as e:
-                print("\nRETRYING iterator due to {}".format(e))
+                print("\nRETRYING iterator due to: {}".format(repr(e)))
                 time.sleep(.1)
         yield last_item
 
@@ -117,7 +115,7 @@ def minimum_date():
         return datetime.min.replace(year=1970)
 
 
-def to_timestamp(dt, epoch=datetime(1970,1,1)):
+def to_timestamp(dt, epoch=datetime(1970, 1, 1)):
     td = dt - epoch
     return td.total_seconds()
 
@@ -179,19 +177,3 @@ def patch_http_client(oauth, client, request_orig2):
 
     client.http_client.request = new_request2
     return client
-
-
-def patch_pydrive():
-    def Authorize(self):
-        """Authorizes and builds service.
-
-        :raises: AuthenticationError
-        """
-        if self.http is None:
-            self.http = httplib2.Http(timeout=self.http_timeout)
-        if self.access_token_expired:
-            raise AuthenticationError('No valid credentials provided to authorize')
-        self.http = self.credentials.authorize(self.http)
-        self.service = build('drive', 'v3', http=self.http)
-
-    pydrive.auth.GoogleAuth.Authorize = Authorize

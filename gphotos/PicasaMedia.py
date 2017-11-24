@@ -17,8 +17,8 @@ class PicasaMedia(GoogleMedia):
         self._relative_folder = self.define_path()
 
     def define_path(self):
-        year = Utils.safe_str_time(self.modify_date, '%Y')
-        month = Utils.safe_str_time(self.modify_date, '%m')
+        year = Utils.safe_str_time(self.create_date, '%Y')
+        month = Utils.safe_str_time(self.create_date, '%m')
         return os.path.join(year, month)
 
     # ----- override Properties below -----
@@ -56,14 +56,20 @@ class PicasaMedia(GoogleMedia):
 
     @property
     def create_date(self):
-        return Utils.string_to_date(self.__photo_xml.published.text)
-
-    @property
-    def modify_date(self):
         try:
             return Utils.timestamp_to_date(self.__photo_xml.exif.time.text, 0)
         except AttributeError:
-            return Utils.string_to_date(self.__photo_xml.updated.text)
+            return Utils.timestamp_to_date(self.__photo_xml.timestamp.text)
+
+    @property
+    def modify_date(self):
+            if self.mime_type.startswith('video'):
+                # for some reason the updated field is weird in picasa API
+                # use created here instead - this means edits to videos in
+                # picasa won't get backed up
+                return Utils.timestamp_to_date(self.__photo_xml.timestamp.text)
+            else:
+                return Utils.string_to_date(self.__photo_xml.updated.text)
 
     @property
     def mime_type(self):

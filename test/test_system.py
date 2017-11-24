@@ -5,9 +5,9 @@ from unittest import TestCase
 
 from mock import patch
 
-from LocalData import LocalData
+import gphotos.Utils as Utils
+from gphotos.LocalData import LocalData
 from test_setup import SetupDbAndCredentials
-import Utils
 
 
 # todo add a test that reads in Sync Date from the Db
@@ -28,7 +28,6 @@ class TestSystem(TestCase):
         self.assertEqual(count[0], 2)
 
         expected_file = os.path.join(s.root, 'albums', '2016', '0109 2Photos')
-        print(expected_file)
         self.assertEqual(True, os.path.exists(expected_file))
 
         pat = os.path.join(s.root, 'picasa', '2016', '01', '*.*')
@@ -79,9 +78,9 @@ class TestSystem(TestCase):
         # 70 items but 10 are videos = 60
         db.cur.execute("SELECT COUNT() FROM SyncFiles WHERE MediaType = 0;")
         count = db.cur.fetchone()
-        self.assertEqual(count[0], 60)
+        self.assertEqual(count[0], 56)
 
-        # 4 albums with 26 files and 10 of them overlap = 16
+        # 4 albums with 26 files 10 are videos = 16
         db.cur.execute("SELECT COUNT() FROM AlbumFiles;")
         count = db.cur.fetchone()
         self.assertEqual(count[0], 16)
@@ -89,6 +88,11 @@ class TestSystem(TestCase):
         db.cur.execute("SELECT COUNT() FROM Albums;")
         count = db.cur.fetchone()
         self.assertEqual(count[0], 4)
+
+        # 16 picasa files from albums but 6 overlap
+        db.cur.execute("SELECT COUNT() FROM SyncFiles WHERE MediaType = 1;")
+        count = db.cur.fetchone()
+        self.assertEqual(count[0], 10)
 
     def test_system_index_picasa(self):
         s = SetupDbAndCredentials()
@@ -159,7 +163,7 @@ class TestSystem(TestCase):
         db.cur.execute("SELECT COUNT() FROM SyncFiles WHERE MediaType = 0;")
         count = db.cur.fetchone()
         # todo why is this 60 not 70?
-        self.assertEqual(count[0], 60)
+        self.assertEqual(count[0], 56)
 
         (d_date, _) = db.get_scan_dates()
         self.assertEqual(d_date.date(), datetime.date(2017, 9, 18))
