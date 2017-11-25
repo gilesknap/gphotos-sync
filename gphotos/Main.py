@@ -1,8 +1,8 @@
-
 # coding: utf8
 import argparse
 import os.path
 import traceback
+import logging
 
 from appdirs import AppDirs
 
@@ -12,19 +12,15 @@ from PicasaSync import PicasaSync
 
 APP_NAME = "gphotos-sync"
 
-
 class GooglePhotosSyncMain:
     def __init__(self):
         self.data_store = None
         self.drive_sync = None
         self.picasa_sync = None
+        self.log = None
 
     parser = argparse.ArgumentParser(
         description="Google Photos download tool")
-    parser.add_argument(
-        "--quiet",
-        action='store_true',
-        help="quiet (no output)")
     parser.add_argument(
         "--skip-video",
         action='store_true',
@@ -36,6 +32,10 @@ class GooglePhotosSyncMain:
         "--start-date",
         help="Set the earliest date of files to sync",
         default=None)
+    parser.add_argument(
+        "--log-level",
+        help="Set log level. Options: critical, error, warning, info, debug",
+        default='info')
     parser.add_argument(
         "--end-date",
         help="Set the latest date of files to sync",
@@ -114,8 +114,6 @@ class GooglePhotosSyncMain:
         self.picasa_sync = PicasaSync(self.drive_sync.credentials,
                                       args.root_folder, self.data_store)
 
-        # quiet will be replaced by log level
-        self.drive_sync.quiet = self.picasa_sync.quiet = args.quiet
         self.drive_sync.startDate = self.picasa_sync.startDate = args.start_date
         self.drive_sync.endDate = self.picasa_sync.endDate = args.end_date
         self.drive_sync.includeVideo = self.picasa_sync.includeVideo = \
@@ -152,7 +150,7 @@ class GooglePhotosSyncMain:
                     self.picasa_sync.create_album_content_links()
 
             except KeyboardInterrupt:
-                print("\nUser cancelled download")
+                self.log.warning("User cancelled download")
                 # save the traceback so we can diagnose lockups
                 except_file_name = os.path.join(
                     os.path.dirname(os.path.abspath(__file__)),
@@ -160,9 +158,33 @@ class GooglePhotosSyncMain:
                 with open(except_file_name, "w") as text_file:
                     text_file.write(traceback.format_exc())
             finally:
-                print("\nDone.")
+                self.log.info("Done.")
 
     def main(self):
         args = self.parser.parse_args()
+
+        numeric_level = getattr(logging, args.log_level.upper(), None)
+        if not isinstance(numeric_level, int):
+            raise ValueError('Invalid log level: %s' % args.log_level)
+
+        # create logger
+        self.log = logging.getLogger('gphotos')
+        self.log.setLevel(numeric_level)
+
+        # create console handler and set level to debug
+        ch = logging.StreamHandler()
+        ch.setLevel(logging.DEBUG)
+
+        # create formatter
+        formatter = logging.Formatter(
+            '%(name)s: %(message)s')
+
+        # add formatter to ch
+        ch.setFormatter(formatter)
+
+        # add ch to logger
+        self.log.addHandler(ch)
+
+        # configure and launch
         self.setup(args)
         self.start(args)

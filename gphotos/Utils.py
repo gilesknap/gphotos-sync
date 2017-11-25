@@ -7,6 +7,9 @@ import os
 import re
 import time
 from datetime import datetime
+import logging
+
+log = logging.getLogger('gphotos.utils')
 
 DATE_NORMALIZE = re.compile('(\d\d\d\d).(\d\d).(\d\d).(\d\d).(\d\d).(\d\d)')
 SHORT_DATE_NORMALIZE = re.compile('(\d\d\d\d).(\d\d).(\d\d)')
@@ -36,7 +39,7 @@ if os.name == 'nt':
         flags = 0
         if source is not None and os.path.isdir(source):
             flags = 1
-        print('link {} {}'.format(source, link_name))
+        log.debug('link %s %s', source, link_name)
         if __CSL(link_name, source, flags) == 0:
             raise ctypes.WinError()
 
@@ -52,8 +55,8 @@ def retry(count, func, *arg, **k_arg):
             return res
         except Exception as e:
             last_e = e
-            print("\nRETRYING due to: {}".format(repr(e)))
-            print("Call was: {}".format(func, arg, k_arg))
+            log.warning("RETRYING due to: %s", repr(e))
+            log.warning("Call was: %s (%s, %s)", repr(func), arg, k_arg)
             time.sleep(.1)
     raise last_e
 
@@ -76,7 +79,7 @@ def retry_i(count, iterator):
                 more_data = False
                 break
             except Exception as e:
-                print("\nRETRYING iterator due to: {}".format(repr(e)))
+                log.warning("RETRYING iterator due to: %s", repr(e))
                 time.sleep(.1)
         yield last_item
 
@@ -130,7 +133,7 @@ def string_to_date(date_string):
         if m:
             normalized = '{}-{}-{} 00:00:00'.format(*m.groups())
         else:
-            print('warning: time string {} illegal'.format(date_string))
+            log.warning('WARNING: time string {} illegal', date_string)
             return minimum_date()
 
     return datetime.strptime(normalized, DATE_FORMAT)
@@ -141,7 +144,7 @@ def timestamp_to_date(time_secs, hour_offset=0):
         date = datetime.fromtimestamp(
             int(time_secs) / 1000 + 3600 * hour_offset)
     except ValueError:
-        print('warning: time stamp {} illegal'.format(time_secs))
+        log.warning('WARNING: time stamp %d illegal', time_secs)
         date = minimum_date()
     return date
 
@@ -168,7 +171,7 @@ def patch_http_client(oauth, client, request_orig2):
             if oauth._invalid:
                 return refresh_response
             else:
-                print('\n token refresh: {}\n'.format(oauth.access_token))
+                log.info('token refresh: %s', oauth.access_token)
                 new_h = '{}{}'.format('Bearer ', oauth.access_token)
                 client.additional_headers['Authorization'] = new_h
                 k_args['headers']['Authorization'] = new_h

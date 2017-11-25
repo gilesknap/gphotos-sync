@@ -12,10 +12,14 @@ from GoogleDriveMedia import GoogleDriveMedia
 from GoogleMedia import MediaType
 from LocalData import LocalData
 from gphotos.DatabaseMedia import DatabaseMedia
+import logging
 
 
 class NoGooglePhotosFolderError(Exception):
     pass
+
+
+log = logging.getLogger('gphotos.drive')
 
 
 # NOTE: keep in mind that no 'Creations' of gphotos are referenced unless
@@ -61,9 +65,9 @@ class GoogleDriveSync(object):
             else:
                 self._g_auth.LocalWebserverAuth()
         except InvalidConfigError:
-            print("ERROR: No client secrets file found.\nPlease see "
-                  "https://github.com/gilesknap/gphotos-sync#install-and"
-                  "-configure")
+            log.error("No client secrets file found.\nPlease see "
+                      "https://github.com/gilesknap/gphotos-sync#install"
+                      "-and-configure")
             exit(1)
 
         self._googleDrive = GoogleDrive(self._g_auth)
@@ -73,7 +77,6 @@ class GoogleDriveSync(object):
         self.startDate = None
         self.endDate = None
         self.driveFileName = None
-        self.quiet = False
         self.allDrive = False
         self.includeVideo = False
 
@@ -86,7 +89,7 @@ class GoogleDriveSync(object):
         return self._latest_download
 
     def scan_folder_hierarchy(self):
-        print('\nIndexing Drive Folders ...')
+        log.info('Indexing Drive Folders ...')
         # get the root id
         # is this really the only way?- Find all items with root as parent
         # then ask the first of these for its parent id !!??
@@ -96,7 +99,7 @@ class GoogleDriveSync(object):
         for page_results in results:
             for drive_file in page_results:
                 root_id = drive_file['parents'][0]['id']
-                print('root_id = {}'.format(root_id))
+                log.debug('root_id = %s', root_id)
                 break
             break
 
@@ -117,14 +120,14 @@ class GoogleDriveSync(object):
                     parent_id = None
                 self._db.put_drive_folder(drive_file['id'], parent_id,
                                           drive_file['title'])
-        print('Resolving paths ...')
+        log.info('Resolving paths ...')
         self.recurse_paths('root', root_id)
         if len(self.folderPaths) == 1:
             raise ValueError(
                 "No folders found. Please enable Google Photos in Google "
                 "drive (see https://support.google.com/photos/answer/6156103"
                 "). Or use one of the options --all-drive --skip-drive.")
-        print('Drive Folders scanned.\n')
+        log.info('Drive Folders scanned.')
 
     def recurse_paths(self, path, folder_id):
         self.folderPaths[folder_id] = path
@@ -138,7 +141,7 @@ class GoogleDriveSync(object):
     def check_for_removed(self):
         # note for partial scans using date filters this is still OK because
         # for a file to exist it must have been indexed in a previous scan
-        print('\nFinding deleted media ...')
+        log.info('Finding deleted media ...')
         top_dir = os.path.join(self._root_folder, GoogleDriveMedia.MEDIA_FOLDER)
         for (dir_name, _, file_names) in os.walk(top_dir):
             for file_name in file_names:
@@ -146,11 +149,9 @@ class GoogleDriveSync(object):
                 if not file_row:
                     name = os.path.join(dir_name, file_name)
                     os.remove(name)
-                    print(u"{} deleted".format(name))
+                    log.warning("%s deleted", name)
 
-    def write_media(self, media, msg, update=True):
-        if not self.quiet:
-            print(msg)
+    def write_media(self, media, update=True):
         media.save_to_db(self._db, update)
         if media.modify_date > self._latest_download:
             self._latest_download = media.modify_date
@@ -169,7 +170,7 @@ class GoogleDriveSync(object):
                     u"createdTime <= '{0}T00:00:00') "
 
     def index_drive_media(self):
-        print('\nIndexing Drive Files ...')
+        log.info('Indexing Drive Files ...')
 
         if self.includeVideo:
             q = self.VIDEO_QUERY
@@ -210,18 +211,18 @@ class GoogleDriveSync(object):
                     row = media.is_indexed(self._db)
                     if not row:
                         n += 1
-                        msg = u"Added {} {}".format(n, media.local_full_path)
-                        self.write_media(media, msg, False)
+                        log.info("Added %d %s", n, media.local_full_path)
+                        self.write_media(media, False)
                     elif media.modify_date > row.ModifyDate:
-                        msg = u"Updated {}".format(media.local_full_path)
-                        self.write_media(media, msg, True)
+                        log.info("Updated %d %s", n, media.local_full_path)
+                        self.write_media(media, True)
         finally:
             # store latest date for incremental backup only if scanning all
             if not (self.driveFileName or self.startDate):
                 self._db.set_scan_dates(drive_last_date=self._latest_download)
 
     def download_drive_media(self):
-        print('\nDownloading Drive Files ...')
+        log.info('Downloading Drive Files ...')
         # noinspection PyTypeChecker
         for media in DatabaseMedia.get_media_by_search(
                 self._root_folder, self._db, media_type=MediaType.DRIVE,
@@ -229,7 +230,8 @@ class GoogleDriveSync(object):
             if os.path.exists(media.local_full_path):
                 if Utils.to_timestamp(media.modify_date) > \
                         os.path.getctime(media.local_full_path):
-                    print('{} was modified'.format(media.local_full_path))
+                    log.warning('{} was modified'.format(
+                        media.local_full_path))
                 else:
                     continue
 
@@ -237,7 +239,7 @@ class GoogleDriveSync(object):
                 os.makedirs(media.local_folder)
             temp_filename = os.path.join(self._root_folder, '.temp-photo')
 
-            print (u'downloading {} ...'.format(media.local_full_path))
+            log.info('downloading {} ...'.format(media.local_full_path))
             f = self._googleDrive.CreateFile({'id': media.id})
             try:
                 Utils.retry(10, f.GetContentFile, temp_filename)
@@ -250,6 +252,5 @@ class GoogleDriveSync(object):
                          (Utils.to_timestamp(media.modify_date),
                           Utils.to_timestamp(media.create_date)))
             except ApiRequestError:
-                print(
-                    u'DOWNLOAD FAILURE for {}'.format(
-                        media.local_full_path))
+                log.error('DOWNLOAD FAILURE for {}'.format(
+                    media.local_full_path))

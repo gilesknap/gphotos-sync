@@ -13,7 +13,7 @@
 -- update:- 1.0 eschews date matching and there are 104 out of 100,000 files
 -- missing from drive and most seem to be genuinely missing - now use picasa to
 -- download these
-SELECT * from SyncFiles WHERE SyncFiles.MediaType is 1
+SELECT * from SyncFiles WHERE SyncFiles.MediaType is 1 and SymLink is NULL
 and OrigFileName not LIKE "%COLLAGE.jpg"
 and OrigFileName not LIKE "%EFFECTS.jpg"
 and OrigFileName not LIKE "%ANIMATION.gif"
@@ -49,6 +49,7 @@ WHERE SyncFiles.Path not LIKE '%Google Photos%' and SyncFiles.MediaType is 0;
 
 SELECT * from SyncFiles WHERE SyncFiles.MediaType is 1;
 
+SELECT * from SyncFiles where SyncFiles.FileName is '20171103_173912.jpg'
 
 -- get all the files in an album
 SELECT SyncFiles.Path, SyncFiles.Filename, SyncFiles.ModifyDate, Albums.AlbumName,

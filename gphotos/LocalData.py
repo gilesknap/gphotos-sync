@@ -5,6 +5,9 @@ import sqlite3 as lite
 from datetime import datetime
 
 import Utils
+import logging
+
+log = logging.getLogger('gphotos.data')
 
 
 # noinspection PyClassHasNoInit
@@ -150,7 +153,7 @@ class LocalData:
         if version > self.VERSION:
             raise ValueError('Database version is newer than gphotos-sync')
         elif version < self.VERSION:
-            print('Database schema out of date. Flushing index ...')
+            log.warning('Database schema out of date. Flushing index ...')
             self.con.commit()
             self.con.close()
             os.rename(self.file_name, self.file_name + '.previous')
@@ -394,6 +397,6 @@ class LocalData:
             yield (result['FolderId'], result['FolderName'])
 
     def store(self):
-        print("\nSaving Database ...")
+        log.info("Saving Database ...")
         self.con.commit()
-        print("Database Saved.\n")
+        log.info("Database Saved.")
