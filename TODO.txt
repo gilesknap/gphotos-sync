@@ -2,6 +2,8 @@ Tidy Up
 =======
 + DONE review todos in code
 + DONE review inspections
++ handle single file in multiple drive folders (use links to the 1st instance)
++ provide a singleton mutex for
 + remove print and add logging instead
 + make paths in db relative 
 + make paths in symlinks relative
