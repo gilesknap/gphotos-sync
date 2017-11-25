@@ -30,10 +30,6 @@ class NoGooglePhotosFolderError(Exception):
 #   delete' once sync of deletions is implemented)
 
 class GoogleDriveSync(object):
-    GOOGLE_PHOTO_FOLDER_QUERY = (
-        u'title = "Google Photos" and "root" in parents and trashed=false')
-    FOLDER_QUERY = u'title = "%s" and "%s" in parents and trashed=false and ' \
-                   u'mimeType="application/vnd.google-apps.folder"'
     PAGE_SIZE = 100
 
     def __init__(self, root_folder, db,
@@ -92,15 +88,17 @@ class GoogleDriveSync(object):
     def scan_folder_hierarchy(self):
         print('\nIndexing Drive Folders ...')
         # get the root id
+        # is this really the only way?- Find all items with root as parent
+        # then ask the first of these for its parent id !!??
         root_id = None
-        query_params = {'q': self.GOOGLE_PHOTO_FOLDER_QUERY}
+        query_params = {'q': '"root" in parents'}
         results = Utils.retry(5, self._googleDrive.ListFile, query_params)
         for page_results in results:
             for drive_file in page_results:
-                if self.allDrive:
-                    root_id = drive_file['parents'][0]['id']
-                else:
-                    root_id = drive_file['id']
+                root_id = drive_file['parents'][0]['id']
+                print('root_id = {}'.format(root_id))
+                break
+            break
 
         # now get all folders
         q = 'trashed=false and mimeType="application/vnd.google-apps.folder"'
@@ -120,8 +118,7 @@ class GoogleDriveSync(object):
                 self._db.put_drive_folder(drive_file['id'], parent_id,
                                           drive_file['title'])
         print('Resolving paths ...')
-        self.folderPaths[root_id] = ''
-        self.recurse_paths('', root_id)
+        self.recurse_paths('root', root_id)
         if len(self.folderPaths) == 1:
             raise ValueError(
                 "No folders found. Please enable Google Photos in Google "

@@ -17,7 +17,7 @@ Cool Stuff
 + review queries in gphotos-sync now we have v3 queries
 + implement my old albums via the description tags
 + also do a 'no-album for each year (or month)'
-+ remove gdata dependency (not possible) and make python 3 compatible
++ remove gdata dependency (if possible) and make python 3 compatible
 
 Long Term
 =========
