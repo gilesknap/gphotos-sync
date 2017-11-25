@@ -52,7 +52,7 @@ class TestSystem(TestCase):
         self.assertEqual(name[0], 'IMG_20170131_163640444.jpg')
 
         expected_file = os.path.join(
-            s.root, 'drive/2017/IMG_20170131_163640444.jpg')
+            s.root, 'drive/Google Photos/2017/IMG_20170131_163640444.jpg')
         self.assertEqual(True, os.path.exists(expected_file))
         db.con.close()
 
@@ -238,7 +238,7 @@ class TestSystem(TestCase):
                 '--skip-picasa', '--do-delete', '--skip-video']
         s.test_setup('test_drive_delete', args=args, trash_files=True)
 
-        pat = os.path.join(s.root, 'drive', '2017', '*.*')
+        pat = os.path.join(s.root, 'drive', 'Google Photos', '2017', '*.*')
         print(pat)
 
         s.gp.start(s.parsed_args)

@@ -121,7 +121,7 @@ class GoogleDriveSync(object):
                 self._db.put_drive_folder(drive_file['id'], parent_id,
                                           drive_file['title'])
         log.info('Resolving paths ...')
-        self.recurse_paths('root', root_id)
+        self.recurse_paths('', root_id)
         if len(self.folderPaths) == 1:
             raise ValueError(
                 "No folders found. Please enable Google Photos in Google "

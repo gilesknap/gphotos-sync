@@ -11,13 +11,15 @@ from LocalData import LocalData
 from PicasaSync import PicasaSync
 
 APP_NAME = "gphotos-sync"
+log = logging.getLogger('gphotos')
+
 
 class GooglePhotosSyncMain:
     def __init__(self):
         self.data_store = None
         self.drive_sync = None
         self.picasa_sync = None
-        self.log = None
+        log = None
 
     parser = argparse.ArgumentParser(
         description="Google Photos download tool")
@@ -122,11 +124,30 @@ class GooglePhotosSyncMain:
         self.drive_sync.allDrive = args.all_drive
         self.picasa_sync.album_name = args.album
 
+    def logging(self, args):
+        numeric_level = getattr(logging, args.log_level.upper(), None)
+        if not isinstance(numeric_level, int):
+            raise ValueError('Invalid log level: %s' % args.log_level)
+
+        # create logger
+        log.setLevel(numeric_level)
+
+        # create console handler and set level to debug
+        ch = logging.StreamHandler()
+        ch.setLevel(logging.DEBUG)
+
+        # create formatter
+        formatter = logging.Formatter('%(name)s: %(message)s')
+
+        # add formatter to ch
+        ch.setFormatter(formatter)
+
+        # add ch to logger
+        log.addHandler(ch)
+
     def start(self, args):
+        self.logging(args)
         with self.data_store:
-            # self.picasa_sync.index_picasa_media()
-            # self.picasa_sync.download_picasa_media()
-            # exit(0)
 
             try:
                 if not args.skip_index:
@@ -150,7 +171,7 @@ class GooglePhotosSyncMain:
                     self.picasa_sync.create_album_content_links()
 
             except KeyboardInterrupt:
-                self.log.warning("User cancelled download")
+                log.warning("User cancelled download")
                 # save the traceback so we can diagnose lockups
                 except_file_name = os.path.join(
                     os.path.dirname(os.path.abspath(__file__)),
@@ -158,32 +179,10 @@ class GooglePhotosSyncMain:
                 with open(except_file_name, "w") as text_file:
                     text_file.write(traceback.format_exc())
             finally:
-                self.log.info("Done.")
+                log.info("Done.")
 
     def main(self):
         args = self.parser.parse_args()
-
-        numeric_level = getattr(logging, args.log_level.upper(), None)
-        if not isinstance(numeric_level, int):
-            raise ValueError('Invalid log level: %s' % args.log_level)
-
-        # create logger
-        self.log = logging.getLogger('gphotos')
-        self.log.setLevel(numeric_level)
-
-        # create console handler and set level to debug
-        ch = logging.StreamHandler()
-        ch.setLevel(logging.DEBUG)
-
-        # create formatter
-        formatter = logging.Formatter(
-            '%(name)s: %(message)s')
-
-        # add formatter to ch
-        ch.setFormatter(formatter)
-
-        # add ch to logger
-        self.log.addHandler(ch)
 
         # configure and launch
         self.setup(args)
