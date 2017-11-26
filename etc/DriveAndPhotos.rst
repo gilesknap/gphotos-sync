@@ -35,7 +35,7 @@ This approach has the following limitations:
 
 Creations
 -------------
-Google Photos own creations such as Panoramas and Movies etc. Are not know to drive and hence any older than 10000 most recent items (and not in an album) simply cannot be accessed programatically. A workaround to this is to create a folder and drop them all in (as long as you have less than 10000, in which case they would need multiple albums)
+Google Photos own creations such as Panoramas and Movies etc. Are not know to drive and hence any older than 10000 most recent items (and not in an album) simply cannot be accessed programmatically. A workaround to this is to create a folder and drop them all in (as long as you have less than 10000, in which case they would need multiple albums)
 
 Modified Date
 -------------
@@ -49,7 +49,7 @@ This would be fine if the modify dates in Drive was always later than Photos but
 
 It looks like some of my uploads in my test account have very old modify dates in Drive (like 2 years old). All my test photos are my own from my main account and I can only guess that drive has linked to existing entries (by hash) across accounts.
 
-Conclusion - use of modified date in Drive vs Picasweb is not viable.
+Conclusion - use of modified date in Drive vs Picasaweb is not viable.
 
 PicasaWeb IDs
 =============

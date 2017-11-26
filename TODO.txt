@@ -1,6 +1,6 @@
 Tidy Up
 =======
-+ DONE review todos in code
++ DONE review todo comments in code
 + DONE review inspections
 + handle single file in multiple drive folders (use links to the 1st instance)
 + provide a singleton mutex for
@@ -23,7 +23,7 @@ Cool Stuff
 
 Long Term
 =========
-+ Two way sync of google drive (but not Google Photos - need to be cautious of jpgs in Computers too)
++ Two way sync of google drive (but not Google Photos - need to be cautious of JPGs in Computers too)
 + file change monitoring on Google Drive
 + file change monitoring on local filesystem
 + run as a service

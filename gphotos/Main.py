@@ -19,7 +19,6 @@ class GooglePhotosSyncMain:
         self.data_store = None
         self.drive_sync = None
         self.picasa_sync = None
-        log = None
 
     parser = argparse.ArgumentParser(
         description="Google Photos download tool")
@@ -76,6 +75,10 @@ class GooglePhotosSyncMain:
         action='store_true',
         help="use cut and paste for auth instead of invoking a browser")
     parser.add_argument(
+        "--refresh-albums",
+        action='store_true',
+        help="force a refresh of the album links")
+    parser.add_argument(
         "--all-drive",
         action='store_true',
         help="when True all folders in drive are scanned for media. "
@@ -124,7 +127,8 @@ class GooglePhotosSyncMain:
         self.drive_sync.allDrive = args.all_drive
         self.picasa_sync.album_name = args.album
 
-    def logging(self, args):
+    @classmethod
+    def logging(cls, args):
         numeric_level = getattr(logging, args.log_level.upper(), None)
         if not isinstance(numeric_level, int):
             raise ValueError('Invalid log level: %s' % args.log_level)
@@ -137,7 +141,8 @@ class GooglePhotosSyncMain:
         ch.setLevel(logging.DEBUG)
 
         # create formatter
-        formatter = logging.Formatter('%(name)s: %(message)s')
+        formatter = logging.Formatter(u'%(name)s: %(message)s')
+        logging._defaultFormatter = logging.Formatter(u"%(message)s")
 
         # add formatter to ch
         ch.setFormatter(formatter)
@@ -167,7 +172,7 @@ class GooglePhotosSyncMain:
                         self.drive_sync.download_drive_media()
                         if args.do_delete:
                             self.drive_sync.check_for_removed()
-                if not args.skip_picasa:
+                if (not args.skip_picasa) or args.refresh_albums:
                     self.picasa_sync.create_album_content_links()
 
             except KeyboardInterrupt:

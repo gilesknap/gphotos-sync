@@ -1,6 +1,20 @@
 CHANGES
 =======
 
+* switch logging to stdout
+* remove "root" folder level and fix tests to work with logger
+* add python.logging
+* adding minor todos after verifying full sync of 100,000 photos against Google Backup and Sync
+* fix root id finding
+* clean up pycharm inspections
+* tidy todos into todo.txt
+* final version of readme
+* restore build status badges
+* update Readme
+* resolve auth scope issue
+* indexing bug fixes
+* restore indexing and duplicate handling using new scheme
+* fixed indexing model - now using Drive as master
 * rework is\_indexed to index all picasaweb files
 * Added documentation on the picasaweb drive integration issue
 * No handle file edits in picasa but ONLY after the initial sync :-(
@@ -11,6 +25,8 @@ CHANGES
 * update to index\_picasa\_media
 * get coverage module correct
 * resturcture project to add coveralls
+* attempting to get travis badge fixed again
+* master branch build monitoring
 * fix setup and update readme
 * make media type IntEnum to fix travis
 * added test credentials for travis testing

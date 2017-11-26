@@ -49,15 +49,17 @@ WHERE SyncFiles.Path not LIKE '%Google Photos%' and SyncFiles.MediaType is 0;
 
 SELECT * from SyncFiles WHERE SyncFiles.MediaType is 1;
 
-SELECT * from SyncFiles where SyncFiles.FileName is '20171103_173912.jpg'
+SELECT * from SyncFiles where SyncFiles.FileName is '20171103_173912.jpg';
 
 -- get all the files in an album
 SELECT SyncFiles.Path, SyncFiles.Filename, SyncFiles.ModifyDate, Albums.AlbumName,
   Albums.EndDate FROM AlbumFiles
   INNER JOIN SyncFiles ON AlbumFiles.DriveRec=SyncFiles.Id
   INNER JOIN Albums ON AlbumFiles.AlbumRec=Albums.AlbumId
-  WHERE Albums.AlbumName LIKE '%Test%';
+  WHERE Albums.AlbumName LIKE '%';
 
 SELECT * from SyncFiles WHERE SyncFiles.MediaType is not 0;
 SELECT * from SyncFiles WHERE FileName like 'P1040748%';
 SELECT * from SyncFiles WHERE Path like '%Cars%';
+
+SELECT * from AlbumFiles;
