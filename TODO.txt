@@ -4,7 +4,7 @@ Tidy Up
 + DONE review inspections
 + handle single file in multiple drive folders (use links to the 1st instance)
 + provide a singleton mutex for
-+ remove print and add logging instead
++ DONE remove print and add logging instead
 + make paths in db relative 
 + make paths in symlinks relative
 + get rid of 'Original Filename' column in SyncFiles Column (requires duplicate name handling refactor)
@@ -24,8 +24,9 @@ Cool Stuff
 Long Term
 =========
 + Two way sync of google drive (but not Google Photos - need to be cautious of jpgs in Computers too)
-+ change monitoring on Google Drive
-+ change monitoring on local filesystem
++ file change monitoring on Google Drive
++ file change monitoring on local filesystem
 + run as a service
 + use Google Photos upload API to put quota free photos up (copy Backup and Sync tool semantics even though they are a bit rubbish)
++ add sync of all drive items in addition to photos/videos
 

@@ -3,9 +3,9 @@ import argparse
 import os.path
 import traceback
 import logging
+import sys
 
 from appdirs import AppDirs
-
 from GoogleDriveSync import GoogleDriveSync
 from LocalData import LocalData
 from PicasaSync import PicasaSync
@@ -133,7 +133,7 @@ class GooglePhotosSyncMain:
         log.setLevel(numeric_level)
 
         # create console handler and set level to debug
-        ch = logging.StreamHandler()
+        ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(logging.DEBUG)
 
         # create formatter
