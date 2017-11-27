@@ -38,6 +38,11 @@ class GooglePhotosSyncMain:
         help="Set log level. Options: critical, error, warning, info, debug",
         default='info')
     parser.add_argument(
+        "--db-path",
+        help="Specify a pre-exisitng folder for the index database. "
+             "Defaults to the root of the local download folders",
+        default=None)
+    parser.add_argument(
         "--end-date",
         help="Set the latest date of files to sync",
         default=None)
@@ -99,7 +104,11 @@ class GooglePhotosSyncMain:
     def setup(self, args):
         app_dirs = AppDirs(APP_NAME)
 
-        self.data_store = LocalData(args.root_folder, args.flush_index)
+        if not os.path.exists(args.root_folder):
+            os.makedirs(args.root_folder, 0o700)
+
+        db_path = args.db_path if args.db_path else args.root_folder
+        self.data_store = LocalData(db_path, args.flush_index)
 
         credentials_file = os.path.join(
             app_dirs.user_data_dir, "credentials.json")
