@@ -100,8 +100,6 @@ class LocalData:
 
     def __init__(self, root_folder, flush_index=False):
         self.file_name = os.path.join(root_folder, LocalData.DB_FILE_NAME)
-        if not os.path.exists(root_folder):
-            os.makedirs(root_folder, 0o700)
         if not os.path.exists(self.file_name) or flush_index:
             clean_db = True
         else:
