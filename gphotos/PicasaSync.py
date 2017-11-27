@@ -30,16 +30,19 @@ class PicasaSync(object):
     HIDDEN_ALBUMS = [u'Profile Photos']
     ALL_FILES_ALBUMS = [u'Auto Backup']
 
-    def __init__(self, credentials, root_folder, db):
+    def __init__(self, credentials, root_folder, db, flush_albums):
         """
+
         :param (OAutCredentials) credentials:
         :param (str) root_folder:
         :param (LocalData) db:
+        :param (bool) flush_albums:
         """
         self._root_folder = root_folder
         self._db = db
         self._gdata_client = None
         self._credentials = credentials
+        self.flush_albums = flush_albums
         self._auth2token = gdata.gauth.OAuth2TokenFromCredentials(credentials)
 
         gd_client = gdata.photos.service.PhotosService()
@@ -230,6 +233,10 @@ class PicasaSync(object):
         log.info('Indexing Albums ...')
         albums = Utils.retry(10, self._gdata_client.GetUserFeed, limit=limit)
         log.info('Album count %d', len(albums.entry))
+
+        if self.flush_albums:
+            log.debug("removing all album links from db (--flush-index)")
+            self._db.remove_all_album_files()
 
         helper = IndexAlbumHelper(self)
 

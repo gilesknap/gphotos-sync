@@ -126,7 +126,8 @@ class GooglePhotosSyncMain:
                                           no_browser=args.no_browser)
 
         self.picasa_sync = PicasaSync(self.drive_sync.credentials,
-                                      args.root_folder, self.data_store)
+                                      args.root_folder, self.data_store,
+                                      args.flush_index)
 
         self.drive_sync.startDate = self.picasa_sync.startDate = args.start_date
         self.drive_sync.endDate = self.picasa_sync.endDate = args.end_date
