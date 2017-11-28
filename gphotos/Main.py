@@ -4,6 +4,7 @@ import os.path
 import traceback
 import logging
 import sys
+import signal
 
 from appdirs import AppDirs
 from GoogleDriveSync import GoogleDriveSync
@@ -14,6 +15,14 @@ import pkg_resources
 APP_NAME = "gphotos-sync"
 log = logging.getLogger('gphotos')
 
+
+def sigterm_handler(_signo, _stack_frame):
+    log.warning("\nProcess killed "
+                "(stacktrace in .gphotos-terminated).")
+    # save the traceback so we can diagnose lockups
+    with open(".gphotos-terminated", "w") as text_file:
+        text_file.write(traceback.format_exc())
+    sys.exit(0)
 
 class GooglePhotosSyncMain:
     def __init__(self):
@@ -109,6 +118,12 @@ class GooglePhotosSyncMain:
     def setup(self, args):
         app_dirs = AppDirs(APP_NAME)
 
+        try:
+            log.info('version: {}'.format(
+                pkg_resources.get_distribution("gphotos-sync").version))
+        except Exception:
+            log.info('version not available')
+
         if not os.path.exists(args.root_folder):
             os.makedirs(args.root_folder, 0o700)
 
@@ -169,10 +184,11 @@ class GooglePhotosSyncMain:
         # add ch to logger
         log.addHandler(ch)
 
+    if sys.argv[1] == "handle_signal":
+        signal.signal(signal.SIGTERM, sigterm_handler)
+
     def start(self, args):
         self.logging(args)
-        log.info('version: {}'.format(
-            pkg_resources.get_distribution("gphotos-sync").version))
 
         with self.data_store:
             try:
@@ -203,9 +219,13 @@ class GooglePhotosSyncMain:
                 with open(".gphotos-terminated", "w") as text_file:
                     text_file.write(traceback.format_exc())
             finally:
+                # save the traceback so we can diagnose lockups
+                with open(".gphotos-terminated", "w") as text_file:
+                    text_file.write(traceback.format_exc())
                 log.info("Done.")
 
     def main(self):
+        signal.signal(signal.SIGTERM, sigterm_handler)
         args = self.parser.parse_args()
 
         # configure and launch
