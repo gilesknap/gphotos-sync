@@ -118,12 +118,6 @@ class GooglePhotosSyncMain:
     def setup(self, args):
         app_dirs = AppDirs(APP_NAME)
 
-        try:
-            log.info('version: {}'.format(
-                pkg_resources.get_distribution("gphotos-sync").version))
-        except Exception:
-            log.info('version not available')
-
         if not os.path.exists(args.root_folder):
             os.makedirs(args.root_folder, 0o700)
 
@@ -188,8 +182,6 @@ class GooglePhotosSyncMain:
         signal.signal(signal.SIGTERM, sigterm_handler)
 
     def start(self, args):
-        self.logging(args)
-
         with self.data_store:
             try:
                 if not args.skip_index:
@@ -227,6 +219,13 @@ class GooglePhotosSyncMain:
     def main(self):
         signal.signal(signal.SIGTERM, sigterm_handler)
         args = self.parser.parse_args()
+
+        self.logging(args)
+        try:
+            log.info('version: {}'.format(
+                pkg_resources.get_distribution("gphotos-sync").version))
+        except Exception:
+            log.info('version not available')
 
         # configure and launch
         self.setup(args)
