@@ -8,7 +8,6 @@ setup(
     name=module_name,
     setup_requires=['pbr'],
     pbr=True,
-    version='0.9.5',
     packages=packages,
     package_data={'': ['gphotos/sql/gphotos_create.sql']},
     include_package_data=True)

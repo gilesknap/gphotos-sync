@@ -1,6 +1,15 @@
 CHANGES
 =======
 
+* let git control version number
+* enable removal of items from albums on --flush-index
+* add --db-path sp db can go on the fastest disk (#13)
+* add --db-path sp db can go on the fastest disk
+
+1.01
+----
+
+* bugfixes #6 #9
 * switch logging to stdout
 * remove "root" folder level and fix tests to work with logger
 * add python.logging

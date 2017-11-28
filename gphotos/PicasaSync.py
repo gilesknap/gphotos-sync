@@ -60,34 +60,6 @@ class PicasaSync(object):
         self.album_name = None
         self.includeVideo = False
 
-    FEED_URI = '/data/feed/api/user/default?kind={0}'
-
-    # this function was written to try out downloading photos feed rather than
-    # via albums. It is not useful because (a) GetFeed returns less items than
-    # you ask for despite there being more left. (b) even if you work around
-    # this by guessing how many items to ask for next, the api blows up at the
-    # 1000 photos mark. This is considerably worse than 'Auto Upload' album.
-    def index_picasa_media(self):
-        log.info('Indexing Picasa Files ...')
-        uri = self.FEED_URI.format('photo')
-        start_entry = 1
-        limit = PicasaSync.BLOCK_SIZE
-        while True:
-            photos = Utils.retry(10, self._gdata_client.GetFeed, uri,
-                                 limit=limit, start_index=start_entry)
-            count = len(photos.entry)
-            start_entry += count
-            log.info('indexing %d photos ...', count)
-
-            for photo in photos.entry:
-                media = PicasaMedia(None, self._root_folder, photo)
-                results = self._db.get_file_by_id(media.id)
-                if not results:
-                    media.save_to_db(self._db)
-
-            if count < 48:
-                break
-
     def download_picasa_media(self):
         log.info('Downloading Picasa Only Files ...')
         # noinspection PyTypeChecker
@@ -361,21 +333,27 @@ class IndexAlbumHelper:
                 continue
 
             self.set_album_dates(picasa_media.create_date)
+            log.debug('checking %s is indexed', picasa_media.local_full_path)
             picasa_row = picasa_media.is_indexed(self.p._db)
             if picasa_row:
                 if picasa_media.modify_date > picasa_row.ModifyDate:
+                    log.info("Updated index for %s",
+                             picasa_media.local_full_path)
                     picasa_row_id = picasa_media.save_to_db(self.p._db,
                                                             update=True)
-                    log.info("Updated %s", picasa_media.local_full_path)
                 else:
                     picasa_row_id = picasa_row.Id
                     log.debug("Skipped %s", picasa_media.local_full_path)
             else:
                 self.picasa_photos += 1
-                picasa_row_id = picasa_media.save_to_db(self.p._db)
-                log.info("Added %d %s", self.picasa_photos,
+                log.info("Adding index for %d %s", self.picasa_photos,
                          picasa_media.local_full_path)
+                picasa_row_id = picasa_media.save_to_db(self.p._db)
+                if self.picasa_photos % 1000 == 0:
+                    self.p._db.store()
 
+            log.debug('searching for drive match on {}'.format(
+                picasa_media.filename))
             drive_rows = self.p.match_drive_photo(picasa_media)
             count, row = (len(drive_rows), drive_rows[0]) if drive_rows \
                 else (0, None)
@@ -390,9 +368,12 @@ class IndexAlbumHelper:
             # comparison restored
             if count == 0:
                 # no match, link to the picasa file
+                log.info('unmatched %s will be downloaded',
+                         picasa_media.local_full_path)
                 self.p._db.put_album_file(self.album.id, picasa_row_id)
             else:
                 # store link between album and drive file
+                log.debug('matched to %s', drive_rows[0].Path)
                 self.p._db.put_album_file(self.album.id, drive_rows[0].Id)
                 # store the link between picasa and related drive file
                 # this also flags it as not requiring download
@@ -413,6 +394,7 @@ class IndexAlbumHelper:
                                        EndDate=self.album_end_photo,
                                        SyncDate=Utils.date_to_string(
                                            datetime.now()))
+        log.debug('completed album %s', self.album.filename)
         self.p._db.put_album(row)
         if self.album.modify_date > self.latest_download:
             self.latest_download = self.album.modify_date

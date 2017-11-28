@@ -62,7 +62,7 @@ target/
 # exception dump
 
 etc/results.txt
-etc/.gphotos-terminated
+.gphotos-terminated
 /etc/gphotos_backup.sqlite
 /etc/results_crash.txt
 etc/gphotos_photos_only_backup.sqlite

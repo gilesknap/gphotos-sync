@@ -14,7 +14,6 @@ from LocalData import LocalData
 from gphotos.DatabaseMedia import DatabaseMedia
 import logging
 
-
 class NoGooglePhotosFolderError(Exception):
     pass
 
@@ -213,6 +212,8 @@ class GoogleDriveSync(object):
                         n += 1
                         log.info("Added %d %s", n, media.local_full_path)
                         self.write_media(media, False)
+                        if n % 1000 == 0:
+                            self._db.store()
                     elif media.modify_date > row.ModifyDate:
                         log.info("Updated %d %s", n, media.local_full_path)
                         self.write_media(media, True)

@@ -9,6 +9,7 @@ from appdirs import AppDirs
 from GoogleDriveSync import GoogleDriveSync
 from LocalData import LocalData
 from PicasaSync import PicasaSync
+import pkg_resources
 
 APP_NAME = "gphotos-sync"
 log = logging.getLogger('gphotos')
@@ -39,7 +40,7 @@ class GooglePhotosSyncMain:
         default='info')
     parser.add_argument(
         "--db-path",
-        help="Specify a pre-exisitng folder for the index database. "
+        help="Specify a pre-existing folder for the index database. "
              "Defaults to the root of the local download folders",
         default=None)
     parser.add_argument(
@@ -83,6 +84,10 @@ class GooglePhotosSyncMain:
         "--refresh-albums",
         action='store_true',
         help="force a refresh of the album links")
+    parser.add_argument(
+        "--brief",
+        action='store_true',
+        help="don't print time and module in logging")
     parser.add_argument(
         "--all-drive",
         action='store_true',
@@ -151,9 +156,13 @@ class GooglePhotosSyncMain:
         ch.setLevel(logging.DEBUG)
 
         # create formatter
-        formatter = logging.Formatter(u'%(name)s: %(message)s')
-        logging._defaultFormatter = logging.Formatter(u"%(message)s")
+        if args.brief:
+            format_string = u'%(message)s'
+        else:
+            format_string = u'%(asctime)s %(name)s: %(message)s'
 
+        # avoid encoding issues on ssh and file redirect
+        formatter = logging.Formatter(format_string.encode('utf-8'))
         # add formatter to ch
         ch.setFormatter(formatter)
 
@@ -162,8 +171,10 @@ class GooglePhotosSyncMain:
 
     def start(self, args):
         self.logging(args)
-        with self.data_store:
+        log.info('version: {}'.format(
+            pkg_resources.get_distribution("gphotos-sync").version))
 
+        with self.data_store:
             try:
                 if not args.skip_index:
                     if not args.skip_drive:
@@ -186,12 +197,10 @@ class GooglePhotosSyncMain:
                     self.picasa_sync.create_album_content_links()
 
             except KeyboardInterrupt:
-                log.warning("User cancelled download")
+                log.warning("\nUser cancelled download "
+                            "(stacktrace in .gphotos-terminated).")
                 # save the traceback so we can diagnose lockups
-                except_file_name = os.path.join(
-                    os.path.dirname(os.path.abspath(__file__)),
-                    "..", "etc", ".gphotos-terminated")
-                with open(except_file_name, "w") as text_file:
+                with open(".gphotos-terminated", "w") as text_file:
                     text_file.write(traceback.format_exc())
             finally:
                 log.info("Done.")
