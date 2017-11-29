@@ -1,6 +1,13 @@
 CHANGES
 =======
 
+* add log of version number
+* handle clean up of db on kill
+* mods to assist debugging
+
+1.0.2
+-----
+
 * let git control version number
 * enable removal of items from albums on --flush-index
 * add --db-path sp db can go on the fastest disk (#13)

@@ -61,7 +61,7 @@ class PicasaSync(object):
         self.includeVideo = False
 
     def download_picasa_media(self):
-        log.info('Downloading Picasa Only Files ...')
+        log.info(u'Downloading Picasa Only Files ...')
         # noinspection PyTypeChecker
         for media in DatabaseMedia.get_media_by_search(
                 self._root_folder, self._db, media_type=MediaType.PICASA,
@@ -70,7 +70,7 @@ class PicasaSync(object):
             if os.path.exists(media.local_full_path):
                 continue
 
-            log.info("Downloading %s ..." % media.local_full_path)
+            log.info(u"Downloading %s ..." % media.local_full_path)
             tmp_path = os.path.join(media.local_folder, '.gphotos.tmp')
 
             if not os.path.isdir(media.local_folder):
@@ -85,15 +85,15 @@ class PicasaSync(object):
                          (Utils.to_timestamp(media.modify_date),
                           Utils.to_timestamp(media.create_date)))
             else:
-                log.warning("WARNING: failed to download %s", media.local_path)
+                log.warning(u"WARNING: failed to download %s", media.local_path)
 
     def create_album_content_links(self):
-        log.info("Creating album folder links to media ...")
+        log.info(u"Creating album folder links to media ...")
         # the simplest way to handle moves or deletes is to clear out all links
         # first, these are quickly recreated anyway
         links_root = os.path.join(self._root_folder, 'albums')
         if os.path.exists(links_root):
-            log.debug('removing previous album links tree')
+            log.debug(u'removing previous album links tree')
             shutil.rmtree(links_root)
 
         for (path, file_name, album_name, end_date) in \
@@ -111,22 +111,22 @@ class PicasaSync(object):
             link_file = unicode(os.path.join(link_folder, file_name))
 
             if os.path.exists(link_file):
-                log.error("ERROR: Name clash on link %s", link_file)
+                log.error(u"ERROR: Name clash on link %s", link_file)
             else:
-                log.debug('adding album link %s -> %s', full_file_name,
+                log.debug(u'adding album link %s -> %s', full_file_name,
                           link_file)
                 if not os.path.isdir(link_folder):
-                    log.debug('new album folder %s', link_folder)
+                    log.debug(u'new album folder %s', link_folder)
                     os.makedirs(link_folder)
                 os.symlink(full_file_name, link_file)
 
-        log.info("album links done.")
+        log.info(u"album links done.")
 
     # this will currently do nothing unless using --flush-db
     def check_for_removed(self):
         # note for partial scans using date filters this is still OK because
         # for a file to exist it must have been indexed in a previous scan
-        log.info('Finding deleted media ...')
+        log.info(u'Finding deleted media ...')
         top_dir = os.path.join(self._root_folder, PicasaMedia.MEDIA_FOLDER)
         for (dir_name, _, file_names) in os.walk(top_dir):
             for file_name in file_names:
@@ -134,7 +134,7 @@ class PicasaSync(object):
                 if not file_id:
                     name = os.path.join(dir_name, file_name)
                     os.remove(name)
-                    log.warning("%s deleted", name)
+                    log.warning(u"%s deleted", name)
 
     def match_drive_photo(self, media):
         sync_row = self._db.find_file_ids_dates(size=media.size,
@@ -155,9 +155,10 @@ class PicasaSync(object):
             if sync_row:
                 return sync_row[0:1]
 
+
         sync_row = self._match_by_date(media)
         if sync_row:
-            log.warning('MATCH BY DATE on %s %s', media.filename,
+            log.warning(u'MATCH BY DATE on %s %s', media.filename,
                         media.modify_date)
             return sync_row
 
@@ -202,12 +203,12 @@ class PicasaSync(object):
         contents into the db
         :param (int) limit: only scan this number of albums (for testing)
         """
-        log.info('Indexing Albums ...')
+        log.info(u'Indexing Albums ...')
         albums = Utils.retry(10, self._gdata_client.GetUserFeed, limit=limit)
-        log.info('Album count %d', len(albums.entry))
+        log.info(u'Album count %d', len(albums.entry))
 
         if self.flush_albums:
-            log.debug("removing all album links from db (--flush-index)")
+            log.debug(u"removing all album links from db (--flush-index)")
             self._db.remove_all_album_files()
 
         helper = IndexAlbumHelper(self)
@@ -217,7 +218,7 @@ class PicasaSync(object):
             helper.setup_next_album(album)
             if helper.skip_this_album():
                 continue
-            log.info('Album: %s, photos: %d, updated: %s, published: %s',
+            log.info(u'Album: %s, photos: %d, updated: %s, published: %s',
                      album.filename, album.size, album.modify_date,
                      album.create_date)
 
@@ -236,7 +237,7 @@ class PicasaSync(object):
                 if len(photos.entry) < limit:
                     break
                 if start_entry >= PicasaSync.ALBUM_MAX:
-                    log.warning("LIMITING ALBUM TO %d entries",
+                    log.warning(u"LIMITING ALBUM TO %d entries",
                                 PicasaSync.ALBUM_MAX)
                     break
                 if start_entry + PicasaSync.BLOCK_SIZE > PicasaSync.ALBUM_MAX:
@@ -245,7 +246,7 @@ class PicasaSync(object):
             helper.complete_album()
         helper.complete_scan()
 
-        log.info('Total Album Photos in Drive %d, Picasa %d, multiples %d',
+        log.info(u'Total Album Photos in Drive %d, Picasa %d, multiples %d',
                  helper.total_photos, helper.picasa_photos,
                  helper.multiple_match_count)
 
@@ -333,26 +334,26 @@ class IndexAlbumHelper:
                 continue
 
             self.set_album_dates(picasa_media.create_date)
-            log.debug('checking %s is indexed', picasa_media.local_full_path)
+            log.debug(u'checking %s is indexed', picasa_media.local_full_path)
             picasa_row = picasa_media.is_indexed(self.p._db)
             if picasa_row:
                 if picasa_media.modify_date > picasa_row.ModifyDate:
-                    log.info("Updated index for %s",
+                    log.info(u"Updated index for %s",
                              picasa_media.local_full_path)
                     picasa_row_id = picasa_media.save_to_db(self.p._db,
                                                             update=True)
                 else:
                     picasa_row_id = picasa_row.Id
-                    log.debug("Skipped %s", picasa_media.local_full_path)
+                    log.debug(u"Skipped %s", picasa_media.local_full_path)
             else:
                 self.picasa_photos += 1
-                log.info("Adding index for %d %s", self.picasa_photos,
+                log.info(u"Adding index for %d %s", self.picasa_photos,
                          picasa_media.local_full_path)
                 picasa_row_id = picasa_media.save_to_db(self.p._db)
                 if self.picasa_photos % 1000 == 0:
                     self.p._db.store()
 
-            log.debug('searching for drive match on {}'.format(
+            log.debug(u'searching for drive match on {}'.format(
                 picasa_media.filename))
             drive_rows = self.p.match_drive_photo(picasa_media)
             count, row = (len(drive_rows), drive_rows[0]) if drive_rows \
@@ -368,12 +369,12 @@ class IndexAlbumHelper:
             # comparison restored
             if count == 0:
                 # no match, link to the picasa file
-                log.info('unmatched %s will be downloaded',
+                log.info(u'unmatched %s will be downloaded',
                          picasa_media.local_full_path)
                 self.p._db.put_album_file(self.album.id, picasa_row_id)
             else:
                 # store link between album and drive file
-                log.debug('matched to %s', drive_rows[0].Path)
+                log.debug(u'matched to %s', drive_rows[0].Path)
                 self.p._db.put_album_file(self.album.id, drive_rows[0].Id)
                 # store the link between picasa and related drive file
                 # this also flags it as not requiring download
@@ -381,7 +382,7 @@ class IndexAlbumHelper:
 
                 if count > 1:
                     self.multiple_match_count += 1
-                    log.warning('WARNING multiple files match %s %s %s',
+                    log.warning(u'WARNING multiple files match %s %s %s',
                                 picasa_media.orig_name,
                                 picasa_media.modify_date,
                                 picasa_media.size)
@@ -394,7 +395,7 @@ class IndexAlbumHelper:
                                        EndDate=self.album_end_photo,
                                        SyncDate=Utils.date_to_string(
                                            datetime.now()))
-        log.debug('completed album %s', self.album.filename)
+        log.debug(u'completed album %s', self.album.filename)
         self.p._db.put_album(row)
         if self.album.modify_date > self.latest_download:
             self.latest_download = self.album.modify_date
