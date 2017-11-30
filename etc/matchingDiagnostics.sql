@@ -49,7 +49,9 @@ WHERE SyncFiles.Path not LIKE '%Google Photos%' and SyncFiles.MediaType is 0;
 
 SELECT * from SyncFiles WHERE SyncFiles.MediaType is 1;
 
-SELECT * from SyncFiles where SyncFiles.FileName is '20171103_173912.jpg';
+-- this one below is anomalous -> they should match, but do not
+SELECT * from SyncFiles where SyncFiles.FileName is '20171126_124838.jpg';
+SELECT * from SyncFiles where SyncFiles.FileSize is 2091021;
 
 -- get all the files in an album
 SELECT SyncFiles.Path, SyncFiles.Filename, SyncFiles.ModifyDate, Albums.AlbumName,

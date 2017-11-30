@@ -110,15 +110,18 @@ class PicasaSync(object):
             link_folder = unicode(os.path.join(links_root, year, rel_path))
             link_file = unicode(os.path.join(link_folder, file_name))
 
-            if os.path.exists(link_file):
-                log.error(u"ERROR: Name clash on link %s", link_file)
-            else:
-                log.debug(u'adding album link %s -> %s', full_file_name,
-                          link_file)
-                if not os.path.isdir(link_folder):
-                    log.debug(u'new album folder %s', link_folder)
-                    os.makedirs(link_folder)
-                os.symlink(full_file_name, link_file)
+            original_link_file = link_file
+            duplicates = 0
+            while os.path.exists(link_file):
+                duplicates += 1
+                link_file = '{} ({})'.format(original_link_file, duplicates)
+
+            log.debug(u'adding album link %s -> %s', full_file_name,
+                      link_file)
+            if not os.path.isdir(link_folder):
+                log.debug(u'new album folder %s', link_folder)
+                os.makedirs(link_folder)
+            os.symlink(full_file_name, link_file)
 
         log.info(u"album links done.")
 
@@ -155,7 +158,6 @@ class PicasaSync(object):
             if sync_row:
                 return sync_row[0:1]
 
-
         sync_row = self._match_by_date(media)
         if sync_row:
             log.warning(u'MATCH BY DATE on %s %s', media.filename,
@@ -167,35 +169,23 @@ class PicasaSync(object):
 
     def _match_by_date(self, media, media_type=None):
         """
-        search with date need to check for timezone slips due to camera not
-        set to correct timezone and missing or corrupted exif_date,
-        in which case revert to create date
-        ABOVE DONE
-        todo verify that the above is required in my photos collection
-        todo todo temp removed date loop for performance on windows test
-        todo confirmed windows scan is much faster - leaving for now
+        Now only use create date here - picasweb modify date is unreliable
 
         :param (PicasaMedia) media: media item to find a match on
+        :param (MediaType) media_media_type: type of media to search for
         :return ([(str, str)]): list of (file_id, date)
         """
-        for use_create_date in [False]:
-            sync_row = self._db.find_file_ids_dates(filename=media.filename,
-                                                    exif_date=media.modify_date,
-                                                    use_create=use_create_date,
-                                                    media_type=media_type)
-            if sync_row:
-                return sync_row
-            for hour_offset in range(-1, 1):
-                date_to_check = media.modify_date + timedelta(hours=hour_offset)
-                sync_row = self._db.find_file_ids_dates(
-                    filename=media.filename,
-                    exif_date=date_to_check,
-                    use_create=use_create_date,
-                    media_type=media_type)
-            if sync_row:
-                return sync_row
 
-        return None
+        sync_row = None
+        for hour_offset in range(-1, 1):
+            date_to_check = media.modify_date + timedelta(hours=hour_offset)
+            sync_row = self._db.find_file_ids_dates(
+                filename=media.filename,
+                exif_date=date_to_check,
+                use_create=True,
+                media_type=media_type)
+
+        return sync_row
 
     def index_album_media(self, limit=None):
         """
@@ -246,8 +236,9 @@ class PicasaSync(object):
             helper.complete_album()
         helper.complete_scan()
 
+        # todo is this correct
         log.info(u'Total Album Photos in Drive %d, Picasa %d, multiples %d',
-                 helper.total_photos, helper.picasa_photos,
+                 helper.total_photos, helper.total_photos,
                  helper.multiple_match_count)
 
         # Making this a 'friend' class of
@@ -266,7 +257,7 @@ class IndexAlbumHelper:
         # Initialize members global to the whole scan
         self.p = picasa_sync
         self.total_photos = 0
-        self.picasa_photos = 0
+        self.new_picasa_photos = 0
         self.drive_photos = 0
         self.multiple_match_count = 0
         (_, self.latest_download) = self.p._db.get_scan_dates()
@@ -337,20 +328,18 @@ class IndexAlbumHelper:
             log.debug(u'checking %s is indexed', picasa_media.local_full_path)
             picasa_row = picasa_media.is_indexed(self.p._db)
             if picasa_row:
-                if picasa_media.modify_date > picasa_row.ModifyDate:
-                    log.info(u"Updated index for %s",
-                             picasa_media.local_full_path)
-                    picasa_row_id = picasa_media.save_to_db(self.p._db,
-                                                            update=True)
-                else:
-                    picasa_row_id = picasa_row.Id
-                    log.debug(u"Skipped %s", picasa_media.local_full_path)
+                # modify dates seem quite random in picasa listings and since
+                # they cannot reliably compare with drive dates I currently do
+                # not check for changes in modify date - drive always wins on
+                # a match. (*) see below
+                picasa_row_id = picasa_row.Id
+                log.debug(u"Already indexed: %s", picasa_media.local_full_path)
             else:
-                self.picasa_photos += 1
-                log.info(u"Adding index for %d %s", self.picasa_photos,
+                self.new_picasa_photos += 1
+                log.info(u"New index for %d %s", self.new_picasa_photos,
                          picasa_media.local_full_path)
                 picasa_row_id = picasa_media.save_to_db(self.p._db)
-                if self.picasa_photos % 1000 == 0:
+                if self.new_picasa_photos % 1000 == 0:
                     self.p._db.store()
 
             log.debug(u'searching for drive match on {}'.format(
@@ -366,15 +355,15 @@ class IndexAlbumHelper:
             # any edits in google photos are not backed up
             #
             # if a workaround is found then the below should have date
-            # comparison restored
+            # comparison restored as should (*) above
             if count == 0:
                 # no match, link to the picasa file
-                log.info(u'unmatched %s will be downloaded',
+                log.info(u'unmatched %s',
                          picasa_media.local_full_path)
                 self.p._db.put_album_file(self.album.id, picasa_row_id)
             else:
                 # store link between album and drive file
-                log.debug(u'matched to %s', drive_rows[0].Path)
+                log.debug(u'matched %s', picasa_media.local_full_path)
                 self.p._db.put_album_file(self.album.id, drive_rows[0].Id)
                 # store the link between picasa and related drive file
                 # this also flags it as not requiring download
