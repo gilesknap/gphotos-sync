@@ -46,13 +46,16 @@ class SetupDbAndCredentials:
         elif trash_db:
             if os.path.exists(self.db_file):
                 os.remove(self.db_file)
+        if not os.path.exists(self.root):
+            os.makedirs(self.root)
 
-        all_args = [self.root]
+        all_args = ['--log-level', 'debug', self.root]
         if args:
             all_args += args
 
         self.parsed_args = self.gp.parser.parse_args(all_args)
-        self.gp.setup(self.parsed_args)
+        self.gp.logging(self.parsed_args)
+        self.gp.setup(self.parsed_args, self.root)
 
     def test_done(self):
         self.gp.data_store.store()

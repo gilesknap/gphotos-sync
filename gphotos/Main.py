@@ -173,8 +173,9 @@ class GooglePhotosSyncMain:
         # add formatter to ch
         ch.setFormatter(formatter)
 
-        # add ch to logger
-        log.addHandler(ch)
+        if not len(log.handlers):
+            # add ch to logger
+            log.addHandler(ch)
 
     def start(self, args):
         with self.data_store:
