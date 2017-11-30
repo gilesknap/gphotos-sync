@@ -5,6 +5,7 @@ import traceback
 import logging
 import sys
 import signal
+import fcntl
 
 from appdirs import AppDirs
 from GoogleDriveSync import GoogleDriveSync
@@ -23,6 +24,7 @@ def sigterm_handler(_signo, _stack_frame):
     with open(".gphotos-terminated", "w") as text_file:
         text_file.write(traceback.format_exc())
     sys.exit(0)
+
 
 class GooglePhotosSyncMain:
     def __init__(self):
@@ -115,13 +117,9 @@ class GooglePhotosSyncMain:
         help="only index a single drive file (for testing)",
         default=None)
 
-    def setup(self, args):
+    def setup(self, args, db_path):
         app_dirs = AppDirs(APP_NAME)
 
-        if not os.path.exists(args.root_folder):
-            os.makedirs(args.root_folder, 0o700)
-
-        db_path = args.db_path if args.db_path else args.root_folder
         self.data_store = LocalData(db_path, args.flush_index)
 
         credentials_file = os.path.join(
@@ -178,9 +176,6 @@ class GooglePhotosSyncMain:
         # add ch to logger
         log.addHandler(ch)
 
-    if sys.argv[1] == "handle_signal":
-        signal.signal(signal.SIGTERM, sigterm_handler)
-
     def start(self, args):
         with self.data_store:
             try:
@@ -217,16 +212,30 @@ class GooglePhotosSyncMain:
                 log.info("Done.")
 
     def main(self):
-        signal.signal(signal.SIGTERM, sigterm_handler)
         args = self.parser.parse_args()
-
         self.logging(args)
-        try:
-            log.info('version: {}'.format(
-                pkg_resources.get_distribution("gphotos-sync").version))
-        except Exception:
-            log.info('version not available')
+        signal.signal(signal.SIGTERM, sigterm_handler)
 
-        # configure and launch
-        self.setup(args)
-        self.start(args)
+        db_path = args.db_path if args.db_path else args.root_folder
+        if not os.path.exists(args.root_folder):
+            os.makedirs(args.root_folder, 0o700)
+
+        lock_file = os.path.join(db_path, 'gphotos.lock')
+        fp = open(lock_file, 'w')
+        with fp:
+            try:
+                fcntl.lockf(fp, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except IOError:
+                log.warning(u'EXITING: database is locked')
+                sys.exit(0)
+
+            # noinspection PyBroadException
+            try:
+                log.info('version: {}'.format(
+                    pkg_resources.get_distribution("gphotos-sync").version))
+            except Exception:
+                log.info('version not available')
+
+            # configure and launch
+            self.setup(args, db_path)
+            self.start(args)
