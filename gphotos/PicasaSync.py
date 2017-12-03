@@ -172,7 +172,7 @@ class PicasaSync(object):
         Now only use create date here - picasweb modify date is unreliable
 
         :param (PicasaMedia) media: media item to find a match on
-        :param (MediaType) media_media_type: type of media to search for
+        :param (MediaType) media_type: type of media to search for
         :return ([(str, str)]): list of (file_id, date)
         """
 
@@ -221,7 +221,9 @@ class PicasaSync(object):
             while True:
                 photos = Utils.retry(10, self._gdata_client.GetFeed, q,
                                      limit=limit, start_index=start_entry)
-                helper.index_photos(photos)
+                completed = helper.index_photos(photos)
+                if completed:
+                    break
 
                 start_entry += limit
                 if len(photos.entry) < limit:
@@ -301,10 +303,7 @@ class IndexAlbumHelper:
                 return True
         # handle incremental backup but allow startDate to override
         if not self.p.startDate:
-            if self.album.modify_date < self.sync_date and \
-                            self.album.filename not in \
-                            PicasaSync.ALL_FILES_ALBUMS:
-                # Always scan ALL_FILES for updates to last 10000 picasa photos
+            if self.album.modify_date < self.sync_date:
                 return True
         if int(self.album.size) == 0:
             return True
@@ -318,8 +317,15 @@ class IndexAlbumHelper:
             self.album_start_photo = photo_date
 
     def index_photos(self, photos):
+        completed = False
         for photo in photos.entry:
             picasa_media = PicasaMedia(None, self.p._root_folder, photo)
+
+            if picasa_media.create_date < self.latest_download and \
+                    self.album.filename in PicasaSync.HIDDEN_ALBUMS:
+                completed = True
+                break
+
             if (not self.p.includeVideo) and \
                     picasa_media.mime_type.startswith('video/'):
                 continue
@@ -358,8 +364,7 @@ class IndexAlbumHelper:
             # comparison restored as should (*) above
             if count == 0:
                 # no match, link to the picasa file
-                log.info(u'unmatched %s',
-                         picasa_media.local_full_path)
+                log.info(u'unmatched %s', picasa_media.local_full_path)
                 self.p._db.put_album_file(self.album.id, picasa_row_id)
             else:
                 # store link between album and drive file
@@ -375,6 +380,7 @@ class IndexAlbumHelper:
                                 picasa_media.orig_name,
                                 picasa_media.modify_date,
                                 picasa_media.size)
+        return completed
 
     def complete_album(self):
         # write the album data down now we know the contents' date range

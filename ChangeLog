@@ -1,6 +1,10 @@
 CHANGES
 =======
 
+* improvements to picasa-drive matching
+* fix tests
+* added locking, only one instance can run against a given database location
+* make all log strings unicode
 * add log of version number
 * handle clean up of db on kill
 * mods to assist debugging
