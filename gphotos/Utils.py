@@ -53,10 +53,13 @@ def retry(count, func, *arg, **k_arg):
         try:
             res = func(*arg, **k_arg)
             return res
+        except MemoryError:
+            log.error(u"ABORTING %s OUT OF MEMORY", repr(func))
+            return None
         except Exception as e:
             last_e = e
             log.warning(u"RETRYING due to: %s", repr(e))
-            log.warning(u"Call was: %s (%s, %s)", repr(func), arg, k_arg)
+            log.warning(u"Call was: %s", repr(func))
             time.sleep(.1)
     raise last_e
 
