@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 # coding: utf8
 import os.path
 import sqlite3 as lite
