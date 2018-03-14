@@ -1,0 +1,25 @@
+[[source]]
+
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+
+[packages]
+
+mock = "*"
+PyDrive = "*"
+retrying = "*"
+appdirs = "*"
+"progressbar2" = "*"
+gdata = "*"
+enum = "*"
+
+
+[dev-packages]
+
+
+
+[requires]
+
+python_version = "2.7"
