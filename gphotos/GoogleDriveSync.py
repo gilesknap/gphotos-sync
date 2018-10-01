@@ -7,12 +7,13 @@ from pydrive.drive import GoogleDrive
 from pydrive.files import ApiRequestError
 from pydrive.settings import InvalidConfigError
 
-import Utils
-from GoogleDriveMedia import GoogleDriveMedia
-from GoogleMedia import MediaType
-from LocalData import LocalData
-from gphotos.DatabaseMedia import DatabaseMedia
+from . import Utils
+from .GoogleDriveMedia import GoogleDriveMedia
+from .GoogleMedia import MediaType
+from .LocalData import LocalData
+from .DatabaseMedia import DatabaseMedia
 import logging
+
 
 class NoGooglePhotosFolderError(Exception):
     pass

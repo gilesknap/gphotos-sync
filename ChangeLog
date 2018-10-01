@@ -1,6 +1,15 @@
 CHANGES
 =======
 
+* Update README.rst
+* Update README.rst
+* add Pipfile (#25)
+* use /usr/bin/env python2 everywhere, not hard-coded /usr/bin/python (#24)
+
+1.1
+---
+
+* speed up scanning of "Auto Update"
 * improvements to picasa-drive matching
 * fix tests
 * added locking, only one instance can run against a given database location
@@ -28,6 +37,10 @@ CHANGES
 * fix root id finding
 * clean up pycharm inspections
 * tidy todos into todo.txt
+
+v1.0
+----
+
 * final version of readme
 * restore build status badges
 * update Readme

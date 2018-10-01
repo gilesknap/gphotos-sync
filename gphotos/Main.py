@@ -8,9 +8,8 @@ import signal
 import fcntl
 
 from appdirs import AppDirs
-from GoogleDriveSync import GoogleDriveSync
-from LocalData import LocalData
-from PicasaSync import PicasaSync
+from .GoogleDriveSync import GoogleDriveSync
+from .LocalData import LocalData
 import pkg_resources
 
 APP_NAME = "gphotos-sync"
@@ -30,7 +29,6 @@ class GooglePhotosSyncMain:
     def __init__(self):
         self.data_store = None
         self.drive_sync = None
-        self.picasa_sync = None
 
     parser = argparse.ArgumentParser(
         description="Google Photos download tool")
@@ -69,15 +67,11 @@ class GooglePhotosSyncMain:
     parser.add_argument(
         "--do-delete",
         action='store_true',
-        help="remove local copies of files that were deleted from drive/picasa")
+        help="remove local copies of files that were deleted")
     parser.add_argument(
         "--skip-index",
         action='store_true',
         help="Use index from previous run and start download immediately")
-    parser.add_argument(
-        "--skip-picasa",
-        action='store_true',
-        help="skip picasa scan, albums will not be scanned")
     parser.add_argument(
         "--skip-drive",
         action='store_true',
@@ -137,17 +131,11 @@ class GooglePhotosSyncMain:
                                           credentials_json=credentials_file,
                                           no_browser=args.no_browser)
 
-        self.picasa_sync = PicasaSync(self.drive_sync.credentials,
-                                      args.root_folder, self.data_store,
-                                      args.flush_index)
-
-        self.drive_sync.startDate = self.picasa_sync.startDate = args.start_date
-        self.drive_sync.endDate = self.picasa_sync.endDate = args.end_date
-        self.drive_sync.includeVideo = self.picasa_sync.includeVideo = \
-            not args.skip_video
+        self.drive_sync.startDate = args.start_date
+        self.drive_sync.endDate = args.end_date
+        self.drive_sync.includeVideo = not args.skip_video
         self.drive_sync.driveFileName = args.drive_file
         self.drive_sync.allDrive = args.all_drive
-        self.picasa_sync.album_name = args.album
 
     @classmethod
     def logging(cls, args):
@@ -169,9 +157,9 @@ class GooglePhotosSyncMain:
             format_string = u'%(asctime)s %(name)s: %(message)s'
 
         # avoid encoding issues on ssh and file redirect
-        formatter = logging.Formatter(format_string.encode('utf-8'))
+        ##  Is this an issue ?? formatter = logging.Formatter(format_string.encode('utf-8'))
         # add formatter to ch
-        ch.setFormatter(formatter)
+        ## ch.setFormatter(formatter)
 
         if not len(log.handlers):
             # add ch to logger
@@ -185,20 +173,11 @@ class GooglePhotosSyncMain:
                         self.drive_sync.scan_folder_hierarchy()
                         self.drive_sync.index_drive_media()
                         self.data_store.store()
-                    if not args.skip_picasa:
-                        self.picasa_sync.index_album_media()
-                        self.data_store.store()
                 if not args.index_only:
-                    if not args.skip_picasa:
-                        self.picasa_sync.download_picasa_media()
-                        if args.do_delete:
-                            self.picasa_sync.check_for_removed()
                     if not args.skip_drive:
                         self.drive_sync.download_drive_media()
                         if args.do_delete:
                             self.drive_sync.check_for_removed()
-                if (not args.skip_picasa) or args.refresh_albums:
-                    self.picasa_sync.create_album_content_links()
 
             except KeyboardInterrupt:
                 log.warning("\nUser cancelled download "

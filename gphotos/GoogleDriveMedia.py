@@ -2,8 +2,8 @@
 # coding: utf8
 import re
 
-import Utils
-from GoogleMedia import GoogleMedia, MediaType, MediaFolder
+from . import Utils
+from .GoogleMedia import GoogleMedia, MediaType, MediaFolder
 
 
 class GoogleDriveMedia(GoogleMedia):

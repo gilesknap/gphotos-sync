@@ -4,7 +4,7 @@ import os.path
 import sqlite3 as lite
 from datetime import datetime
 
-import Utils
+from . import Utils
 import logging
 
 log = logging.getLogger('gphotos.data')

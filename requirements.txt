@@ -3,5 +3,3 @@ pydrive
 retrying
 appdirs
 progressbar2
-gdata
-enum

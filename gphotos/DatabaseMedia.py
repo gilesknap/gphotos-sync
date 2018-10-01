@@ -3,8 +3,8 @@
 import os.path
 from datetime import datetime
 
-from GoogleMedia import GoogleMedia, MediaType, MediaFolder
-from LocalData import LocalData
+from .GoogleMedia import GoogleMedia, MediaType, MediaFolder
+from .LocalData import LocalData
 
 
 class DatabaseMedia(GoogleMedia):

@@ -6,7 +6,7 @@ from time import gmtime, strftime
 from datetime import datetime
 from enum import Enum
 
-from LocalData import LocalData
+from .LocalData import LocalData
 
 
 class IntEnum(int, Enum):
