@@ -10,6 +10,8 @@ import fcntl
 from appdirs import AppDirs
 from .GoogleDriveSync import GoogleDriveSync
 from .LocalData import LocalData
+from .authorize import Authorize
+from .restclient import RestClient
 import pkg_resources
 
 APP_NAME = "gphotos-sync"
@@ -29,6 +31,9 @@ class GooglePhotosSyncMain:
     def __init__(self):
         self.data_store = None
         self.drive_sync = None
+        self.google_drive = None
+        self.auth = None
+        self.google_photos = None
 
     parser = argparse.ArgumentParser(
         description="Google Photos download tool")
@@ -126,16 +131,51 @@ class GooglePhotosSyncMain:
         if not os.path.exists(app_dirs.user_data_dir):
             os.makedirs(app_dirs.user_data_dir)
 
-        self.drive_sync = GoogleDriveSync(args.root_folder, self.data_store,
-                                          client_secret_file=secret_file,
-                                          credentials_json=credentials_file,
-                                          no_browser=args.no_browser)
+        scope = [
+            'https://www.googleapis.com/auth/photos',
+            'https://www.googleapis.com/auth/drive.photos.readonly',
+            'https://www.googleapis.com/auth/drive',
+            'https://www.googleapis.com/auth/photoslibrary.readonly',
+        ]
 
-        self.drive_sync.startDate = args.start_date
-        self.drive_sync.endDate = args.end_date
-        self.drive_sync.includeVideo = not args.skip_video
-        self.drive_sync.driveFileName = args.drive_file
-        self.drive_sync.allDrive = args.all_drive
+        drive_api_url = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'
+        # had to guess this URL since it is not yet documented!
+        photos_api_url = 'https://www.googleapis.com/discovery/v1/apis/photoslibrary/v1/rest'
+
+        self.auth = Authorize(scope, credentials_file, secret_file)
+        self.auth.authorize()
+
+        self.google_drive = RestClient(drive_api_url, self.auth.session)
+        r = self.google_drive.files.list.execute(
+            q='trashed=false', maxResults=100)
+        results = r.json()
+        file_id = results['files'][0]['id']
+        r = self.google_drive.files.get.execute(fileId=file_id)
+        # print(r.text)
+
+        self.google_photos = RestClient(photos_api_url, self.auth.session)
+        r = self.google_photos.albums.list.execute(maxResuls=2)
+        results = r.json()
+        while results.get('nextPageToken'):
+            for a in results['albums']:
+                print(a.get('title') or ' --- No Title ---')
+            r = self.google_photos.albums.list.execute(pageToken=results['nextPageToken'])
+            results = r.json()
+
+        # this is just testing the above for now.
+        sys.exit(0)
+
+        #
+        # self.drive_sync = GoogleDriveSync(args.root_folder, self.data_store,
+        #                                   client_secret_file=secret_file,
+        #                                   credentials_json=credentials_file,
+        #                                   no_browser=args.no_browser)
+        #
+        # self.drive_sync.startDate = args.start_date
+        # self.drive_sync.endDate = args.end_date
+        # self.drive_sync.includeVideo = not args.skip_video
+        # self.drive_sync.driveFileName = args.drive_file
+        # self.drive_sync.allDrive = args.all_drive
 
     @classmethod
     def logging(cls, args):
