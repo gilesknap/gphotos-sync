@@ -136,6 +136,7 @@ class GooglePhotosSyncMain:
             'https://www.googleapis.com/auth/drive.photos.readonly',
             'https://www.googleapis.com/auth/drive',
             'https://www.googleapis.com/auth/photoslibrary.readonly',
+            'https://www.googleapis.com/auth/photoslibrary.sharing',
         ]
 
         drive_api_url = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'
@@ -154,13 +155,17 @@ class GooglePhotosSyncMain:
         # print(r.text)
 
         self.google_photos = RestClient(photos_api_url, self.auth.session)
-        r = self.google_photos.albums.list.execute(maxResuls=2)
+        r = self.google_photos.albums.list.execute(pageSize=50)
         results = r.json()
-        while results.get('nextPageToken'):
+        while results:
             for a in results['albums']:
                 print(a.get('title') or ' --- No Title ---')
-            r = self.google_photos.albums.list.execute(pageToken=results['nextPageToken'])
+
+            if not results.get('nextPageToken'):
+                break
+            r = self.google_photos.albums.list.execute(pageSize=50, pageToken=results['nextPageToken'])
             results = r.json()
+
 
         # this is just testing the above for now.
         sys.exit(0)
