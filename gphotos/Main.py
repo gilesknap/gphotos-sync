@@ -8,7 +8,7 @@ import signal
 import fcntl
 
 from appdirs import AppDirs
-from .GoogleDriveSync import GoogleDriveSync
+from .GooglePhotosMediaSync import GooglePhotosMediaSync
 from .LocalData import LocalData
 from .authorize import Authorize
 from .restclient import RestClient
@@ -30,10 +30,9 @@ def sigterm_handler(_signo, _stack_frame):
 class GooglePhotosSyncMain:
     def __init__(self):
         self.data_store = None
-        self.drive_sync = None
-        self.google_drive = None
+        self.google_photos_client = None
+        self.google_photos_sync = None
         self.auth = None
-        self.google_photos = None
 
     parser = argparse.ArgumentParser(
         description="Google Photos download tool")
@@ -78,11 +77,6 @@ class GooglePhotosSyncMain:
         action='store_true',
         help="Use index from previous run and start download immediately")
     parser.add_argument(
-        "--skip-drive",
-        action='store_true',
-        help="skip drive scan, (assume that the db is up to date "
-             "with drive files - for testing)")
-    parser.add_argument(
         "--flush-index",
         action='store_true',
         help="delete the index db, re-scan everything")
@@ -99,21 +93,8 @@ class GooglePhotosSyncMain:
         action='store_true',
         help="don't print time and module in logging")
     parser.add_argument(
-        "--all-drive",
-        action='store_true',
-        help="when True all folders in drive are scanned for media. "
-             "when False only files in the Google Photos folder are scanned. "
-             "If you do not use this option then you may find you have albums "
-             "that reference media outside of the Google Photos folder and "
-             "these would then get downloaded into the picasa folder. The "
-             "only downside is that the folder structure is lost.")
-    parser.add_argument(
         "--album",
         help="only index a single album (for testing)",
-        default=None)
-    parser.add_argument(
-        "--drive-file",
-        help="only index a single drive file (for testing)",
         default=None)
 
     def setup(self, args, db_path):
@@ -139,48 +120,37 @@ class GooglePhotosSyncMain:
             'https://www.googleapis.com/auth/photoslibrary.sharing',
         ]
 
-        drive_api_url = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'
-        # had to guess this URL since it is not yet documented!
+        # drive_api_url = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'
         photos_api_url = 'https://www.googleapis.com/discovery/v1/apis/photoslibrary/v1/rest'
+        # NEW photos_api_url = 'https://photoslibrary.googleapis.com/$discovery/rest?version=v1''
 
         self.auth = Authorize(scope, credentials_file, secret_file)
         self.auth.authorize()
 
-        self.google_drive = RestClient(drive_api_url, self.auth.session)
-        r = self.google_drive.files.list.execute(
-            q='trashed=false', maxResults=100)
-        results = r.json()
-        file_id = results['files'][0]['id']
-        r = self.google_drive.files.get.execute(fileId=file_id)
-        # print(r.text)
-
-        self.google_photos = RestClient(photos_api_url, self.auth.session)
-        r = self.google_photos.albums.list.execute(pageSize=50)
-        results = r.json()
-        while results:
-            for a in results['albums']:
-                print(a.get('title') or ' --- No Title ---')
-
-            if not results.get('nextPageToken'):
-                break
-            r = self.google_photos.albums.list.execute(pageSize=50, pageToken=results['nextPageToken'])
-            results = r.json()
-
-
-        # this is just testing the above for now.
-        sys.exit(0)
+        self.google_photos_client = RestClient(photos_api_url, self.auth.session)
 
         #
-        # self.drive_sync = GoogleDriveSync(args.root_folder, self.data_store,
-        #                                   client_secret_file=secret_file,
-        #                                   credentials_json=credentials_file,
-        #                                   no_browser=args.no_browser)
+        # count = 0
+        # r = self.google_photos.albums.list.execute(pageSize=50)
+        # while r:
+        #     results = r.json()
+        #     for a in results['albums']:
+        #         count += 1
+        #         title_text = a.get('title') or ' --- No Title ---'
+        #         print(count, title_text)
         #
-        # self.drive_sync.startDate = args.start_date
-        # self.drive_sync.endDate = args.end_date
-        # self.drive_sync.includeVideo = not args.skip_video
-        # self.drive_sync.driveFileName = args.drive_file
-        # self.drive_sync.allDrive = args.all_drive
+        #     next_page = results.get('nextPageToken')
+        #     if next_page:
+        #         r = self.google_photos.albums.list.execute(pageSize=50, pageToken=next_page)
+        #     else:
+        #         break
+
+        self.google_photos_sync = GooglePhotosMediaSync(args.root_folder, self.data_store,
+                                                        api=self.google_photos_client)
+
+        self.google_photos_sync.startDate = args.start_date
+        self.google_photos_sync.endDate = args.end_date
+        self.google_photos_sync.includeVideo = not args.skip_video
 
     @classmethod
     def logging(cls, args):
@@ -214,15 +184,13 @@ class GooglePhotosSyncMain:
         with self.data_store:
             try:
                 if not args.skip_index:
-                    if not args.skip_drive:
-                        self.drive_sync.scan_folder_hierarchy()
-                        self.drive_sync.index_drive_media()
-                        self.data_store.store()
-                if not args.index_only:
-                    if not args.skip_drive:
-                        self.drive_sync.download_drive_media()
-                        if args.do_delete:
-                            self.drive_sync.check_for_removed()
+                    self.google_photos_sync.index_photos_media()
+                    self.data_store.store()
+                # if not args.index_only:
+                #     if not args.skip_drive:
+                #         self.google_photos_sync.download_drive_media()
+                #         if args.do_delete:
+                #             self.google_photos_sync.check_for_removed()
 
             except KeyboardInterrupt:
                 log.warning("\nUser cancelled download "

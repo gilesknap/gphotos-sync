@@ -16,14 +16,13 @@ class IntEnum(int, Enum):
 # an enum for identifying the type of subclass during polymorphic use
 # only used for identifying the root folder the media should occupy locally
 class MediaType(IntEnum):
-    DRIVE = 0
-    PICASA = 1
-    ALBUM = 2
-    DATABASE = 3
-    NONE = 4
+    PHOTOS = 0
+    ALBUM = 1
+    DATABASE = 2
+    NONE = 3
 
 
-# folder names for each of rhe types of media specified above
+# folder names for each of the types of media specified above
 MediaFolder = [
     u'drive',
     u'picasa',
@@ -54,7 +53,7 @@ class GoogleMedia(object):
     fix_windows = re.compile(r'[<>:"/\\|?*]|[\x00-\x1f]|\x7f|\x00')
     fix_windows_ending = re.compile('([ .]+$)')
 
-    def validate_encoding(self, string):
+    def validate_encoding(self, s):
         """
         makes sure a string is valid for creating file names and converts to
         unicode assuming utf8 encoding if necessary
@@ -62,13 +61,6 @@ class GoogleMedia(object):
         :param (str) string: input string (or unicode string)
         :return: (unicode): sanitized string
         """
-        if string is None:  # a string of '' is valid
-            return None
-        elif isinstance(string, unicode):
-            s = string
-        else:
-            s = unicode(string, 'utf8')
-
         if os.name == 'nt':
             s = self.fix_windows.sub('_', s)
             s = self.fix_windows_ending.split(s)[0]
