@@ -121,8 +121,7 @@ class GooglePhotosSyncMain:
         ]
 
         # drive_api_url = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'
-        photos_api_url = 'https://www.googleapis.com/discovery/v1/apis/photoslibrary/v1/rest'
-        # NEW photos_api_url = 'https://photoslibrary.googleapis.com/$discovery/rest?version=v1''
+        photos_api_url = 'https://photoslibrary.googleapis.com/$discovery/rest?version=v1'
 
         self.auth = Authorize(scope, credentials_file, secret_file)
         self.auth.authorize()
@@ -186,9 +185,8 @@ class GooglePhotosSyncMain:
                 if not args.skip_index:
                     self.google_photos_sync.index_photos_media()
                     self.data_store.store()
-                # if not args.index_only:
-                #     if not args.skip_drive:
-                #         self.google_photos_sync.download_drive_media()
+                if not args.index_only:
+                    self.google_photos_sync.download_photo_media()
                 #         if args.do_delete:
                 #             self.google_photos_sync.check_for_removed()
 

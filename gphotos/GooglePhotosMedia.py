@@ -3,14 +3,7 @@
 import re
 
 from . import Utils
-from .GoogleMedia import GoogleMedia, MediaType
-from enum import IntEnum
-
-
-class FileType(IntEnum):
-    Other = 0
-    Video = 1
-    Image = 2
+from .GoogleMedia import GoogleMedia, MediaType, FileType
 
 
 class GooglePhotosMedia(GoogleMedia):
@@ -22,10 +15,10 @@ class GooglePhotosMedia(GoogleMedia):
         self.__path = None
         self.__type = FileType.Other
         if self.mime_type.startswith('video'):
-            self.__type = FileType.Video
+            self.file_type = FileType.Video
             self.__media_meta = media_json.get('mediaMetadata').get('video')
         elif self.mime_type.startswith('image'):
-            self.__type = FileType.Image
+            self.file_type = FileType.Image
             self.__media_meta = media_json.get('mediaMetadata').get('photo')
         super(GooglePhotosMedia, self).__init__()
 

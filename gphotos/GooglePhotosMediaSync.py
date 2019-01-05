@@ -2,24 +2,20 @@
 # coding: utf8
 import os.path
 
-from pydrive.auth import GoogleAuth
-from pydrive.drive import GoogleDrive
-from pydrive.files import ApiRequestError
-from pydrive.settings import InvalidConfigError
-
 from . import Utils
 from .GooglePhotosMedia import GooglePhotosMedia
-from .GoogleMedia import MediaType
+from .GoogleMedia import MediaType, FileType
 from .LocalData import LocalData
 from .DatabaseMedia import DatabaseMedia
 import logging
+import requests
+import shutil
+
+log = logging.getLogger('gphotos.Photos')
 
 
 class NoGooglePhotosFolderError(Exception):
     pass
-
-
-log = logging.getLogger('gphotos.Photos')
 
 
 class GooglePhotosMediaSync(object):
@@ -60,7 +56,7 @@ class GooglePhotosMediaSync(object):
                     os.remove(name)
                     log.warning("%s deleted", name)
 
-    def write_media(self, media, update=True):
+    def write_media_index(self, media, update=True):
         media.save_to_db(self._db, update)
         if media.modify_date > self._latest_download:
             self._latest_download = media.modify_date
@@ -128,14 +124,15 @@ class GooglePhotosMediaSync(object):
                     if not row:
                         count += 1
                         log.info(u"Added %d %s", count, media_item.relative_path)
-                        self.write_media(media_item, False)
+                        self.write_media_index(media_item, False)
                         if count % 1000 == 0:
                             self._db.store()
                     elif media_item.modify_date > row.ModifyDate:
                         log.info(u"Updated %d %s", count, media_item.relative_path)
-                        self.write_media(media_item, True)
+                        self.write_media_index(media_item, True)
                     else:
-                        log.debug(u"Skipped %d %s", count, media_item.relative_path)
+                        log.debug \
+                            (u"Skipped %d %s", count, media_item.relative_path)
                 next_page = items.get('nextPageToken')
                 if next_page:
                     response = self.api.mediaItems.list.execute(pageSize=100, pageToken=next_page)
@@ -146,36 +143,58 @@ class GooglePhotosMediaSync(object):
             if not (self.startDate or self.endDate):
                 self._db.set_scan_dates(drive_last_date=self._latest_download)
 
-    def download_photo_media(self):
-        log.info(u'Downloading Drive Files ...')
-        # noinspection PyTypeChecker
-        for media in DatabaseMedia.get_media_by_search(
-                self._root_folder, self._db, media_type=MediaType.DRIVE,
-                start_date=self.startDate, end_date=self.endDate):
-            if os.path.exists(media.local_full_path):
-                if Utils.to_timestamp(media.modify_date) > \
-                        os.path.getctime(media.local_full_path):
-                    log.warning(u'{} was modified'.format(
-                        media.local_full_path))
-                else:
-                    continue
+    # todo move to Utils or appropriate
+    def download_file(self, url, local_path):
+        r = requests.get(url, stream=True)
+        with open(local_path, 'wb') as f:
+            shutil.copyfileobj(r.raw, f)
 
-            if not os.path.isdir(media.local_folder):
-                os.makedirs(media.local_folder)
+    def download_photo_media(self):
+        log.info(u'Downloading Photos ...')
+        count = 0
+        # noinspection PyTypeChecker
+        for media_item in DatabaseMedia.get_media_by_search(self._db, media_type=MediaType.PHOTOS,
+                                                            start_date=self.startDate, end_date=self.endDate):
+            local_folder = os.path.join(self._root_folder, media_item.relative_folder)
+            local_full_path = os.path.join(local_folder, media_item.filename)
+            if os.path.exists(local_full_path):
+                # todo is there anyway to detect remote updates with photos API?
+                # if Utils.to_timestamp(media.modify_date) > \
+                #         os.path.getctime(local_full_path):
+                #     log.warning(u'{} was modified'.format(local_full_path))
+                # else:
+                continue
+
+            if not os.path.isdir(local_folder):
+                os.makedirs(local_folder)
             temp_filename = os.path.join(self._root_folder, '.temp-photo')
 
-            log.info(u'downloading {} ...'.format(media.local_full_path))
-            f = self._googleDrive.CreateFile({'id': media.id})
+            count += 1
+            log.info(u'downloading {} {} {} ...'.format(count, local_full_path, media_item.file_type))
+
             try:
-                Utils.retry(10, f.GetContentFile, temp_filename)
-                if os.path.exists(media.local_full_path):
-                    os.remove(media.local_full_path)
-                os.rename(temp_filename, media.local_full_path)
-                # set the access date to create date since there is nowhere
-                # else to put it on linux (and is useful for debugging)
-                os.utime(media.local_full_path,
-                         (Utils.to_timestamp(media.modify_date),
-                          Utils.to_timestamp(media.create_date)))
-            except ApiRequestError:
-                log.error(u'DOWNLOAD FAILURE for {}'.format(
-                    media.local_full_path))
+                response = self.api.mediaItems.get.execute(mediaItemId=str(media_item.id))
+                r_json = response.json()
+                if media_item.file_type == FileType.Video:
+                    download_url = '{}=vd'.format(r_json['baseUrl'])
+                else:
+                    download_url = '{}=d'.format(r_json['baseUrl'])
+                self.download_file(download_url, temp_filename)
+                os.rename(temp_filename, local_full_path)
+            except Exception as e:
+                log.error('failure downloading {}.\n{}{}'.format(local_full_path, type(e), e))
+
+            # f = self._googleDrive.CreateFile({'id': media.id})
+            # try:
+            #     Utils.retry(10, f.GetContentFile, temp_filename)
+            #     if os.path.exists(media.local_full_path):
+            #         os.remove(media.local_full_path)
+            #     os.rename(temp_filename, media.local_full_path)
+            #     # set the access date to create date since there is nowhere
+            #     # else to put it on linux (and is useful for debugging)
+            #     os.utime(media.local_full_path,
+            #              (Utils.to_timestamp(media.modify_date),
+            #               Utils.to_timestamp(media.create_date)))
+            # except ApiRequestError:
+            #     log.error(u'DOWNLOAD FAILURE for {}'.format(
+            #         media.local_full_path))

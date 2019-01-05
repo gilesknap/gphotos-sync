@@ -8,9 +8,13 @@ from enum import Enum
 
 from .LocalData import LocalData
 
+from enum import IntEnum
 
-class IntEnum(int, Enum):
-    pass
+
+class FileType(IntEnum):
+    Other = 0
+    Video = 1
+    Image = 2
 
 
 # an enum for identifying the type of subclass during polymorphic use
@@ -33,6 +37,7 @@ class GoogleMedia(object):
         self._relative_folder = None
         self._duplicate_number = 0
         self.symlink = False
+        self.file_type = None
 
     # regex for illegal characters in file names and database queries
     fix_linux = re.compile(r'[/]|[\x00-\x1f]|\x7f|\x00')

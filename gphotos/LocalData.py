@@ -189,17 +189,17 @@ class LocalData:
 
         return drive_last_date, picasa_last_date
 
-    def get_files_by_search(self, drive_id='%', media_type='%',
+    def get_files_by_search(self, remote_id='%', media_type='%',
                             start_date=None, end_date=None, skip_linked=False):
         """
-        :param (str) drive_id:
+        :param (str) remote_id:
         :param (int) media_type:
         :param (datetime) start_date:
         :param (datetime) end_date:
         :param (bool) skip_linked: Don't return entries with non-null SymLink
         :return (self.SyncRow):
         """
-        params = (drive_id, media_type)
+        params = (remote_id, media_type)
         extra_clauses = ''
         if start_date:
             # look for create date too since an photo recently uploaded will

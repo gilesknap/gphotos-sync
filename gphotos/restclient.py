@@ -41,8 +41,14 @@ class Method:
 
     def make_path(self, path_args):
         result = self.path
+        path_params = []
         for key, value in six.iteritems(path_args):
-            result = result.replace('{{{}}}'.format(key), value)
+            path_param = '{{+{}}}'.format(key)
+            if path_param in result:
+                result = result.replace('{{+{}}}'.format(key), value)
+                path_params.append(key)
+        for key in path_params:
+            path_args.pop(key)
         return result
 
 
