@@ -70,14 +70,14 @@ DROP INDEX IF EXISTS FileSizeAndSizeIdx;
 DROP INDEX IF EXISTS CreatedIdx;
 DROP INDEX IF EXISTS ModifyDateIdx;
 DROP INDEX IF EXISTS SyncFiles_Path_FileName_DuplicateNo_uindex;
--- create unique index RemoteIdIdx	on SyncFiles (RemoteId);
+create unique index RemoteIdIdx	on SyncFiles (RemoteId);
 create index FileNameIdx  on SyncFiles (FileName);
 create index FileSizeIdx  on SyncFiles (FileSize);
 create index FileSizeAndSizeIdx  on SyncFiles (FileName, FileSize);
 create index CreatedIdx  on SyncFiles (CreateDate);
 create index ModifyDateIdx  on SyncFiles (ModifyDate);
--- create unique index SyncFiles_Path_FileName_DuplicateNo_uindex
--- 	on SyncFiles (Path, FileName, DuplicateNo);
+create unique index SyncFiles_Path_FileName_DuplicateNo_uindex
+ 	on SyncFiles (Path, FileName, DuplicateNo);
 
 
 drop table if exists AlbumFiles;

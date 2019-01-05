@@ -121,19 +121,21 @@ class GooglePhotosMediaSync(object):
             response = self.api.mediaItems.list.execute(pageSize=100)
             while response:
                 items = response.json()
-                for media_item in items['mediaItems']:
-                    media = GooglePhotosMedia(self._root_folder, media_item)
-                    row = None  # todo is indexed is getting false positives
-                    # row = media.is_indexed(self._db)
+                for media_item_json in items['mediaItems']:
+                    media_item = GooglePhotosMedia(media_item_json)
+                    media_item.set_path_by_date()
+                    row = media_item.is_indexed(self._db)
                     if not row:
                         count += 1
-                        log.info(u"Added %d %s", count, media.local_full_path)
-                        self.write_media(media, False)
+                        log.info(u"Added %d %s", count, media_item.relative_path)
+                        self.write_media(media_item, False)
                         if count % 1000 == 0:
                             self._db.store()
-                    elif media.modify_date > row.ModifyDate:
-                        log.info(u"Updated %d %s", count, media.local_full_path)
-                        self.write_media(media, True)
+                    elif media_item.modify_date > row.ModifyDate:
+                        log.info(u"Updated %d %s", count, media_item.relative_path)
+                        self.write_media(media_item, True)
+                    else:
+                        log.debug(u"Skipped %d %s", count, media_item.relative_path)
                 next_page = items.get('nextPageToken')
                 if next_page:
                     response = self.api.mediaItems.list.execute(pageSize=100, pageToken=next_page)
@@ -141,7 +143,7 @@ class GooglePhotosMediaSync(object):
                     break
         finally:
             # store latest date for incremental backup only if scanning all
-            if not (self.driveFileName or self.startDate):
+            if not (self.startDate or self.endDate):
                 self._db.set_scan_dates(drive_last_date=self._latest_download)
 
     def download_photo_media(self):

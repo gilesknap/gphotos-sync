@@ -3,7 +3,7 @@
 import re
 
 from . import Utils
-from .GoogleMedia import GoogleMedia, MediaType, MediaFolder
+from .GoogleMedia import GoogleMedia, MediaType
 from enum import IntEnum
 
 
@@ -15,13 +15,11 @@ class FileType(IntEnum):
 
 class GooglePhotosMedia(GoogleMedia):
     MEDIA_TYPE = MediaType.PHOTOS
-    MEDIA_FOLDER = MediaFolder[MEDIA_TYPE]
     EXTERNAL_LINKS = 'External-Links'
 
-    # todo passing folder_paths (and root_folder) here seems messy, refactor?
-    def __init__(self, path, media_json):
+    def __init__(self, media_json):
         self.__media_json = media_json
-        self.__path = path
+        self.__path = None
         self.__type = FileType.Other
         if self.mime_type.startswith('video'):
             self.__type = FileType.Video
@@ -29,7 +27,7 @@ class GooglePhotosMedia(GoogleMedia):
         elif self.mime_type.startswith('image'):
             self.__type = FileType.Image
             self.__media_meta = media_json.get('mediaMetadata').get('photo')
-        super(GooglePhotosMedia, self).__init__(path, '/tmp')
+        super(GooglePhotosMedia, self).__init__()
 
     # ----- override Properties below -----
     @property

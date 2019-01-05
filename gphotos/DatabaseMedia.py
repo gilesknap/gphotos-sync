@@ -3,7 +3,7 @@
 import os.path
 from datetime import datetime
 
-from .GoogleMedia import GoogleMedia, MediaType, MediaFolder
+from .GoogleMedia import GoogleMedia, MediaType
 from .LocalData import LocalData
 
 
@@ -28,7 +28,6 @@ class DatabaseMedia(GoogleMedia):
 
     """
     MEDIA_TYPE = MediaType.DATABASE
-    MEDIA_FOLDER = MediaFolder[MEDIA_TYPE]
 
     # noinspection PyUnresolvedReferences
     def __init__(self, root_folder, row):

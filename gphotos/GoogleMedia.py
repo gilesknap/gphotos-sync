@@ -22,29 +22,15 @@ class MediaType(IntEnum):
     NONE = 3
 
 
-# folder names for each of the types of media specified above
-MediaFolder = [
-    u'drive',
-    u'picasa',
-    u'albums',
-    u'',
-    u'']
-
-
 # base class for media model classes
 # noinspection PyCompatibility
 class GoogleMedia(object):
     MEDIA_TYPE = MediaType.NONE
-    MEDIA_FOLDER = MediaFolder[MEDIA_TYPE]
     TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
-    # todo remove relative path and determine it in derived classes
-    # note that PicasaMedia and DataBaseMedia already do this
-    def __init__(self, relative_folder, root_folder, **k_args):
+    def __init__(self, **k_args):
         self.media_type = self.__class__.MEDIA_TYPE
-        self._media_folder = self.__class__.MEDIA_FOLDER
-        self._relative_folder = relative_folder
-        self._root_folder = root_folder
+        self._relative_folder = None
         self._duplicate_number = 0
         self.symlink = False
 
@@ -71,7 +57,7 @@ class GoogleMedia(object):
     def save_to_db(self, db, update=False):
         now_time = strftime(GoogleMedia.TIME_FORMAT, gmtime())
         new_row = LocalData.SyncRow.make(RemoteId=self.id, Url=self.url,
-                                         Path=self.local_folder,
+                                         Path=self.relative_folder,
                                          FileName=self.filename,
                                          OrigFileName=self.orig_name,
                                          DuplicateNo=self.duplicate_number,
@@ -84,42 +70,10 @@ class GoogleMedia(object):
                                          SyncDate=now_time, SymLink=None)
         return db.put_file(new_row, update)
 
-    def is_indexed(self, db):
-        # checking for index has the side effect of setting duplicate number as
-        # it is when we discover if other entries share path and filename
-        # IMPORTANT - it would seem logical to use remoteId to verify if the
-        # item is already indexed BUT remote id varies in picasa API
-        # for the same item in more than one album
-        (num, row) = db.file_duplicate_no(self.create_date, self.filename,
-                                          self.size, self.local_folder,
-                                          self.media_type, self.id)
-        self.duplicate_number = num
-        return row
-
-    # Path to the local folder in which this media item is stored this
-    # will include the media type folder which is one of 'drive' 'picasa' or
-    # 'albums'
-    @property
-    def local_folder(self):
-        return os.path.join(self._root_folder, self._media_folder,
-                            self._relative_folder)
-
-    # Path to the local file in which this media item is stored
-    @property
-    def local_full_path(self):
-        return os.path.join(self.local_folder, self.filename)
-
-    # Relative path to the media file from the root of the media type folder
-    # e.g. 'Google Photos/2017/09'. This also represents the path to the
-    # folder on google drive in which this is stored (if there is one)
-    @property
-    def relative_path(self):
-        return os.path.join(self._relative_folder, self.filename)
-
-    # as above but with the filename appended
-    @property
-    def relative_folder(self):
-        return self._relative_folder
+    def set_path_by_date(self):
+        y = "{:04d}".format(self.create_date.year)
+        m = "{:02d}".format(self.create_date.month)
+        self._relative_folder = os.path.join(y, m)
 
     @property
     def duplicate_number(self):
@@ -128,6 +82,24 @@ class GoogleMedia(object):
     @duplicate_number.setter
     def duplicate_number(self, value):
         self._duplicate_number = value
+
+    def is_indexed(self, db):
+        # checking for index has the side effect of setting duplicate number as
+        # it is when we discover if other entries share path and filename
+        (num, row) = db.file_duplicate_no(self.filename, self.relative_folder, self.id)
+        self._duplicate_number = num
+        return row
+
+    # Relative path to the media file from the root of the sync folder
+    # e.g. 'Google Photos/2017/09'.
+    @property
+    def relative_path(self):
+        return os.path.join(self._relative_folder, self.filename)
+
+    # as above but without the filename appended
+    @property
+    def relative_folder(self):
+        return self._relative_folder
 
     @property
     def filename(self):

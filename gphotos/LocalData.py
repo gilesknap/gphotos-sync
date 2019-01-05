@@ -84,11 +84,6 @@ def db_row(row_class):
     return row_class
 
 
-# todo currently store full path in SyncFiles.Path
-# would be better as relative path and store root once in this module (runtime)
-# this could be refreshed at start for a portable file system folder
-# also this would remove the need to pass any paths to the GoogleMedia
-# constructors (which is messy)
 class LocalData:
     DB_FILE_NAME = 'gphotos.sqlite'
     BLOCK_SIZE = 10000
@@ -250,38 +245,35 @@ class LocalData:
         return self.SyncRow(record)
 
     def put_file(self, row, update=False):
-        if update:
-            query = "UPDATE SyncFiles Set {0} WHERE RemoteId = '{1}'".format(
-                self.SyncRow.update, row.RemoteId)
-        else:
-            query = "INSERT INTO SyncFiles ({0}) VALUES ({1})".format(
-                self.SyncRow.columns, self.SyncRow.params)
-        self.cur.execute(query, row.dict)
-        row_id = self.cur.lastrowid
+        try:
+            if update:
+                query = "UPDATE SyncFiles Set {0} WHERE RemoteId = '{1}'".format(
+                    self.SyncRow.update, row.RemoteId)
+            else:
+                query = "INSERT INTO SyncFiles ({0}) VALUES ({1})".format(
+                    self.SyncRow.columns, self.SyncRow.params)
+            self.cur.execute(query, row.dict)
+            row_id = self.cur.lastrowid
+        except lite.IntegrityError:
+            log.error('SQL constraint issue with {}'.format(row.dict))
+            raise
         return row_id
 
-    def file_duplicate_no(self, create_date, name, size, path, media_type,
-                          remote_id):
+    def file_duplicate_no(self, name, path, remote_id):
         """
         determine if there is already an entry for file. If not determine
         if other entries share the same path/filename and determine a duplicate
         number for providing a unique local filename suffix
 
-        :param (datetime) create_date:
         :param (str) name:
-        :param (int) size:
         :param (str) path:
-        :param (MediaType) media_type:
         :param (str) remote_id:
         :return (int, SyncRow): the next available duplicate number or 0 if
         file is unique
         """
-        query = "SELECT {0} FROM SyncFiles WHERE (CreateDate= ? AND " \
-                "FileSize = ? AND FileName = ? AND MediaType = ?) " \
-                "OR RemoteId = ?;". \
+        query = "SELECT {0} FROM SyncFiles WHERE RemoteId = ?; ". \
             format(self.SyncRow.columns)
-        self.cur.execute(query,
-                         (create_date, size, name, media_type, remote_id))
+        self.cur.execute(query, (remote_id,))
         result = self.cur.fetchone()
 
         if result:
