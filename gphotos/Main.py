@@ -8,7 +8,8 @@ import signal
 import fcntl
 
 from appdirs import AppDirs
-from .GooglePhotosMediaSync import GooglePhotosMediaSync
+from .GooglePhotosSync import GooglePhotosSync
+from .GoogleAlbumsSync import GoogleAlbumsSync
 from .LocalData import LocalData
 from .authorize import Authorize
 from .restclient import RestClient
@@ -32,6 +33,8 @@ class GooglePhotosSyncMain:
         self.data_store = None
         self.google_photos_client = None
         self.google_photos_sync = None
+        self.google_albums_sync = None
+
         self.auth = None
 
     parser = argparse.ArgumentParser(
@@ -98,7 +101,6 @@ class GooglePhotosSyncMain:
         default=None)
 
     def setup(self, args, db_path):
-        # todo this credentials stuff should be in a module
         app_dirs = AppDirs(APP_NAME)
 
         self.data_store = LocalData(db_path, args.flush_index)
@@ -128,25 +130,8 @@ class GooglePhotosSyncMain:
         self.auth.authorize()
 
         self.google_photos_client = RestClient(photos_api_url, self.auth.session)
-
-        #
-        # count = 0
-        # r = self.google_photos.albums.list.execute(pageSize=50)
-        # while r:
-        #     results = r.json()
-        #     for a in results['albums']:
-        #         count += 1
-        #         title_text = a.get('title') or ' --- No Title ---'
-        #         print(count, title_text)
-        #
-        #     next_page = results.get('nextPageToken')
-        #     if next_page:
-        #         r = self.google_photos.albums.list.execute(pageSize=50, pageToken=next_page)
-        #     else:
-        #         break
-
-        self.google_photos_sync = GooglePhotosMediaSync(args.root_folder, self.data_store,
-                                                        api=self.google_photos_client)
+        self.google_photos_sync = GooglePhotosSync(self.google_photos_client, args.root_folder, self.data_store)
+        self.google_albums_sync = GoogleAlbumsSync(self.google_photos_client, args.root_folder, self.data_store)
 
         self.google_photos_sync.start_date = args.start_date
         self.google_photos_sync.end_date = args.end_date
@@ -166,15 +151,15 @@ class GooglePhotosSyncMain:
         ch.setLevel(logging.DEBUG)
 
         # create formatter
-        if args.brief:
-            format_string = u'%(message)s'
-        else:
-            format_string = u'%(asctime)s %(name)s: %(message)s'
+        # if args.brief:
+        #     format_string = u'%(message)s'
+        # else:
+        #     format_string = u'%(asctime)s %(name)s: %(message)s'
 
         # avoid encoding issues on ssh and file redirect
-        ##  Is this an issue ?? formatter = logging.Formatter(format_string.encode('utf-8'))
+        #   Is this an issue ?? formatter = logging.Formatter(format_string.encode('utf-8'))
         # add formatter to ch
-        ## ch.setFormatter(formatter)
+        #  ch.setFormatter(formatter)
 
         if not len(log.handlers):
             # add ch to logger
@@ -185,9 +170,11 @@ class GooglePhotosSyncMain:
             try:
                 if not args.skip_index:
                     self.google_photos_sync.index_photos_media()
+                    self.google_albums_sync.index_album_media()
                     self.data_store.store()
                 if not args.index_only:
                     self.google_photos_sync.download_photo_media()
+                    self.google_albums_sync.create_album_content_links()
                     if args.do_delete:
                         self.google_photos_sync.check_for_removed()
 

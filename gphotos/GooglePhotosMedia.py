@@ -3,10 +3,10 @@
 import re
 
 from . import Utils
-from .GoogleMedia import GoogleMedia, MediaType
+from .BaseMedia import BaseMedia, MediaType
 
 
-class GooglePhotosMedia(GoogleMedia):
+class GooglePhotosMedia(BaseMedia):
     MEDIA_TYPE = MediaType.PHOTOS
     EXTERNAL_LINKS = 'External-Links'
 
@@ -23,10 +23,6 @@ class GooglePhotosMedia(GoogleMedia):
     @property
     def size(self):
         return 0
-
-    @property
-    def mimeType(self):
-        return self.__media_json["mimeType"]
 
     @property
     def id(self):

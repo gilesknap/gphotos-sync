@@ -58,7 +58,7 @@ SELECT SyncFiles.Path, SyncFiles.Filename, SyncFiles.ModifyDate, Albums.AlbumNam
   Albums.EndDate FROM AlbumFiles
   INNER JOIN SyncFiles ON AlbumFiles.DriveRec=SyncFiles.Id
   INNER JOIN Albums ON AlbumFiles.AlbumRec=Albums.AlbumId
-  WHERE Albums.AlbumName LIKE 'Science%';
+  WHERE Albums.AlbumName LIKE '%';
 
 SELECT * from SyncFiles WHERE SyncFiles.MediaType is not 0;
 SELECT * from SyncFiles WHERE FileName like 'P1040748%';

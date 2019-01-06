@@ -1,21 +1,4 @@
 -- noinspection SpellCheckingInspectionForFile
-
-drop table if exists DriveFolders;
-create table DriveFolders
-(
-	Id INTEGER
-		primary key,
-	FolderId TEXT,
-	ParentId TEXT,
-	Path TEXT,
-	FolderName TEXT,
-	ModifiedDate INT
-)
-;
-create unique index DriveFolders_FolderId_uindex on DriveFolders (FolderId);
-create index DriveFolders_ParentId_index on DriveFolders (ParentId);
-
-
 drop table if exists Albums;
 create table Albums
 (
@@ -87,7 +70,7 @@ create table AlbumFiles
 		primary key,
 	AlbumRec INT,
 	DriveRec INT,
-	foreign key (AlbumRec) references Albums (Id)
+	foreign key (AlbumRec) references Albums (AlbumId)
 			on delete cascade,
 	foreign key (DriveRec) references SyncFiles (Id)
 			on update cascade on delete cascade)

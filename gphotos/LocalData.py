@@ -330,7 +330,7 @@ class LocalData:
         self.cur.execute(
             "SELECT SyncFiles.Path, SyncFiles.Filename, Albums.AlbumName, "
             "Albums.EndDate FROM AlbumFiles "
-            "INNER JOIN SyncFiles ON AlbumFiles.DriveRec=SyncFiles.Id "
+            "INNER JOIN SyncFiles ON AlbumFiles.DriveRec=SyncFiles.RemoteId "
             "INNER JOIN Albums ON AlbumFiles.AlbumRec=Albums.AlbumId "
             "WHERE Albums.AlbumId LIKE ?;",
             (album_id,))
@@ -348,17 +348,6 @@ class LocalData:
     def remove_all_album_files(self):
         self.cur.execute("DELETE FROM AlbumFiles")
 
-    def get_drive_folder_path(self, folder_id):
-        self.cur.execute(
-            "SELECT Path FROM DriveFolders "
-            "WHERE FolderId IS ?", (folder_id,))
-        result = self.cur.fetchone()
-        if result:
-            # noinspection PyTypeChecker
-            return result['Path']
-        else:
-            return None
-
     def put_drive_folder(self, drive_id, parent_id, folder_name):
         self.cur.execute(
             "INSERT OR REPLACE INTO "
@@ -369,22 +358,6 @@ class LocalData:
         self.cur.execute(
             "UPDATE SyncFiles SET SymLink=? "
             "WHERE Id IS ?;", (link_id, sync_file_id))
-
-    def update_drive_folder_path(self, path, parent_id):
-        self.cur.execute(
-            "UPDATE DriveFolders SET Path = ? WHERE ParentId = ?;",
-            (path, parent_id))
-        self.cur.fetchall()
-
-        self.cur.execute(
-            "SELECT FolderId, FolderName FROM DriveFolders WHERE ParentId "
-            "= ?;",
-            (parent_id,))
-
-        results = self.cur.fetchall()
-        for result in results:
-            # noinspection PyTypeChecker
-            yield (result['FolderId'], result['FolderName'])
 
     def store(self):
         log.info("Saving Database ...")

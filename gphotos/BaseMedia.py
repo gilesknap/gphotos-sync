@@ -9,6 +9,7 @@ from .LocalData import LocalData
 
 from enum import IntEnum
 
+
 # an enum for identifying the type of subclass during polymorphic use
 # only used for identifying the root folder the media should occupy locally
 class MediaType(IntEnum):
@@ -20,7 +21,7 @@ class MediaType(IntEnum):
 
 # base class for media model classes
 # noinspection PyCompatibility
-class GoogleMedia(object):
+class BaseMedia(object):
     MEDIA_TYPE = MediaType.NONE
     TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
@@ -51,7 +52,7 @@ class GoogleMedia(object):
         return s
 
     def save_to_db(self, db, update=False):
-        now_time = strftime(GoogleMedia.TIME_FORMAT, gmtime())
+        now_time = strftime(BaseMedia.TIME_FORMAT, gmtime())
         new_row = LocalData.SyncRow.make(RemoteId=self.id, Url=self.url,
                                          Path=self.relative_folder,
                                          FileName=self.filename,
@@ -59,17 +60,17 @@ class GoogleMedia(object):
                                          DuplicateNo=self.duplicate_number,
                                          MediaType=self.media_type,
                                          FileSize=self.size,
-                                         MimeType=self.mimeType,
+                                         MimeType=self.mime_type,
                                          Description=self.description,
                                          ModifyDate=self.modify_date,
                                          CreateDate=self.create_date,
                                          SyncDate=now_time, SymLink=None)
         return db.put_file(new_row, update)
 
-    def set_path_by_date(self):
+    def set_path_by_date(self, root):
         y = "{:04d}".format(self.create_date.year)
         m = "{:02d}".format(self.create_date.month)
-        self._relative_folder = os.path.join(y, m)
+        self._relative_folder = os.path.join(root, y, m)
 
     def is_video(self):
         return self.mime_type.startswith('video')
@@ -118,13 +119,6 @@ class GoogleMedia(object):
     def size(self):
         """
         :rtype: int
-        """
-        raise NotImplementedError
-
-    @property
-    def mimeType(self):
-        """
-        :rtype: str
         """
         raise NotImplementedError
 

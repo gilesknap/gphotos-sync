@@ -1,0 +1,138 @@
+#!/usr/bin/env python2
+# coding: utf8
+import os.path
+import shutil
+from datetime import datetime
+
+from . import Utils
+from .GoogleAlbumMedia import GoogleAlbumMedia
+from .GooglePhotosMedia import GooglePhotosMedia
+from .LocalData import LocalData
+import logging
+
+log = logging.getLogger('gphotos.picasa')
+
+
+# noinspection PyCompatibility
+class GoogleAlbumsSync(object):
+    """A Class for managing the indexing and download Google Photos Albums
+    """
+    # noinspection SpellCheckingInspection
+    HIDDEN_ALBUMS = [u'Profile Photos']
+    ALL_FILES_ALBUMS = [u'Auto Backup']
+
+    def __init__(self, api, root_folder, db):
+        """
+        :param (RestClient) api
+        :param (str) root_folder:
+        :param (LocalData) db:
+        """
+        self._root_folder = root_folder
+        self._db = db
+        self._gdata_client = None
+        self._api = api
+        # properties to be set after init
+        self.albumName = None
+
+    @classmethod
+    def make_search_parameters(cls, album_id, page_token=None):
+        body = {
+            'pageToken': page_token,
+            'albumId': album_id,
+            'pageSize': 100
+        }
+        return body
+
+    def fetch_album_contents(self, album_id):
+        first_date = Utils.maximum_date()
+        last_date = Utils.minimum_date()
+        body = self.make_search_parameters(album_id=album_id)
+        response = self._api.mediaItems.search.execute(body)
+        while response:
+            items_json = response.json()
+            media_json = items_json.get('mediaItems')
+            # cope with empty albums
+            if not media_json:
+                continue
+            for media_item_json in media_json:
+                media_item = GooglePhotosMedia(media_item_json)
+                log.debug('----%s', media_item.filename)
+                self._db.put_album_file(album_id, media_item.id)
+                last_date = max(media_item.create_date, last_date)
+                first_date = min(media_item.create_date, first_date)
+            next_page = items_json.get('nextPageToken')
+            if next_page:
+                body = self.make_search_parameters(album_id=album_id, page_token=next_page)
+                response = self._api.mediaItems.search.execute(body)
+            else:
+                break
+        return first_date, last_date
+
+    def index_album_media(self):
+        """
+        query google photos interface for a list of all albums and index their
+        contents into the db
+        """
+        log.info(u'Indexing Albums ...')
+
+        # there is no filters in album listing at present so it always a full rescan - it's quite quick
+        log.debug(u"removing all album - file links from db, in preparation for indexing")
+        self._db.remove_all_album_files()
+
+        count = 0
+        response = self._api.albums.list.execute(pageSize=50)
+        while response:
+            results = response.json()
+            for album_json in results['albums']:
+                count += 1
+
+                album = GoogleAlbumMedia(album_json)
+                log.info(u'Indexing Album: %d %s, photos: %d', count, album.filename, album.size)
+                first_date, last_date = self.fetch_album_contents(album.id)
+                # write the album data down now we know the contents' date range
+                row = LocalData.AlbumsRow.make(AlbumId=album.id,
+                                               AlbumName=album.filename,
+                                               StartDate=first_date,
+                                               EndDate=last_date,
+                                               SyncDate=Utils.date_to_string(datetime.now()))
+                self._db.put_album(row)
+
+            next_page = results.get('nextPageToken')
+            if next_page:
+                response = self._api.albums.list.execute(pageSize=50, pageToken=next_page)
+            else:
+                break
+
+    def create_album_content_links(self):
+        log.info(u"Creating album folder links to media ...")
+        # create all links from scratch every time, these are quickly recreated anyway
+        links_root = os.path.join(self._root_folder, 'albums')
+        if os.path.exists(links_root):
+            log.debug(u'removing previous album links tree')
+            shutil.rmtree(links_root)
+
+        for (path, file_name, album_name, end_date) in self._db.get_album_files():
+
+            full_file_name = os.path.join(self._root_folder, path, file_name)
+
+            year = Utils.safe_str_time(Utils.string_to_date(end_date), '%Y')
+            month = Utils.safe_str_time(Utils.string_to_date(end_date), '%m%d')
+
+            rel_path = u"{0} {1}".format(month, album_name)
+            link_folder = os.path.join(links_root, year, rel_path)
+            link_file = os.path.join(link_folder, file_name)
+
+            original_link_file = link_file
+            duplicates = 0
+            while os.path.exists(link_file):
+                duplicates += 1
+                link_file = '{} ({})'.format(original_link_file, duplicates)
+
+            log.debug(u'adding album link %s -> %s', full_file_name,
+                      link_file)
+            if not os.path.isdir(link_folder):
+                log.debug(u'new album folder %s', link_folder)
+                os.makedirs(link_folder)
+            os.symlink(full_file_name, link_file)
+
+        log.info(u"album links done.")

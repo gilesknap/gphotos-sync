@@ -3,11 +3,11 @@
 import os.path
 from datetime import datetime
 
-from .GoogleMedia import GoogleMedia, MediaType
+from .BaseMedia import BaseMedia, MediaType
 from .LocalData import LocalData
 
 
-class DatabaseMedia(GoogleMedia):
+class DatabaseMedia(BaseMedia):
     """A Class for instantiating a GoogleMedia object from the database
 
     The standard GoogleMedia attributes are presented here and are read in
@@ -19,7 +19,6 @@ class DatabaseMedia(GoogleMedia):
         _orig_name (str):
         _duplicate_number (int):
         _date (datetime):
-        _checksum (str):
         _description (str):
         _size (int):
         _create_date (datetime):
@@ -127,8 +126,8 @@ class DatabaseMedia(GoogleMedia):
     @property
     def orig_name(self):
         """
-        Original filename before duplicate name handling (todo refactor so
-        this is not required)
+        Original filename before duplicate name handling
+        todo refactor so this is not required
         :return (str):
         """
         return self.validate_encoding(self._orig_name)
