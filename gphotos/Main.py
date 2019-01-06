@@ -98,6 +98,7 @@ class GooglePhotosSyncMain:
         default=None)
 
     def setup(self, args, db_path):
+        # todo this credentials stuff should be in a module
         app_dirs = AppDirs(APP_NAME)
 
         self.data_store = LocalData(db_path, args.flush_index)
@@ -147,8 +148,8 @@ class GooglePhotosSyncMain:
         self.google_photos_sync = GooglePhotosMediaSync(args.root_folder, self.data_store,
                                                         api=self.google_photos_client)
 
-        self.google_photos_sync.startDate = args.start_date
-        self.google_photos_sync.endDate = args.end_date
+        self.google_photos_sync.start_date = args.start_date
+        self.google_photos_sync.end_date = args.end_date
         self.google_photos_sync.includeVideo = not args.skip_video
 
     @classmethod

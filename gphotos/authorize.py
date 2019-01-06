@@ -6,19 +6,16 @@ try:
 except ImportError:
     from yaml import Loader, Dumper
 
+'''
+Defines a very simple class to handle google api authorization flow
+fo requests library 
+
+giles 2018
+'''
+
 # OAuth endpoints given in the Google API documentation
 authorization_base_url = "https://accounts.google.com/o/oauth2/v2/auth"
-# alternative token uri looks nicer
 token_uri = "https://www.googleapis.com/oauth2/v4/token"
-
-# scope = [
-#    'https://www.googleapis.com/auth/drive.photos.readonly',
-#    'https://picasaweb.google.com/data/',
-#    'https://www.googleapis.com/auth/drive']
-
-# token_file = '/tmp/testDriveToken'
-# secrets_file = '/home/giles/.config/gphotos-sync/client_secret.json'
-# drive_api_url = 'https://www.googleapis.com/discovery/v1/apis/drive/v2/rest'
 
 
 class Authorize:

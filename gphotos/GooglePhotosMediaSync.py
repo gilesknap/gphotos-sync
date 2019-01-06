@@ -31,10 +31,28 @@ class GooglePhotosMediaSync(object):
         self.api = api
 
         self._latest_download = Utils.minimum_date()
-        # public members to be set after init
-        self.startDate = None
-        self.endDate = None
-        self.includeVideo = False
+        # properties to be set after init
+        self._startDate = None
+        self._endDate = None
+        self._includeVideo = False
+
+    @property
+    def start_date(self):
+        return self._startDate
+
+    @start_date.setter
+    def start_date(self, val):
+        if val:
+            self._startDate = Utils.string_to_date(val)
+
+    @property
+    def end_date(self):
+        return self._endDate
+
+    @end_date.setter
+    def end_date(self, val):
+        if val:
+            self._endDate = Utils.string_to_date(val)
 
     @property
     def latest_download(self):
@@ -61,18 +79,40 @@ class GooglePhotosMediaSync(object):
         if media.modify_date > self._latest_download:
             self._latest_download = media.modify_date
 
-    PHOTO_QUERY = u"mimeType contains 'image/' and trashed=false"
-    VIDEO_QUERY = u"(mimeType contains 'image/' or mimeType contains " \
-                  u"'video/') and trashed=false"
-    AFTER_QUERY = u" and modifiedDate >= '{}T00:00:00'"
-    BEFORE_QUERY = u" and modifiedDate <= '{}T00:00:00'"
-    FILENAME_QUERY = u'title contains "{}" and trashed=false'
+    # PHOTO_QUERY = u"mimeType contains 'image/' and trashed=false"
+    # VIDEO_QUERY = u"(mimeType contains 'image/' or mimeType contains " \
+    #               u"'video/') and trashed=false"
 
-    # these are the queries I'd like to use but they are for drive api v3
-    AFTER_QUERY2 = u" and (modifiedTime >= '{0}T00:00:00' or " \
-                   u"createdTime >= '{0}T00:00:00') "
-    BEFORE_QUERY2 = u" and (modifiedTime <= '{0}T00:00:00' or " \
-                    u"createdTime <= '{0}T00:00:00') "
+    @classmethod
+    def make_search_parameters(cls, page_token=None, start_date=None, end_date=None):
+        # todo - instead of this crude code,
+        #  should probably work out a nice way to read the REST schema into some useful dynamic classes
+        class Y:
+            def __init__(self, y, m, d):
+                self.year = y
+                self.month = m
+                self.day = d
+
+            def to_dict(self):
+                return {"year": self.year, "month": self.month, "day": self.day}
+
+        start = Y(1800, 1, 1)
+        end = Y(3000, 1, 1)
+
+        if start_date:
+            start = Y(start_date.year, start_date.month, start_date.day)
+        if end_date:
+            end = Y(end_date.year, end_date.month, end_date.day)
+
+        body = {'pageToken': page_token, 'filters': {'dateFilter':
+            {'ranges':
+                [
+                    {'startDate': start.to_dict(),
+                     'endDate': end.to_dict()
+                     }
+                ]
+            }}}
+        return body
 
     def index_photos_media(self):
         log.info(u'Indexing Google Photos Files ...')
@@ -113,7 +153,8 @@ class GooglePhotosMediaSync(object):
 
         count = 0
         try:
-            response = self.api.mediaItems.list.execute(pageSize=100)
+            body = self.make_search_parameters(start_date=self.start_date, end_date=self.end_date)
+            response = self.api.mediaItems.search.execute(body)
             while response:
                 items = response.json()
                 for media_item_json in items['mediaItems']:
@@ -127,19 +168,20 @@ class GooglePhotosMediaSync(object):
                         if count % 1000 == 0:
                             self._db.store()
                     elif media_item.modify_date > row.ModifyDate:
-                        log.info(u"Updated %d %s", count, media_item.relative_path)
+                        log.info(u"Updated %s", media_item.relative_path)
                         self.write_media_index(media_item, True)
                     else:
-                        log.debug \
-                            (u"Skipped %d %s", count, media_item.relative_path)
+                        log.debug(u"Skipped %s", media_item.relative_path)
                 next_page = items.get('nextPageToken')
                 if next_page:
-                    response = self.api.mediaItems.list.execute(pageSize=100, pageToken=next_page)
+                    body = self.make_search_parameters(page_token=next_page,
+                                                       start_date=self.start_date, end_date=self.end_date)
+                    response = self.api.mediaItems.search.execute(body)
                 else:
                     break
         finally:
             # store latest date for incremental backup only if scanning all
-            if not (self.startDate or self.endDate):
+            if not (self.start_date or self.end_date):
                 self._db.set_scan_dates(drive_last_date=self._latest_download)
 
     @classmethod
@@ -153,7 +195,7 @@ class GooglePhotosMediaSync(object):
         count = 0
         # noinspection PyTypeChecker
         for media_item in DatabaseMedia.get_media_by_search(self._db, media_type=MediaType.PHOTOS,
-                                                            start_date=self.startDate, end_date=self.endDate):
+                                                            start_date=self.start_date, end_date=self.end_date):
             local_folder = os.path.join(self._root_folder, media_item.relative_folder)
             local_full_path = os.path.join(local_folder, media_item.filename)
             if os.path.exists(local_full_path):

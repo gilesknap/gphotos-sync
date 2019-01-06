@@ -1,6 +1,11 @@
 import six
 import sys
 from requests import HTTPError
+from json import dumps
+
+import logging
+
+log = logging.getLogger('rest_client')
 
 '''
 Defines very simple classes to create a callable interface to a REST api 
@@ -8,6 +13,8 @@ from a discovery REST description document.
 
 Intended as a super simple replacement for google-api-python-client, using 
 requests instead of httplib2
+
+giles 2018
 '''
 
 
@@ -30,6 +37,8 @@ class Method:
         path_args = {k: k_args[k] for k in self.path_args if k in k_args}
         query_args = {k: k_args[k] for k in self.query_args if k in k_args}
         path = self.service.base_url + self.make_path(path_args)
+        if body:
+            body = dumps(body)
         r = self.service.auth_session.request(self.httpMethod, data=body, url=path,
                                               params=query_args)
         try:
@@ -61,6 +70,7 @@ class RestClient:
     def __init__(self, api_url, auth_session):
         self.auth_session = auth_session
         service_document = self.auth_session.get(api_url).json()
+        self.json = service_document
         self.base_url = str(service_document['baseUrl'])
         for c_name, collection in six.iteritems(service_document['resources']):
             new_collection = Collection(c_name)
