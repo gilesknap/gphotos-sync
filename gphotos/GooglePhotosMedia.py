@@ -3,7 +3,7 @@
 import re
 
 from . import Utils
-from .GoogleMedia import GoogleMedia, MediaType, FileType
+from .GoogleMedia import GoogleMedia, MediaType
 
 
 class GooglePhotosMedia(GoogleMedia):
@@ -13,14 +13,11 @@ class GooglePhotosMedia(GoogleMedia):
     def __init__(self, media_json):
         self.__media_json = media_json
         self.__path = None
-        self.__type = FileType.Other
-        if self.mime_type.startswith('video'):
-            self.file_type = FileType.Video
-            self.__media_meta = media_json.get('mediaMetadata').get('video')
-        elif self.mime_type.startswith('image'):
-            self.file_type = FileType.Image
-            self.__media_meta = media_json.get('mediaMetadata').get('photo')
         super(GooglePhotosMedia, self).__init__()
+        if self.is_video():
+            self.__media_meta = media_json.get('mediaMetadata').get('video')
+        else:
+            self.__media_meta = media_json.get('mediaMetadata').get('photo')
 
     # ----- override Properties below -----
     @property
@@ -28,8 +25,8 @@ class GooglePhotosMedia(GoogleMedia):
         return 0
 
     @property
-    def checksum(self):
-        return "none"
+    def mimeType(self):
+        return self.__media_json["mimeType"]
 
     @property
     def id(self):

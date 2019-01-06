@@ -51,7 +51,7 @@ class DatabaseMedia(GoogleMedia):
             self._duplicate_number = row.DuplicateNo
             self._media_type = row.MediaType
             self._size = row.FileSize
-            self._checksum = row.Checksum
+            self._mimeType = row.MimeType
             self._description = row.Description
             self._date = row.ModifyDate
             self._create_date = row.CreateDate
@@ -105,8 +105,8 @@ class DatabaseMedia(GoogleMedia):
         return self._size
 
     @property
-    def checksum(self):
-        return self._checksum
+    def mime_type(self):
+        return self._mimeType
 
     @property
     def id(self):
@@ -156,14 +156,6 @@ class DatabaseMedia(GoogleMedia):
         :return (datetime):
         """
         return self._date
-
-    @property
-    def mime_type(self):
-        """
-        Mime type not required at present
-        :return None:
-        """
-        raise NotImplementedError
 
     @property
     def url(self):

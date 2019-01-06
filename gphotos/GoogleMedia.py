@@ -4,18 +4,10 @@ import os.path
 import re
 from time import gmtime, strftime
 from datetime import datetime
-from enum import Enum
 
 from .LocalData import LocalData
 
 from enum import IntEnum
-
-
-class FileType(IntEnum):
-    Other = 0
-    Video = 1
-    Image = 2
-
 
 # an enum for identifying the type of subclass during polymorphic use
 # only used for identifying the root folder the media should occupy locally
@@ -37,7 +29,6 @@ class GoogleMedia(object):
         self._relative_folder = None
         self._duplicate_number = 0
         self.symlink = False
-        self.file_type = None
 
     # regex for illegal characters in file names and database queries
     fix_linux = re.compile(r'[/]|[\x00-\x1f]|\x7f|\x00')
@@ -49,7 +40,7 @@ class GoogleMedia(object):
         makes sure a string is valid for creating file names and converts to
         unicode assuming utf8 encoding if necessary
 
-        :param (str) string: input string (or unicode string)
+        :param (str) s: input string (or unicode string)
         :return: (unicode): sanitized string
         """
         if os.name == 'nt':
@@ -68,7 +59,7 @@ class GoogleMedia(object):
                                          DuplicateNo=self.duplicate_number,
                                          MediaType=self.media_type,
                                          FileSize=self.size,
-                                         Checksum=self.checksum,
+                                         MimeType=self.mimeType,
                                          Description=self.description,
                                          ModifyDate=self.modify_date,
                                          CreateDate=self.create_date,
@@ -79,6 +70,9 @@ class GoogleMedia(object):
         y = "{:04d}".format(self.create_date.year)
         m = "{:02d}".format(self.create_date.month)
         self._relative_folder = os.path.join(y, m)
+
+    def is_video(self):
+        return self.mime_type.startswith('video')
 
     @property
     def duplicate_number(self):
@@ -128,7 +122,7 @@ class GoogleMedia(object):
         raise NotImplementedError
 
     @property
-    def checksum(self):
+    def mimeType(self):
         """
         :rtype: str
         """

@@ -151,36 +151,3 @@ def timestamp_to_date(time_secs, hour_offset=0):
         date = minimum_date()
     return date
 
-
-# gdata patches the http client to handle token refresh for oauth2
-# but the signature is out of date for the current http_client.request.
-# Here we patch over their patch to fix
-# error 'TypeError: new_request() takes exactly 1 argument (4 given)'
-# noinspection SpellCheckingInspection
-def patch_http_client(oauth, client, request_orig2):
-    """
-    :param (gdata.gauth.OAuth2TokenFromCredentials) oauth:
-    :param (gdata.photos.service.PhotoService) client:
-    :param (instancemethod) request_orig2:
-    :return:
-    """
-    client.auth_token = oauth
-
-    # noinspection PyProtectedMember
-    def new_request2(*args, **k_args):
-        response = request_orig2(*args, **k_args)
-        if response.status == 401 or response.status == 403:
-            refresh_response = oauth._refresh(request_orig2)
-            if oauth._invalid:
-                return refresh_response
-            else:
-                log.info('token refresh: %s', oauth.access_token)
-                new_h = '{}{}'.format('Bearer ', oauth.access_token)
-                client.additional_headers['Authorization'] = new_h
-                k_args['headers']['Authorization'] = new_h
-            return request_orig2(*args, **k_args)
-        else:
-            return response
-
-    client.http_client.request = new_request2
-    return client

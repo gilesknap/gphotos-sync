@@ -53,7 +53,7 @@ create table SyncFiles
 	FileName TEXT,
 	OrigFileName TEXT,
 	DuplicateNo INT,
-	Checksum TEXT,
+	MimeType TEXT,
 	Description TEXT,
 	FileSize INT,
 	ModifyDate INT,

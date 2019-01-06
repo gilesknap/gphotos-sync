@@ -123,7 +123,7 @@ class LocalData:
         """
         cols_def = {'Id': int, 'RemoteId': str, 'Url': str, 'Path': str,
                     'FileName': str, 'OrigFileName': str, 'DuplicateNo': int,
-                    'MediaType': int, 'FileSize': int, 'Checksum': str,
+                    'MediaType': int, 'FileSize': int, 'MimeType': str,
                     'Description': str, 'ModifyDate': datetime,
                     'CreateDate': datetime, 'SyncDate': datetime,
                     'SymLink': int}
