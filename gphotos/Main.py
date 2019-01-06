@@ -7,6 +7,7 @@ import sys
 import signal
 import fcntl
 
+from datetime import datetime
 from appdirs import AppDirs
 from .GooglePhotosSync import GooglePhotosSync
 from .GoogleAlbumsSync import GoogleAlbumsSync
@@ -16,16 +17,8 @@ from .restclient import RestClient
 import pkg_resources
 
 APP_NAME = "gphotos-sync"
+TRACE_FILE = ".gphotos-terminated"
 log = logging.getLogger('gphotos')
-
-
-def sigterm_handler(_signo, _stack_frame):
-    log.warning("\nProcess killed "
-                "(stacktrace in .gphotos-terminated).")
-    # save the traceback so we can diagnose lockups
-    with open(".gphotos-terminated", "w") as text_file:
-        text_file.write(traceback.format_exc())
-    sys.exit(0)
 
 
 class GooglePhotosSyncMain:
@@ -34,6 +27,7 @@ class GooglePhotosSyncMain:
         self.google_photos_client = None
         self.google_photos_sync = None
         self.google_albums_sync = None
+        self.trace_file = None
 
         self.auth = None
 
@@ -80,6 +74,10 @@ class GooglePhotosSyncMain:
         action='store_true',
         help="Use index from previous run and start download immediately")
     parser.add_argument(
+        "--skip-files",
+        action='store_true',
+        help="Dont download files, just refresh the album links(for testing)")
+    parser.add_argument(
         "--flush-index",
         action='store_true',
         help="delete the index db, re-scan everything")
@@ -87,10 +85,6 @@ class GooglePhotosSyncMain:
         "--no-browser",
         action='store_true',
         help="use cut and paste for auth instead of invoking a browser")
-    parser.add_argument(
-        "--refresh-albums",
-        action='store_true',
-        help="force a refresh of the album links")
     parser.add_argument(
         "--brief",
         action='store_true',
@@ -137,6 +131,16 @@ class GooglePhotosSyncMain:
         self.google_photos_sync.end_date = args.end_date
         self.google_photos_sync.includeVideo = not args.skip_video
 
+    def sigterm_handler(self, _sig_no, _stack_frame):
+        if _sig_no == signal.SIGINT:
+            log.warning("\nUser cancelled download")
+        log.warning("\nProcess killed "
+                    "(stacktrace in %s).", self.trace_file)
+        # save the traceback so we can diagnose lockups
+        with open(self.trace_file, "w") as text_file:
+            text_file.write(traceback.format_exc())
+        sys.exit(0)
+
     @classmethod
     def logging(cls, args):
         numeric_level = getattr(logging, args.log_level.upper(), None)
@@ -173,17 +177,12 @@ class GooglePhotosSyncMain:
                     self.google_albums_sync.index_album_media()
                     self.data_store.store()
                 if not args.index_only:
-                    self.google_photos_sync.download_photo_media()
+                    if not args.skip_files:
+                        self.google_photos_sync.download_photo_media()
                     self.google_albums_sync.create_album_content_links()
                     if args.do_delete:
                         self.google_photos_sync.check_for_removed()
 
-            except KeyboardInterrupt:
-                log.warning("\nUser cancelled download "
-                            "(stacktrace in .gphotos-terminated).")
-                # save the traceback so we can diagnose lockups
-                with open(".gphotos-terminated", "w") as text_file:
-                    text_file.write(traceback.format_exc())
             finally:
                 # save the traceback so we can diagnose lockups
                 with open(".gphotos-terminated", "w") as text_file:
@@ -191,9 +190,12 @@ class GooglePhotosSyncMain:
                 log.info("Done.")
 
     def main(self):
+        start_time = datetime.now()
         args = self.parser.parse_args()
         self.logging(args)
-        signal.signal(signal.SIGTERM, sigterm_handler)
+        self.trace_file = os.path.join(args.root_folder, TRACE_FILE)
+        signal.signal(signal.SIGTERM, self.sigterm_handler)
+        signal.signal(signal.SIGINT, self.sigterm_handler)
 
         db_path = args.db_path if args.db_path else args.root_folder
         if not os.path.exists(args.root_folder):
@@ -218,3 +220,6 @@ class GooglePhotosSyncMain:
             # configure and launch
             self.setup(args, db_path)
             self.start(args)
+
+        elapsed_time = datetime.now() - start_time
+        log.info('Elapsed time = %s', elapsed_time)

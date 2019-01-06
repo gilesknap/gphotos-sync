@@ -53,7 +53,7 @@ class GoogleAlbumsSync(object):
             media_json = items_json.get('mediaItems')
             # cope with empty albums
             if not media_json:
-                continue
+                break
             for media_item_json in media_json:
                 media_item = GooglePhotosMedia(media_item_json)
                 log.debug('----%s', media_item.filename)
@@ -128,11 +128,16 @@ class GoogleAlbumsSync(object):
                 duplicates += 1
                 link_file = '{} ({})'.format(original_link_file, duplicates)
 
+            # todo get relative links working
+            rel_link = os.path.relpath(link_file, full_file_name)
             log.debug(u'adding album link %s -> %s', full_file_name,
                       link_file)
             if not os.path.isdir(link_folder):
                 log.debug(u'new album folder %s', link_folder)
                 os.makedirs(link_folder)
-            os.symlink(full_file_name, link_file)
+            try:
+                os.symlink(full_file_name, link_file)
+            except FileExistsError:
+                pass  # copes with existent broken symbolic links (os.path.exists fails for these)
 
         log.info(u"album links done.")

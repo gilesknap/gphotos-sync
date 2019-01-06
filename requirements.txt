@@ -1,9 +1,7 @@
 mock
-pydrive
-retrying
 appdirs
-progressbar2
 requests
 six
 requests_oauthlib
 PyYaml
+multiprocessing

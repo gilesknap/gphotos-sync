@@ -10,12 +10,10 @@ from .DatabaseMedia import DatabaseMedia
 import logging
 import requests
 import shutil
+import tempfile
+from multiprocessing import Pool
 
 log = logging.getLogger('gphotos.Photos')
-
-
-class NoGooglePhotosFolderError(Exception):
-    pass
 
 
 class GooglePhotosSync(object):
@@ -31,6 +29,7 @@ class GooglePhotosSync(object):
         self._root_folder = root_folder
         self._api = api
         self._media_folder = 'photos'
+        self.download_pool = Pool(10)
 
         self._latest_download = Utils.minimum_date()
         # properties to be set after init
@@ -109,7 +108,7 @@ class GooglePhotosSync(object):
 
         body = {
             'pageToken': page_token,
-            # 'pageSize': 100,
+            'pageSize': 100,
             'filters': {
                 'dateFilter': {
                     'ranges':
@@ -169,10 +168,23 @@ class GooglePhotosSync(object):
                 self._db.set_scan_dates(drive_last_date=self._latest_download)
 
     @classmethod
-    def download_file(cls, url, local_path):
-        r = requests.get(url, stream=True)
-        with open(local_path, 'wb') as f:
-            shutil.copyfileobj(r.raw, f)
+    def do_download_file(cls, url, local_full_path, media_item):
+        # this function runs in a process pool and does the actual downloads
+        folder = os.path.dirname(local_full_path)
+        with tempfile.NamedTemporaryFile(dir=folder, delete=False) as temp_file:
+            logging.info("do_download %s --> %s", temp_file.name, local_full_path)
+            r = requests.get(url, stream=True)
+            shutil.copyfileobj(r.raw, temp_file)
+            os.rename(temp_file.name, local_full_path)
+        # set the access date to create date since there is nowhere
+        # else to put it on linux (and is useful for debugging)
+        os.utime(local_full_path,
+                 (Utils.to_timestamp(media_item.modify_date),
+                  Utils.to_timestamp(media_item.create_date)))
+
+    def download_file(self, url=None, local_full_path=None, media_item=None):
+        # this function batches up download operations and farms them off to a process pool
+        self.download_pool.apply_async(self.do_download_file, (url, local_full_path, media_item))
 
     def download_photo_media(self):
         log.info(u'Downloading Photos ...')
@@ -193,7 +205,6 @@ class GooglePhotosSync(object):
 
             if not os.path.isdir(local_folder):
                 os.makedirs(local_folder)
-            temp_filename = os.path.join(self._root_folder, '.temp-photo')
 
             count += 1
             try:
@@ -205,12 +216,10 @@ class GooglePhotosSync(object):
                 else:
                     log.info(u'downloading image {} {} ...'.format(count, local_full_path))
                     download_url = '{}=d'.format(r_json['baseUrl'])
-                self.download_file(download_url, temp_filename)
-                os.rename(temp_filename, local_full_path)
-                # set the access date to create date since there is nowhere
-                # else to put it on linux (and is useful for debugging)
-                os.utime(local_full_path,
-                         (Utils.to_timestamp(media_item.modify_date),
-                          Utils.to_timestamp(media_item.create_date)))
+                self.download_file(download_url, local_full_path, media_item)
+
             except Exception as e:
                 log.error('failure downloading {}.\n{}{}'.format(local_full_path, type(e), e))
+        # allow any remaining background downloads to complete
+        self.download_pool.close()
+        self.download_pool.join()
