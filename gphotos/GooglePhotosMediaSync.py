@@ -32,6 +32,7 @@ class GooglePhotosMediaSync(object):
 
         self._latest_download = Utils.minimum_date()
         # properties to be set after init
+        # thus in theory one instance could so multiple indexes
         self._startDate = None
         self._endDate = None
         self._includeVideo = False
@@ -65,10 +66,12 @@ class GooglePhotosMediaSync(object):
         # note for partial scans using date filters this is still OK because
         # for a file to exist it must have been indexed in a previous scan
         log.info(u'Finding deleted media ...')
-        top_dir = os.path.join(self._root_folder, GooglePhotosMedia.MEDIA_FOLDER)
-        for (dir_name, _, file_names) in os.walk(top_dir):
+        for (dir_name, _, file_names) in os.walk(self._root_folder):
             for file_name in file_names:
-                file_row = self._db.get_file_by_path(dir_name, file_name)
+                local_path = os.path.relpath(dir_name, self._root_folder)
+                if file_name.startswith('.'):
+                    continue
+                file_row = self._db.get_file_by_path(local_path, file_name)
                 if not file_row:
                     name = os.path.join(dir_name, file_name)
                     os.remove(name)
@@ -79,10 +82,7 @@ class GooglePhotosMediaSync(object):
         if media.modify_date > self._latest_download:
             self._latest_download = media.modify_date
 
-    # PHOTO_QUERY = u"mimeType contains 'image/' and trashed=false"
-    # VIDEO_QUERY = u"(mimeType contains 'image/' or mimeType contains " \
-    #               u"'video/') and trashed=false"
-
+    # todo add media type filtering (video/image)
     @classmethod
     def make_search_parameters(cls, page_token=None, start_date=None, end_date=None):
         # todo - instead of this crude code,
@@ -116,40 +116,6 @@ class GooglePhotosMediaSync(object):
 
     def index_photos_media(self):
         log.info(u'Indexing Google Photos Files ...')
-        #
-        # if self.includeVideo:
-        #     q = self.VIDEO_QUERY
-        # else:
-        #     q = self.PHOTO_QUERY
-        #
-        # if self.startDate:
-        #     q += self.AFTER_QUERY.format(self.startDate)
-        # else:
-        #     # setup for incremental backup
-        #     (self._latest_download, _) = self._db.get_scan_dates()
-        #     if not self._latest_download:
-        #         self._latest_download = Utils.minimum_date()
-        #     else:
-        #         s = Utils.date_to_string(self._latest_download, True)
-        #         q += self.AFTER_QUERY.format(s)
-        # if self.endDate:
-        #     q += self.BEFORE_QUERY.format(self.endDate)
-
-        # count = 0
-        # r = self.api.mediaItems.list.execute(pageSize=100)
-        # while r:
-        #     results = r.json()
-        #     for a in results['mediaItems']:
-        #         count += 1
-        #         type_description = a.get('mimeType')
-        #         if type_description not in ['image/jpeg', 'video/mp4', 'image/gif']:
-        #             print(count, a.get('filename'), type_description, a.get('description'))
-        #
-        #     next_page = results.get('nextPageToken')
-        #     if next_page:
-        #         r = self.api.mediaItems.list.execute(pageSize=100, pageToken=next_page)
-        #     else:
-        #         break
 
         count = 0
         try:

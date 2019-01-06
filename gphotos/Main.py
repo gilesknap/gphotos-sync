@@ -188,8 +188,8 @@ class GooglePhotosSyncMain:
                     self.data_store.store()
                 if not args.index_only:
                     self.google_photos_sync.download_photo_media()
-                #         if args.do_delete:
-                #             self.google_photos_sync.check_for_removed()
+                    if args.do_delete:
+                        self.google_photos_sync.check_for_removed()
 
             except KeyboardInterrupt:
                 log.warning("\nUser cancelled download "

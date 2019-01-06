@@ -32,8 +32,8 @@ class DbRow:
     dict = None
     empty = False
 
-    # allows us to do boolean checks on the row object and return True i
-    def __nonzero__(self):
+    # allows us to do boolean checks on the row object and return False if it is empty
+    def __bool__(self):
         return not self.empty
 
     # factory method for delivering a DbRow object based on named arguments
@@ -72,8 +72,8 @@ def db_row(row_class):
             else:
                 value = result_row[col]
             setattr(self, col, value)
-            if not result_row:
-                self.empty = True
+        if not result_row:
+            self.empty = True
 
     @property
     def to_dict(self):
