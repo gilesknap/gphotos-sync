@@ -7,6 +7,7 @@ from .GooglePhotosMedia import GooglePhotosMedia
 from .BaseMedia import MediaType
 from .LocalData import LocalData
 from .DatabaseMedia import DatabaseMedia
+from itertools import zip_longest
 import logging
 import requests
 import shutil
@@ -184,42 +185,66 @@ class GooglePhotosSync(object):
 
     def download_file(self, url=None, local_full_path=None, media_item=None):
         # this function farms downloads off to a thread pool
+        # todo add error response function
         self.download_pool.apply_async(self.do_download_file, (url, local_full_path, media_item))
 
     def download_photo_media(self):
+        def grouper(iterable):
+            """Collect data into chunks size 20"""
+            return zip_longest(*[iter(iterable)] * 20, fillvalue=None)
+
         log.info(u'Downloading Photos ...')
         count = 0
-        # noinspection PyTypeChecker
-        for media_item in DatabaseMedia.get_media_by_search(self._db, media_type=MediaType.PHOTOS,
-                                                            start_date=self.start_date, end_date=self.end_date):
-            local_folder = os.path.join(self._root_folder, media_item.relative_folder)
-            local_full_path = os.path.join(local_folder, media_item.filename)
-            if os.path.exists(local_full_path):
-                log.debug(u'skipping {} ...'.format(local_full_path))
-                # todo is there anyway to detect remote updates with photos API?
-                # if Utils.to_timestamp(media.modify_date) > \
-                #         os.path.getctime(local_full_path):
-                #     log.warning(u'{} was modified'.format(local_full_path))
-                # else:
+        for media_items_block in grouper(
+                DatabaseMedia.get_media_by_search(self._db, media_type=MediaType.PHOTOS,
+                                                  start_date=self.start_date, end_date=self.end_date)):
+            batch_ids = []
+            for media_item in media_items_block:
+                if media_item is None:
+                    break
+
+                local_folder = os.path.join(self._root_folder, media_item.relative_folder)
+                local_full_path = os.path.join(local_folder, media_item.filename)
+                if os.path.exists(local_full_path):
+                    log.debug(u'skipping {} ...'.format(local_full_path))
+                    # todo is there anyway to detect remote updates with photos API?
+                    # if Utils.to_timestamp(media.modify_date) > \
+                    #         os.path.getctime(local_full_path):
+                    #     log.warning(u'{} was modified'.format(local_full_path))
+                    # else:
+                    continue
+
+                if not os.path.isdir(local_folder):
+                    os.makedirs(local_folder)
+                batch_ids.append(media_item.id)
+
+            if len(batch_ids) == 0:
                 continue
 
-            if not os.path.isdir(local_folder):
-                os.makedirs(local_folder)
-
-            count += 1
             try:
-                response = self._api.mediaItems.get.execute(mediaItemId=str(media_item.id))
+                response = self._api.mediaItems.batchGet.execute(mediaItemIds=batch_ids)
                 r_json = response.json()
-                if media_item.is_video():
-                    log.info(u'downloading video {} {} ...'.format(count, local_full_path))
-                    download_url = '{}=dv'.format(r_json['baseUrl'])
-                else:
-                    log.info(u'downloading image {} {} ...'.format(count, local_full_path))
-                    download_url = '{}=d'.format(r_json['baseUrl'])
-                self.download_file(download_url, local_full_path, media_item)
-
+                for media_item_json_status in r_json["mediaItemResults"]:
+                    count += 1
+                    # todo look at media_item_json_status["status"] for individual errors
+                    media_item_json = media_item_json_status["mediaItem"]
+                    media_item = GooglePhotosMedia(media_item_json)
+                    media_item.set_path_by_date(self._media_folder)
+                    try:
+                        local_folder = os.path.join(self._root_folder, media_item.relative_folder)
+                        local_full_path = os.path.join(local_folder, media_item.filename)
+                        if media_item.is_video():
+                            log.info(u'downloading video {} {} ...'.format(count, local_full_path))
+                            download_url = '{}=dv'.format(media_item_json['baseUrl'])
+                        else:
+                            log.info(u'downloading image {} {} ...'.format(count, local_full_path))
+                            download_url = '{}=d'.format(media_item_json['baseUrl'])
+                        self.download_file(download_url, local_full_path, media_item)
+                    except Exception as e:
+                        log.error('failure downloading of {}.\n{}{}'.format(media_item.filename, type(e), e))
             except Exception as e:
-                log.error('failure downloading {}.\n{}{}'.format(local_full_path, type(e), e))
+                log.error('failure in batch get of {}.\n{}{}'.format(batch_ids, type(e), e))
+
         # allow any remaining background downloads to complete
         self.download_pool.close()
         self.download_pool.join()
