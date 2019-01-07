@@ -11,7 +11,9 @@ import logging
 import requests
 import shutil
 import tempfile
-from multiprocessing import Pool
+# apparently this is undocumented and may end up in Threading - could use Pool instead
+# but have no need for separate processes since our workers are (probably) IO bound
+from multiprocessing.pool import ThreadPool
 
 log = logging.getLogger('gphotos.Photos')
 
@@ -29,7 +31,7 @@ class GooglePhotosSync(object):
         self._root_folder = root_folder
         self._api = api
         self._media_folder = 'photos'
-        self.download_pool = Pool(10)
+        self.download_pool = ThreadPool(10)
 
         self._latest_download = Utils.minimum_date()
         # properties to be set after init
@@ -125,7 +127,6 @@ class GooglePhotosSync(object):
 
     def index_photos_media(self):
         log.info(u'Indexing Google Photos Files ...')
-
         count = 0
         try:
             body = self.make_search_parameters(start_date=self.start_date,
@@ -172,7 +173,6 @@ class GooglePhotosSync(object):
         # this function runs in a process pool and does the actual downloads
         folder = os.path.dirname(local_full_path)
         with tempfile.NamedTemporaryFile(dir=folder, delete=False) as temp_file:
-            logging.info("do_download %s --> %s", temp_file.name, local_full_path)
             r = requests.get(url, stream=True)
             shutil.copyfileobj(r.raw, temp_file)
             os.rename(temp_file.name, local_full_path)
@@ -183,7 +183,7 @@ class GooglePhotosSync(object):
                   Utils.to_timestamp(media_item.create_date)))
 
     def download_file(self, url=None, local_full_path=None, media_item=None):
-        # this function batches up download operations and farms them off to a process pool
+        # this function farms downloads off to a thread pool
         self.download_pool.apply_async(self.do_download_file, (url, local_full_path, media_item))
 
     def download_photo_media(self):

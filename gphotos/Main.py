@@ -14,6 +14,7 @@ from .GoogleAlbumsSync import GoogleAlbumsSync
 from .LocalData import LocalData
 from .authorize import Authorize
 from .restclient import RestClient
+from threading import get_ident
 import pkg_resources
 
 APP_NAME = "gphotos-sync"
@@ -116,8 +117,6 @@ class GooglePhotosSyncMain:
             'https://www.googleapis.com/auth/photoslibrary.readonly',
             'https://www.googleapis.com/auth/photoslibrary.sharing',
         ]
-
-        # drive_api_url = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'
         photos_api_url = 'https://photoslibrary.googleapis.com/$discovery/rest?version=v1'
 
         self.auth = Authorize(scope, credentials_file, secret_file)
@@ -131,13 +130,15 @@ class GooglePhotosSyncMain:
         self.google_photos_sync.end_date = args.end_date
         self.google_photos_sync.includeVideo = not args.skip_video
 
-    def sigterm_handler(self, _sig_no, _stack_frame):
+    @classmethod
+    def sigterm_handler(cls, _sig_no, _stack_frame):
+        trace_name = TRACE_FILE + str(get_ident())
         if _sig_no == signal.SIGINT:
             log.warning("\nUser cancelled download")
         log.warning("\nProcess killed "
-                    "(stacktrace in %s).", self.trace_file)
+                    "(stacktrace in %s).", trace_name)
         # save the traceback so we can diagnose lockups
-        with open(self.trace_file, "w") as text_file:
+        with open(trace_name, "w") as text_file:
             text_file.write(traceback.format_exc())
         sys.exit(0)
 
@@ -171,29 +172,23 @@ class GooglePhotosSyncMain:
 
     def start(self, args):
         with self.data_store:
-            try:
-                if not args.skip_index:
-                    if not args.skip_files:
-                        self.google_photos_sync.index_photos_media()
-                    self.google_albums_sync.index_album_media()
-                    self.data_store.store()
-                if not args.index_only:
-                    if not args.skip_files:
-                        self.google_photos_sync.download_photo_media()
-                    self.google_albums_sync.create_album_content_links()
-                    if args.do_delete:
-                        self.google_photos_sync.check_for_removed()
-
-            finally:
-                # save the traceback so we can diagnose lockups
-                with open(".gphotos-terminated", "w") as text_file:
-                    text_file.write(traceback.format_exc())
-                log.info("Done.")
+            if not args.skip_index:
+                if not args.skip_files:
+                    self.google_photos_sync.index_photos_media()
+                self.google_albums_sync.index_album_media()
+                self.data_store.store()
+            if not args.index_only:
+                if not args.skip_files:
+                    self.google_photos_sync.download_photo_media()
+                self.google_albums_sync.create_album_content_links()
+                if args.do_delete:
+                    self.google_photos_sync.check_for_removed()
 
     def main(self):
         start_time = datetime.now()
         args = self.parser.parse_args()
         self.logging(args)
+        args.root_folder = os.path.abspath(args.root_folder)
         self.trace_file = os.path.join(args.root_folder, TRACE_FILE)
         signal.signal(signal.SIGTERM, self.sigterm_handler)
         signal.signal(signal.SIGINT, self.sigterm_handler)
@@ -219,8 +214,16 @@ class GooglePhotosSyncMain:
                 log.info('version not available')
 
             # configure and launch
-            self.setup(args, db_path)
-            self.start(args)
+            try:
+                self.setup(args, db_path)
+                self.start(args)
+            except Exception as e:
+                log.warning("\nProcess failed with %s (stacktrace in %s).", type(e).__name__, self.trace_file)
+                # save the traceback so we can diagnose lockups
+                with open(TRACE_FILE, "w") as text_file:
+                    text_file.write(traceback.format_exc())
+            finally:
+                log.info("Done.")
 
         elapsed_time = datetime.now() - start_time
         log.info('Elapsed time = %s', elapsed_time)
