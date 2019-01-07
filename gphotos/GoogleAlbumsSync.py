@@ -88,6 +88,7 @@ class GoogleAlbumsSync(object):
 
                 album = GoogleAlbumMedia(album_json)
                 log.info(u'Indexing Album: %d %s, photos: %d', count, album.filename, album.size)
+                # todo use parallel execution for fetch album
                 first_date, last_date = self.fetch_album_contents(album.id)
                 # write the album data down now we know the contents' date range
                 row = LocalData.AlbumsRow.make(AlbumId=album.id,
@@ -129,14 +130,13 @@ class GoogleAlbumsSync(object):
                 link_file = '{} ({})'.format(original_link_file, duplicates)
 
             # todo get relative links working
-            rel_link = os.path.relpath(link_file, full_file_name)
-            log.debug(u'adding album link %s -> %s', full_file_name,
-                      link_file)
+            relative_filename = os.path.relpath(full_file_name, link_folder)
+            log.debug(u'adding album link %s -> %s', relative_filename, link_file)
             if not os.path.isdir(link_folder):
                 log.debug(u'new album folder %s', link_folder)
                 os.makedirs(link_folder)
             try:
-                os.symlink(full_file_name, link_file)
+                os.symlink(relative_filename, link_file)
             except FileExistsError:
                 pass  # copes with existent broken symbolic links (os.path.exists fails for these)
 

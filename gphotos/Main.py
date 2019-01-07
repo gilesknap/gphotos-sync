@@ -132,13 +132,12 @@ class GooglePhotosSyncMain:
 
     @classmethod
     def sigterm_handler(cls, _sig_no, _stack_frame):
-        trace_name = TRACE_FILE + str(get_ident())
         if _sig_no == signal.SIGINT:
             log.warning("\nUser cancelled download")
         log.warning("\nProcess killed "
-                    "(stacktrace in %s).", trace_name)
+                    "(stacktrace in %s).", TRACE_FILE)
         # save the traceback so we can diagnose lockups
-        with open(trace_name, "w") as text_file:
+        with open(TRACE_FILE, "w") as text_file:
             text_file.write(traceback.format_exc())
         sys.exit(0)
 

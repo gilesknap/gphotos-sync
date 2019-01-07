@@ -6,6 +6,8 @@ New API
 + incremental backup of album indexes requires API changes ??
 + sort out retries for errors like
 ++  requests.exceptions.HTTPError: 429 Client Error: Too Many Requests for url: https://photoslibrary.googleapis.com/v1/mediaItems:search
+++  actually these errors are not transient with this API so maybe just need to abort and explain
++ parallel album indexing for speed up
 
 Tidy Up
 =======
