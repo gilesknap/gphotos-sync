@@ -2,6 +2,10 @@ New API
 ======
 + DONE get pageSize working for bigger batches in media listing
 + DONE also use batching when downloading so parallel downloads are useful
++ restore incremental backup
++ incremental backup of album indexes requires API changes ??
++ sort out retries for errors like
+++  requests.exceptions.HTTPError: 429 Client Error: Too Many Requests for url: https://photoslibrary.googleapis.com/v1/mediaItems:search
 
 Tidy Up
 =======

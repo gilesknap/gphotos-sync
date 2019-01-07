@@ -173,7 +173,8 @@ class GooglePhotosSyncMain:
         with self.data_store:
             try:
                 if not args.skip_index:
-                    self.google_photos_sync.index_photos_media()
+                    if not args.skip_files:
+                        self.google_photos_sync.index_photos_media()
                     self.google_albums_sync.index_album_media()
                     self.data_store.store()
                 if not args.index_only:

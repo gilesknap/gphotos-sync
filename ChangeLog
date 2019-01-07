@@ -1,8 +1,18 @@
 CHANGES
 =======
 
-* Update README.rst
-* Update README.rst
+* added parallel file download
+* album index and local symlinks all working
+* add delete local files removed from server
+* added date range filtering
+* mimetype support improvements and video downloads
+* low memory download of images (GooglePhotosMediaSync::download\_photo\_media)
+* restored duplicate handling, switch to relative paths in DB
+* first pass indexing all media using google photos rest API
+* simple test of new REST API in startup code
+* Added REST API discovery
+* first pass of switch to Python3, remove Picassa
+* add out of memory monitoring
 * add Pipfile (#25)
 * use /usr/bin/env python2 everywhere, not hard-coded /usr/bin/python (#24)
 
