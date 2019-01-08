@@ -5,8 +5,35 @@
 Google Photos Sync
 ==================
 
-Description
-===========
+IMPORTANT: Major Update Coming
+==============================
+
+The current version of this project has significant limitations and I don't recommend using it.
+
+Google has released a new Google Photos API and I'm working on using that instead of Drive and Picasa APIs.
+
+A release will coming in a few weeks. (for sneak preview see branch 'new_api')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Previous Description
+====================
 
 Google Photos Sync downloads your Google Photos to the local file system. It attempts to backup all the photos as stored in Google Drive, but also
 the album information and additional Google Photos 'Creations' (animations, panoramas, movies, effects and collages) that do not appear in Drive.
