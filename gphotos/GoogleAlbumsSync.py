@@ -7,6 +7,7 @@ from datetime import datetime
 from . import Utils
 from .GoogleAlbumMedia import GoogleAlbumMedia
 from .GooglePhotosMedia import GooglePhotosMedia
+from .DatabaseMedia import DatabaseMedia
 from .LocalData import LocalData
 import logging
 
@@ -75,9 +76,9 @@ class GoogleAlbumsSync(object):
         """
         log.info(u'Indexing Albums ...')
 
-        # there is no filters in album listing at present so it always a full rescan - it's quite quick
-        log.debug(u"removing all album - file links from db, in preparation for indexing")
-        self._db.remove_all_album_files()
+        # # there is no filters in album listing at present so it always a full rescan - it's quite quick
+        # log.debug(u"removing all album - file links from db, in preparation for indexing")
+        # self._db.remove_all_album_files()
 
         count = 0
         response = self._api.albums.list.execute(pageSize=50)
@@ -87,16 +88,23 @@ class GoogleAlbumsSync(object):
                 count += 1
 
                 album = GoogleAlbumMedia(album_json)
-                log.info(u'Indexing Album: %d %s, photos: %d', count, album.filename, album.size)
-                # todo use parallel execution for fetch album
-                first_date, last_date = self.fetch_album_contents(album.id)
-                # write the album data down now we know the contents' date range
-                row = LocalData.AlbumsRow.make(AlbumId=album.id,
-                                               AlbumName=album.filename,
-                                               StartDate=first_date,
-                                               EndDate=last_date,
-                                               SyncDate=Utils.date_to_string(datetime.now()))
-                self._db.put_album(row)
+                indexed_album = self._db.get_album(album_id=album.id)
+                already_indexed = indexed_album.Size == album.size if indexed_album else False
+
+                if already_indexed:
+                    log.debug(u'Skipping Album: %d %s, photos: %d', count, album.filename, album.size)
+                else:
+                    log.info(u'Indexing Album: %d %s, photos: %d', count, album.filename, album.size)
+                    # todo use parallel execution for fetch album
+                    first_date, last_date = self.fetch_album_contents(album.id)
+                    # write the album data down now we know the contents' date range
+                    row = LocalData.AlbumsRow.make(AlbumId=album.id,
+                                                   AlbumName=album.filename,
+                                                   Size=album.size,
+                                                   StartDate=first_date,
+                                                   EndDate=last_date,
+                                                   SyncDate=Utils.date_to_string(datetime.now()))
+                    self._db.put_album(row)
 
             next_page = results.get('nextPageToken')
             if next_page:
@@ -129,7 +137,6 @@ class GoogleAlbumsSync(object):
                 duplicates += 1
                 link_file = '{} ({})'.format(original_link_file, duplicates)
 
-            # todo get relative links working
             relative_filename = os.path.relpath(full_file_name, link_folder)
             log.debug(u'adding album link %s -> %s', relative_filename, link_file)
             if not os.path.isdir(link_folder):

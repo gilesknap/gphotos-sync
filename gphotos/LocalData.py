@@ -136,7 +136,7 @@ class LocalData:
         generates an object with attributes for each of the columns in the
         SyncFiles table
         """
-        cols_def = {'AlbumId': str, 'AlbumName': str, 'StartDate': datetime,
+        cols_def = {'AlbumId': str, 'AlbumName': str, 'Size': int, 'StartDate': datetime,
                     'EndDate': datetime, 'SyncDate': datetime}
 
     def check_schema_version(self):

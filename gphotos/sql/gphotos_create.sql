@@ -5,6 +5,7 @@ create table Albums
 	AlbumId TEXT
 		primary key,
 	AlbumName TEXT,
+	Size INT,
 	StartDate TEXT not null,
 	EndDate TEXT not null,
 	SyncDate TEXT not null

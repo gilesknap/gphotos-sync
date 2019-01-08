@@ -98,7 +98,6 @@ class GooglePhotosSync(object):
                 return {"year": self.year, "month": self.month, "day": self.day}
 
         if not start_date and not end_date and do_video:
-            print('using list')
             return self._api.mediaItems.list.execute(pageToken=page_token,
                                                      pageSize=self.PAGE_SIZE).json()
         else:
@@ -153,7 +152,7 @@ class GooglePhotosSync(object):
                         if count % 1000 == 0:
                             self._db.store()
                     elif media_item.modify_date > row.ModifyDate:
-                        # at present there is no modify date in the API so updates cannot be monitored?
+                        # todo at present there is no modify date in the API so updates cannot be monitored
                         log.info(u"Updated %d %s", count, media_item.relative_path)
                         self.write_media_index(media_item, True)
                     else:
@@ -211,6 +210,7 @@ class GooglePhotosSync(object):
                 DatabaseMedia.get_media_by_search(self._db, media_type=MediaType.PHOTOS,
                                                   start_date=self.start_date, end_date=self.end_date)):
             batch_ids = []
+            batch = {}
             for media_item in media_items_block:
                 if media_item is None:
                     break
@@ -230,6 +230,7 @@ class GooglePhotosSync(object):
                 if not os.path.isdir(local_folder):
                     os.makedirs(local_folder)
                 batch_ids.append(media_item.id)
+                batch[media_item.id] = media_item
 
             if len(batch_ids) == 0:
                 continue
@@ -241,7 +242,7 @@ class GooglePhotosSync(object):
                     count += 1
                     # todo look at media_item_json_status["status"] for individual errors
                     media_item_json = media_item_json_status["mediaItem"]
-                    media_item = GooglePhotosMedia(media_item_json)
+                    media_item = batch.get(media_item_json["id"])
                     media_item.set_path_by_date(self._media_folder)
                     try:
                         local_folder = os.path.join(self._root_folder, media_item.relative_folder)
