@@ -173,15 +173,20 @@ class GooglePhotosSync(object):
     def do_download_file(cls, url, local_full_path, media_item):
         # this function runs in a process pool and does the actual downloads
         folder = os.path.dirname(local_full_path)
-        with tempfile.NamedTemporaryFile(dir=folder, delete=False) as temp_file:
-            r = requests.get(url, stream=True)
-            shutil.copyfileobj(r.raw, temp_file)
-            os.rename(temp_file.name, local_full_path)
-        # set the access date to create date since there is nowhere
-        # else to put it on linux (and is useful for debugging)
-        os.utime(local_full_path,
-                 (Utils.to_timestamp(media_item.modify_date),
-                  Utils.to_timestamp(media_item.create_date)))
+        log.debug('--> %s background start', local_full_path)
+        try:
+            with tempfile.NamedTemporaryFile(dir=folder, delete=False) as temp_file:
+                r = requests.get(url, stream=True)
+                shutil.copyfileobj(r.raw, temp_file)
+                os.rename(temp_file.name, local_full_path)
+            # set the access date to create date since there is nowhere
+            # else to put it on linux (and is useful for debugging)
+            os.utime(local_full_path,
+                     (Utils.to_timestamp(media_item.modify_date),
+                      Utils.to_timestamp(media_item.create_date)))
+            log.debug('<-- %s background done', local_full_path)
+        except Exception:
+            log.error('failed download of %s', local_full_path, exc_info=True)
 
     def download_file(self, url=None, local_full_path=None, media_item=None):
         # this function farms downloads off to a thread pool
