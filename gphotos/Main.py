@@ -217,7 +217,7 @@ class GooglePhotosSyncMain:
                 self.setup(args, db_path)
                 self.start(args)
             except Exception as e:
-                log.warning("\nProcess failed with %s (stacktrace in %s).", type(e).__name__, self.trace_file)
+                log.error("\nProcess failed.", exc_info=True)
                 # save the traceback so we can diagnose lockups
                 with open(TRACE_FILE, "w") as text_file:
                     text_file.write(traceback.format_exc())

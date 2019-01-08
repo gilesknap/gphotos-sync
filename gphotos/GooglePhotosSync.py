@@ -98,7 +98,7 @@ class GooglePhotosSync(object):
             def to_dict(self):
                 return {"year": self.year, "month": self.month, "day": self.day}
 
-        start = Y(1800, 1, 1)
+        start = Y(1900, 1, 1)
         end = Y(3000, 1, 1)
         type_list = ["ALL_MEDIA"]
 
@@ -189,8 +189,11 @@ class GooglePhotosSync(object):
             log.error('failed download of %s', local_full_path, exc_info=True)
 
     def download_file(self, url=None, local_full_path=None, media_item=None):
-        # this function farms downloads off to a thread pool
-        # todo add error response function
+        """ farms downloads off to a thread pool"""
+        # (uses protected member) block this function on reasonable queue size
+        # this is lieu of multiprocessing.Pool providing a queue size initializer
+        while self.download_pool._taskqueue.qsize() > 100:
+            time.sleep(1)
         self.download_pool.apply_async(self.do_download_file, (url, local_full_path, media_item))
 
     def download_photo_media(self):
