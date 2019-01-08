@@ -1,7 +1,6 @@
 # coding: utf8
 import argparse
 import os.path
-import traceback
 import logging
 import sys
 import signal
@@ -14,11 +13,9 @@ from .GoogleAlbumsSync import GoogleAlbumsSync
 from .LocalData import LocalData
 from .authorize import Authorize
 from .restclient import RestClient
-from threading import get_ident
 import pkg_resources
 
 APP_NAME = "gphotos-sync"
-TRACE_FILE = ".gphotos-terminated"
 log = logging.getLogger('gphotos')
 
 
@@ -134,40 +131,30 @@ class GooglePhotosSyncMain:
     def sigterm_handler(cls, _sig_no, _stack_frame):
         if _sig_no == signal.SIGINT:
             log.warning("\nUser cancelled download")
-        log.warning("\nProcess killed "
-                    "(stacktrace in %s).", TRACE_FILE)
-        # save the traceback so we can diagnose lockups
-        with open(TRACE_FILE, "w") as text_file:
-            text_file.write(traceback.format_exc())
+        log.warning("\nProcess killed", exc_info=True)
         sys.exit(0)
 
     @classmethod
-    def logging(cls, args):
+    def logging(cls, args, folder):
         numeric_level = getattr(logging, args.log_level.upper(), None)
         if not isinstance(numeric_level, int):
             raise ValueError('Invalid log level: %s' % args.log_level)
 
-        # create logger
-        log.setLevel(numeric_level)
-
-        # create console handler and set level to debug
-        ch = logging.StreamHandler(sys.stdout)
-        ch.setLevel(logging.DEBUG)
-
-        # create formatter
-        # if args.brief:
-        #     format_string = u'%(message)s'
-        # else:
-        #     format_string = u'%(asctime)s %(name)s: %(message)s'
-
-        # avoid encoding issues on ssh and file redirect
-        #   Is this an issue ?? formatter = logging.Formatter(format_string.encode('utf-8'))
-        # add formatter to ch
-        #  ch.setFormatter(formatter)
-
-        if not len(log.handlers):
-            # add ch to logger
-            log.addHandler(ch)
+        log_file = os.path.join(folder, 'gphotos.log')
+        logging.basicConfig(level=logging.DEBUG,
+                            format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+                            datefmt='%m-%d %H:%M:%S',
+                            filename=log_file,
+                            filemode='w')
+        # define a Handler which writes INFO messages or higher to the sys.stderr
+        console = logging.StreamHandler()
+        console.setLevel(numeric_level)
+        # set a format which is simpler for console use
+        formatter = logging.Formatter('%(asctime)s %(message)s', datefmt='%m-%d %H:%M:%S')
+        # tell the handler to use this format
+        console.setFormatter(formatter)
+        # add the handler to the root logger
+        logging.getLogger('').addHandler(console)
 
     def start(self, args):
         with self.data_store:
@@ -186,13 +173,13 @@ class GooglePhotosSyncMain:
     def main(self):
         start_time = datetime.now()
         args = self.parser.parse_args()
-        self.logging(args)
+
+        db_path = args.db_path if args.db_path else args.root_folder
+        self.logging(args, db_path)
         args.root_folder = os.path.abspath(args.root_folder)
-        self.trace_file = os.path.join(args.root_folder, TRACE_FILE)
         signal.signal(signal.SIGTERM, self.sigterm_handler)
         signal.signal(signal.SIGINT, self.sigterm_handler)
 
-        db_path = args.db_path if args.db_path else args.root_folder
         if not os.path.exists(args.root_folder):
             os.makedirs(args.root_folder, 0o700)
 
@@ -218,9 +205,6 @@ class GooglePhotosSyncMain:
                 self.start(args)
             except Exception as e:
                 log.error("\nProcess failed.", exc_info=True)
-                # save the traceback so we can diagnose lockups
-                with open(TRACE_FILE, "w") as text_file:
-                    text_file.write(traceback.format_exc())
             finally:
                 log.info("Done.")
 
