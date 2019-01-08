@@ -87,10 +87,7 @@ class GooglePhotosSync(object):
         if media.modify_date > self._latest_download:
             self._latest_download = media.modify_date
 
-    @classmethod
-    def make_search_parameters(cls, page_token=None, start_date=None, end_date=None, do_video=False):
-        # todo - instead of this crude code,
-        #  should probably work out a nice way to read the REST schema into some useful dynamic classes
+    def search_media(self, page_token=None, start_date=None, end_date=None, do_video=False):
         class Y:
             def __init__(self, y, m, d):
                 self.year = y
@@ -100,44 +97,47 @@ class GooglePhotosSync(object):
             def to_dict(self):
                 return {"year": self.year, "month": self.month, "day": self.day}
 
-        start = Y(1900, 1, 1)
-        end = Y(3000, 1, 1)
-        type_list = ["ALL_MEDIA"]
+        if not start_date and not end_date and do_video:
+            print('using list')
+            return self._api.mediaItems.list.execute(pageToken=page_token,
+                                                     pageSize=self.PAGE_SIZE).json()
+        else:
+            start = Y(1900, 1, 1)
+            end = Y(3000, 1, 1)
+            type_list = ["ALL_MEDIA"]
 
-        if start_date:
-            start = Y(start_date.year, start_date.month, start_date.day)
-        if end_date:
-            end = Y(end_date.year, end_date.month, end_date.day)
-        if not do_video:
-            type_list = ["PHOTO"]
+            if start_date:
+                start = Y(start_date.year, start_date.month, start_date.day)
+            if end_date:
+                end = Y(end_date.year, end_date.month, end_date.day)
+            if not do_video:
+                type_list = ["PHOTO"]
 
-        body = {
-            'pageToken': page_token,
-            'pageSize': 100,
-            'filters': {
-                'dateFilter': {
-                    'ranges':
-                        [
-                            {'startDate': start.to_dict(),
-                             'endDate': end.to_dict()
-                             }
-                        ]
-                },
-                'mediaTypeFilter': {'mediaTypes': type_list},
+            body = {
+                'pageToken': page_token,
+                'pageSize': self.PAGE_SIZE,
+                'filters': {
+                    'dateFilter': {
+                        'ranges':
+                            [
+                                {'startDate': start.to_dict(),
+                                 'endDate': end.to_dict()
+                                 }
+                            ]
+                    },
+                    'mediaTypeFilter': {'mediaTypes': type_list},
+                }
             }
-        }
-        return body
+            return self._api.mediaItems.search.execute(body).json()
 
     def index_photos_media(self):
         log.info(u'Indexing Google Photos Files ...')
         count = 0
         try:
-            body = self.make_search_parameters(start_date=self.start_date,
-                                               end_date=self.end_date,
-                                               do_video=self.includeVideo)
-            response = self._api.mediaItems.search.execute(body)
-            while response:
-                items_json = response.json()
+            items_json = self.search_media(start_date=self.start_date,
+                                           end_date=self.end_date,
+                                           do_video=self.includeVideo)
+            while items_json:
                 media_json = items_json.get('mediaItems')
                 # cope with empty response
                 if not media_json:
@@ -160,11 +160,10 @@ class GooglePhotosSync(object):
                         log.debug(u"Skipped %d %s", count, media_item.relative_path)
                 next_page = items_json.get('nextPageToken')
                 if next_page:
-                    body = self.make_search_parameters(page_token=next_page,
-                                                       start_date=self.start_date,
-                                                       end_date=self.end_date,
-                                                       do_video=self.includeVideo)
-                    response = self._api.mediaItems.search.execute(body)
+                    items_json = self.search_media(page_token=next_page,
+                                                   start_date=self.start_date,
+                                                   end_date=self.end_date,
+                                                   do_video=self.includeVideo)
                 else:
                     break
         finally:
