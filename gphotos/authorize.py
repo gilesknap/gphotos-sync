@@ -78,7 +78,7 @@ class Authorize:
             print('Please go here and authorize,', authorization_url)
 
             # Get the authorization verifier code from the callback url
-            response_code = input('Paste the full redirect URL here:')
+            response_code = input('Paste the response token here:')
 
             # Fetch the access token
             self.token = self.session.fetch_token(

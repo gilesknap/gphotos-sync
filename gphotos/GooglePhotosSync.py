@@ -15,12 +15,14 @@ import tempfile
 # apparently this is undocumented and may end up in Threading - could use Pool instead
 # but have no need for separate processes since our workers are (probably) IO bound
 from multiprocessing.pool import ThreadPool
+from time import sleep
 
 log = logging.getLogger('gphotos.Photos')
 
 
 class GooglePhotosSync(object):
     PAGE_SIZE = 100
+    MAX_THREADS = 10
 
     def __init__(self, api, root_folder, db):
         """
@@ -32,7 +34,7 @@ class GooglePhotosSync(object):
         self._root_folder = root_folder
         self._api = api
         self._media_folder = 'photos'
-        self.download_pool = ThreadPool(10)
+        self.download_pool = ThreadPool(self.MAX_THREADS)
 
         self._latest_download = Utils.minimum_date()
         # properties to be set after init
@@ -141,20 +143,21 @@ class GooglePhotosSync(object):
                 if not media_json:
                     break
                 for media_item_json in media_json:
+                    count += 1
                     media_item = GooglePhotosMedia(media_item_json)
                     media_item.set_path_by_date(self._media_folder)
                     row = media_item.is_indexed(self._db)
                     if not row:
-                        count += 1
                         log.info(u"Indexed %d %s", count, media_item.relative_path)
                         self.write_media_index(media_item, False)
                         if count % 1000 == 0:
                             self._db.store()
                     elif media_item.modify_date > row.ModifyDate:
-                        log.info(u"Updated %s", media_item.relative_path)
+                        # at present there is no modify date in the API so updates cannot be monitored?
+                        log.info(u"Updated %d %s", count, media_item.relative_path)
                         self.write_media_index(media_item, True)
                     else:
-                        log.debug(u"Skipped %s", media_item.relative_path)
+                        log.debug(u"Skipped %d %s", count, media_item.relative_path)
                 next_page = items_json.get('nextPageToken')
                 if next_page:
                     body = self.make_search_parameters(page_token=next_page,
@@ -185,15 +188,17 @@ class GooglePhotosSync(object):
                      (Utils.to_timestamp(media_item.modify_date),
                       Utils.to_timestamp(media_item.create_date)))
             log.debug('<-- %s background done', local_full_path)
-        except Exception:
+        except requests.exceptions.HTTPError:
             log.error('failed download of %s', local_full_path, exc_info=True)
 
     def download_file(self, url=None, local_full_path=None, media_item=None):
-        """ farms downloads off to a thread pool"""
-        # (uses protected member) block this function on reasonable queue size
-        # this is lieu of multiprocessing.Pool providing a queue size initializer
-        while self.download_pool._taskqueue.qsize() > 100:
-            time.sleep(1)
+        """ farms downloads off to the thread pool"""
+        # block this function on small queue size since there is no point in getting ahead
+        #  of the downloads and requiring a huge queue which eats memory
+        # (uses protected member) because multiprocessing does not expose queue size yet
+        # noinspection PyProtectedMember,PyUnresolvedReferences
+        while self.download_pool._inqueue.qsize() > self.MAX_THREADS:
+            sleep(1)
         self.download_pool.apply_async(self.do_download_file, (url, local_full_path, media_item))
 
     def download_photo_media(self):
@@ -214,7 +219,8 @@ class GooglePhotosSync(object):
                 local_folder = os.path.join(self._root_folder, media_item.relative_folder)
                 local_full_path = os.path.join(local_folder, media_item.filename)
                 if os.path.exists(local_full_path):
-                    log.debug(u'skipping {} ...'.format(local_full_path))
+                    count += 1
+                    log.debug(u'skipping {} {} ...'.format(count, local_full_path))
                     # todo is there anyway to detect remote updates with photos API?
                     # if Utils.to_timestamp(media.modify_date) > \
                     #         os.path.getctime(local_full_path):
@@ -242,11 +248,10 @@ class GooglePhotosSync(object):
                         local_folder = os.path.join(self._root_folder, media_item.relative_folder)
                         local_full_path = os.path.join(local_folder, media_item.filename)
                         if media_item.is_video():
-                            log.info(u'downloading video {} {} ...'.format(count, local_full_path))
                             download_url = '{}=dv'.format(media_item_json['baseUrl'])
                         else:
-                            log.info(u'downloading image {} {} ...'.format(count, local_full_path))
                             download_url = '{}=d'.format(media_item_json['baseUrl'])
+                        log.info(u'downloading {} {} ...'.format(count, local_full_path))
                         self.download_file(download_url, local_full_path, media_item)
                     except Exception as e:
                         log.error('failure downloading of {}.\n{}{}'.format(media_item.filename, type(e), e))
