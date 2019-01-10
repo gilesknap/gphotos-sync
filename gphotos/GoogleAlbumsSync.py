@@ -94,7 +94,7 @@ class GoogleAlbumsSync(object):
                 if already_indexed:
                     log.debug(u'Skipping Album: %s, photos: %d', album.filename, album.size)
                 else:
-                    log.info(u'Indexing Album: %d %s, photos: %d', album.filename, album.size)
+                    log.info(u'Indexing Album: %s, photos: %d', album.filename, album.size)
                     # todo use parallel execution for fetch album
                     first_date, last_date = self.fetch_album_contents(album.id)
                     # write the album data down now we know the contents' date range

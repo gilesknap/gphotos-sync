@@ -161,33 +161,25 @@ class LocalData:
         qry = open(sql_file, 'r').read()
         self.cur.executescript(qry)
 
-    def set_scan_dates(self, picasa_last_date=None, drive_last_date=None):
-        if drive_last_date:
-            d = Utils.date_to_string(drive_last_date)
-            self.cur.execute('UPDATE Globals SET LastIndexDrive=? '
-                             'WHERE Id IS 1', (d,))
-        if picasa_last_date:
-            d = Utils.date_to_string(picasa_last_date)
-            self.cur.execute('UPDATE Globals SET LastIndexPicasa=? '
-                             'WHERE Id IS 1', (d,))
+    def set_scan_date(self, last_date):
+        d = Utils.date_to_string(last_date)
+        self.cur.execute('UPDATE Globals SET LastIndex=? '
+                         'WHERE Id IS 1', (d,))
 
-    def get_scan_dates(self):
-        query = "SELECT LastIndexDrive, LastIndexPicasa " \
+    def get_scan_date(self):
+        query = "SELECT LastIndex " \
                 "FROM  Globals WHERE Id IS 1"
         self.cur.execute(query)
         res = self.cur.fetchone()
 
-        drive_last_date = picasa_last_date = None
         # noinspection PyTypeChecker
-        d = res['LastIndexDrive']
-        # noinspection PyTypeChecker
-        p = res['LastIndexPicasa']
+        d = res['LastIndex']
         if d:
-            drive_last_date = Utils.string_to_date(d)
-        if p:
-            picasa_last_date = Utils.string_to_date(p)
+            last_date = Utils.string_to_date(d)
+        else:
+            last_date = None
 
-        return drive_last_date, picasa_last_date
+        return last_date
 
     def get_files_by_search(self, remote_id='%', media_type='%',
                             start_date=None, end_date=None, skip_linked=False):

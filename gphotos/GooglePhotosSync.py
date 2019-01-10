@@ -44,7 +44,7 @@ class GooglePhotosSync(object):
         self._media_folder = 'photos'
         self.download_pool = ThreadPool(self.MAX_THREADS)
 
-        self._latest_download = Utils.minimum_date()
+        self._latest_download = self._db.get_scan_date() or Utils.minimum_date()
         # properties to be set after init
         # thus in theory one instance could so multiple indexes
         self._startDate = None
@@ -92,8 +92,8 @@ class GooglePhotosSync(object):
 
     def write_media_index(self, media, update=True):
         media.save_to_db(self._db, update)
-        if media.modify_date > self._latest_download:
-            self._latest_download = media.modify_date
+        if media.create_date > self._latest_download:
+            self._latest_download = media.create_date
 
     def search_media(self, page_token=None, start_date=None, end_date=None, do_video=False):
         class Y:
@@ -139,8 +139,6 @@ class GooglePhotosSync(object):
 
     # a test function
     def scan_photos_media(self):
-        items_json = self.search_media()
-
         items_json = self.search_media(start_date=self.start_date,
                                        end_date=self.end_date,
                                        do_video=self.includeVideo)
@@ -158,44 +156,45 @@ class GooglePhotosSync(object):
     def index_photos_media(self):
         log.warning(u'Indexing Google Photos Files ...')
         count = 0
-        try:
-            items_json = self.search_media(start_date=self.start_date,
-                                           end_date=self.end_date,
-                                           do_video=self.includeVideo)
-            while items_json:
-                media_json = items_json.get('mediaItems')
-                # cope with empty response
-                if not media_json:
-                    break
-                for media_item_json in media_json:
-                    count += 1
-                    media_item = GooglePhotosMedia(media_item_json)
-                    media_item.set_path_by_date(self._media_folder)
-                    row = media_item.is_indexed(self._db)
-                    info = media_item_json['id'],
-                    if not row:
-                        log.info(u"Indexed %d %s %s", count, media_item.relative_path, info)
-                        self.write_media_index(media_item, False)
-                        if count % 2000 == 0:
-                            self._db.store()
-                    elif media_item.modify_date > row.ModifyDate:
-                        # todo at present there is no modify date in the API so updates cannot be monitored
-                        log.info(u"Updated %d %s", count, media_item.relative_path)
-                        self.write_media_index(media_item, True)
-                    else:
-                        log.debug(u"Skipped %d %s %s", count, media_item.relative_path, info)
-                next_page = items_json.get('nextPageToken')
-                if next_page:
-                    items_json = self.search_media(page_token=next_page,
-                                                   start_date=self.start_date,
-                                                   end_date=self.end_date,
-                                                   do_video=self.includeVideo)
+
+        previous_scan_latest = self._db.get_scan_date()
+        items_json = self.search_media(start_date=self.start_date or previous_scan_latest,
+                                       end_date=self.end_date,
+                                       do_video=self.includeVideo)
+        while items_json:
+            media_json = items_json.get('mediaItems')
+            # cope with empty response
+            if not media_json:
+                break
+            for media_item_json in media_json:
+                count += 1
+                media_item = GooglePhotosMedia(media_item_json)
+                media_item.set_path_by_date(self._media_folder)
+                row = media_item.is_indexed(self._db)
+                if not row:
+                    log.info(u"Indexed %d %s", count, media_item.relative_path)
+                    self.write_media_index(media_item, False)
+                    if count % 2000 == 0:
+                        self._db.store()
+                elif media_item.modify_date > row.ModifyDate:
+                    # todo at present there is no modify date in the API so updates cannot be monitored
+                    log.info(u"Updated %d %s", count, media_item.relative_path)
+                    self.write_media_index(media_item, True)
                 else:
-                    break
-        finally:
-            # store latest date for incremental backup only if scanning all
-            if not (self.start_date or self.end_date):
-                self._db.set_scan_dates(drive_last_date=self._latest_download)
+                    log.debug(u"Skipped %d %s", count, media_item.relative_path)
+            next_page = items_json.get('nextPageToken')
+            if next_page:
+                items_json = self.search_media(page_token=next_page,
+                                               start_date=self.start_date or previous_scan_latest,
+                                               end_date=self.end_date,
+                                               do_video=self.includeVideo)
+            else:
+                break
+
+        # scan (in reverse date order) completed so the next incremental scan can start from the most recent file
+        # file in this scan
+        if not self.start_date:
+            self._db.set_scan_date(last_date=self._latest_download)
 
     @classmethod
     def do_download_file(cls, url, local_full_path, media_item):
