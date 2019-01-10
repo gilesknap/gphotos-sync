@@ -136,7 +136,7 @@ def string_to_date(date_string):
         if m:
             normalized = '{}-{}-{} 00:00:00'.format(*m.groups())
         else:
-            log.warning(u'WARNING: time string {} illegal', date_string)
+            log.warning('WARNING: time string {} illegal', date_string)
             return minimum_date()
 
     return datetime.strptime(normalized, DATE_FORMAT)
@@ -147,7 +147,7 @@ def timestamp_to_date(time_secs, hour_offset=0):
         date = datetime.fromtimestamp(
             int(time_secs) / 1000 + 3600 * hour_offset)
     except ValueError:
-        log.warning(u'WARNING: time stamp %d illegal', time_secs)
+        log.warning('WARNING: time stamp %d illegal', time_secs)
         date = minimum_date()
     return date
 

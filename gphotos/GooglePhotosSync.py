@@ -78,7 +78,7 @@ class GooglePhotosSync(object):
     def check_for_removed(self):
         # note for partial scans using date filters this is still OK because
         # for a file to exist it must have been indexed in a previous scan
-        log.warning(u'Finding and removing deleted media ...')
+        log.warning('Finding and removing deleted media ...')
         for (dir_name, _, file_names) in os.walk(self._root_folder):
             for file_name in file_names:
                 local_path = os.path.relpath(dir_name, self._root_folder)
@@ -105,6 +105,8 @@ class GooglePhotosSync(object):
             def to_dict(self):
                 return {"year": self.year, "month": self.month, "day": self.day}
 
+        if not page_token:
+            log.info('searching for media start=%s, end=%s, videos=%s', start_date, end_date, do_video)
         if not start_date and not end_date and do_video:
             return self._api.mediaItems.list.execute(pageToken=page_token,
                                                      pageSize=self.PAGE_SIZE).json()
@@ -154,7 +156,7 @@ class GooglePhotosSync(object):
                                 media_item_json["productUrl"])
 
     def index_photos_media(self):
-        log.warning(u'Indexing Google Photos Files ...')
+        log.warning('Indexing Google Photos Files ...')
         count = 0
 
         previous_scan_latest = self._db.get_scan_date()
@@ -246,7 +248,7 @@ class GooglePhotosSync(object):
             """Collect data into chunks size 20"""
             return zip_longest(*[iter(iterable)] * 20, fillvalue=None)
 
-        log.warning(u'Downloading Photos ...')
+        log.warning('Downloading Photos ...')
         count = 0
         for media_items_block in grouper(
                 # todo get rid of mediaType
@@ -262,11 +264,11 @@ class GooglePhotosSync(object):
                 local_full_path = os.path.join(local_folder, media_item.filename)
                 if os.path.exists(local_full_path):
                     count += 1
-                    log.debug(u'skipping {} {} ...'.format(count, local_full_path))
+                    log.debug('skipping {} {} ...'.format(count, local_full_path))
                     # todo is there anyway to detect remote updates with photos API?
                     # if Utils.to_timestamp(media.modify_date) > \
                     #         os.path.getctime(local_full_path):
-                    #     log.warning(u'{} was modified'.format(local_full_path))
+                    #     log.warning('{} was modified'.format(local_full_path))
                     # else:
                     continue
 
@@ -305,7 +307,7 @@ class GooglePhotosSync(object):
         # allow any remaining background downloads to complete
         self.download_pool.close()
         self.download_pool.join()
-        log.warning(u'Download %d Photos complete', count)
+        log.warning('Download %d Photos complete', count)
 
     def single_get(self, media_item):
         try:

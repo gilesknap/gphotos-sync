@@ -74,7 +74,7 @@ class GoogleAlbumsSync(object):
         query google photos interface for a list of all albums and index their
         contents into the db
         """
-        log.warning(u'Indexing Albums ...')
+        log.warning('Indexing Albums ...')
 
         # # there is no filters in album listing at present so it always a full rescan - it's quite quick
         # log.debug(u"removing all album - file links from db, in preparation for indexing")
@@ -92,9 +92,9 @@ class GoogleAlbumsSync(object):
                 already_indexed = indexed_album.Size == album.size if indexed_album else False
 
                 if already_indexed:
-                    log.debug(u'Skipping Album: %s, photos: %d', album.filename, album.size)
+                    log.debug('Skipping Album: %s, photos: %d', album.filename, album.size)
                 else:
-                    log.info(u'Indexing Album: %s, photos: %d', album.filename, album.size)
+                    log.info('Indexing Album: %s, photos: %d', album.filename, album.size)
                     # todo use parallel execution for fetch album
                     first_date, last_date = self.fetch_album_contents(album.id)
                     # write the album data down now we know the contents' date range
@@ -111,7 +111,7 @@ class GoogleAlbumsSync(object):
                 response = self._api.albums.list.execute(pageSize=50, pageToken=next_page)
             else:
                 break
-            log.warning(u'Indexed %d Albums', count)
+            log.warning('Indexed %d Albums', count)
 
     def create_album_content_links(self):
         log.warning(u"Creating album folder links to media ...")
@@ -119,7 +119,7 @@ class GoogleAlbumsSync(object):
         # create all links from scratch every time, these are quickly recreated anyway
         links_root = os.path.join(self._root_folder, 'albums')
         if os.path.exists(links_root):
-            log.debug(u'removing previous album links tree')
+            log.debug('removing previous album links tree')
             shutil.rmtree(links_root)
 
         for (path, file_name, album_name, end_date) in self._db.get_album_files():
@@ -140,9 +140,9 @@ class GoogleAlbumsSync(object):
                 link_file = '{} ({})'.format(original_link_file, duplicates)
 
             relative_filename = os.path.relpath(full_file_name, link_folder)
-            log.debug(u'adding album link %s -> %s', relative_filename, link_file)
+            log.debug('adding album link %s -> %s', relative_filename, link_file)
             if not os.path.isdir(link_folder):
-                log.debug(u'new album folder %s', link_folder)
+                log.debug('new album folder %s', link_folder)
                 os.makedirs(link_folder)
             try:
                 os.symlink(relative_filename, link_file)

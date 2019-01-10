@@ -186,7 +186,7 @@ class GooglePhotosSyncMain:
             try:
                 fcntl.lockf(fp, fcntl.LOCK_EX | fcntl.LOCK_NB)
             except IOError:
-                log.warning(u'EXITING: database is locked')
+                log.warning('EXITING: database is locked')
                 sys.exit(0)
 
             try:
