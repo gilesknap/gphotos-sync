@@ -54,12 +54,10 @@ def retry(count, func, *arg, **k_arg):
             res = func(*arg, **k_arg)
             return res
         except MemoryError:
-            log.error(u"ABORTING %s OUT OF MEMORY", repr(func))
+            log.error("ABORTING %s OUT OF MEMORY", repr(func))
             return None
         except Exception as e:
             last_e = e
-            log.warning(u"RETRYING due to: %s", repr(e))
-            log.warning(u"Call was: %s", repr(func))
             time.sleep(.1)
     raise last_e
 
@@ -82,7 +80,7 @@ def retry_i(count, iterator):
                 more_data = False
                 break
             except Exception as e:
-                log.warning(u"RETRYING iterator due to: %s", repr(e))
+                log.warning("RETRYING iterator due to: %s", repr(e))
                 time.sleep(.1)
         yield last_item
 

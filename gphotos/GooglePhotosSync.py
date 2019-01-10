@@ -174,16 +174,16 @@ class GooglePhotosSync(object):
                 media_item.set_path_by_date(self._media_folder)
                 row = media_item.is_indexed(self._db)
                 if not row:
-                    log.info(u"Indexed %d %s", count, media_item.relative_path)
+                    log.info("Indexed %d %s", count, media_item.relative_path)
                     self.write_media_index(media_item, False)
                     if count % 2000 == 0:
                         self._db.store()
                 elif media_item.modify_date > row.ModifyDate:
                     # todo at present there is no modify date in the API so updates cannot be monitored
-                    log.info(u"Updated %d %s", count, media_item.relative_path)
+                    log.info("Updated %d %s", count, media_item.relative_path)
                     self.write_media_index(media_item, True)
                 else:
-                    log.debug(u"Skipped %d %s", count, media_item.relative_path)
+                    log.debug("Skipped %d %s", count, media_item.relative_path)
             next_page = items_json.get('nextPageToken')
             if next_page:
                 items_json = self.search_media(page_token=next_page,

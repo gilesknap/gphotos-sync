@@ -77,7 +77,7 @@ class GoogleAlbumsSync(object):
         log.warning('Indexing Albums ...')
 
         # # there is no filters in album listing at present so it always a full rescan - it's quite quick
-        # log.debug(u"removing all album - file links from db, in preparation for indexing")
+        # log.debug("removing all album - file links from db, in preparation for indexing")
         # self._db.remove_all_album_files()
 
         count = 0
@@ -114,7 +114,7 @@ class GoogleAlbumsSync(object):
             log.warning('Indexed %d Albums', count)
 
     def create_album_content_links(self):
-        log.warning(u"Creating album folder links to media ...")
+        log.warning("Creating album folder links to media ...")
         count = 0
         # create all links from scratch every time, these are quickly recreated anyway
         links_root = os.path.join(self._root_folder, 'albums')

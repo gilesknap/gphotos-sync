@@ -1,6 +1,6 @@
 import six
-import sys
-from requests import HTTPError
+from . import Utils
+
 from json import dumps
 
 import logging
@@ -39,14 +39,14 @@ class Method:
         path = self.service.base_url + self.make_path(path_args)
         if body:
             body = dumps(body)
-        r = self.service.auth_session.request(self.httpMethod, data=body, url=path,
-                                              params=query_args)
-        try:
-            r.raise_for_status()
-        except HTTPError:
-            sys.stderr.write('ERROR RESPONSE: {}\n'.format(r.text))
-            raise
+        r = Utils.retry(5, self.do_execute, body, path, query_args)
         return r
+
+    def do_execute(self, body, path, args):
+        result = self.service.auth_session.request(self.httpMethod, data=body, url=path,
+                                                   params=args)
+        result.raise_for_status()
+        return result
 
     def make_path(self, path_args):
         result = self.path
