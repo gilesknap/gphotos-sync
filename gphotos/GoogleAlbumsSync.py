@@ -74,7 +74,7 @@ class GoogleAlbumsSync(object):
         query google photos interface for a list of all albums and index their
         contents into the db
         """
-        log.info(u'Indexing Albums ...')
+        log.warning(u'Indexing Albums ...')
 
         # # there is no filters in album listing at present so it always a full rescan - it's quite quick
         # log.debug(u"removing all album - file links from db, in preparation for indexing")
@@ -92,9 +92,9 @@ class GoogleAlbumsSync(object):
                 already_indexed = indexed_album.Size == album.size if indexed_album else False
 
                 if already_indexed:
-                    log.debug(u'Skipping Album: %d %s, photos: %d', count, album.filename, album.size)
+                    log.debug(u'Skipping Album: %s, photos: %d', album.filename, album.size)
                 else:
-                    log.info(u'Indexing Album: %d %s, photos: %d', count, album.filename, album.size)
+                    log.info(u'Indexing Album: %d %s, photos: %d', album.filename, album.size)
                     # todo use parallel execution for fetch album
                     first_date, last_date = self.fetch_album_contents(album.id)
                     # write the album data down now we know the contents' date range
@@ -111,9 +111,11 @@ class GoogleAlbumsSync(object):
                 response = self._api.albums.list.execute(pageSize=50, pageToken=next_page)
             else:
                 break
+            log.warning(u'Indexed %d Albums', count)
 
     def create_album_content_links(self):
-        log.info(u"Creating album folder links to media ...")
+        log.warning(u"Creating album folder links to media ...")
+        count = 0
         # create all links from scratch every time, these are quickly recreated anyway
         links_root = os.path.join(self._root_folder, 'albums')
         if os.path.exists(links_root):
@@ -144,7 +146,8 @@ class GoogleAlbumsSync(object):
                 os.makedirs(link_folder)
             try:
                 os.symlink(relative_filename, link_file)
+                count += 1
             except FileExistsError:
                 pass  # copes with existent broken symbolic links (os.path.exists fails for these)
 
-        log.info(u"album links done.")
+        log.warning("Created %d album folder links", count)

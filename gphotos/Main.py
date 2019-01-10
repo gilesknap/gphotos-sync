@@ -32,28 +32,34 @@ class GooglePhotosSyncMain:
     parser = argparse.ArgumentParser(
         description="Google Photos download tool")
     parser.add_argument(
+        "root_folder",
+        help="root of the local folders to download into")
+    parser.add_argument(
+        "--flush-index",
+        action='store_true',
+        help="delete the index db, re-scan everything")
+    parser.add_argument(
         "--skip-video",
         action='store_true',
         help="skip video types in sync")
     parser.add_argument(
-        "root_folder",
-        help="root of the local folders to download into")
-    parser.add_argument(
         "--start-date",
-        help="Set the earliest date of files to sync",
+        help="Set the earliest date of files to sync"
+             "format YYYY-MM-DD",
+        default=None)
+    parser.add_argument(
+        "--end-date",
+        help="Set the latest date of files to sync"
+             "format YYYY-MM-DD",
         default=None)
     parser.add_argument(
         "--log-level",
         help="Set log level. Options: critical, error, warning, info, debug",
-        default='info')
+        default='warning')
     parser.add_argument(
         "--db-path",
         help="Specify a pre-existing folder for the index database. "
              "Defaults to the root of the local download folders",
-        default=None)
-    parser.add_argument(
-        "--end-date",
-        help="Set the latest date of files to sync",
         default=None)
     parser.add_argument(
         "--new-token",
@@ -64,29 +70,17 @@ class GooglePhotosSyncMain:
         action='store_true',
         help="Only build the index of files in .gphotos.db - no downloads")
     parser.add_argument(
-        "--do-delete",
-        action='store_true',
-        help="remove local copies of files that were deleted")
-    parser.add_argument(
         "--skip-index",
         action='store_true',
         help="Use index from previous run and start download immediately")
     parser.add_argument(
+        "--do-delete",
+        action='store_true',
+        help="remove local copies of files that were deleted")
+    parser.add_argument(
         "--skip-files",
         action='store_true',
         help="Dont download files, just refresh the album links(for testing)")
-    parser.add_argument(
-        "--flush-index",
-        action='store_true',
-        help="delete the index db, re-scan everything")
-    parser.add_argument(
-        "--no-browser",
-        action='store_true',
-        help="use cut and paste for auth instead of invoking a browser")
-    parser.add_argument(
-        "--brief",
-        action='store_true',
-        help="don't print time and module in logging")
     parser.add_argument(
         "--album",
         help="only index a single album (for testing)",
@@ -108,9 +102,6 @@ class GooglePhotosSyncMain:
             os.makedirs(app_dirs.user_data_dir)
 
         scope = [
-            'https://www.googleapis.com/auth/photos',
-            'https://www.googleapis.com/auth/drive.photos.readonly',
-            'https://www.googleapis.com/auth/drive',
             'https://www.googleapis.com/auth/photoslibrary.readonly',
             'https://www.googleapis.com/auth/photoslibrary.sharing',
         ]
@@ -131,11 +122,17 @@ class GooglePhotosSyncMain:
     def sigterm_handler(cls, _sig_no, _stack_frame):
         if _sig_no == signal.SIGINT:
             log.warning("\nUser cancelled download")
-        log.warning("\nProcess killed", exc_info=True)
+        log.warning("\nProcess killed")
+        log.debug("", exc_info=True)
         sys.exit(0)
 
     @classmethod
     def logging(cls, args, folder):
+        # if we are debugging requests library is too noisy
+        logging.getLogger("requests").setLevel(logging.WARNING)
+        logging.getLogger("requests_oauthlib").setLevel(logging.WARNING)
+        logging.getLogger("urllib3").setLevel(logging.WARNING)
+
         numeric_level = getattr(logging, args.log_level.upper(), None)
         if not isinstance(numeric_level, int):
             raise ValueError('Invalid log level: %s' % args.log_level)
@@ -175,13 +172,13 @@ class GooglePhotosSyncMain:
         args = self.parser.parse_args()
 
         db_path = args.db_path if args.db_path else args.root_folder
-        self.logging(args, db_path)
         args.root_folder = os.path.abspath(args.root_folder)
-        signal.signal(signal.SIGTERM, self.sigterm_handler)
-        signal.signal(signal.SIGINT, self.sigterm_handler)
-
         if not os.path.exists(args.root_folder):
             os.makedirs(args.root_folder, 0o700)
+        self.logging(args, db_path)
+
+        signal.signal(signal.SIGTERM, self.sigterm_handler)
+        signal.signal(signal.SIGINT, self.sigterm_handler)
 
         lock_file = os.path.join(db_path, 'gphotos.lock')
         fp = open(lock_file, 'w')
@@ -192,18 +189,19 @@ class GooglePhotosSyncMain:
                 log.warning(u'EXITING: database is locked')
                 sys.exit(0)
 
-            # noinspection PyBroadException
             try:
                 log.info('version: {}'.format(
                     pkg_resources.get_distribution("gphotos-sync").version))
-            except Exception:
+            except TypeError:
                 log.info('version not available')
 
             # configure and launch
+
+            # noinspection PyBroadException
             try:
                 self.setup(args, db_path)
                 self.start(args)
-            except Exception as e:
+            except Exception:
                 log.error("\nProcess failed.", exc_info=True)
             finally:
                 log.info("Done.")

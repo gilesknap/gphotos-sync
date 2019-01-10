@@ -19,6 +19,14 @@ from time import sleep
 
 log = logging.getLogger('gphotos.Photos')
 
+# todo put these in a file that is read at startup - others might have this issue
+# these ids wont down load (500 on batchGet)
+bad_ids = \
+    [
+        'AHsKWi8LNGIQN4aLv5wppfNNwasdxZbNdJZwxLrvLGCkZ21YAj3P8E8s2GbKFM7WG-qB93qmSJy1Gy5rGHaMrfbG_nDVDzUmXA',
+        'AHsKWi9ODH_V16FQXd7BYLjjQI-sXLXkfcqMnwjZ1F3Ho_mqkNOKD32tsyV1b55ZP-3HQdpYET7UAIEq0msOAYGHloAYjZRocA'
+    ]
+
 
 class GooglePhotosSync(object):
     PAGE_SIZE = 100
@@ -70,7 +78,7 @@ class GooglePhotosSync(object):
     def check_for_removed(self):
         # note for partial scans using date filters this is still OK because
         # for a file to exist it must have been indexed in a previous scan
-        log.info(u'Finding deleted media ...')
+        log.warning(u'Finding and removing deleted media ...')
         for (dir_name, _, file_names) in os.walk(self._root_folder):
             for file_name in file_names:
                 local_path = os.path.relpath(dir_name, self._root_folder)
@@ -129,8 +137,26 @@ class GooglePhotosSync(object):
             }
             return self._api.mediaItems.search.execute(body).json()
 
+    # a test function
+    def scan_photos_media(self):
+        items_json = self.search_media()
+
+        items_json = self.search_media(start_date=self.start_date,
+                                       end_date=self.end_date,
+                                       do_video=self.includeVideo)
+        while items_json:
+            media_json = items_json.get('mediaItems')
+            # cope with empty response
+            if not media_json:
+                break
+            for media_item_json in media_json:
+                media_item = GooglePhotosMedia(media_item_json)
+                if len(media_item.id) < 80:
+                    log.warning("%s %s %s", media_item.filename, media_item.id,
+                                media_item_json["productUrl"])
+
     def index_photos_media(self):
-        log.info(u'Indexing Google Photos Files ...')
+        log.warning(u'Indexing Google Photos Files ...')
         count = 0
         try:
             items_json = self.search_media(start_date=self.start_date,
@@ -146,17 +172,18 @@ class GooglePhotosSync(object):
                     media_item = GooglePhotosMedia(media_item_json)
                     media_item.set_path_by_date(self._media_folder)
                     row = media_item.is_indexed(self._db)
+                    info = media_item_json['id'],
                     if not row:
-                        log.info(u"Indexed %d %s", count, media_item.relative_path)
+                        log.info(u"Indexed %d %s %s", count, media_item.relative_path, info)
                         self.write_media_index(media_item, False)
-                        if count % 1000 == 0:
+                        if count % 2000 == 0:
                             self._db.store()
                     elif media_item.modify_date > row.ModifyDate:
                         # todo at present there is no modify date in the API so updates cannot be monitored
                         log.info(u"Updated %d %s", count, media_item.relative_path)
                         self.write_media_index(media_item, True)
                     else:
-                        log.debug(u"Skipped %d %s", count, media_item.relative_path)
+                        log.debug(u"Skipped %d %s %s", count, media_item.relative_path, info)
                 next_page = items_json.get('nextPageToken')
                 if next_page:
                     items_json = self.search_media(page_token=next_page,
@@ -178,6 +205,7 @@ class GooglePhotosSync(object):
         try:
             with tempfile.NamedTemporaryFile(dir=folder, delete=False) as temp_file:
                 r = requests.get(url, stream=True)
+                r.raise_for_status()
                 shutil.copyfileobj(r.raw, temp_file)
                 os.rename(temp_file.name, local_full_path)
             # set the access date to create date since there is nowhere
@@ -187,26 +215,42 @@ class GooglePhotosSync(object):
                       Utils.to_timestamp(media_item.create_date)))
             log.debug('<-- %s background done', local_full_path)
         except requests.exceptions.HTTPError:
-            log.error('failed download of %s', local_full_path, exc_info=True)
+            log.warning('failed download of %s', local_full_path)
+            log.debug('', exc_info=True)
 
-    def download_file(self, url=None, local_full_path=None, media_item=None):
-        """ farms downloads off to the thread pool"""
+    def download_file(self, media_item, media_json):
+        """ farms media downloads off to the thread pool"""
+        local_folder = os.path.join(self._root_folder, media_item.relative_folder)
+        local_full_path = os.path.join(local_folder, media_item.filename)
+        if media_item.is_video():
+            download_url = '{}=dv'.format(media_json['baseUrl'])
+        else:
+            download_url = '{}=d'.format(media_json['baseUrl'])
+
+        log.info('downloading %s', local_full_path)
+
         # block this function on small queue size since there is no point in getting ahead
         #  of the downloads and requiring a huge queue which eats memory
-        # (uses protected member) because multiprocessing does not expose queue size yet
+        # (uses protected member - because multiprocessing does not expose queue size yet)
         # noinspection PyProtectedMember,PyUnresolvedReferences
         while self.download_pool._inqueue.qsize() > self.MAX_THREADS:
             sleep(1)
-        self.download_pool.apply_async(self.do_download_file, (url, local_full_path, media_item))
+
+        self.download_pool.apply_async(self.do_download_file, (download_url, local_full_path, media_item))
 
     def download_photo_media(self):
+        """
+        here we batch up our requests to get baseurl for downloading media. This avoids the overhead of one
+        REST call per file. A REST call takes longer than downloading an image
+        """
         def grouper(iterable):
             """Collect data into chunks size 20"""
             return zip_longest(*[iter(iterable)] * 20, fillvalue=None)
 
-        log.info(u'Downloading Photos ...')
+        log.warning(u'Downloading Photos ...')
         count = 0
         for media_items_block in grouper(
+                # todo get rid of mediaType
                 DatabaseMedia.get_media_by_search(self._db, media_type=MediaType.PHOTOS,
                                                   start_date=self.start_date, end_date=self.end_date)):
             batch_ids = []
@@ -229,8 +273,13 @@ class GooglePhotosSync(object):
 
                 if not os.path.isdir(local_folder):
                     os.makedirs(local_folder)
-                batch_ids.append(media_item.id)
-                batch[media_item.id] = media_item
+
+                if len(media_item.id) < 80 or media_item.id in bad_ids:
+                    # some items seem to have duff ids and cause a 400 error in batchGet
+                    log.warning("bad media item id on %s", os.path.join(local_folder, media_item.filename))
+                else:
+                    batch_ids.append(media_item.id)
+                    batch[media_item.id] = media_item
 
             if len(batch_ids) == 0:
                 continue
@@ -245,19 +294,26 @@ class GooglePhotosSync(object):
                     media_item = batch.get(media_item_json["id"])
                     media_item.set_path_by_date(self._media_folder)
                     try:
-                        local_folder = os.path.join(self._root_folder, media_item.relative_folder)
-                        local_full_path = os.path.join(local_folder, media_item.filename)
-                        if media_item.is_video():
-                            download_url = '{}=dv'.format(media_item_json['baseUrl'])
-                        else:
-                            download_url = '{}=d'.format(media_item_json['baseUrl'])
-                        log.info(u'downloading {} {} ...'.format(count, local_full_path))
-                        self.download_file(download_url, local_full_path, media_item)
-                    except Exception as e:
-                        log.error('failure downloading of {}.\n{}{}'.format(media_item.filename, type(e), e))
-            except Exception as e:
-                log.error('failure in batch get of {}.\n{}{}'.format(batch_ids, type(e), e))
+                        self.download_file(media_item, media_item_json)
+                    except requests.exceptions.HTTPError:
+                        log.warning('failure downloading of %s', media_item.filename)
+                        log.debug('', exc_info=True)
+                        # allow process to continue on single failed file
+            except Exception:
+                log.error('failure in batch get of %s', batch_ids)
+                raise
 
         # allow any remaining background downloads to complete
         self.download_pool.close()
         self.download_pool.join()
+        log.warning(u'Download %d Photos complete', count)
+
+    def single_get(self, media_item):
+        try:
+            response = self._api.mediaItems.get.execute(mediaItemId=media_item.id)
+            media_item_json = response.json()
+            self.download_file(media_item, media_item_json)
+        except requests.exceptions.HTTPError:
+            log.warning('failure downloading of %s', media_item.filename)
+            log.debug('', exc_info=True)
+            # allow process to continue on single failed file
