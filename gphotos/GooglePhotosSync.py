@@ -216,7 +216,7 @@ class GooglePhotosSync(object):
                       Utils.to_timestamp(media_item.create_date)))
             log.debug('<-- %s background done', local_full_path)
         except requests.exceptions.HTTPError:
-            log.warning('failed download of %s', local_full_path)
+            log.error('failed download of %s', local_full_path)
             log.debug('', exc_info=True)
 
     def download_file(self, media_item, media_json):
@@ -297,7 +297,7 @@ class GooglePhotosSync(object):
                     try:
                         self.download_file(media_item, media_item_json)
                     except requests.exceptions.HTTPError:
-                        log.warning('failure downloading of %s', media_item.filename)
+                        log.error('failure downloading of %s', media_item.filename)
                         log.debug('', exc_info=True)
                         # allow process to continue on single failed file
             except Exception:
@@ -315,6 +315,6 @@ class GooglePhotosSync(object):
             media_item_json = response.json()
             self.download_file(media_item, media_item_json)
         except requests.exceptions.HTTPError:
-            log.warning('failure downloading of %s', media_item.filename)
+            log.error('failure downloading of %s', media_item.filename)
             log.debug('', exc_info=True)
             # allow process to continue on single failed file

@@ -111,7 +111,7 @@ class GoogleAlbumsSync(object):
                 response = self._api.albums.list.execute(pageSize=50, pageToken=next_page)
             else:
                 break
-            log.warning('Indexed %d Albums', count)
+        log.warning('Indexed %d Albums', count)
 
     def create_album_content_links(self):
         log.warning("Creating album folder links to media ...")
