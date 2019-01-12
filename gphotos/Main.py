@@ -83,6 +83,10 @@ class GooglePhotosSyncMain:
         action='store_true',
         help="Dont download files, just refresh the album links(for testing)")
     parser.add_argument(
+        "--skip-albums",
+        action='store_true',
+        help="Dont download albums (for testing)")
+    parser.add_argument(
         "--album",
         help="only index a single album (for testing)",
         default=None)
@@ -161,12 +165,14 @@ class GooglePhotosSyncMain:
             if not args.skip_index:
                 if not args.skip_files:
                     self.google_photos_sync.index_photos_media()
-                self.google_albums_sync.index_album_media()
+                if not args.skip_albums:
+                    self.google_albums_sync.index_album_media()
                 self.data_store.store()
             if not args.index_only:
                 if not args.skip_files:
                     self.google_photos_sync.download_photo_media()
-                self.google_albums_sync.create_album_content_links()
+                if not args.skip_albums:
+                    self.google_albums_sync.create_album_content_links()
                 if args.do_delete:
                     self.google_photos_sync.check_for_removed()
 

@@ -158,8 +158,10 @@ class LocalData:
     def clean_db(self):
         sql_file = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                 "sql", "gphotos_create.sql")
-        qry = open(sql_file, 'r').read()
-        self.cur.executescript(qry)
+        with open(sql_file, 'r') as f:
+            qry = f.read()
+            self.cur.executescript(qry)
+
 
     def set_scan_date(self, last_date):
         d = Utils.date_to_string(last_date)

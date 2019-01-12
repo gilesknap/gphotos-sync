@@ -25,8 +25,8 @@ class Authorize:
         self.session = None
         self.token = None
         try:
-            stream = open(secrets_file, 'r')
-            all_yaml = load(stream, Loader=Loader)
+            with open(secrets_file, 'r') as stream:
+                all_yaml = load(stream, Loader=Loader)
             secrets = all_yaml['installed']
             self.client_id = secrets['client_id']
             self.client_secret = secrets['client_secret']
@@ -42,8 +42,8 @@ class Authorize:
 
     def load_token(self):
         try:
-            stream = open(self.token_file, 'r')
-            token = load(stream, Loader=Loader)
+            with open(self.token_file, 'r') as stream :
+                token = load(stream, Loader=Loader)
         except (YAMLError, IOError):
             return None
         return token

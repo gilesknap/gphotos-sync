@@ -47,7 +47,7 @@ if os.name == 'nt':
     os.symlink = symlink
 
 
-def retry(count, func, *arg,  retry_msg=None, **k_arg):
+def retry(count, func, *arg, **k_arg):
     last_e = None
     for retry_no in range(count):
         try:
@@ -57,7 +57,6 @@ def retry(count, func, *arg,  retry_msg=None, **k_arg):
             log.error("ABORTING %s OUT OF MEMORY", func)
             return None
         except Exception as e:
-            message = retry_msg or repr(func)
             log.debug("retry %d failed: %s", retry_no, message)
             last_e = e
             time.sleep(.1)

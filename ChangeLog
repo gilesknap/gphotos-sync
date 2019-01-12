@@ -1,6 +1,23 @@
 CHANGES
 =======
 
+* add retries to download URL connection
+* Update README.rst
+* tidy logging
+* add retries to http requests
+* remove unicode specifiers
+* provide incremental scan of media
+* handle video download errors (needs fix from google)
+* improved loggin
+* skip pre-indexed albums, fix duplicate handling
+* use list instead of search if no filters are supplied
+* fix limit queue size logic - now works well
+* limit task queue
+* logging in download worker threads
+* make album links relative
+* batching media gets for super speedy downloads
+* tidy threading and termination handling
+* update pipfile etc to python3
 * added parallel file download
 * album index and local symlinks all working
 * add delete local files removed from server

@@ -1,6 +1,9 @@
 language: python
-rvm:
- - 2.7.3
+matrix:
+  include:
+    - python: 3.6.7
+      dist: xenial
+      sudo: true
 
 install:
   - pip install -r requirements.txt

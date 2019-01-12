@@ -1,15 +1,18 @@
 from unittest import TestCase
 
 from gphotos.LocalData import LocalData
-from test_setup import SetupDbAndCredentials
+from .test_setup import SetupDbAndCredentials
 
 
 # noinspection SqlResolve
 class DatabaseTest(TestCase):
     def test_new_schema(self):
+        """
+        check that the database initialization errors if the version of the data store
+        is newer than the code version"""
         s = SetupDbAndCredentials()
         # get a single file
-        args = ['--start-date', '2019-01-01', '--new-token']
+        args = ['--skip-files', '--skip-albums']
         s.test_setup('new_schema', args=args, trash_files=True)
         s.gp.start(s.parsed_args)
 
