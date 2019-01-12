@@ -77,7 +77,8 @@ class GooglePhotosSyncMain:
     parser.add_argument(
         "--do-delete",
         action='store_true',
-        help="remove local copies of files that were deleted")
+        help="""Remove local copies of files that were deleted.
+        Must be used with --flush-db since the deleted items must be removed from the index""")
     parser.add_argument(
         "--skip-files",
         action='store_true',
@@ -86,10 +87,6 @@ class GooglePhotosSyncMain:
         "--skip-albums",
         action='store_true',
         help="Dont download albums (for testing)")
-    parser.add_argument(
-        "--album",
-        help="only index a single album (for testing)",
-        default=None)
 
     def setup(self, args, db_path):
         app_dirs = AppDirs(APP_NAME)

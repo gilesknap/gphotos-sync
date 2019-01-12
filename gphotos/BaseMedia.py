@@ -108,7 +108,7 @@ class BaseMedia(object):
             filename = "%(base)s (%(duplicate)d)%(ext)s" % {
                 'base': base,
                 'ext': ext,
-                'duplicate': self.duplicate_number
+                'duplicate': self.duplicate_number + 1
             }
         else:
             filename = self.orig_name

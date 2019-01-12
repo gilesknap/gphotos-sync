@@ -88,7 +88,7 @@ class LocalData:
     DB_FILE_NAME = 'gphotos.sqlite'
     BLOCK_SIZE = 10000
     EMPTY_FILE_NAME = 'etc/gphotos_empty.sqlite'
-    VERSION = 2.3
+    VERSION = 3.0
 
     class DuplicateDriveIdException(Exception):
         pass
@@ -161,7 +161,6 @@ class LocalData:
         with open(sql_file, 'r') as f:
             qry = f.read()
             self.cur.executescript(qry)
-
 
     def set_scan_date(self, last_date):
         d = Utils.date_to_string(last_date)

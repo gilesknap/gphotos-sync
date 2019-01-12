@@ -91,5 +91,5 @@ CREATE TABLE Globals
 );
 CREATE UNIQUE INDEX Globals_Id_uindex ON Globals (Id);
 
-INSERT INTO Globals(Id, Version, Albums, Files) VALUES (1, 2.3, 0, 0);
+INSERT INTO Globals(Id, Version, Albums, Files) VALUES (1, 3.0, 0, 0);
 
