@@ -5,6 +5,7 @@ import logging
 import sys
 import signal
 import fcntl
+from traceback import format_stack
 
 from datetime import datetime
 from appdirs import AppDirs
@@ -121,9 +122,11 @@ class GooglePhotosSyncMain:
     @classmethod
     def sigterm_handler(cls, _sig_no, _stack_frame):
         if _sig_no == signal.SIGINT:
-            log.warning("\nUser cancelled download")
-        log.warning("\nProcess killed")
-        log.debug("", exc_info=True)
+            log.warning("User cancelled download")
+        stack_pretty = ''
+        for line in format_stack():
+            stack_pretty += line
+        log.debug("Process killed\n%s", stack_pretty)
         sys.exit(0)
 
     @classmethod

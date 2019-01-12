@@ -9,8 +9,7 @@ class DatabaseTest(TestCase):
     def test_new_schema(self):
         s = SetupDbAndCredentials()
         # get a single file
-        args = ['--drive-file', '20170102_094337.jpg',
-                '--skip-picasa']
+        args = ['--start-date', '2019-01-01', '--new-token']
         s.test_setup('new_schema', args=args, trash_files=True)
         s.gp.start(s.parsed_args)
 

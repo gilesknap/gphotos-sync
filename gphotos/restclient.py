@@ -39,7 +39,8 @@ class Method:
         path = self.service.base_url + self.make_path(path_args)
         if body:
             body = dumps(body)
-        r = Utils.retry(5, self.do_execute, body, path, query_args)
+        m = '{}, {}'.format(self.path, k_args)
+        r = Utils.retry(5, self.do_execute, body, path, query_args, retry_msg=m, )
         return r
 
     def do_execute(self, body, path, args):

@@ -49,12 +49,12 @@ class SetupDbAndCredentials:
         if not os.path.exists(self.root):
             os.makedirs(self.root)
 
-        all_args = ['--log-level', 'debug', self.root]
+        all_args = [self.root, '--log-level', 'debug']
         if args:
             all_args += args
 
         self.parsed_args = self.gp.parser.parse_args(all_args)
-        self.gp.logging(self.parsed_args)
+        self.gp.logging(self.parsed_args, self.root)
         self.gp.setup(self.parsed_args, self.root)
 
     def test_done(self):

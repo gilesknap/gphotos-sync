@@ -199,15 +199,20 @@ class GooglePhotosSync(object):
             self._db.set_scan_date(last_date=self._latest_download)
 
     @classmethod
+    def do_get_from_url(cls, url):
+        r = requests.get(url, stream=True)
+        r.raise_for_status()
+        return r
+
+    @classmethod
     def do_download_file(cls, url, local_full_path, media_item):
         # this function runs in a process pool and does the actual downloads
         folder = os.path.dirname(local_full_path)
         log.debug('--> %s background start', local_full_path)
         try:
             with tempfile.NamedTemporaryFile(dir=folder, delete=False) as temp_file:
-                r = requests.get(url, stream=True)
-                r.raise_for_status()
-                shutil.copyfileobj(r.raw, temp_file)
+                response = Utils.retry(5, GooglePhotosSync.do_get_from_url, url)
+                shutil.copyfileobj(response.raw, temp_file)
                 os.rename(temp_file.name, local_full_path)
             # set the access date to create date since there is nowhere
             # else to put it on linux (and is useful for debugging)
