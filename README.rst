@@ -7,8 +7,7 @@ Google Photos Sync
 
 Version 2.0 Major Upgrade
 ==============================
-
-Google has released a new Google Photos API and this release is now based on that API. The myriad issues with the
+Google has released a new Google Photos API and this project is now based on that API. The myriad issues with the
 previous approach using Drive API and Picasa API are now resolved. However, see new known issues below.
 
 In addition to this, the new code uses parallel processing to speed up downloads considerably.
