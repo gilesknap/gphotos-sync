@@ -73,13 +73,12 @@ class GooglePhotosSync(object):
     def latest_download(self):
         return self._latest_download
 
-    # todo this will currently do nothing unless using --flush-db
-    #  need to look for a 'changes' api if we want to properly support deletes
     def check_for_removed(self):
         # note for partial scans using date filters this is still OK because
         # for a file to exist it must have been indexed in a previous scan
         log.warning('Finding and removing deleted media ...')
-        for (dir_name, _, file_names) in os.walk(self._root_folder):
+        start_folder = os.path.join(self._root_folder, self._media_folder)
+        for (dir_name, _, file_names) in os.walk(start_folder):
             for file_name in file_names:
                 local_path = os.path.relpath(dir_name, self._root_folder)
                 if file_name.startswith('.') or file_name.startswith('gphotos'):

@@ -61,6 +61,7 @@ Known Issues
 * Some types of video will not download using the new API. This mostly is restricted to old formats of video file (in
   my library it is a subset of videos shot before 2010). Google is looking at this problem see
   https://issuetracker.google.com/issues/116842164
+* The API strips GPS data from images.
 
 
 Install and configure
