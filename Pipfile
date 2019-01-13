@@ -8,13 +8,12 @@ name = "pypi"
 [packages]
 
 mock = "*"
-PyDrive = "*"
-retrying = "*"
 appdirs = "*"
-"progressbar2" = "*"
-gdata = "*"
-enum = "*"
-
+requests = "*"
+six = "*"
+requests_oauthlib = "*"
+PyYaml = "*"
+multiprocessing = "*"
 
 [dev-packages]
 
@@ -22,4 +21,4 @@ enum = "*"
 
 [requires]
 
-python_version = "2.7"
+python_version = "3.6"

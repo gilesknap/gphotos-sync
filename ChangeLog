@@ -1,6 +1,42 @@
 CHANGES
 =======
 
+* add retries to download URL connection
+* Update README.rst
+* tidy logging
+* add retries to http requests
+* remove unicode specifiers
+* provide incremental scan of media
+* handle video download errors (needs fix from google)
+* improved loggin
+* skip pre-indexed albums, fix duplicate handling
+* use list instead of search if no filters are supplied
+* fix limit queue size logic - now works well
+* limit task queue
+* logging in download worker threads
+* make album links relative
+* batching media gets for super speedy downloads
+* tidy threading and termination handling
+* update pipfile etc to python3
+* added parallel file download
+* album index and local symlinks all working
+* add delete local files removed from server
+* added date range filtering
+* mimetype support improvements and video downloads
+* low memory download of images (GooglePhotosMediaSync::download\_photo\_media)
+* restored duplicate handling, switch to relative paths in DB
+* first pass indexing all media using google photos rest API
+* simple test of new REST API in startup code
+* Added REST API discovery
+* first pass of switch to Python3, remove Picassa
+* add out of memory monitoring
+* add Pipfile (#25)
+* use /usr/bin/env python2 everywhere, not hard-coded /usr/bin/python (#24)
+
+1.1
+---
+
+* speed up scanning of "Auto Update"
 * improvements to picasa-drive matching
 * fix tests
 * added locking, only one instance can run against a given database location
@@ -28,6 +64,10 @@ CHANGES
 * fix root id finding
 * clean up pycharm inspections
 * tidy todos into todo.txt
+
+v1.0
+----
+
 * final version of readme
 * restore build status badges
 * update Readme

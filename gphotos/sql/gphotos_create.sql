@@ -1,27 +1,11 @@
 -- noinspection SpellCheckingInspectionForFile
-
-drop table if exists DriveFolders;
-create table DriveFolders
-(
-	Id INTEGER
-		primary key,
-	FolderId TEXT,
-	ParentId TEXT,
-	Path TEXT,
-	FolderName TEXT,
-	ModifiedDate INT
-)
-;
-create unique index DriveFolders_FolderId_uindex on DriveFolders (FolderId);
-create index DriveFolders_ParentId_index on DriveFolders (ParentId);
-
-
 drop table if exists Albums;
 create table Albums
 (
 	AlbumId TEXT
 		primary key,
 	AlbumName TEXT,
+	Size INT,
 	StartDate TEXT not null,
 	EndDate TEXT not null,
 	SyncDate TEXT not null
@@ -53,7 +37,7 @@ create table SyncFiles
 	FileName TEXT,
 	OrigFileName TEXT,
 	DuplicateNo INT,
-	Checksum TEXT,
+	MimeType TEXT,
 	Description TEXT,
 	FileSize INT,
 	ModifyDate INT,
@@ -77,7 +61,7 @@ create index FileSizeAndSizeIdx  on SyncFiles (FileName, FileSize);
 create index CreatedIdx  on SyncFiles (CreateDate);
 create index ModifyDateIdx  on SyncFiles (ModifyDate);
 create unique index SyncFiles_Path_FileName_DuplicateNo_uindex
-	on SyncFiles (Path, FileName, DuplicateNo);
+ 	on SyncFiles (Path, FileName, DuplicateNo);
 
 
 drop table if exists AlbumFiles;
@@ -87,7 +71,7 @@ create table AlbumFiles
 		primary key,
 	AlbumRec INT,
 	DriveRec INT,
-	foreign key (AlbumRec) references Albums (Id)
+	foreign key (AlbumRec) references Albums (AlbumId)
 			on delete cascade,
 	foreign key (DriveRec) references SyncFiles (Id)
 			on update cascade on delete cascade)
@@ -103,10 +87,9 @@ CREATE TABLE Globals
   Version TEXT,
   Albums INTEGER,
   Files INTEGER,
-  LastIndexDrive TEXT,
-  LastIndexPicasa TEXT
+  LastIndex TEXT
 );
 CREATE UNIQUE INDEX Globals_Id_uindex ON Globals (Id);
 
-INSERT INTO Globals(Id, Version, Albums, Files) VALUES (1, 2.3, 0, 0);
+INSERT INTO Globals(Id, Version, Albums, Files) VALUES (1, 3.0, 0, 0);
 

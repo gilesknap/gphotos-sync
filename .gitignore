@@ -69,3 +69,5 @@ etc/gphotos_photos_only_backup.sqlite
 etc/albumFolders.txt
 
 .nfs*
+
+venv/

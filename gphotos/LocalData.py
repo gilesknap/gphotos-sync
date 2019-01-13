@@ -1,10 +1,10 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # coding: utf8
 import os.path
 import sqlite3 as lite
 from datetime import datetime
 
-import Utils
+from . import Utils
 import logging
 
 log = logging.getLogger('gphotos.data')
@@ -32,8 +32,8 @@ class DbRow:
     dict = None
     empty = False
 
-    # allows us to do boolean checks on the row object and return True i
-    def __nonzero__(self):
+    # allows us to do boolean checks on the row object and return False if it is empty
+    def __bool__(self):
         return not self.empty
 
     # factory method for delivering a DbRow object based on named arguments
@@ -72,8 +72,8 @@ def db_row(row_class):
             else:
                 value = result_row[col]
             setattr(self, col, value)
-            if not result_row:
-                self.empty = True
+        if not result_row:
+            self.empty = True
 
     @property
     def to_dict(self):
@@ -84,16 +84,11 @@ def db_row(row_class):
     return row_class
 
 
-# todo currently store full path in SyncFiles.Path
-# would be better as relative path and store root once in this module (runtime)
-# this could be refreshed at start for a portable file system folder
-# also this would remove the need to pass any paths to the GoogleMedia
-# constructors (which is messy)
 class LocalData:
     DB_FILE_NAME = 'gphotos.sqlite'
     BLOCK_SIZE = 10000
     EMPTY_FILE_NAME = 'etc/gphotos_empty.sqlite'
-    VERSION = 2.3
+    VERSION = 3.0
 
     class DuplicateDriveIdException(Exception):
         pass
@@ -128,7 +123,7 @@ class LocalData:
         """
         cols_def = {'Id': int, 'RemoteId': str, 'Url': str, 'Path': str,
                     'FileName': str, 'OrigFileName': str, 'DuplicateNo': int,
-                    'MediaType': int, 'FileSize': int, 'Checksum': str,
+                    'MediaType': int, 'FileSize': int, 'MimeType': str,
                     'Description': str, 'ModifyDate': datetime,
                     'CreateDate': datetime, 'SyncDate': datetime,
                     'SymLink': int}
@@ -141,7 +136,7 @@ class LocalData:
         generates an object with attributes for each of the columns in the
         SyncFiles table
         """
-        cols_def = {'AlbumId': str, 'AlbumName': str, 'StartDate': datetime,
+        cols_def = {'AlbumId': str, 'AlbumName': str, 'Size': int, 'StartDate': datetime,
                     'EndDate': datetime, 'SyncDate': datetime}
 
     def check_schema_version(self):
@@ -163,48 +158,41 @@ class LocalData:
     def clean_db(self):
         sql_file = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                 "sql", "gphotos_create.sql")
-        qry = open(sql_file, 'r').read()
-        self.cur.executescript(qry)
+        with open(sql_file, 'r') as f:
+            qry = f.read()
+            self.cur.executescript(qry)
 
-    def set_scan_dates(self, picasa_last_date=None, drive_last_date=None):
-        if drive_last_date:
-            d = Utils.date_to_string(drive_last_date)
-            self.cur.execute('UPDATE Globals SET LastIndexDrive=? '
-                             'WHERE Id IS 1', (d,))
-        if picasa_last_date:
-            d = Utils.date_to_string(picasa_last_date)
-            self.cur.execute('UPDATE Globals SET LastIndexPicasa=? '
-                             'WHERE Id IS 1', (d,))
+    def set_scan_date(self, last_date):
+        d = Utils.date_to_string(last_date)
+        self.cur.execute('UPDATE Globals SET LastIndex=? '
+                         'WHERE Id IS 1', (d,))
 
-    def get_scan_dates(self):
-        query = "SELECT LastIndexDrive, LastIndexPicasa " \
+    def get_scan_date(self):
+        query = "SELECT LastIndex " \
                 "FROM  Globals WHERE Id IS 1"
         self.cur.execute(query)
         res = self.cur.fetchone()
 
-        drive_last_date = picasa_last_date = None
         # noinspection PyTypeChecker
-        d = res['LastIndexDrive']
-        # noinspection PyTypeChecker
-        p = res['LastIndexPicasa']
+        d = res['LastIndex']
         if d:
-            drive_last_date = Utils.string_to_date(d)
-        if p:
-            picasa_last_date = Utils.string_to_date(p)
+            last_date = Utils.string_to_date(d)
+        else:
+            last_date = None
 
-        return drive_last_date, picasa_last_date
+        return last_date
 
-    def get_files_by_search(self, drive_id='%', media_type='%',
+    def get_files_by_search(self, remote_id='%', media_type='%',
                             start_date=None, end_date=None, skip_linked=False):
         """
-        :param (str) drive_id:
+        :param (str) remote_id:
         :param (int) media_type:
         :param (datetime) start_date:
         :param (datetime) end_date:
         :param (bool) skip_linked: Don't return entries with non-null SymLink
         :return (self.SyncRow):
         """
-        params = (drive_id, media_type)
+        params = (remote_id, media_type)
         extra_clauses = ''
         if start_date:
             # look for create date too since an photo recently uploaded will
@@ -250,38 +238,35 @@ class LocalData:
         return self.SyncRow(record)
 
     def put_file(self, row, update=False):
-        if update:
-            query = "UPDATE SyncFiles Set {0} WHERE RemoteId = '{1}'".format(
-                self.SyncRow.update, row.RemoteId)
-        else:
-            query = "INSERT INTO SyncFiles ({0}) VALUES ({1})".format(
-                self.SyncRow.columns, self.SyncRow.params)
-        self.cur.execute(query, row.dict)
-        row_id = self.cur.lastrowid
+        try:
+            if update:
+                query = "UPDATE SyncFiles Set {0} WHERE RemoteId = '{1}'".format(
+                    self.SyncRow.update, row.RemoteId)
+            else:
+                query = "INSERT INTO SyncFiles ({0}) VALUES ({1})".format(
+                    self.SyncRow.columns, self.SyncRow.params)
+            self.cur.execute(query, row.dict)
+            row_id = self.cur.lastrowid
+        except lite.IntegrityError:
+            log.error('SQL constraint issue with {}'.format(row.dict))
+            raise
         return row_id
 
-    def file_duplicate_no(self, create_date, name, size, path, media_type,
-                          remote_id):
+    def file_duplicate_no(self, name, path, remote_id):
         """
         determine if there is already an entry for file. If not determine
         if other entries share the same path/filename and determine a duplicate
         number for providing a unique local filename suffix
 
-        :param (datetime) create_date:
         :param (str) name:
-        :param (int) size:
         :param (str) path:
-        :param (MediaType) media_type:
         :param (str) remote_id:
         :return (int, SyncRow): the next available duplicate number or 0 if
         file is unique
         """
-        query = "SELECT {0} FROM SyncFiles WHERE (CreateDate= ? AND " \
-                "FileSize = ? AND FileName = ? AND MediaType = ?) " \
-                "OR RemoteId = ?;". \
+        query = "SELECT {0} FROM SyncFiles WHERE RemoteId = ?; ". \
             format(self.SyncRow.columns)
-        self.cur.execute(query,
-                         (create_date, size, name, media_type, remote_id))
+        self.cur.execute(query, (remote_id,))
         result = self.cur.fetchone()
 
         if result:
@@ -338,7 +323,7 @@ class LocalData:
         self.cur.execute(
             "SELECT SyncFiles.Path, SyncFiles.Filename, Albums.AlbumName, "
             "Albums.EndDate FROM AlbumFiles "
-            "INNER JOIN SyncFiles ON AlbumFiles.DriveRec=SyncFiles.Id "
+            "INNER JOIN SyncFiles ON AlbumFiles.DriveRec=SyncFiles.RemoteId "
             "INNER JOIN Albums ON AlbumFiles.AlbumRec=Albums.AlbumId "
             "WHERE Albums.AlbumId LIKE ?;",
             (album_id,))
@@ -356,17 +341,6 @@ class LocalData:
     def remove_all_album_files(self):
         self.cur.execute("DELETE FROM AlbumFiles")
 
-    def get_drive_folder_path(self, folder_id):
-        self.cur.execute(
-            "SELECT Path FROM DriveFolders "
-            "WHERE FolderId IS ?", (folder_id,))
-        result = self.cur.fetchone()
-        if result:
-            # noinspection PyTypeChecker
-            return result['Path']
-        else:
-            return None
-
     def put_drive_folder(self, drive_id, parent_id, folder_name):
         self.cur.execute(
             "INSERT OR REPLACE INTO "
@@ -377,22 +351,6 @@ class LocalData:
         self.cur.execute(
             "UPDATE SyncFiles SET SymLink=? "
             "WHERE Id IS ?;", (link_id, sync_file_id))
-
-    def update_drive_folder_path(self, path, parent_id):
-        self.cur.execute(
-            "UPDATE DriveFolders SET Path = ? WHERE ParentId = ?;",
-            (path, parent_id))
-        self.cur.fetchall()
-
-        self.cur.execute(
-            "SELECT FolderId, FolderName FROM DriveFolders WHERE ParentId "
-            "= ?;",
-            (parent_id,))
-
-        results = self.cur.fetchall()
-        for result in results:
-            # noinspection PyTypeChecker
-            yield (result['FolderId'], result['FolderName'])
 
     def store(self):
         log.info("Saving Database ...")
