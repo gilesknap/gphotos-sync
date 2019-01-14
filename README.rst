@@ -60,7 +60,9 @@ Known Issues
 * Some types of video will not download using the new API. This mostly is restricted to old formats of video file (in
   my library it is a subset of videos shot before 2010). Google is looking at this problem see
   https://issuetracker.google.com/issues/116842164
-* The API strips GPS data from images.
+* The API strips GPS data from images see https://issuetracker.google.com/issues/80379228.
+* Video download transcodes the videos even if you ask for the original file (=vd parameter) see https://issuetracker.google.com/issues/80149160. My experience is that the result is indistinguishable visually but it is a smaller file with approximately 60% bitrate (same resolution).
+
 
 
 Install and configure
