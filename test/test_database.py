@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from gphotos.LocalData import LocalData
-from .test_setup import SetupDbAndCredentials
+from test.test_setup import SetupDbAndCredentials
 
 
 # noinspection SqlResolve

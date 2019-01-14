@@ -57,7 +57,7 @@ def retry(count, func, *arg, **k_arg):
             log.error("ABORTING %s OUT OF MEMORY", func)
             return None
         except Exception as e:
-            log.debug("retry %d failed: %s", retry_no, message)
+            log.debug("retry %d failed: %s", retry_no, func)
             last_e = e
             time.sleep(.1)
     raise last_e

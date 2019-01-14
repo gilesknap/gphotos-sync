@@ -49,8 +49,8 @@ class Authorize:
         return token
 
     def save_token(self, token):
-        stream = open(self.token_file, 'w')
-        dump(token, stream, Dumper=Dumper)
+        with open(self.token_file, 'w') as stream:
+            dump(token, stream, Dumper=Dumper)
 
     def authorize(self):
         token = self.load_token()

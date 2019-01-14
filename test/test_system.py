@@ -7,7 +7,7 @@ from mock import patch
 
 import gphotos.Utils as Utils
 from gphotos.LocalData import LocalData
-from . import test_setup as ts
+import test.test_setup as ts
 
 
 # todo add a test that reads in Sync Date from the Db
