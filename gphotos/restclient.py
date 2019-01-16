@@ -4,6 +4,7 @@ from . import Utils
 from json import dumps
 
 import logging
+import requests
 
 log = logging.getLogger('rest_client')
 
@@ -34,17 +35,27 @@ class Method:
                     self.query_args.append(key)
 
     def execute(self, body=None, **k_args):
+        result = None
         path_args = {k: k_args[k] for k in self.path_args if k in k_args}
         query_args = {k: k_args[k] for k in self.query_args if k in k_args}
         path = self.service.base_url + self.make_path(path_args)
         if body:
             body = dumps(body)
-        r = Utils.retry(5, self.do_execute, body, path, query_args)
-        return r
+        try:
+            for retries in range(5):
+                result = self.service.auth_session.request(self.httpMethod, data=body, url=path,
+                                                           params=query_args)
+                if result.status_code == requests.codes.ok:
+                    break
+            result.raise_for_status()
+        except requests.exceptions.HTTPError:
+            log.error('HTTP Error: %s\n on %s to %s with args:%s\n body:%s',
+                      result.text, self.httpMethod, path, query_args, body)
+            raise
+        return result
 
     def do_execute(self, body, path, args):
-        result = self.service.auth_session.request(self.httpMethod, data=body, url=path,
-                                                   params=args)
+
         result.raise_for_status()
         return result
 

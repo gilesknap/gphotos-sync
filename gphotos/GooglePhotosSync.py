@@ -50,6 +50,8 @@ class GooglePhotosSync(object):
         self._startDate = None
         self._endDate = None
         self.includeVideo = True
+        self._rescan = False
+        self._retry_download = False
 
     @property
     def start_date(self):
@@ -72,6 +74,22 @@ class GooglePhotosSync(object):
     @property
     def latest_download(self):
         return self._latest_download
+
+    @property
+    def rescan(self):
+        return self._rescan
+
+    @rescan.setter
+    def rescan(self, val):
+        self._rescan = val
+
+    @property
+    def retry_download(self):
+        return self._retry_download
+
+    @retry_download.setter
+    def retry_download(self, val):
+        self._retry_download = val
 
     def check_for_removed(self):
         # note for partial scans using date filters this is still OK because
@@ -107,6 +125,7 @@ class GooglePhotosSync(object):
         if not page_token:
             log.info('searching for media start=%s, end=%s, videos=%s', start_date, end_date, do_video)
         if not start_date and not end_date and do_video:
+            # no search criteria so do a list of the entire library
             return self._api.mediaItems.list.execute(pageToken=page_token,
                                                      pageSize=self.PAGE_SIZE).json()
         else:
@@ -158,8 +177,12 @@ class GooglePhotosSync(object):
         log.warning('Indexing Google Photos Files ...')
         count = 0
 
-        previous_scan_latest = self._db.get_scan_date()
-        items_json = self.search_media(start_date=self.start_date or previous_scan_latest,
+        if self._rescan:
+            start_date = None
+        else:
+            start_date = self.start_date or self._db.get_scan_date()
+
+        items_json = self.search_media(start_date=start_date,
                                        end_date=self.end_date,
                                        do_video=self.includeVideo)
         while items_json:
@@ -186,7 +209,7 @@ class GooglePhotosSync(object):
             next_page = items_json.get('nextPageToken')
             if next_page:
                 items_json = self.search_media(page_token=next_page,
-                                               start_date=self.start_date or previous_scan_latest,
+                                               start_date=start_date,
                                                end_date=self.end_date,
                                                do_video=self.includeVideo)
             else:
@@ -203,8 +226,7 @@ class GooglePhotosSync(object):
         r.raise_for_status()
         return r
 
-    @classmethod
-    def do_download_file(cls, url, local_full_path, media_item):
+    def do_download_file(self, url, local_full_path, media_item):
         # this function runs in a process pool and does the actual downloads
         folder = os.path.dirname(local_full_path)
         log.debug('--> %s background start', local_full_path)
@@ -218,6 +240,8 @@ class GooglePhotosSync(object):
             os.utime(local_full_path,
                      (Utils.to_timestamp(media_item.modify_date),
                       Utils.to_timestamp(media_item.create_date)))
+            # is db access thread-safe??
+            self._db.put_downloaded(media_item.id)
             log.debug('<-- %s background done', local_full_path)
         except requests.exceptions.HTTPError:
             log.error('failed download of %s', local_full_path)
@@ -257,7 +281,8 @@ class GooglePhotosSync(object):
         for media_items_block in grouper(
                 # todo get rid of mediaType
                 DatabaseMedia.get_media_by_search(self._db, media_type=MediaType.PHOTOS,
-                                                  start_date=self.start_date, end_date=self.end_date)):
+                                                  start_date=self.start_date, end_date=self.end_date,
+                                                  skip_downloaded=not self._retry_download)):
             batch_ids = []
             batch = {}
             for media_item in media_items_block:
@@ -269,6 +294,7 @@ class GooglePhotosSync(object):
                 if os.path.exists(local_full_path):
                     count += 1
                     log.debug('skipping {} {} ...'.format(count, local_full_path))
+                    self._db.put_downloaded(media_item.id)
                     # todo is there anyway to detect remote updates with photos API?
                     # if Utils.to_timestamp(media.modify_date) > \
                     #         os.path.getctime(local_full_path):

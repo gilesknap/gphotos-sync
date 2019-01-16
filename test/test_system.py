@@ -74,8 +74,8 @@ class TestSystem(TestCase):
         count = db.cur.fetchone()
         self.assertEqual(10, count[0])
 
-        d_date= db.get_scan_date()
-        self.assertEqual(d_date.date(), datetime.date(1970, 1, 1))
+        d_date = db.get_scan_date()
+        self.assertEqual(d_date.date(), datetime.date(1965, 1, 1))
 
         args = [
             '--end-date', '2017-09-19',

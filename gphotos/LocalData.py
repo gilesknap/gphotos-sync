@@ -88,7 +88,7 @@ class LocalData:
     DB_FILE_NAME = 'gphotos.sqlite'
     BLOCK_SIZE = 10000
     EMPTY_FILE_NAME = 'etc/gphotos_empty.sqlite'
-    VERSION = 3.0
+    VERSION = 4.0
 
     class DuplicateDriveIdException(Exception):
         pass
@@ -126,7 +126,7 @@ class LocalData:
                     'MediaType': int, 'FileSize': int, 'MimeType': str,
                     'Description': str, 'ModifyDate': datetime,
                     'CreateDate': datetime, 'SyncDate': datetime,
-                    'SymLink': int}
+                    'SymLink': int, 'Downloaded': int}
         no_update = ['Id']
 
     # noinspection PyClassHasNoInit
@@ -183,13 +183,15 @@ class LocalData:
         return last_date
 
     def get_files_by_search(self, remote_id='%', media_type='%',
-                            start_date=None, end_date=None, skip_linked=False):
+                            start_date=None, end_date=None, skip_linked=False,
+                            skip_downloaded=False):
         """
         :param (str) remote_id:
         :param (int) media_type:
         :param (datetime) start_date:
         :param (datetime) end_date:
         :param (bool) skip_linked: Don't return entries with non-null SymLink
+        :param (bool) skip_downloaded: Dont return entries already downloaded
         :return (self.SyncRow):
         """
         params = (remote_id, media_type)
@@ -205,6 +207,8 @@ class LocalData:
             params += (end_date,)
         if skip_linked:
             extra_clauses += 'AND SymLink IS NULL'
+        if skip_downloaded:
+            extra_clauses += 'AND Downloaded IS 0'
 
         query = "SELECT {0} FROM SyncFiles WHERE RemoteId LIKE ? AND  " \
                 "MediaType LIKE ? {1};". \
@@ -341,16 +345,15 @@ class LocalData:
     def remove_all_album_files(self):
         self.cur.execute("DELETE FROM AlbumFiles")
 
-    def put_drive_folder(self, drive_id, parent_id, folder_name):
-        self.cur.execute(
-            "INSERT OR REPLACE INTO "
-            "DriveFolders(FolderId, ParentId, FolderName)"
-            " VALUES(?,?,?) ;", (drive_id, parent_id, folder_name))
-
     def put_symlink(self, sync_file_id, link_id):
         self.cur.execute(
             "UPDATE SyncFiles SET SymLink=? "
             "WHERE Id IS ?;", (link_id, sync_file_id))
+
+    def put_downloaded(self, sync_file_id, downloaded=True):
+        self.cur.execute(
+            "UPDATE SyncFiles SET Downloaded=? "
+            "WHERE RemoteId IS ?;", (downloaded, sync_file_id))
 
     def store(self):
         log.info("Saving Database ...")

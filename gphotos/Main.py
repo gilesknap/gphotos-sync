@@ -40,6 +40,16 @@ class GooglePhotosSyncMain:
         action='store_true',
         help="delete the index db, re-scan everything")
     parser.add_argument(
+        "--rescan",
+        action='store_true',
+        help="rescan entire library, ignoring last scan date. Use this if you have added photos to the library that "
+             "predate the last sync, or you have deleted some of the local files")
+    parser.add_argument(
+        "--retry-download",
+        action='store_true',
+        help="check for the existence of files marked as already downloaded and re-download any missing ones. Use "
+             "this if you have deleted some local files")
+    parser.add_argument(
         "--skip-video",
         action='store_true',
         help="skip video types in sync")
@@ -119,6 +129,8 @@ class GooglePhotosSyncMain:
         self.google_photos_sync.start_date = args.start_date
         self.google_photos_sync.end_date = args.end_date
         self.google_photos_sync.includeVideo = not args.skip_video
+        self.google_photos_sync.rescan = args.rescan
+        self.google_photos_sync.retry_download = args.retry_download
 
     @classmethod
     def sigterm_handler(cls, _sig_no, _stack_frame):
@@ -164,7 +176,6 @@ class GooglePhotosSyncMain:
                     self.google_photos_sync.index_photos_media()
                 if not args.skip_albums:
                     self.google_albums_sync.index_album_media()
-                self.data_store.store()
             if not args.index_only:
                 if not args.skip_files:
                     self.google_photos_sync.download_photo_media()

@@ -6,9 +6,10 @@ create table Albums
 		primary key,
 	AlbumName TEXT,
 	Size INT,
-	StartDate TEXT not null,
-	EndDate TEXT not null,
-	SyncDate TEXT not null
+	Description TEXT,
+	StartDate INT,
+	EndDate INT,
+	SyncDate INT
 )
 ;
 DROP INDEX IF EXISTS Albums_AlbumId_uindex;
@@ -44,7 +45,8 @@ create table SyncFiles
 	CreateDate INT,
 	SyncDate INT,
   MediaType INT DEFAULT 0,
-  SymLink INT DEFAULT 0
+  SymLink INT DEFAULT 0,
+  Downloaded INT DEFAULT 0
 )
 ;
 DROP INDEX IF EXISTS RemoteIdIdx;
@@ -80,6 +82,28 @@ DROP INDEX IF EXISTS AlbumFiles_AlbumRec_DriveRec_uindex;
 create unique index AlbumFiles_AlbumRec_DriveRec_uindex
 	on AlbumFiles (AlbumRec, DriveRec);
 
+
+drop table if exists LocalFiles;
+create table LocalFiles
+(
+	Id INTEGER
+		primary key,
+	Path TEXT,
+	FileName TEXT,
+	MimeType TEXT,
+	ModifyDate INT,
+	CreateDate INT,
+	SyncDate INT,
+	Uploaded INT
+)
+;
+DROP INDEX IF EXISTS FileNameIdx;
+DROP INDEX IF EXISTS CreatedIdx;
+DROP INDEX IF EXISTS SyncDateIdx;
+create index FileNameIdx  on LocalFiles (FileName);
+create index CreatedIdx  on LocalFiles (CreateDate);
+create index SyncDateIdx  on LocalFiles (SyncDate);
+
 drop table if exists Globals;
 CREATE TABLE Globals
 (
@@ -87,9 +111,11 @@ CREATE TABLE Globals
   Version TEXT,
   Albums INTEGER,
   Files INTEGER,
-  LastIndex TEXT
+  LastIndex INT -- Date of last sync
 );
 CREATE UNIQUE INDEX Globals_Id_uindex ON Globals (Id);
 
-INSERT INTO Globals(Id, Version, Albums, Files) VALUES (1, 3.0, 0, 0);
+-- when the database scheme is changed update the second parameter (Version)
+-- also update the LocalData.VERSION in LocalData.py
+INSERT INTO Globals(Id, Version, Albums, Files) VALUES (1, 4.0, 0, 0);
 

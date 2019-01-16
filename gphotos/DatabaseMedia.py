@@ -55,6 +55,7 @@ class DatabaseMedia(BaseMedia):
             self._date = row.ModifyDate
             self._create_date = row.CreateDate
             self._sym_link = row.SymLink = None
+            self._downloaded = row.Downloaded = None
 
             self.duplicate_number = int(self.duplicate_number)
         else:
@@ -77,7 +78,8 @@ class DatabaseMedia(BaseMedia):
 
     @classmethod
     def get_media_by_search(cls, db, remote_id='%', media_type='%',
-                            start_date=None, end_date=None, skip_linked=False):
+                            start_date=None, end_date=None, skip_linked=False,
+                            skip_downloaded=False):
         """
         A factory method to find any number of rows in SyncFile and yield an
         iterator of DataBaseMedia objects representing the results
@@ -90,7 +92,8 @@ class DatabaseMedia(BaseMedia):
         :returns (GoogleMedia): yields GoogleMedia object filled from database
         """
         for record in db.get_files_by_search(
-                remote_id, media_type, start_date, end_date, skip_linked):
+                remote_id, media_type, start_date, end_date, skip_linked,
+                skip_downloaded):
             new_media = DatabaseMedia(record)
             yield new_media
 

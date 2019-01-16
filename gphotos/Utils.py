@@ -116,9 +116,7 @@ def minimum_date():
     if os.name == 'nt':
         return datetime.min.replace(year=1970)
     else:
-        # google drive search does not like 1900 but strptime is OK
-        # this is annoying for my 1964 dated files - will v3 API fix this?
-        return datetime.min.replace(year=1970)
+        return datetime.min.replace(year=1900)
 
 
 def to_timestamp(dt, epoch=datetime(1970, 1, 1)):

@@ -15,7 +15,8 @@ class GooglePhotosMedia(BaseMedia):
         self.__path = None
         super(GooglePhotosMedia, self).__init__()
         if self.is_video():
-            self.__media_meta = media_json.get('mediaMetadata').get('video')
+            self.__media_meta = None
+            # self.__media_meta = media_json.get('mediaMetadata').get('video')
         else:
             self.__media_meta = media_json.get('mediaMetadata').get('photo')
 
@@ -78,8 +79,9 @@ class GooglePhotosMedia(BaseMedia):
 
     @property
     def camera_model(self):
+        camera_model = None
         try:
             camera_model = self.__media_meta['cameraModel']
-        except KeyError:
-            camera_model = None
+        except (KeyError, AttributeError):
+            pass
         return camera_model
