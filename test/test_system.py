@@ -15,6 +15,50 @@ import test.test_setup as ts
 # todo tidy up the test account and make these tests match a neater set of files
 
 class TestSystem(TestCase):
+    def test_sys_whole_library(self):
+        """Download all images in test library. Check filesystem for correct files
+        Check DB for correct entries
+        Note, if you select --skip-video then we use the search API instead of list
+        This then misses these 3 files:
+            subaru1.jpg|photos/1998/10
+            subaru2.jpg|photos/1998/10
+            DSCF0030.JPG|photos/2000/02
+        todo investigate above
+        """
+        s = ts.SetupDbAndCredentials()
+        s.test_setup('test_sys_whole_library', trash_db=True, trash_files=True)
+        s.gp.start(s.parsed_args)
+
+        db = LocalData(s.root)
+
+        # Total of 80 media items
+        db.cur.execute("SELECT COUNT() FROM SyncFiles")
+        count = db.cur.fetchone()
+        self.assertEqual(80, count[0])
+        # with 10 videos
+        db.cur.execute("SELECT COUNT() FROM SyncFiles where MimeType like 'video%'")
+        count = db.cur.fetchone()
+        self.assertEqual(10, count[0])
+
+        # downloaded 10 images in each of the years in the test data
+        image_years = [2017, 2016, 2015, 2001, 2000, 1998, 1965]
+        for y in image_years:
+            # looking for .jpg .JPG .png .jfif
+            pat = os.path.join(s.root, 'photos', str(y), '*', '*.[JjpP]*')
+            self.assertEqual(10, len(glob.glob(pat)))
+
+        # and 10 mp4 for 2017
+        pat = os.path.join(s.root, 'photos', '2017', '*', '*.mp4')
+        self.assertEqual(10, len(glob.glob(pat)))
+
+        # 4 albums the following item counts
+        album_items = [10, 10, 4, 16]
+        albums = [r'0101?Album?2001', r'0528?Movies', r'0923?Clones', r'0926?Album?2016']
+        for idx, a in enumerate(albums):
+            pat = os.path.join(s.root, 'albums', '*', a, '*')
+            print('looking for album items at {}'.format(pat))
+            self.assertEqual(album_items[idx], len(glob.glob(pat)))
+
     def test_system_index_albums(self):
         s = ts.SetupDbAndCredentials()
         # todo fix for more useful dates when search by create date available
