@@ -64,7 +64,9 @@ class BaseMedia(object):
                                          Description=self.description,
                                          ModifyDate=self.modify_date,
                                          CreateDate=self.create_date,
-                                         SyncDate=now_time, SymLink=None)
+                                         SyncDate=now_time,
+                                         SymLink=None,
+                                         Downloaded=0)
         return db.put_file(new_row, update)
 
     def set_path_by_date(self, root):
