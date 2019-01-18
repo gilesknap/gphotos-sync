@@ -1,4 +1,5 @@
-|build_status| |coverage|
+|build_status|
+|coverage|
 
 
 ==================
@@ -119,6 +120,6 @@ For a description of additional command line parameters type::
     :target: https://travis-ci.org/gilesknap/gphotos-sync
     :alt: Build Status
 
-.. |coverage| image:: https://coveralls.io/repos/gilesknap/gphotos-sync/badge.svg?branch=master&service=github
-    :target: https://coveralls.io/github/gilesknap/gphotos-sync?branch=master
-    :alt: Test coverage
+.. |coverage| image:: https://coveralls.io/repos/github/gilesknap/gphotos-sync/badge.svg?branch=master
+:target: https://coveralls.io/github/gilesknap/gphotos-sync?branch=master
+
