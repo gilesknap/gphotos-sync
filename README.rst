@@ -116,10 +116,11 @@ For a description of additional command line parameters type::
 
 
 
+
 .. |build_status| image:: https://travis-ci.org/gilesknap/gphotos-sync.svg?style=flat
     :target: https://travis-ci.org/gilesknap/gphotos-sync
     :alt: Build Status
 
 .. |coverage| image:: https://coveralls.io/repos/github/gilesknap/gphotos-sync/badge.svg?branch=master
-:target: https://coveralls.io/github/gilesknap/gphotos-sync?branch=master
+    :target: https://coveralls.io/github/gilesknap/gphotos-sync?branch=master
 
