@@ -39,6 +39,10 @@ class TestSystem(TestCase):
         db.cur.execute("SELECT COUNT() FROM SyncFiles where MimeType like 'video%'")
         count = db.cur.fetchone()
         self.assertEqual(10, count[0])
+        # and 4 albums
+        db.cur.execute("SELECT COUNT() FROM Albums;")
+        count = db.cur.fetchone()
+        self.assertEqual(4, count[0])
 
         # downloaded 10 images in each of the years in the test data
         image_years = [2017, 2016, 2015, 2001, 2000, 1998, 1965]
@@ -59,81 +63,141 @@ class TestSystem(TestCase):
             print('looking for album items at {}'.format(pat))
             self.assertEqual(album_items[idx], len(glob.glob(pat)))
 
-    def test_system_index_albums(self):
+        # check that the most recent scanned file date was recorded
+        db = LocalData(s.root)
+        d_date = db.get_scan_date()
+        self.assertEqual(d_date.date(), datetime.date(2017, 9, 26))
+
+    def test_system_date_range(self):
         s = ts.SetupDbAndCredentials()
-        # todo fix for more useful dates when search by create date available
-        args = ['--start-date', '2016-01-01',
-                '--end-date', '2017-09-19',
-                '--index-only', '--skip-video']
-        s.test_setup('test_system_index_albums', args=args, trash_db=True)
+        args = ['--start-date', '2016-01-01', '--end-date', '2017-01-01', '--skip-albums', '--index-only']
+        s.test_setup('test_system_date_range', args=args, trash_db=True, trash_files=True)
         s.gp.start(s.parsed_args)
 
         db = LocalData(s.root)
 
-        # album files: 4 albums with 26 files, 6 overlap and 10 are videos = 10
-        db.cur.execute("SELECT COUNT() FROM SyncFiles")
-        count = db.cur.fetchone()
-        self.assertEqual(31, count[0])
-
-        # album files includes the overlaps = 16
-        db.cur.execute("SELECT COUNT() FROM AlbumFiles;")
-        count = db.cur.fetchone()
-        self.assertEqual(52, count[0])
-
-    def test_system_index(self):
-        s = ts.SetupDbAndCredentials()
-        args = ['--start-date', '2016-01-01',
-                '--end-date', '2017-09-19',
-                '--index-only', '--skip-video']
-        s.test_setup('system_index', args=args, trash_db=True)
-        s.gp.start(s.parsed_args)
-
-        db = LocalData(s.root)
-
-        # 70 items but 10 are videos = 60
-        db.cur.execute("SELECT COUNT() FROM SyncFiles WHERE MediaType = 0;")
-        count = db.cur.fetchone()
-        self.assertEqual(31, count[0])
-
-        # 4 albums with 26 files 10 are videos = 16
-        db.cur.execute("SELECT COUNT() FROM AlbumFiles;")
-        count = db.cur.fetchone()
-        self.assertEqual(52, count[0])
-
-        db.cur.execute("SELECT COUNT() FROM Albums;")
-        count = db.cur.fetchone()
-        self.assertEqual(7, count[0])
-
-    def test_system_incremental(self):
-        s = ts.SetupDbAndCredentials()
-        args = ['--end-date', '1970-01-01',
-                '--index-only',
-                '--skip-video']
-        s.test_setup('system_incremental', args=args, trash_db=True)
-        s.gp.start(s.parsed_args)
-
-        db = LocalData(s.root)
-
+        # Total of 10 images
         db.cur.execute("SELECT COUNT() FROM SyncFiles")
         count = db.cur.fetchone()
         self.assertEqual(10, count[0])
 
-        d_date = db.get_scan_date()
-        self.assertEqual(d_date.date(), datetime.date(1965, 1, 1))
-
-        args = [
-            '--end-date', '2017-09-19',
-            '--index-only', '--skip-video'
-        ]
-        s.test_setup('system_incremental', args=args)
+    def test_system_skip_video(self):
+        s = ts.SetupDbAndCredentials()
+        args = ['--start-date', '2017-01-01', '--end-date', '2018-01-01', '--skip-albums', '--index-only']
+        s.test_setup('test_system_skip_video', args=args, trash_db=True, trash_files=True)
         s.gp.start(s.parsed_args)
 
+        db = LocalData(s.root)
+
+        # Total of 20 media items
         db.cur.execute("SELECT COUNT() FROM SyncFiles")
         count = db.cur.fetchone()
-        self.assertEqual(268, count[0])
+        self.assertEqual(20, count[0])
 
+        args = ['--start-date', '2017-01-01', '--end-date', '2018-01-01', '--skip-albums', '--index-only',
+                '--skip-video']
+        s.test_setup('test_system_skip_video', args=args, trash_db=True, trash_files=True)
+        s.gp.start(s.parsed_args)
+
+        db = LocalData(s.root)
+
+        # Total of 10 media items
+        db.cur.execute("SELECT COUNT() FROM SyncFiles")
+        count = db.cur.fetchone()
+        self.assertEqual(10, count[0])
+
+    def test_system_retry_download(self):
+        s = ts.SetupDbAndCredentials()
+        args = ['--start-date', '2017-01-01', '--end-date', '2018-01-01', '--skip-video',
+                '--skip-albums']
+        s.test_setup('test_system_retry_download', args=args, trash_db=True, trash_files=True)
+        s.gp.start(s.parsed_args)
+
+        pat = os.path.join(s.root, 'photos', '2017', '??', '*.[JjpP]*')
+        files = glob.glob(pat)
+        self.assertEqual(10, len(files))
+
+        os.remove(files[0])
+        self.assertEqual(9, len(glob.glob(pat)))
+
+        # re-run should not download since file is marked as downloaded
+        s = ts.SetupDbAndCredentials()
+        s.test_setup('test_system_retry_download', args=args)
+        s.gp.start(s.parsed_args)
+
+        self.assertEqual(9, len(glob.glob(pat)))
+
+        # but adding --retry-download should get us back to 10 files
+        args.append('--retry-download')
+        s = ts.SetupDbAndCredentials()
+        s.test_setup('test_system_retry_download', args=args)
+        s.gp.start(s.parsed_args)
+
+        self.assertEqual(10, len(glob.glob(pat)))
+
+    def test_do_delete(self):
+        s = ts.SetupDbAndCredentials()
+        args = ['--start-date', '2017-01-01', '--end-date', '2018-01-01', '--skip-video',
+                '--skip-albums', '--do-delete']
+        s.test_setup('test_do_delete', args=args, trash_db=True, trash_files=True)
+        s.gp.start(s.parsed_args)
+
+        pat = os.path.join(s.root, 'photos', '2017', '??', '*.[JjpP]*')
+        files = glob.glob(pat)
+        self.assertEqual(10, len(files))
+
+        db = LocalData(s.root)
+        db.cur.execute("DELETE FROM SyncFiles;")
+        db.store()
+
+        args.append('--skip-index')
+        s = ts.SetupDbAndCredentials()
+        s.test_setup('test_do_delete', args=args)
+        s.gp.start(s.parsed_args)
+
+        # should have removed all files
+        files = glob.glob(pat)
+        self.assertEqual(0, len(files))
+
+    def test_system_incremental(self):
+        s = ts.SetupDbAndCredentials()
+        args = ['--start-date', '2016-01-01', '--end-date', '2017-01-01',
+                '--skip-albums', '--index-only']
+        s.test_setup('test_system_incremental', args=args, trash_db=True, trash_files=True)
+        s.gp.start(s.parsed_args)
+
+        db = LocalData(s.root)
+        db.cur.execute("SELECT COUNT() FROM SyncFiles")
+        count = db.cur.fetchone()
+        self.assertEqual(10, count[0])
+
+        # force an update the 'most recently scanned file' record
+        # (this is normally only set for complete scans and was tested in test_sys_whole_library)
+        db.set_scan_date(Utils.string_to_date("2017-01-01"))
+        db.store()
+
+        s = ts.SetupDbAndCredentials()
+        args = ['--skip-albums', '--index-only']
+        s.test_setup('test_system_incremental', args=args)
+        s.gp.start(s.parsed_args)
+
+        # this should add in everything in 2017 (20 files)
+        db.cur.execute("SELECT COUNT() FROM SyncFiles")
+        count = db.cur.fetchone()
+        self.assertEqual(30, count[0])
         d_date = db.get_scan_date()
-        self.assertEqual(d_date.date(), datetime.date(2017, 9, 19))
+        self.assertEqual(d_date.date(), datetime.date(2017, 9, 26))
+
+        s = ts.SetupDbAndCredentials()
+        args = ['--skip-albums', '--index-only', '--rescan']
+        s.test_setup('test_system_incremental', args=args)
+        s.gp.start(s.parsed_args)
+
+        # this should add in everything
+        db.cur.execute("SELECT COUNT() FROM SyncFiles")
+        count = db.cur.fetchone()
+        self.assertEqual(80, count[0])
+
 
     # # noinspection PyUnresolvedReferences
     # @patch.object(LocalData, 'get_album')
@@ -175,50 +239,3 @@ class TestSystem(TestCase):
     #     count = db.cur.fetchone()
     #     self.assertEqual(count[0], 4)
     #
-    # def test_picasa_delete(self):
-    #     s = SetupDbAndCredentials()
-    #     args = ['--album', '2Photos',
-    #             '--skip-drive', '--do-delete']
-    #     s.test_setup('test_picasa_delete', args=args, trash_files=True)
-    #     s.gp.start(s.parsed_args)
-    #
-    #     pat = os.path.join(s.root, 'picasa', '2016', '01', '*.*')
-    #     self.assertEqual(2, len(glob.glob(pat)))
-    #
-    #     s.test_setup('test_picasa_delete', args=args)
-    #     s.gp.picasa_sync.check_for_removed()
-    #     self.assertEqual(2, len(glob.glob(pat)))
-    #
-    #     db = LocalData(s.root)
-    #     db.cur.execute("DELETE FROM SyncFiles WHERE MediaType = 1;")
-    #     db.store()
-    #
-    #     s.gp.picasa_sync.check_for_removed()
-    #     self.assertEqual(0, len(glob.glob(pat)))
-    #
-    # # todo really need to get drive api v3 working and use create date for
-    # # date filtering. at present the indexing filters by modify date and then
-    # # the download filters by create date - not good
-    # def test_drive_delete(self):
-    #     s = SetupDbAndCredentials()
-    #     args = ['--start-date', '2017-01-01', '--end-date', '2017-09-19',
-    #             '--skip-picasa', '--do-delete', '--skip-video']
-    #     s.test_setup('test_drive_delete', args=args, trash_files=True)
-    #
-    #     pat = os.path.join(s.root, 'drive', 'Google Photos', '2017', '*.*')
-    #     print(pat)
-    #
-    #     s.gp.start(s.parsed_args)
-    #     self.assertEqual(10, len(glob.glob(pat)))
-    #
-    #     s.test_setup('test_drive_delete', args=args)
-    #     s.gp.drive_sync.check_for_removed()
-    #     self.assertEqual(10, len(glob.glob(pat)))
-    #
-    #     db = LocalData(s.root)
-    #     db.cur.execute("DELETE FROM SyncFiles WHERE MediaType = 0 "
-    #                    "AND Filename LIKE '%201701%';")
-    #     db.store()
-    #
-    #     s.gp.drive_sync.check_for_removed()
-    #     self.assertEqual(0, len(glob.glob(pat)))

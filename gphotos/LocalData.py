@@ -99,7 +99,7 @@ class LocalData:
             clean_db = True
         else:
             clean_db = False
-        self.con = lite.connect(self.file_name)
+        self.con = lite.connect(self.file_name, check_same_thread=False)
         self.con.row_factory = lite.Row
         self.cur = self.con.cursor()
         if clean_db:

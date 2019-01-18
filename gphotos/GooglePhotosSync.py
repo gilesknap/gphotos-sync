@@ -240,7 +240,7 @@ class GooglePhotosSync(object):
             os.utime(local_full_path,
                      (Utils.to_timestamp(media_item.modify_date),
                       Utils.to_timestamp(media_item.create_date)))
-            # is db access thread-safe??
+            # todo using DB in threads may be risky? Need to verify this is OK
             self._db.put_downloaded(media_item.id)
             log.debug('<-- %s background done', local_full_path)
         except requests.exceptions.HTTPError:
