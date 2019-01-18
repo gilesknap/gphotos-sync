@@ -234,13 +234,6 @@ class LocalData:
         record = self.cur.fetchone()
         return self.SyncRow(record)
 
-    def get_file_by_id(self, remote_id):
-        query = "SELECT {0} FROM SyncFiles WHERE RemoteId = ?;".format(
-            self.SyncRow.columns)
-        self.cur.execute(query, (remote_id,))
-        record = self.cur.fetchone()
-        return self.SyncRow(record)
-
     def put_file(self, row, update=False):
         try:
             if update:
@@ -290,26 +283,6 @@ class LocalData:
             # the file is new and has no duplicates
             return 0, None
 
-    def find_file_ids_dates(self, filename='%', exif_date='%', size='%',
-                            media_type='%', use_create=False):
-        if use_create:
-            query = "SELECT {0} FROM SyncFiles WHERE FileName LIKE ? AND " \
-                    "CreateDate LIKE ? AND FileSize LIKE ? " \
-                    "AND MediaType LIKE ?;" \
-                .format(self.SyncRow.columns)
-            self.cur.execute(query, (filename, exif_date, size, media_type))
-        else:
-            query = "SELECT {0} FROM SyncFiles WHERE FileName LIKE ? AND " \
-                    "ModifyDate LIKE ? AND FileSize LIKE ? " \
-                    "AND MediaType LIKE ?;" \
-                .format(self.SyncRow.columns)
-            self.cur.execute(query, (filename, exif_date, size, media_type))
-        res = self.cur.fetchall()
-        results = []
-        for row in res:
-            results.append(self.SyncRow(row))
-        return results
-
     def get_album(self, album_id):
         query = "SELECT {0} FROM Albums WHERE AlbumId = ?;".format(
             self.AlbumsRow.columns)
@@ -343,12 +316,8 @@ class LocalData:
             (album_rec, file_rec))
 
     def remove_all_album_files(self):
+        # noinspection SqlWithoutWhere
         self.cur.execute("DELETE FROM AlbumFiles")
-
-    def put_symlink(self, sync_file_id, link_id):
-        self.cur.execute(
-            "UPDATE SyncFiles SET SymLink=? "
-            "WHERE Id IS ?;", (link_id, sync_file_id))
 
     def put_downloaded(self, sync_file_id, downloaded=True):
         self.cur.execute(

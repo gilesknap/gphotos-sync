@@ -7,7 +7,6 @@ from datetime import datetime
 from . import Utils
 from .GoogleAlbumMedia import GoogleAlbumMedia
 from .GooglePhotosMedia import GooglePhotosMedia
-from .DatabaseMedia import DatabaseMedia
 from .LocalData import LocalData
 import logging
 

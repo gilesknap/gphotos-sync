@@ -42,7 +42,7 @@ class Authorize:
 
     def load_token(self):
         try:
-            with open(self.token_file, 'r') as stream :
+            with open(self.token_file, 'r') as stream:
                 token = load(stream, Loader=Loader)
         except (YAMLError, IOError):
             return None

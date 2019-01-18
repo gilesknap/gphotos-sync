@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # coding: utf8
-import os.path
 from datetime import datetime
 
 from .BaseMedia import BaseMedia, MediaType
@@ -89,6 +88,7 @@ class DatabaseMedia(BaseMedia):
         :param (datetime) start_date: optional date filter
         :param (datetime) end_date: optional date filter
         :param (bool) skip_linked: skip files with non-null SymLink
+        :param (bool) skip_downloaded: skip files with downloaded=1
         :returns (GoogleMedia): yields GoogleMedia object filled from database
         """
         for record in db.get_files_by_search(
@@ -130,7 +130,6 @@ class DatabaseMedia(BaseMedia):
     def orig_name(self):
         """
         Original filename before duplicate name handling
-        todo refactor so this is not required
         :return (str):
         """
         return self.validate_encoding(self._orig_name)

@@ -11,8 +11,8 @@ import logging
 
 log = logging.getLogger('gphotos.utils')
 
-DATE_NORMALIZE = re.compile('(\d\d\d\d).(\d\d).(\d\d).(\d\d).(\d\d).(\d\d)')
-SHORT_DATE_NORMALIZE = re.compile('(\d\d\d\d).(\d\d).(\d\d)')
+DATE_NORMALIZE = re.compile(r'(\d\d\d\d).(\d\d).(\d\d).(\d\d).(\d\d).(\d\d)')
+SHORT_DATE_NORMALIZE = re.compile(r'(\d\d\d\d).(\d\d).(\d\d)')
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 DATE_ONLY = "%Y-%m-%d"
 
@@ -61,29 +61,6 @@ def retry(count, func, *arg, **k_arg):
             last_e = e
             time.sleep(.1)
     raise last_e
-
-
-# does not work (why?), using verbose one below
-def retry_i_x(count, iterator):
-    for n in retry(count, iterator.next):
-        yield n
-
-
-def retry_i(count, iterator):
-    last_item = None
-    more_data = True
-    while more_data:
-        for retry_no in range(count):
-            try:
-                last_item = iterator.next()
-                break
-            except StopIteration:
-                more_data = False
-                break
-            except Exception as e:
-                log.warning("RETRYING iterator due to: %s", repr(e))
-                time.sleep(.1)
-        yield last_item
 
 
 # incredibly windows cannot handle dates below 1970

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # coding: utf8
-import re
 
 from . import Utils
 from .BaseMedia import BaseMedia, MediaType
@@ -67,11 +66,6 @@ class GooglePhotosMedia(BaseMedia):
     @property
     def url(self):
         return self.__media_json['productUrl']
-
-    # ----- Derived class custom properties below -----
-    @property
-    def parent_id(self):
-        return 0
 
     @property
     def camera_owner(self):

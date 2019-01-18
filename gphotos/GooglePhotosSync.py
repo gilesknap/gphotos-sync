@@ -157,22 +157,6 @@ class GooglePhotosSync(object):
             }
             return self._api.mediaItems.search.execute(body).json()
 
-    # a test function
-    def scan_photos_media(self):
-        items_json = self.search_media(start_date=self.start_date,
-                                       end_date=self.end_date,
-                                       do_video=self.includeVideo)
-        while items_json:
-            media_json = items_json.get('mediaItems')
-            # cope with empty response
-            if not media_json:
-                break
-            for media_item_json in media_json:
-                media_item = GooglePhotosMedia(media_item_json)
-                if len(media_item.id) < 80:
-                    log.warning("%s %s %s", media_item.filename, media_item.id,
-                                media_item_json["productUrl"])
-
     def index_photos_media(self):
         log.warning('Indexing Google Photos Files ...')
         count = 0
@@ -338,13 +322,3 @@ class GooglePhotosSync(object):
         self.download_pool.close()
         self.download_pool.join()
         log.warning('Download %d Photos complete', count)
-
-    def single_get(self, media_item):
-        try:
-            response = self._api.mediaItems.get.execute(mediaItemId=media_item.id)
-            media_item_json = response.json()
-            self.download_file(media_item, media_item_json)
-        except requests.exceptions.HTTPError:
-            log.error('failure downloading of %s', media_item.filename)
-            log.debug('', exc_info=True)
-            # allow process to continue on single failed file

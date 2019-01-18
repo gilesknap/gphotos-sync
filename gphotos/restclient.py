@@ -1,8 +1,5 @@
 import six
-from . import Utils
-
 from json import dumps
-
 import logging
 import requests
 
@@ -52,11 +49,6 @@ class Method:
             log.error('HTTP Error: %s\n on %s to %s with args:%s\n body:%s',
                       result.text, self.httpMethod, path, query_args, body)
             raise
-        return result
-
-    def do_execute(self, body, path, args):
-
-        result.raise_for_status()
         return result
 
     def make_path(self, path_args):
