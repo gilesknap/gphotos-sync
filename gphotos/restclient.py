@@ -3,7 +3,7 @@ from json import dumps
 import logging
 import requests
 
-log = logging.getLogger('rest_client')
+log = logging.getLogger(__name__)
 
 '''
 Defines very simple classes to create a callable interface to a REST api 

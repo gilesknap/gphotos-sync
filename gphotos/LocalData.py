@@ -7,7 +7,7 @@ from datetime import datetime
 from . import Utils
 import logging
 
-log = logging.getLogger('gphotos.data')
+log = logging.getLogger(__name__)
 
 
 # noinspection PyClassHasNoInit

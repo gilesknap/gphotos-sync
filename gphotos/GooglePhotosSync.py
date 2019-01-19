@@ -17,7 +17,7 @@ import tempfile
 from multiprocessing.pool import ThreadPool
 from time import sleep
 
-log = logging.getLogger('gphotos.Photos')
+log = logging.getLogger(__name__)
 
 # todo put these in a file that is read at startup - others might have this issue
 # these ids wont down load (500 on batchGet)

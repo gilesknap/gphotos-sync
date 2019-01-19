@@ -17,7 +17,7 @@ from .restclient import RestClient
 import pkg_resources
 
 APP_NAME = "gphotos-sync"
-log = logging.getLogger('gphotos')
+log = logging.getLogger(__name__)
 
 
 class GooglePhotosSyncMain:

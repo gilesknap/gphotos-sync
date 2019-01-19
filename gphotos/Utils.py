@@ -9,7 +9,7 @@ import time
 from datetime import datetime
 import logging
 
-log = logging.getLogger('gphotos.utils')
+log = logging.getLogger(__name__)
 
 DATE_NORMALIZE = re.compile(r'(\d\d\d\d).(\d\d).(\d\d).(\d\d).(\d\d).(\d\d)')
 SHORT_DATE_NORMALIZE = re.compile(r'(\d\d\d\d).(\d\d).(\d\d)')

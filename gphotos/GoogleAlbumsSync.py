@@ -10,7 +10,7 @@ from .GooglePhotosMedia import GooglePhotosMedia
 from .LocalData import LocalData
 import logging
 
-log = logging.getLogger('gphotos.picasa')
+log = logging.getLogger(__name__)
 
 
 # noinspection PyCompatibility
