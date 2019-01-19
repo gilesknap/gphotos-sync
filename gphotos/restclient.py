@@ -39,11 +39,11 @@ class Method:
         if body:
             body = dumps(body)
         try:
-            for retries in range(5):
-                result = self.service.auth_session.request(self.httpMethod, data=body, url=path,
-                                                           params=query_args)
-                if result.status_code == requests.codes.ok:
-                    break
+            result = self.service.auth_session.request(self.httpMethod,
+                                                       data=body,
+                                                       url=path,
+                                                       timeout=5,
+                                                       params=query_args)
             result.raise_for_status()
         except requests.exceptions.HTTPError:
             log.error('HTTP Error: %s\n on %s to %s with args:%s\n body:%s',

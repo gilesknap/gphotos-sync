@@ -43,24 +43,7 @@ if os.name == 'nt':
         if __CSL(link_name, source, flags) == 0:
             raise ctypes.WinError()
 
-
     os.symlink = symlink
-
-
-def retry(count, func, *arg, **k_arg):
-    last_e = None
-    for retry_no in range(count):
-        try:
-            res = func(*arg, **k_arg)
-            return res
-        except MemoryError:
-            log.error("ABORTING %s OUT OF MEMORY", func)
-            return None
-        except Exception as e:
-            log.debug("retry %d failed: %s", retry_no, func)
-            last_e = e
-            time.sleep(.1)
-    raise last_e
 
 
 # incredibly windows cannot handle dates below 1970

@@ -1,4 +1,6 @@
+from requests.adapters import HTTPAdapter
 from requests_oauthlib import OAuth2Session
+from urllib3.util.retry import Retry
 
 from yaml import load, dump, YAMLError
 try:
@@ -85,3 +87,9 @@ class Authorize:
                 self.token_uri, client_secret=self.client_secret,
                 code=response_code)
             self.save_token(self.token)
+
+        retries = Retry(total=5,
+                        backoff_factor=0.1,
+                        status_forcelist=[500, 502, 503, 504])
+
+        self.session.mount('https://', HTTPAdapter(max_retries=retries))

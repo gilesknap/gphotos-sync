@@ -1,3 +1,4 @@
+urllib3
 mock
 appdirs
 requests
