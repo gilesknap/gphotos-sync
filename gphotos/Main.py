@@ -3,9 +3,7 @@ import argparse
 import os.path
 import logging
 import sys
-import signal
 import fcntl
-from traceback import format_stack
 
 from datetime import datetime
 from appdirs import AppDirs
@@ -132,19 +130,6 @@ class GooglePhotosSyncMain:
         self.google_photos_sync.rescan = args.rescan
         self.google_photos_sync.retry_download = args.retry_download
 
-    def sigterm_handler(self, _sig_no, _stack_frame):
-        if _sig_no == signal.SIGINT:
-            log.warning("User cancelled download")
-        stack_pretty = ''
-        for line in format_stack():
-            stack_pretty += line
-        log.debug("Process killed\n%s", stack_pretty)
-        # todo - messy! promote the thread pool management to its own class (or restructure some other way)
-        #  then we can use it for other classes parallel implementation
-        for f in self.google_photos_sync.pool_future_to_media:
-            f.cancel()
-        raise KeyboardInterrupt
-
     @classmethod
     def logging(cls, args, folder):
         # if we are debugging requests library is too noisy
@@ -197,9 +182,6 @@ class GooglePhotosSyncMain:
             os.makedirs(args.root_folder, 0o700)
         self.logging(args, db_path)
 
-        signal.signal(signal.SIGTERM, self.sigterm_handler)
-        signal.signal(signal.SIGINT, self.sigterm_handler)
-
         lock_file = os.path.join(db_path, 'gphotos.lock')
         fp = open(lock_file, 'w')
         with fp:
@@ -221,10 +203,13 @@ class GooglePhotosSyncMain:
             try:
                 self.setup(args, db_path)
                 self.start(args)
-            except Exception:
+            except KeyboardInterrupt:
+                log.error("User cancelled download")
+                log.debug("Traceback", exc_info=True)
+            except BaseException:
                 log.error("\nProcess failed.", exc_info=True)
             finally:
-                log.info("Done.")
+                log.warning("Done.")
 
         elapsed_time = datetime.now() - start_time
         log.info('Elapsed time = %s', elapsed_time)
