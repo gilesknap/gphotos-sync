@@ -132,15 +132,18 @@ class GooglePhotosSyncMain:
         self.google_photos_sync.rescan = args.rescan
         self.google_photos_sync.retry_download = args.retry_download
 
-    @classmethod
-    def sigterm_handler(cls, _sig_no, _stack_frame):
+    def sigterm_handler(self, _sig_no, _stack_frame):
         if _sig_no == signal.SIGINT:
             log.warning("User cancelled download")
         stack_pretty = ''
         for line in format_stack():
             stack_pretty += line
         log.debug("Process killed\n%s", stack_pretty)
-        sys.exit(0)
+        # todo - messy! promote the thread pool management to its own class (or restructure some other way)
+        #  then we can use it for other classes parallel implementation
+        for f in self.google_photos_sync.pool_future_to_media:
+            f.cancel()
+        raise KeyboardInterrupt
 
     @classmethod
     def logging(cls, args, folder):

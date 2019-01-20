@@ -12,19 +12,9 @@ import logging
 import requests
 import shutil
 import tempfile
-from time import sleep
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 import concurrent.futures as futures
-
-# todo
-""" todo ThreadPoolExecutor attempt instead of multiprocessing Threadpool
-It seems the issue is that the former does not trap exceptions in the worker - these can only bee seen with get()
-and the latter does not recieve signals and cannot be stopped cleanly. In both cases they do not lend themselves
-to keeping the request queue short and rolling more requests in as the queue empties:
-for both I need to track their 'futures' and see how long the queue is or something similar, for 
-ThreadPoolExecutor, there is no nice way to check on these futures without getting an exception to carry on (
-as_completed)"""
 
 log = logging.getLogger(__name__)
 
@@ -64,13 +54,16 @@ class GooglePhotosSync(object):
         self._retry_download = False
         self._video_timeout = 2000
         self._image_timeout = 60
+        # self._video_timeout = 2
+        # self._image_timeout = .01
 
         self._session = requests.Session()
         retries = Retry(total=5,
                         backoff_factor=0.1,
                         status_forcelist=[500, 502, 503, 504])
 
-        self._session.mount('https://', HTTPAdapter(max_retries=retries))
+        self._session.mount('https://', HTTPAdapter(max_retries=retries,
+                                                    pool_maxsize=self.MAX_THREADS))
 
     @property
     def video_timeout(self):
@@ -244,6 +237,7 @@ class GooglePhotosSync(object):
     def do_download_file(self, base_url, media_item):
         # this function runs in a process pool and does the actual downloads
         local_folder = os.path.join(self._root_folder, media_item.relative_folder)
+        # todo WTF - we have this value in BaseMedia ???
         local_full_path = os.path.join(local_folder, media_item.filename)
         if media_item.is_video():
             download_url = '{}=dv'.format(base_url)
@@ -258,29 +252,47 @@ class GooglePhotosSync(object):
         try:
             response = self._session.get(download_url, stream=True, timeout=timeout)
             shutil.copyfileobj(response.raw, temp_file)
+            temp_file.close()
+            response.close()
             os.rename(temp_file.name, local_full_path)
             os.utime(local_full_path,
                      (Utils.to_timestamp(media_item.modify_date),
                       Utils.to_timestamp(media_item.create_date)))
-
-            log.debug('downloading %s COMPLETE', local_full_path)
-            self._db.put_downloaded(media_item.id)
+            log.debug('COMPLETE downloading %s', local_full_path)
         except KeyboardInterrupt:
             log.debug("User cancelled download thread")
-        except:
-            log.error('downloading %s FAILED', local_full_path, exc_info=True)
+            raise
+        except BaseException:
             os.remove(temp_file.name)
+            raise
+
+    def do_download_complete(self, futures_list):
+        for future in futures_list:
+            media_item = self.pool_future_to_media.get(future)
+            if future.exception():
+                log.error('FAILURE: downloading %s, exc_info=True', media_item.relative_path)
+            else:
+                self._db.put_downloaded(media_item.id)
+            del self.pool_future_to_media[future]
 
     def download_file(self, media_item, media_json):
         """ farms media downloads off to the thread pool"""
         base_url = media_json['baseUrl']
 
-        # we dont want a massive queue so wait until a thread is free
-        # while len(self.pool_future_to_media) >= self.MAX_THREADS:
-        #     sleep(1)
+        # we dont want a massive queue so wait until at least one thread is free
+        while len(self.pool_future_to_media) >= self.MAX_THREADS:
+            # check which futures are done, complete the main thread work
+            # and remove them from the dictionary
+            done_list = []
+            for future in self.pool_future_to_media.keys():
+                if future.done():
+                    done_list.append(future)
 
+            self.do_download_complete(done_list)
+
+        # start a new background download
         future = self.download_pool.submit(self.do_download_file, base_url, media_item)
-        # self.pool_future_to_media[future] = media_item
+        self.pool_future_to_media[future] = media_item
 
     def download_photo_media(self):
         """
@@ -343,15 +355,14 @@ class GooglePhotosSync(object):
                     try:
                         self.download_file(media_item, media_item_json)
                     except KeyboardInterrupt:
-                        # noinspection PyProtectedMember
-                        self.download_pool._threads.clear()
-                        # noinspection PyProtectedMember
-                        self.download_pool.futures.thread._threads_queues.clear()
+                        # do we need some checks here?
+                        raise
             except Exception:
                 log.error('failure in batch get of %s', batch_ids)
                 raise
 
         # allow any remaining background downloads to complete
-        self.download_pool.close()
-        self.download_pool.join()
+        # copy the dictionary otherwise it will shrink while being iterated over
+        futures_copy = self.pool_future_to_media.copy()
+        self.do_download_complete(futures_copy)
         log.warning('Download %d Photos complete', count)

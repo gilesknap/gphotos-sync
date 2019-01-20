@@ -6,6 +6,11 @@ from appdirs import AppDirs
 from gphotos import Main
 from gphotos.Main import GooglePhotosSyncMain
 
+import logging
+
+logger = logging.getLogger()
+logger.level = logging.DEBUG
+
 
 class SetupDbAndCredentials:
     def __init__(self):
@@ -31,6 +36,7 @@ class SetupDbAndCredentials:
 
     def test_setup(self, test_name, init_db=False, args=None, trash_db=False,
                    trash_files=False):
+        global logging_setup
         self.root = u'/tmp/gpTests/{}'.format(test_name)
 
         self.db_file = os.path.join(self.root, 'gphotos.sqlite')
