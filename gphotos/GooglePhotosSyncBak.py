@@ -2,30 +2,22 @@
 # coding: utf8
 import os.path
 
-from gphotos import Utils
-from gphotos.GooglePhotosMedia import GooglePhotosMedia
-from gphotos.BaseMedia import MediaType
-from gphotos.LocalData import LocalData
-from gphotos.DatabaseMedia import DatabaseMedia
+from . import Utils
+from .GooglePhotosMedia import GooglePhotosMedia
+from .BaseMedia import MediaType
+from .LocalData import LocalData
+from .DatabaseMedia import DatabaseMedia
 from itertools import zip_longest
 import logging
 import requests
 import shutil
 import tempfile
+# apparently this is undocumented and may end up in Threading - could use Pool instead
+# but have no need for separate processes since our workers are (probably) IO bound
+from multiprocessing.pool import ThreadPool
 from time import sleep
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
-import concurrent.futures as futures
-
-# todo
-""" todo ThreadPoolExecutor attempt instead of multiprocessing Threadpool
-It seems the issue is that the former does not trap exceptions in the worker - these can only bee seen with get()
-and the latter does not recieve signals and cannot be stopped cleanly. In both cases they do not lend themselves
-to keeping the request queue short and rolling more requests in as the queue empties:
-for both I need to track their 'futures' and see how long the queue is or something similar, for 
-ThreadPoolExecutor, there is no nice way to check on these futures without getting an exception to carry on (
-as_completed)"""
-
 log = logging.getLogger(__name__)
 
 # todo put these in a file that is read at startup - others might have this issue
@@ -39,7 +31,7 @@ bad_ids = \
 
 class GooglePhotosSync(object):
     PAGE_SIZE = 100
-    MAX_THREADS = 20
+    MAX_THREADS = 10
 
     def __init__(self, api, root_folder, db):
         """
@@ -51,8 +43,7 @@ class GooglePhotosSync(object):
         self._root_folder = root_folder
         self._api = api
         self._media_folder = 'photos'
-        self.download_pool = futures.ThreadPoolExecutor(max_workers=self.MAX_THREADS)
-        self.pool_future_to_media = {}
+        self.download_pool = ThreadPool(self.MAX_THREADS)
 
         self._latest_download = self._db.get_scan_date() or Utils.minimum_date()
         # properties to be set after init
@@ -63,7 +54,7 @@ class GooglePhotosSync(object):
         self._rescan = False
         self._retry_download = False
         self._video_timeout = 2000
-        self._image_timeout = 60
+        self._image_timeout = 0.01
 
         self._session = requests.Session()
         retries = Retry(total=5,
@@ -241,53 +232,63 @@ class GooglePhotosSync(object):
         if not self.start_date:
             self._db.set_scan_date(last_date=self._latest_download)
 
-    def do_download_file(self, base_url, media_item):
+    def do_download_file(self, url, local_full_path, media_item, timeout):
         # this function runs in a process pool and does the actual downloads
-        local_folder = os.path.join(self._root_folder, media_item.relative_folder)
-        local_full_path = os.path.join(local_folder, media_item.filename)
-        if media_item.is_video():
-            download_url = '{}=dv'.format(base_url)
-            timeout = self._video_timeout
-        else:
-            download_url = '{}=d'.format(base_url)
-            timeout = self._image_timeout
         folder = os.path.dirname(local_full_path)
-        log.info('downloading %s', local_full_path)
-        temp_file = tempfile.NamedTemporaryFile(dir=folder, delete=False)
-
+        log.debug('--> %s background start', local_full_path)
         try:
-            response = self._session.get(download_url, stream=True, timeout=timeout)
-            shutil.copyfileobj(response.raw, temp_file)
-            os.rename(temp_file.name, local_full_path)
+            with tempfile.NamedTemporaryFile(dir=folder, delete=False) as temp_file:
+                response = self._session.get(url, stream=True, timeout=timeout)
+                response.raise_for_status()
+                shutil.copyfileobj(response.raw, temp_file)
+                os.rename(temp_file.name, local_full_path)
+            # set the access date to create date since there is nowhere
+            # else to put it on linux (and is useful for debugging)
             os.utime(local_full_path,
                      (Utils.to_timestamp(media_item.modify_date),
                       Utils.to_timestamp(media_item.create_date)))
-
-            log.debug('downloading %s COMPLETE', local_full_path)
+            # todo using DB in threads may be risky? Need to verify this is OK
             self._db.put_downloaded(media_item.id)
-        except KeyboardInterrupt:
-            log.debug("User cancelled download thread")
-        except:
-            log.error('downloading %s FAILED', local_full_path, exc_info=True)
-            os.remove(temp_file.name)
+            log.debug('<-- %s background done', local_full_path)
+        except requests.exceptions.HTTPError:
+            # todo this bak version was working OK except exceptions were not being picked up
+            #  switching to ThreadPoolExecutor fixed this but introduced many other issues
+            #  continue to investigate.
+            #  both approached proabably need to keep a futures/asyncResponse -> meidaItem dict
+            #  and do some of the processing outside of the worker process
+            print('FAIL FAIL FAIL')
+            log.debug('<-- %s background failed', local_full_path)
+            log.error('failed download of %s', local_full_path, exc_info=True)
+            os.remove(local_full_path)
 
     def download_file(self, media_item, media_json):
         """ farms media downloads off to the thread pool"""
-        base_url = media_json['baseUrl']
+        local_folder = os.path.join(self._root_folder, media_item.relative_folder)
+        local_full_path = os.path.join(local_folder, media_item.filename)
+        if media_item.is_video():
+            download_url = '{}=dv'.format(media_json['baseUrl'])
+            timeout = self._video_timeout
+        else:
+            download_url = '{}=d'.format(media_json['baseUrl'])
+            timeout = self._image_timeout
 
-        # we dont want a massive queue so wait until a thread is free
-        # while len(self.pool_future_to_media) >= self.MAX_THREADS:
-        #     sleep(1)
+        log.info('downloading %s', local_full_path)
 
-        future = self.download_pool.submit(self.do_download_file, base_url, media_item)
-        # self.pool_future_to_media[future] = media_item
+        # block this function on small queue size since there is no point in getting ahead
+        #  of the downloads and requiring a huge queue which eats memory
+        # (uses protected member - because multiprocessing does not expose queue size yet)
+        # noinspection PyProtectedMember,PyUnresolvedReferences
+        while self.download_pool._inqueue.qsize() > self.MAX_THREADS:
+            sleep(1)
+
+        self.download_pool.apply_async(self.do_download_file,
+                                       (download_url, local_full_path, media_item, timeout))
 
     def download_photo_media(self):
         """
         here we batch up our requests to get baseurl for downloading media. This avoids the overhead of one
         REST call per file. A REST call takes longer than downloading an image
         """
-
         def grouper(iterable):
             """Collect data into chunks size 20"""
             return zip_longest(*[iter(iterable)] * 20, fillvalue=None)
@@ -342,11 +343,10 @@ class GooglePhotosSync(object):
                     media_item.set_path_by_date(self._media_folder)
                     try:
                         self.download_file(media_item, media_item_json)
-                    except KeyboardInterrupt:
-                        # noinspection PyProtectedMember
-                        self.download_pool._threads.clear()
-                        # noinspection PyProtectedMember
-                        self.download_pool.futures.thread._threads_queues.clear()
+                    except requests.exceptions.HTTPError:
+                        log.error('failure downloading of %s', media_item.filename)
+                        log.debug('', exc_info=True)
+                        # allow process to continue on single failed file
             except Exception:
                 log.error('failure in batch get of %s', batch_ids)
                 raise
