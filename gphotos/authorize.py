@@ -1,6 +1,7 @@
 from requests.adapters import HTTPAdapter
 from requests_oauthlib import OAuth2Session
 from urllib3.util.retry import Retry
+import os
 
 from yaml import load, dump, YAMLError
 
@@ -54,6 +55,7 @@ class Authorize:
     def save_token(self, token):
         with open(self.token_file, 'w') as stream:
             dump(token, stream, Dumper=Dumper)
+        os.chmod(self.token_file, 0o600)
 
     def authorize(self):
         token = self.load_token()

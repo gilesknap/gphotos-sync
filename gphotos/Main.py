@@ -105,15 +105,11 @@ class GooglePhotosSyncMain:
 
         self.data_store = LocalData(db_path, args.flush_index)
 
-        credentials_file = os.path.join(
-            app_dirs.user_data_dir, "credentials.json")
+        credentials_file = os.path.join(db_path, ".gphotos.token")
         secret_file = os.path.join(
             app_dirs.user_config_dir, "client_secret.json")
         if args.new_token and os.path.exists(credentials_file):
             os.remove(credentials_file)
-
-        if not os.path.exists(app_dirs.user_data_dir):
-            os.makedirs(app_dirs.user_data_dir)
 
         scope = [
             'https://www.googleapis.com/auth/photoslibrary.readonly',

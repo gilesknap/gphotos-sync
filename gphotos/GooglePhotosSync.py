@@ -381,7 +381,7 @@ class GooglePhotosSync(object):
                 self.download_batch(batch)
 
         # allow any remaining background downloads to complete
-        futures_left = self.pool_future_to_media.keys()
+        futures_left = list(self.pool_future_to_media.keys())
         self.do_download_complete(futures_left)
         log.warning(
             'Downloaded %d Items, Failed %d, Skipped (already downloaded) %d',
@@ -393,6 +393,8 @@ class GooglePhotosSync(object):
             response = self._api.mediaItems.batchGet.execute(
                 mediaItemIds=batch.keys())
             r_json = response.json()
+            if r_json.get('pageToken'):
+                log.error("Ops - Batch size too big, some items dropped!")
             for media_item_json_status in r_json["mediaItemResults"]:
                 # todo look at media_item_json_status["status"] for errors
                 media_item_json = media_item_json_status.get("mediaItem")
