@@ -5,7 +5,6 @@ from __future__ import division
 import ctypes
 import os
 import re
-import time
 from datetime import datetime
 import logging
 
@@ -42,6 +41,7 @@ if os.name == 'nt':
         log.debug('link %s %s', source, link_name)
         if __CSL(link_name, source, flags) == 0:
             raise ctypes.WinError()
+
 
     os.symlink = symlink
 
@@ -107,4 +107,3 @@ def timestamp_to_date(time_secs, hour_offset=0):
         log.warning('WARNING: time stamp %d illegal', time_secs)
         date = minimum_date()
     return date
-

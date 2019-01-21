@@ -121,6 +121,7 @@ For a description of additional command line parameters type::
     :target: https://travis-ci.org/gilesknap/gphotos-sync
     :alt: Build Status
 
-.. |coverage| image:: https://coveralls.io/repos/github/gilesknap/gphotos-sync/badge.svg?branch=master
-    :target: https://coveralls.io/github/gilesknap/gphotos-sync?branch=master
+.. |coverage| image:: https://codecov.io/gh/gilesknap/gphotos-sync/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/gilesknap/gphotos-sync
+    :alt: Test coverage
 

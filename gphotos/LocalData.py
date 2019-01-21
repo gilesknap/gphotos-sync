@@ -32,7 +32,8 @@ class DbRow:
     dict = None
     empty = False
 
-    # allows us to do boolean checks on the row object and return False if it is empty
+    # allows us to do boolean checks on the row object and return False if it
+    # is empty
     def __bool__(self):
         return not self.empty
 
@@ -102,6 +103,9 @@ class LocalData:
         self.con = lite.connect(self.file_name, check_same_thread=False)
         self.con.row_factory = lite.Row
         self.cur = self.con.cursor()
+        # second cursor for iterator functions so they can interleave with
+        # others
+        self.cur2 = self.con.cursor()
         if clean_db:
             self.clean_db()
         self.check_schema_version()
@@ -136,7 +140,8 @@ class LocalData:
         generates an object with attributes for each of the columns in the
         SyncFiles table
         """
-        cols_def = {'AlbumId': str, 'AlbumName': str, 'Size': int, 'StartDate': datetime,
+        cols_def = {'AlbumId': str, 'AlbumName': str, 'Size': int,
+                    'StartDate': datetime,
                     'EndDate': datetime, 'SyncDate': datetime}
 
     def check_schema_version(self):
@@ -214,9 +219,9 @@ class LocalData:
                 "MediaType LIKE ? {1};". \
             format(self.SyncRow.columns, extra_clauses)
 
-        self.cur.execute(query, params)
+        self.cur2.execute(query, params)
         while True:
-            records = self.cur.fetchmany(LocalData.BLOCK_SIZE)
+            records = self.cur2.fetchmany(LocalData.BLOCK_SIZE)
             if not records:
                 break
             for record in records:
@@ -237,8 +242,9 @@ class LocalData:
     def put_file(self, row, update=False):
         try:
             if update:
-                query = "UPDATE SyncFiles Set {0} WHERE RemoteId = '{1}'".format(
-                    self.SyncRow.update, row.RemoteId)
+                query = "UPDATE SyncFiles Set {0} " \
+                        "WHERE RemoteId = '{1}'".format(self.SyncRow.update,
+                                                        row.RemoteId)
             else:
                 query = "INSERT INTO SyncFiles ({0}) VALUES ({1})".format(
                     self.SyncRow.columns, self.SyncRow.params)
@@ -305,6 +311,7 @@ class LocalData:
             "WHERE Albums.AlbumId LIKE ?;",
             (album_id,))
         results = self.cur.fetchall()
+        # fetchall does not need to use cur2
         for result in results:
             yield tuple(result)
 

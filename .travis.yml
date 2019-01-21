@@ -7,14 +7,14 @@ matrix:
 
 install:
   - pip install -r requirements.txt
-  - pip install coveralls
+  - pip install codecov
   - pip install pytest
   - pip install pytest-cov
 
 # command to run tests
 script:
- - pytest --cov=gphotos
+  - python -m pytest --cov=gphotos --log-format='%(asctime)s.%(msecs)03d %(filename)-25s %(lineno)4d %(levelname)-8s %(message)s' --log-date-format='%Y-%m-%d %H:%M:%S' --log-level debug
 
 # submit coverage
 after_script:
- - coveralls
+ - codecov --token=dbadb6ba-0032-4812-bcc2-67ef7bafdfed

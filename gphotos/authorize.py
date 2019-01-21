@@ -1,8 +1,10 @@
 from requests.adapters import HTTPAdapter
 from requests_oauthlib import OAuth2Session
 from urllib3.util.retry import Retry
+import os
 
 from yaml import load, dump, YAMLError
+
 try:
     from yaml import CLoader as Loader, CDumper as Dumper
 except ImportError:
@@ -10,7 +12,7 @@ except ImportError:
 
 '''
 Defines a very simple class to handle google api authorization flow
-fo requests library 
+for the requests library 
 
 giles 2018
 '''
@@ -53,13 +55,15 @@ class Authorize:
     def save_token(self, token):
         with open(self.token_file, 'w') as stream:
             dump(token, stream, Dumper=Dumper)
+        os.chmod(self.token_file, 0o600)
 
     def authorize(self):
         token = self.load_token()
 
         if token:
-            # force refresh on load
-            # token.expires_in = -30 # todo this is no longer in the token ?? how to force update?
+            # force refresh on load token.expires_in = -30
+            #  todo this is no longer in the token ??
+            #   how to force update?
             self.session = OAuth2Session(self.client_id, token=token,
                                          auto_refresh_url=self.token_uri,
                                          auto_refresh_kwargs=self.extra,

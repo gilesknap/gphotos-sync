@@ -3,9 +3,7 @@ import argparse
 import os.path
 import logging
 import sys
-import signal
 import fcntl
-from traceback import format_stack
 
 from datetime import datetime
 from appdirs import AppDirs
@@ -42,12 +40,15 @@ class GooglePhotosSyncMain:
     parser.add_argument(
         "--rescan",
         action='store_true',
-        help="rescan entire library, ignoring last scan date. Use this if you have added photos to the library that "
-             "predate the last sync, or you have deleted some of the local files")
+        help="rescan entire library, ignoring last scan date. Use this if you "
+             "have added photos to the library that "
+             "predate the last sync, or you have deleted some of the local "
+             "files")
     parser.add_argument(
         "--retry-download",
         action='store_true',
-        help="check for the existence of files marked as already downloaded and re-download any missing ones. Use "
+        help="check for the existence of files marked as already downloaded "
+             "and re-download any missing ones. Use "
              "this if you have deleted some local files")
     parser.add_argument(
         "--skip-video",
@@ -88,7 +89,8 @@ class GooglePhotosSyncMain:
         "--do-delete",
         action='store_true',
         help="""Remove local copies of files that were deleted.
-        Must be used with --flush-db since the deleted items must be removed from the index""")
+        Must be used with --flush-db since the deleted items must be removed 
+        from the index""")
     parser.add_argument(
         "--skip-files",
         action='store_true',
@@ -103,44 +105,36 @@ class GooglePhotosSyncMain:
 
         self.data_store = LocalData(db_path, args.flush_index)
 
-        credentials_file = os.path.join(
-            app_dirs.user_data_dir, "credentials.json")
+        credentials_file = os.path.join(db_path, ".gphotos.token")
         secret_file = os.path.join(
             app_dirs.user_config_dir, "client_secret.json")
         if args.new_token and os.path.exists(credentials_file):
             os.remove(credentials_file)
 
-        if not os.path.exists(app_dirs.user_data_dir):
-            os.makedirs(app_dirs.user_data_dir)
-
         scope = [
             'https://www.googleapis.com/auth/photoslibrary.readonly',
             'https://www.googleapis.com/auth/photoslibrary.sharing',
         ]
-        photos_api_url = 'https://photoslibrary.googleapis.com/$discovery/rest?version=v1'
+        photos_api_url = 'https://photoslibrary.googleapis.com/$discovery' \
+                         '/rest?version=v1'
 
         self.auth = Authorize(scope, credentials_file, secret_file)
         self.auth.authorize()
 
-        self.google_photos_client = RestClient(photos_api_url, self.auth.session)
-        self.google_photos_sync = GooglePhotosSync(self.google_photos_client, args.root_folder, self.data_store)
-        self.google_albums_sync = GoogleAlbumsSync(self.google_photos_client, args.root_folder, self.data_store)
+        self.google_photos_client = RestClient(photos_api_url,
+                                               self.auth.session)
+        self.google_photos_sync = GooglePhotosSync(self.google_photos_client,
+                                                   args.root_folder,
+                                                   self.data_store)
+        self.google_albums_sync = GoogleAlbumsSync(self.google_photos_client,
+                                                   args.root_folder,
+                                                   self.data_store)
 
         self.google_photos_sync.start_date = args.start_date
         self.google_photos_sync.end_date = args.end_date
         self.google_photos_sync.includeVideo = not args.skip_video
         self.google_photos_sync.rescan = args.rescan
         self.google_photos_sync.retry_download = args.retry_download
-
-    @classmethod
-    def sigterm_handler(cls, _sig_no, _stack_frame):
-        if _sig_no == signal.SIGINT:
-            log.warning("User cancelled download")
-        stack_pretty = ''
-        for line in format_stack():
-            stack_pretty += line
-        log.debug("Process killed\n%s", stack_pretty)
-        sys.exit(0)
 
     @classmethod
     def logging(cls, args, folder):
@@ -155,15 +149,18 @@ class GooglePhotosSyncMain:
 
         log_file = os.path.join(folder, 'gphotos.log')
         logging.basicConfig(level=logging.DEBUG,
-                            format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+                            format='%(asctime)s %(name)-12s %(levelname)-8s '
+                                   '%(message)s',
                             datefmt='%m-%d %H:%M:%S',
                             filename=log_file,
                             filemode='w')
-        # define a Handler which writes INFO messages or higher to the sys.stderr
+        # define a Handler which writes INFO messages or higher to the
+        # sys.stderr
         console = logging.StreamHandler()
         console.setLevel(numeric_level)
         # set a format which is simpler for console use
-        formatter = logging.Formatter('%(asctime)s %(message)s', datefmt='%m-%d %H:%M:%S')
+        formatter = logging.Formatter('%(asctime)s %(message)s',
+                                      datefmt='%m-%d %H:%M:%S')
         # tell the handler to use this format
         console.setFormatter(formatter)
         # add the handler to the root logger
@@ -194,9 +191,6 @@ class GooglePhotosSyncMain:
             os.makedirs(args.root_folder, 0o700)
         self.logging(args, db_path)
 
-        signal.signal(signal.SIGTERM, self.sigterm_handler)
-        signal.signal(signal.SIGINT, self.sigterm_handler)
-
         lock_file = os.path.join(db_path, 'gphotos.lock')
         fp = open(lock_file, 'w')
         with fp:
@@ -218,10 +212,13 @@ class GooglePhotosSyncMain:
             try:
                 self.setup(args, db_path)
                 self.start(args)
-            except Exception:
+            except KeyboardInterrupt:
+                log.error("User cancelled download")
+                log.debug("Traceback", exc_info=True)
+            except BaseException:
                 log.error("\nProcess failed.", exc_info=True)
             finally:
-                log.info("Done.")
+                log.warning("Done.")
 
         elapsed_time = datetime.now() - start_time
         log.info('Elapsed time = %s', elapsed_time)

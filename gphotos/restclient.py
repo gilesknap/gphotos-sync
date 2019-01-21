@@ -42,7 +42,7 @@ class Method:
             result = self.service.auth_session.request(self.httpMethod,
                                                        data=body,
                                                        url=path,
-                                                       timeout=5,
+                                                       timeout=10,
                                                        params=query_args)
             result.raise_for_status()
         except requests.exceptions.HTTPError:
