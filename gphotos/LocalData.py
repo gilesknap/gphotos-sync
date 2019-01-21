@@ -102,6 +102,8 @@ class LocalData:
         self.con = lite.connect(self.file_name, check_same_thread=False)
         self.con.row_factory = lite.Row
         self.cur = self.con.cursor()
+        # second cursor for iterator functions so they can interleave with others
+        self.cur2 = self.con.cursor()
         if clean_db:
             self.clean_db()
         self.check_schema_version()
@@ -214,9 +216,9 @@ class LocalData:
                 "MediaType LIKE ? {1};". \
             format(self.SyncRow.columns, extra_clauses)
 
-        self.cur.execute(query, params)
+        self.cur2.execute(query, params)
         while True:
-            records = self.cur.fetchmany(LocalData.BLOCK_SIZE)
+            records = self.cur2.fetchmany(LocalData.BLOCK_SIZE)
             if not records:
                 break
             for record in records:
@@ -305,6 +307,7 @@ class LocalData:
             "WHERE Albums.AlbumId LIKE ?;",
             (album_id,))
         results = self.cur.fetchall()
+        # fetchall does not need to use cur2
         for result in results:
             yield tuple(result)
 

@@ -10,7 +10,7 @@ except ImportError:
 
 '''
 Defines a very simple class to handle google api authorization flow
-fo requests library 
+for the requests library 
 
 giles 2018
 '''
