@@ -40,12 +40,15 @@ class GooglePhotosSyncMain:
     parser.add_argument(
         "--rescan",
         action='store_true',
-        help="rescan entire library, ignoring last scan date. Use this if you have added photos to the library that "
-             "predate the last sync, or you have deleted some of the local files")
+        help="rescan entire library, ignoring last scan date. Use this if you "
+             "have added photos to the library that "
+             "predate the last sync, or you have deleted some of the local "
+             "files")
     parser.add_argument(
         "--retry-download",
         action='store_true',
-        help="check for the existence of files marked as already downloaded and re-download any missing ones. Use "
+        help="check for the existence of files marked as already downloaded "
+             "and re-download any missing ones. Use "
              "this if you have deleted some local files")
     parser.add_argument(
         "--skip-video",
@@ -86,7 +89,8 @@ class GooglePhotosSyncMain:
         "--do-delete",
         action='store_true',
         help="""Remove local copies of files that were deleted.
-        Must be used with --flush-db since the deleted items must be removed from the index""")
+        Must be used with --flush-db since the deleted items must be removed 
+        from the index""")
     parser.add_argument(
         "--skip-files",
         action='store_true',
@@ -115,14 +119,20 @@ class GooglePhotosSyncMain:
             'https://www.googleapis.com/auth/photoslibrary.readonly',
             'https://www.googleapis.com/auth/photoslibrary.sharing',
         ]
-        photos_api_url = 'https://photoslibrary.googleapis.com/$discovery/rest?version=v1'
+        photos_api_url = 'https://photoslibrary.googleapis.com/$discovery' \
+                         '/rest?version=v1'
 
         self.auth = Authorize(scope, credentials_file, secret_file)
         self.auth.authorize()
 
-        self.google_photos_client = RestClient(photos_api_url, self.auth.session)
-        self.google_photos_sync = GooglePhotosSync(self.google_photos_client, args.root_folder, self.data_store)
-        self.google_albums_sync = GoogleAlbumsSync(self.google_photos_client, args.root_folder, self.data_store)
+        self.google_photos_client = RestClient(photos_api_url,
+                                               self.auth.session)
+        self.google_photos_sync = GooglePhotosSync(self.google_photos_client,
+                                                   args.root_folder,
+                                                   self.data_store)
+        self.google_albums_sync = GoogleAlbumsSync(self.google_photos_client,
+                                                   args.root_folder,
+                                                   self.data_store)
 
         self.google_photos_sync.start_date = args.start_date
         self.google_photos_sync.end_date = args.end_date
@@ -143,15 +153,18 @@ class GooglePhotosSyncMain:
 
         log_file = os.path.join(folder, 'gphotos.log')
         logging.basicConfig(level=logging.DEBUG,
-                            format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+                            format='%(asctime)s %(name)-12s %(levelname)-8s '
+                                   '%(message)s',
                             datefmt='%m-%d %H:%M:%S',
                             filename=log_file,
                             filemode='w')
-        # define a Handler which writes INFO messages or higher to the sys.stderr
+        # define a Handler which writes INFO messages or higher to the
+        # sys.stderr
         console = logging.StreamHandler()
         console.setLevel(numeric_level)
         # set a format which is simpler for console use
-        formatter = logging.Formatter('%(asctime)s %(message)s', datefmt='%m-%d %H:%M:%S')
+        formatter = logging.Formatter('%(asctime)s %(message)s',
+                                      datefmt='%m-%d %H:%M:%S')
         # tell the handler to use this format
         console.setFormatter(formatter)
         # add the handler to the root logger

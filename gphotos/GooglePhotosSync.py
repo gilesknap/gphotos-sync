@@ -18,12 +18,14 @@ import concurrent.futures as futures
 
 log = logging.getLogger(__name__)
 
-# todo put these in a file that is read at startup - others might have this issue
+# todo put these in a file that is read at startup -
 # these ids wont down load (500 on batchGet)
 bad_ids = \
     [
-        'AHsKWi8LNGIQN4aLv5wppfNNwasdxZbNdJZwxLrvLGCkZ21YAj3P8E8s2GbKFM7WG-qB93qmSJy1Gy5rGHaMrfbG_nDVDzUmXA',
-        'AHsKWi9ODH_V16FQXd7BYLjjQI-sXLXkfcqMnwjZ1F3Ho_mqkNOKD32tsyV1b55ZP-3HQdpYET7UAIEq0msOAYGHloAYjZRocA'
+        'AHsKWi8LNGIQN4aLv5wppfNNwasdxZbNdJZwxLrvLGCkZ21YAj3P8E8s2GbKFM7WG-qB9'
+        '3qmSJy1Gy5rGHaMrfbG_nDVDzUmXA',
+        'AHsKWi9ODH_V16FQXd7BYLjjQI-sXLXkfcqMnwjZ1F3Ho_mqkNOKD32tsyV1b55ZP-3HQ'
+        'dpYET7UAIEq0msOAYGHloAYjZRocA'
     ]
 
 
@@ -42,8 +44,17 @@ class GooglePhotosSync(object):
         self._root_folder = root_folder
         self._api = api
         self._media_folder = 'photos'
-        self.download_pool = futures.ThreadPoolExecutor(max_workers=self.MAX_THREADS)
+        self.download_pool = futures.ThreadPoolExecutor(
+            max_workers=self.MAX_THREADS)
         self.pool_future_to_media = {}
+
+        self.files_downloaded = 0
+        self.files_download_started = 0
+        self.files_download_skipped = 0
+        self.files_download_failed = 0
+        self.files_indexed = 0
+        self.files_index_skipped = 0
+        self.files_index_failed = 0
 
         self._latest_download = self._db.get_scan_date() or Utils.minimum_date()
         # properties to be set after init
@@ -55,22 +66,15 @@ class GooglePhotosSync(object):
         self._retry_download = False
         self._video_timeout = 2000
         self._image_timeout = 60
-        # self._video_timeout = 2
-        # self._image_timeout = .01
-        self.files_downloaded = 0
-        self.files_download_skipped = 0
-        self.files_download_failed = 0
-        self.files_indexed = 0
-        self.files_index_skipped = 0
-        self.files_index_failed = 0
 
         self._session = requests.Session()
         retries = Retry(total=5,
                         backoff_factor=0.1,
                         status_forcelist=[500, 502, 503, 504])
 
-        self._session.mount('https://', HTTPAdapter(max_retries=retries,
-                                                    pool_maxsize=self.MAX_THREADS))
+        self._session.mount(
+            'https://', HTTPAdapter(max_retries=retries,
+                                    pool_maxsize=self.MAX_THREADS))
 
     @property
     def video_timeout(self):
@@ -149,7 +153,8 @@ class GooglePhotosSync(object):
         if media.create_date > self._latest_download:
             self._latest_download = media.create_date
 
-    def search_media(self, page_token=None, start_date=None, end_date=None, do_video=False):
+    def search_media(self, page_token=None, start_date=None, end_date=None,
+                     do_video=False):
         class Y:
             def __init__(self, y, m, d):
                 self.year = y
@@ -160,11 +165,12 @@ class GooglePhotosSync(object):
                 return {"year": self.year, "month": self.month, "day": self.day}
 
         if not page_token:
-            log.info('searching for media start=%s, end=%s, videos=%s', start_date, end_date, do_video)
+            log.info('searching for media start=%s, end=%s, videos=%s',
+                     start_date, end_date, do_video)
         if not start_date and not end_date and do_video:
             # no search criteria so do a list of the entire library
-            return self._api.mediaItems.list.execute(pageToken=page_token,
-                                                     pageSize=self.PAGE_SIZE).json()
+            return self._api.mediaItems.list.execute(
+                pageToken=page_token, pageSize=self.PAGE_SIZE).json()
         else:
             start = Y(1900, 1, 1)
             end = Y(3000, 1, 1)
@@ -196,7 +202,6 @@ class GooglePhotosSync(object):
 
     def index_photos_media(self):
         log.warning('Indexing Google Photos Files ...')
-        count = 0
 
         if self._rescan:
             start_date = None
@@ -212,21 +217,27 @@ class GooglePhotosSync(object):
             if not media_json:
                 break
             for media_item_json in media_json:
-                count += 1
                 media_item = GooglePhotosMedia(media_item_json)
                 media_item.set_path_by_date(self._media_folder)
                 row = media_item.is_indexed(self._db)
                 if not row:
-                    log.info("Indexed %d %s", count, media_item.relative_path)
+                    self.files_indexed += 1
+                    log.info("Indexed %d %s", self.files_indexed,
+                             media_item.relative_path)
                     self.write_media_index(media_item, False)
-                    if count % 2000 == 0:
+                    if self.files_indexed % 2000 == 0:
                         self._db.store()
                 elif media_item.modify_date > row.ModifyDate:
-                    # todo at present there is no modify date in the API so updates cannot be monitored
-                    log.info("Updated %d %s", count, media_item.relative_path)
+                    self.files_indexed += 1
+                    # todo at present there is no modify date in the API
+                    #  so updates cannot be monitored
+                    log.info("Updated Index %d %s", self.files_indexed,
+                             media_item.relative_path)
                     self.write_media_index(media_item, True)
                 else:
-                    log.debug("Skipped %d %s", count, media_item.relative_path)
+                    self.files_index_skipped += 1
+                    log.debug("Skipped Index %d %s", self.files_index_skipped,
+                              media_item.relative_path)
             next_page = items_json.get('nextPageToken')
             if next_page:
                 items_json = self.search_media(page_token=next_page,
@@ -236,14 +247,15 @@ class GooglePhotosSync(object):
             else:
                 break
 
-        # scan (in reverse date order) completed so the next incremental scan can start from the most recent file
-        # file in this scan
+        # scan (in reverse date order) completed so the next incremental scan
+        # can start from the most recent file in this scan
         if not self.start_date:
             self._db.set_scan_date(last_date=self._latest_download)
 
     def do_download_file(self, base_url, media_item):
         # this function runs in a process pool and does the actual downloads
-        local_folder = os.path.join(self._root_folder, media_item.relative_folder)
+        local_folder = os.path.join(self._root_folder,
+                                    media_item.relative_folder)
         local_full_path = os.path.join(local_folder, media_item.filename)
         if media_item.is_video():
             download_url = '{}=dv'.format(base_url)
@@ -254,7 +266,8 @@ class GooglePhotosSync(object):
         temp_file = tempfile.NamedTemporaryFile(dir=local_folder, delete=False)
 
         try:
-            response = self._session.get(download_url, stream=True, timeout=timeout)
+            response = self._session.get(download_url, stream=True,
+                                         timeout=timeout)
             shutil.copyfileobj(response.raw, temp_file)
             temp_file.close()
             response.close()
@@ -307,46 +320,56 @@ class GooglePhotosSync(object):
             self.do_download_complete(done_list)
 
         # start a new background download
-        log.info('downloading %s', media_item.relative_path)
-        future = self.download_pool.submit(self.do_download_file, base_url, media_item)
+        self.files_download_started += 1
+        log.info('downloading %d %s', self.files_download_started,
+                 media_item.relative_path)
+        future = self.download_pool.submit(self.do_download_file,
+                                           base_url, media_item)
         self.pool_future_to_media[future] = media_item
 
     def download_photo_media(self):
         """
-        here we batch up our requests to get baseurl for downloading media. This avoids the overhead of one
-        REST call per file. A REST call takes longer than downloading an image
+        here we batch up our requests to get baseurl for downloading media.
+        This avoids the overhead of one REST call per file. A REST call
+        takes longer than downloading an image
         """
 
         def grouper(iterable):
             """Collect data into chunks size BATCH_SIZE"""
-            return zip_longest(*[iter(iterable)] * self.BATCH_SIZE, fillvalue=None)
+            return zip_longest(*[iter(iterable)] * self.BATCH_SIZE,
+                               fillvalue=None)
 
         log.warning('Downloading Photos ...')
         for media_items_block in grouper(
                 # todo get rid of mediaType
-                DatabaseMedia.get_media_by_search(self._db, media_type=MediaType.PHOTOS,
-                                                  start_date=self.start_date, end_date=self.end_date,
-                                                  skip_downloaded=not self._retry_download)):
+                DatabaseMedia.get_media_by_search(
+                    self._db,
+                    media_type=MediaType.PHOTOS,
+                    start_date=self.start_date,
+                    end_date=self.end_date,
+                    skip_downloaded=not self._retry_download)):
             batch = {}
             for media_item in media_items_block:
                 if media_item is None:
                     continue
 
-                local_folder = os.path.join(self._root_folder, media_item.relative_folder)
-                local_full_path = os.path.join(local_folder, media_item.filename)
+                local_folder = os.path.join(self._root_folder,
+                                            media_item.relative_folder)
+                local_full_path = os.path.join(local_folder,
+                                               media_item.filename)
                 if os.path.exists(local_full_path):
                     self.files_download_skipped += 1
                     log.debug('SKIPPED %d %s', self.files_download_skipped,
                               media_item.relative_path)
                     self._db.put_downloaded(media_item.id)
-                    # todo is there anyway to detect remote updates with photos API?
+                    # todo is there anyway to detect updates with photos API?
                     continue
 
                 if not os.path.isdir(local_folder):
                     os.makedirs(local_folder)
 
                 if len(media_item.id) < 80 or media_item.id in bad_ids:
-                    # some items seem to have duff ids and cause a 400 error in batchGet
+                    # some items have duff ids and cause a 400 error in batchGet
                     self.files_download_failed += 1
                     log.warning('FAILURE %d bad media id on %s',
                                 self.files_download_failed,
@@ -360,19 +383,22 @@ class GooglePhotosSync(object):
         # allow any remaining background downloads to complete
         futures_left = self.pool_future_to_media.keys()
         self.do_download_complete(futures_left)
-        log.warning('Downloaded %d Items, Failed %d, Skipped (already downloaded) %d',
-                    self.files_downloaded, self.files_download_failed,
-                    self.files_download_skipped)
+        log.warning(
+            'Downloaded %d Items, Failed %d, Skipped (already downloaded) %d',
+            self.files_downloaded, self.files_download_failed,
+            self.files_download_skipped)
 
     def download_batch(self, batch):
         try:
-            response = self._api.mediaItems.batchGet.execute(mediaItemIds=batch.keys())
+            response = self._api.mediaItems.batchGet.execute(
+                mediaItemIds=batch.keys())
             r_json = response.json()
             for media_item_json_status in r_json["mediaItemResults"]:
-                # todo look at media_item_json_status["status"] for individual errors
+                # todo look at media_item_json_status["status"] for errors
                 media_item_json = media_item_json_status.get("mediaItem")
                 if not media_item_json:
-                    log.warning('Null response in mediaItems.batchGet %s', batch.keys())
+                    log.warning('Null response in mediaItems.batchGet %s',
+                                batch.keys())
                     continue
                 media_item = batch.get(media_item_json["id"])
                 media_item.set_path_by_date(self._media_folder)
@@ -386,4 +412,5 @@ class GooglePhotosSync(object):
                     raise
         except requests.exceptions.BaseHTTPError:
             self.files_download_failed += self.BATCH_SIZE
-            log.error('FAILURE %d in batch get of %s', batch.keys(), exc_info=True)
+            log.error('FAILURE %d in batch get of %s', batch.keys(),
+                      exc_info=True)

@@ -88,7 +88,8 @@ class BaseMedia(object):
     def is_indexed(self, db):
         # checking for index has the side effect of setting duplicate number as
         # it is when we discover if other entries share path and filename
-        (num, row) = db.file_duplicate_no(self.filename, self.relative_folder, self.id)
+        (num, row) = db.file_duplicate_no(self.filename, self.relative_folder,
+                                          self.id)
         self._duplicate_number = num
         return row
 

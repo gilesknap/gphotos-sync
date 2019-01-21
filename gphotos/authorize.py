@@ -3,6 +3,7 @@ from requests_oauthlib import OAuth2Session
 from urllib3.util.retry import Retry
 
 from yaml import load, dump, YAMLError
+
 try:
     from yaml import CLoader as Loader, CDumper as Dumper
 except ImportError:
@@ -58,8 +59,9 @@ class Authorize:
         token = self.load_token()
 
         if token:
-            # force refresh on load
-            # token.expires_in = -30 # todo this is no longer in the token ?? how to force update?
+            # force refresh on load token.expires_in = -30
+            #  todo this is no longer in the token ??
+            #   how to force update?
             self.session = OAuth2Session(self.client_id, token=token,
                                          auto_refresh_url=self.token_uri,
                                          auto_refresh_kwargs=self.extra,
