@@ -7,26 +7,20 @@ from gphotos.GooglePhotosMedia import GooglePhotosMedia
 from gphotos.BaseMedia import MediaType
 from gphotos.LocalData import LocalData
 from gphotos.DatabaseMedia import DatabaseMedia
+from gphotos.BadIds import BadIds
+
 from itertools import zip_longest
 import logging
-import requests
 import shutil
 import tempfile
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
 import concurrent.futures as futures
 
-log = logging.getLogger(__name__)
+import requests
+import requests.exceptions as err
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
-# todo put these in a file that is read at startup -
-# these ids wont down load (500 on batchGet)
-bad_ids = \
-    [
-        'AHsKWi8LNGIQN4aLv5wppfNNwasdxZbNdJZwxLrvLGCkZ21YAj3P8E8s2GbKFM7WG-qB9'
-        '3qmSJy1Gy5rGHaMrfbG_nDVDzUmXA',
-        'AHsKWi9ODH_V16FQXd7BYLjjQI-sXLXkfcqMnwjZ1F3Ho_mqkNOKD32tsyV1b55ZP-3HQ'
-        'dpYET7UAIEq0msOAYGHloAYjZRocA'
-    ]
+log = logging.getLogger(__name__)
 
 
 class GooglePhotosSync(object):
@@ -47,6 +41,7 @@ class GooglePhotosSync(object):
         self.download_pool = futures.ThreadPoolExecutor(
             max_workers=self.MAX_THREADS)
         self.pool_future_to_media = {}
+        self.bad_ids = BadIds(root_folder)
 
         self.files_downloaded = 0
         self.files_download_started = 0
@@ -54,7 +49,6 @@ class GooglePhotosSync(object):
         self.files_download_failed = 0
         self.files_indexed = 0
         self.files_index_skipped = 0
-        self.files_index_failed = 0
 
         self._latest_download = self._db.get_scan_date() or Utils.minimum_date()
         # properties to be set after init
@@ -82,8 +76,7 @@ class GooglePhotosSync(object):
 
     @video_timeout.setter
     def video_timeout(self, val):
-        if val:
-            self._video_timeout = val
+        self._video_timeout = val
 
     @property
     def image_timeout(self):
@@ -91,8 +84,7 @@ class GooglePhotosSync(object):
 
     @image_timeout.setter
     def image_timeout(self, val):
-        if val:
-            self._image_timeout = val
+        self._image_timeout = val
 
     @property
     def start_date(self):
@@ -236,7 +228,8 @@ class GooglePhotosSync(object):
                     self.write_media_index(media_item, True)
                 else:
                     self.files_index_skipped += 1
-                    log.debug("Skipped Index %d %s", self.files_index_skipped,
+                    log.debug("Skipped Index (already indexed) %d %s",
+                              self.files_index_skipped,
                               media_item.relative_path)
             next_page = items_json.get('nextPageToken')
             if next_page:
@@ -294,7 +287,9 @@ class GooglePhotosSync(object):
                           self.files_download_failed, media_item.relative_path,
                           exc_info=e)
                 if isinstance(e, requests.HTTPError):
-                    pass  # todo need to add this to the bad IDs list
+                    self.bad_ids.add_id(
+                        media_item.relative_path, media_item.id,
+                        media_item.url)
                 if e == KeyboardInterrupt:
                     raise e
             else:
@@ -340,53 +335,48 @@ class GooglePhotosSync(object):
                                fillvalue=None)
 
         log.warning('Downloading Photos ...')
-        for media_items_block in grouper(
-                # todo get rid of mediaType
-                DatabaseMedia.get_media_by_search(
-                    self._db,
-                    media_type=MediaType.PHOTOS,
-                    start_date=self.start_date,
-                    end_date=self.end_date,
-                    skip_downloaded=not self._retry_download)):
-            batch = {}
-            for media_item in media_items_block:
-                if media_item is None:
-                    continue
+        try:
+            for media_items_block in grouper(
+                    # todo get rid of mediaType
+                    DatabaseMedia.get_media_by_search(
+                        self._db,
+                        media_type=MediaType.PHOTOS,
+                        start_date=self.start_date,
+                        end_date=self.end_date,
+                        skip_downloaded=not self._retry_download)):
+                batch = {}
 
-                local_folder = os.path.join(self._root_folder,
-                                            media_item.relative_folder)
-                local_full_path = os.path.join(local_folder,
-                                               media_item.filename)
-                if os.path.exists(local_full_path):
-                    self.files_download_skipped += 1
-                    log.debug('SKIPPED %d %s', self.files_download_skipped,
-                              media_item.relative_path)
-                    self._db.put_downloaded(media_item.id)
-                    # todo is there anyway to detect updates with photos API?
-                    continue
+                items = (mi for mi in media_items_block if mi)
+                for media_item in items:
+                    local_folder = os.path.join(
+                        self._root_folder, media_item.relative_folder)
+                    local_full_path = os.path.join(
+                        local_folder, media_item.filename)
 
-                if not os.path.isdir(local_folder):
-                    os.makedirs(local_folder)
+                    if os.path.exists(local_full_path):
+                        self.files_download_skipped += 1
+                        log.debug('SKIPPED download (file exists) %d %s',
+                                  self.files_download_skipped,
+                                  media_item.relative_path)
+                        self._db.put_downloaded(media_item.id)
 
-                if len(media_item.id) < 80 or media_item.id in bad_ids:
-                    # some items have duff ids and cause a 400 error in batchGet
-                    self.files_download_failed += 1
-                    log.warning('FAILURE %d bad media id on %s',
-                                self.files_download_failed,
-                                media_item.relative_path)
-                else:
-                    batch[media_item.id] = media_item
+                    elif self.bad_ids.check_id_ok(media_item.id):
+                        batch[media_item.id] = media_item
+                        if not os.path.isdir(local_folder):
+                            os.makedirs(local_folder)
 
-            if len(batch) > 0:
-                self.download_batch(batch)
-
-        # allow any remaining background downloads to complete
-        futures_left = list(self.pool_future_to_media.keys())
-        self.do_download_complete(futures_left)
-        log.warning(
-            'Downloaded %d Items, Failed %d, Skipped (already downloaded) %d',
-            self.files_downloaded, self.files_download_failed,
-            self.files_download_skipped)
+                if len(batch) > 0:
+                    self.download_batch(batch)
+        finally:
+            # allow any remaining background downloads to complete
+            futures_left = list(self.pool_future_to_media.keys())
+            self.do_download_complete(futures_left)
+            log.warning(
+                'Downloaded %d Items, Failed %d, Already Downloaded %d',
+                self.files_downloaded, self.files_download_failed,
+                self.files_download_skipped)
+            self.bad_ids.store_ids()
+            self.bad_ids.report()
 
     def download_batch(self, batch):
         try:
@@ -395,24 +385,45 @@ class GooglePhotosSync(object):
             r_json = response.json()
             if r_json.get('pageToken'):
                 log.error("Ops - Batch size too big, some items dropped!")
+
             for media_item_json_status in r_json["mediaItemResults"]:
                 # todo look at media_item_json_status["status"] for errors
                 media_item_json = media_item_json_status.get("mediaItem")
                 if not media_item_json:
                     log.warning('Null response in mediaItems.batchGet %s',
                                 batch.keys())
-                    continue
-                media_item = batch.get(media_item_json["id"])
-                media_item.set_path_by_date(self._media_folder)
-                try:
+                else:
+                    media_item = batch.get(media_item_json["id"])
+                    media_item.set_path_by_date(self._media_folder)
                     self.download_file(media_item, media_item_json)
-                except KeyboardInterrupt:
-                    log.warning('Cancelling download threads ...')
-                    for f in self.pool_future_to_media:
-                        f.cancel()
-                    log.warning('Cancelled download threads')
-                    raise
-        except requests.exceptions.BaseHTTPError:
-            self.files_download_failed += self.BATCH_SIZE
-            log.error('FAILURE %d in batch get of %s', batch.keys(),
-                      exc_info=True)
+
+        except KeyboardInterrupt:
+            log.warning('Cancelling download threads ...')
+            for f in self.pool_future_to_media:
+                f.cancel()
+            log.warning('Cancelled download threads')
+            raise
+        except (err.HTTPError, err.RetryError):
+            self.find_bad_items(batch)
+
+    def find_bad_items(self, batch):
+        """
+        a batch get failed. Now do all of its contents as individual
+        gets so we can work out which ID(s) cause the failure
+        """
+        for item_id, media_item in batch.items():
+            media_item.set_path_by_date(self._media_folder)
+            try:
+                response = self._api.mediaItems.get.execute(item_id)
+                media_item_json = response.json()
+                self.download_file(media_item, media_item_json)
+            except (err.HTTPError, err.RetryError):
+                self.bad_ids.add_id(
+                    media_item.relative_path, media_item.id,
+                    media_item.url)
+                self.files_download_failed += 1
+                log.error('FAILURE %d in get of %s BAD ID',
+                          self.files_download_failed, media_item.relative_path)
+                log.debug('FAILURE %d in get of %s BAD ID',
+                          self.files_download_failed, media_item.relative_path,
+                          exc_info=True)
