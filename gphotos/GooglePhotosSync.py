@@ -266,13 +266,14 @@ class GooglePhotosSync(object):
             response.close()
             os.rename(temp_file.name, local_full_path)
             os.utime(local_full_path,
-                     (Utils.to_timestamp(media_item.modify_date),
-                      Utils.to_timestamp(media_item.create_date)))
+                     (media_item.modify_date.timestamp(),
+                      media_item.create_date.timestamp()))
         except KeyboardInterrupt:
             log.debug("User cancelled download thread")
             raise
         except BaseException:
-            os.remove(temp_file.name)
+            if os.path.exists(temp_file.name):
+                os.remove(temp_file.name)
             raise
 
     def do_download_complete(self, futures_list):
@@ -290,7 +291,7 @@ class GooglePhotosSync(object):
                     self.bad_ids.add_id(
                         media_item.relative_path, media_item.id,
                         media_item.url)
-                if e == KeyboardInterrupt:
+                elif e == KeyboardInterrupt:
                     raise e
             else:
                 self._db.put_downloaded(media_item.id)
@@ -401,6 +402,7 @@ class GooglePhotosSync(object):
             log.warning('Cancelling download threads ...')
             for f in self.pool_future_to_media:
                 f.cancel()
+            futures.wait(self.pool_future_to_media)
             log.warning('Cancelled download threads')
             raise
         except (err.HTTPError, err.RetryError):
