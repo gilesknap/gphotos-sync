@@ -71,17 +71,15 @@ def maximum_date():
 
 
 def minimum_date():
-    # this is the minimum acceptable date for drive queries and surprisingly
-    # datetime.strptime on some platforms
-    if os.name == 'nt':
-        return datetime.min.replace(year=1970)
-    else:
-        return datetime.min.replace(year=1900)
+    # determine the minimum date that is usable on the
+    # current platform (is there a better way to do this?)
+    d = datetime.min.replace(year=1900)
 
-
-def to_timestamp(dt, epoch=datetime(1970, 1, 1)):
-    td = dt - epoch
-    return td.total_seconds()
+    try:
+        _ = d.timestamp()
+    except (ValueError, OverflowError):
+        d = datetime.min.replace(year=1970)
+    return d
 
 
 def string_to_date(date_string):
@@ -97,13 +95,3 @@ def string_to_date(date_string):
             return minimum_date()
 
     return datetime.strptime(normalized, DATE_FORMAT)
-
-
-def timestamp_to_date(time_secs, hour_offset=0):
-    try:
-        date = datetime.fromtimestamp(
-            int(time_secs) / 1000 + 3600 * hour_offset)
-    except ValueError:
-        log.warning('WARNING: time stamp %d illegal', time_secs)
-        date = minimum_date()
-    return date
