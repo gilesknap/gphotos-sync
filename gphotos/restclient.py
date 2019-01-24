@@ -32,23 +32,20 @@ class Method:
                     self.query_args.append(key)
 
     def execute(self, body=None, **k_args):
-        result = None
         path_args = {k: k_args[k] for k in self.path_args if k in k_args}
         query_args = {k: k_args[k] for k in self.query_args if k in k_args}
         path = self.service.base_url + self.make_path(path_args)
         if body:
             body = dumps(body)
-        try:
-            result = self.service.auth_session.request(self.httpMethod,
-                                                       data=body,
-                                                       url=path,
-                                                       timeout=10,
-                                                       params=query_args)
-            result.raise_for_status()
-        except requests.exceptions.HTTPError:
-            log.error('HTTP Error: %s\n on %s to %s with args:%s\n body:%s',
-                      result.text, self.httpMethod, path, query_args, body)
-            raise
+
+        result = self.service.auth_session.request(
+            self.httpMethod,
+            data=body,
+            url=path,
+            timeout=10,
+            params=query_args)
+
+        result.raise_for_status()
         return result
 
     def make_path(self, path_args):
