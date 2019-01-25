@@ -1,5 +1,4 @@
 from _datetime import datetime
-import glob
 import os
 from requests.exceptions import ConnectionError
 from unittest import TestCase
@@ -38,9 +37,9 @@ class TestUnits(TestCase):
         start = datetime.now()
 
         try:
-            result = a.session.get('https://httpbin.org//delay/5',
-                                   stream=True,
-                                   timeout=.2)
+            _ = a.session.get('https://httpbin.org//delay/5',
+                              stream=True,
+                              timeout=.2)
         except ConnectionError as e:
             retry_error = True
             print(e)
