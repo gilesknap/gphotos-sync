@@ -203,6 +203,9 @@ class GooglePhotosSync(object):
         items_json = self.search_media(start_date=start_date,
                                        end_date=self.end_date,
                                        do_video=self.includeVideo)
+        if not self.retry_download:
+            self.files_download_skipped = self._db.downloaded_count()
+
         while items_json:
             media_json = items_json.get('mediaItems')
             # cope with empty response
