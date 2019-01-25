@@ -35,7 +35,7 @@ class BadIds:
         with open(self.bad_ids_filename, 'w') as stream:
             dump(self.items, stream, Dumper=Dumper, default_flow_style=False)
 
-    def add_id(self, path, gid, product_url):
+    def add_id(self, path, gid, product_url, e):
         item = {
             'path': path,
             'gid': gid,
@@ -43,6 +43,7 @@ class BadIds:
         }
         self.ids.append(gid)
         self.items.append(item)
+        log.debug('BAD ID %s for %s', gid, path, exc_info=e)
 
     def check_id_ok(self, gid):
         if gid in self.ids:

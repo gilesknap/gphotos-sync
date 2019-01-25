@@ -16,7 +16,7 @@ import tempfile
 import concurrent.futures as futures
 
 import requests
-import requests.exceptions as err
+from requests.exceptions import RequestException
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
@@ -50,7 +50,9 @@ class GooglePhotosSync(object):
         self.files_indexed = 0
         self.files_index_skipped = 0
 
-        self._latest_download = self._db.get_scan_date() or Utils.minimum_date()
+        if db:
+            self._latest_download = self._db.get_scan_date() or \
+                                    Utils.minimum_date()
         # properties to be set after init
         # thus in theory one instance could so multiple indexes
         self._startDate = None
@@ -64,7 +66,9 @@ class GooglePhotosSync(object):
         self._session = requests.Session()
         retries = Retry(total=5,
                         backoff_factor=0.1,
-                        status_forcelist=[500, 502, 503, 504])
+                        status_forcelist=[500, 502, 503, 504],
+                        method_whitelist=frozenset(['GET', 'POST']),
+                        raise_on_status=False)
 
         self._session.mount(
             'https://', HTTPAdapter(max_retries=retries,
@@ -287,13 +291,10 @@ class GooglePhotosSync(object):
                 self.files_download_failed += 1
                 log.error('FAILURE %d downloading %s',
                           self.files_download_failed, media_item.relative_path)
-                log.debug('FAILURE %d downloading %s',
-                          self.files_download_failed, media_item.relative_path,
-                          exc_info=e)
-                if isinstance(e, requests.HTTPError):
+                if isinstance(e, RequestException):
                     self.bad_ids.add_id(
                         media_item.relative_path, media_item.id,
-                        media_item.url)
+                        media_item.url, e)
                 elif e == KeyboardInterrupt:
                     raise e
             else:
@@ -398,7 +399,6 @@ class GooglePhotosSync(object):
                                 batch.keys())
                 else:
                     media_item = batch.get(media_item_json["id"])
-                    media_item.set_path_by_date(self._media_folder)
                     self.download_file(media_item, media_item_json)
 
         except KeyboardInterrupt:
@@ -417,18 +417,14 @@ class GooglePhotosSync(object):
         gets so we can work out which ID(s) cause the failure
         """
         for item_id, media_item in batch.items():
-            media_item.set_path_by_date(self._media_folder)
             try:
                 response = self._api.mediaItems.get.execute(item_id)
                 media_item_json = response.json()
                 self.download_file(media_item, media_item_json)
-            except (err.HTTPError, err.RetryError):
+            except RequestException as e:
                 self.bad_ids.add_id(
                     media_item.relative_path, media_item.id,
-                    media_item.url)
+                    media_item.url, e)
                 self.files_download_failed += 1
                 log.error('FAILURE %d in get of %s BAD ID',
                           self.files_download_failed, media_item.relative_path)
-                log.debug('FAILURE %d in get of %s BAD ID',
-                          self.files_download_failed, media_item.relative_path,
-                          exc_info=True)
