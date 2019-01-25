@@ -12,7 +12,8 @@ except ImportError:
 
 '''
 Defines a very simple class to handle google api authorization flow
-for the requests library 
+for the requests library. Includes saving the token and automatic
+token refresh.
 
 giles 2018
 '''
@@ -97,5 +98,6 @@ class Authorize:
         retries = Retry(total=5,
                         backoff_factor=0.1,
                         status_forcelist=[500, 502, 503, 504],
-                        method_whitelist = frozenset(['GET', 'POST']))
+                        method_whitelist=frozenset(['GET', 'POST']),
+                        raise_on_status=False)
         self.session.mount('https://', HTTPAdapter(max_retries=retries))
