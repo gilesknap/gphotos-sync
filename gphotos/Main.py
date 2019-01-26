@@ -5,6 +5,7 @@ import logging
 import sys
 import fcntl
 
+from pkg_resources import DistributionNotFound
 from datetime import datetime
 from appdirs import AppDirs
 from .GooglePhotosSync import GooglePhotosSync
@@ -181,9 +182,9 @@ class GooglePhotosSyncMain:
                 if args.do_delete:
                     self.google_photos_sync.check_for_removed()
 
-    def main(self):
+    def main(self, test_args=None):
         start_time = datetime.now()
-        args = self.parser.parse_args()
+        args = self.parser.parse_args(test_args)
 
         db_path = args.db_path if args.db_path else args.root_folder
         args.root_folder = os.path.abspath(args.root_folder)
@@ -205,6 +206,8 @@ class GooglePhotosSyncMain:
                     pkg_resources.get_distribution("gphotos-sync").version))
             except TypeError:
                 log.info('version not available')
+            except DistributionNotFound:
+                log.warning('running under pytest?')
 
             # configure and launch
 

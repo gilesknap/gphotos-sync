@@ -17,6 +17,7 @@ logging.basicConfig(level=logging.DEBUG,
                     datefmt='%m-%d %H:%M:%S',
                     filemode='w')
 
+
 class SetupDbAndCredentials:
     def __init__(self):
         # set up the test account credentials

@@ -4,12 +4,14 @@ import os
 from unittest import TestCase
 from mock import patch, Mock
 from requests.exceptions import HTTPError
+from shutil import rmtree
 
 from gphotos.BadIds import BadIds
 from gphotos.GooglePhotosSync import GooglePhotosSync
 import gphotos.Utils as Utils
 from gphotos.LocalData import LocalData
 import test.test_setup as ts
+
 
 # todo add a test that reads in Sync Date from the Db
 # todo add code coverage tests
@@ -28,9 +30,10 @@ class TestSystem(TestCase):
             DSCF0030.JPG|photos/2000/02
         todo investigate above
         """
+        rmtree('/tmp/gpTests/')
         s = ts.SetupDbAndCredentials()
-        s.test_setup('test_sys_whole_library', trash_db=True, trash_files=True)
-        s.gp.start(s.parsed_args)
+        s.test_setup('test_sys_whole_library', trash_files=True, trash_db=True)
+        s.gp.main([s.root])
 
         db = LocalData(s.root)
 
@@ -69,7 +72,6 @@ class TestSystem(TestCase):
             self.assertEqual(album_items[idx], len(glob.glob(pat)))
 
         # check that the most recent scanned file date was recorded
-        db = LocalData(s.root)
         d_date = db.get_scan_date()
         self.assertEqual(d_date.date(), datetime.date(2017, 9, 26))
 
