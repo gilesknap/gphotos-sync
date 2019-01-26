@@ -329,7 +329,7 @@ class GooglePhotosSync(object):
 
     def download_photo_media(self):
         """
-        here we batch up our requests to get baseurl for downloading media.
+        here we batch up our requests to get base url for downloading media.
         This avoids the overhead of one REST call per file. A REST call
         takes longer than downloading an image
         """
@@ -408,7 +408,7 @@ class GooglePhotosSync(object):
             futures.wait(self.pool_future_to_media)
             log.warning('Cancelled download threads')
             raise
-        except (err.HTTPError, err.RetryError):
+        except RequestException:
             self.find_bad_items(batch)
 
     def find_bad_items(self, batch):

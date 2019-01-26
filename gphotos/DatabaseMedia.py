@@ -13,7 +13,7 @@ class DatabaseMedia(BaseMedia):
     from the database using one of the two factory class methods.
 
     Attributes:
-        _id (str): remote identifier from picasa or drive
+        _id (str): remote identifier from Google Photos
         _filename (str):
         _orig_name (str):
         _duplicate_number (int):

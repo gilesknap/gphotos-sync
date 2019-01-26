@@ -1,7 +1,6 @@
 import six
 from json import dumps
 import logging
-import requests
 
 log = logging.getLogger(__name__)
 
@@ -78,3 +77,4 @@ class RestClient:
             for m_name, method in six.iteritems(collection['methods']):
                 new_method = Method(self, **method)
                 setattr(new_collection, m_name, new_method)
+

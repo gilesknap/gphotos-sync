@@ -1,10 +1,8 @@
 from requests import Session, exceptions
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
-from urllib3.exceptions import MaxRetryError
 from unittest import TestCase
 from datetime import datetime
-from socket import timeout as timeoutError
 import logging
 '''
 (Not testing code in this project)
@@ -59,7 +57,7 @@ class TestRequests(TestCase):
 
         start = datetime.now()
         try:
-            result = session.get('https://httpbin.org/delay/5',
+            _ = session.get('https://httpbin.org/delay/5',
                                  timeout=timeout)
         except exceptions.ConnectionError as e:
             retry_error = True

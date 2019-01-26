@@ -207,7 +207,7 @@ class GooglePhotosSyncMain:
             except TypeError:
                 log.info('version not available')
             except DistributionNotFound:
-                log.warning('running under pytest?')
+                log.warning('running under unit tests?')
 
             # configure and launch
 
