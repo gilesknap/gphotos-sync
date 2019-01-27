@@ -24,6 +24,8 @@ from urllib3.util.retry import Retry
 log = logging.getLogger(__name__)
 
 
+# for RestClient dynamic attr
+# noinspection PyUnresolvedReferences
 class GooglePhotosSync(object):
     PAGE_SIZE = 100
     MAX_THREADS = 20
@@ -264,20 +266,20 @@ class GooglePhotosSync(object):
         try:
             response = self._session.get(download_url, stream=True,
                                          timeout=timeout)
+            response.raise_for_status()
             shutil.copyfileobj(response.raw, temp_file)
             temp_file.close()
             response.close()
             os.rename(temp_file.name, local_full_path)
             os.utime(local_full_path,
-                     (media_item.modify_date.timestamp(),
-                      media_item.create_date.timestamp()))
+                     (Utils.safe_timestamp(media_item.modify_date),
+                      Utils.safe_timestamp(media_item.create_date)))
         except KeyboardInterrupt:
             log.debug("User cancelled download thread")
             raise
-        except BaseException:
+        finally:
             if os.path.exists(temp_file.name):
                 os.remove(temp_file.name)
-            raise
 
     def do_download_complete(self, futures_list):
         for future in futures_list:
@@ -291,7 +293,7 @@ class GooglePhotosSync(object):
                     self.bad_ids.add_id(
                         media_item.relative_path, media_item.id,
                         media_item.url, e)
-                elif e == KeyboardInterrupt:
+                else:
                     raise e
             else:
                 self._db.put_downloaded(media_item.id)

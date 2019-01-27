@@ -3,7 +3,6 @@ import argparse
 import os.path
 import logging
 import sys
-import fcntl
 
 from pkg_resources import DistributionNotFound
 from datetime import datetime
@@ -14,6 +13,9 @@ from .LocalData import LocalData
 from .authorize import Authorize
 from .restclient import RestClient
 import pkg_resources
+
+if os.name != 'nt':
+    import fcntl
 
 APP_NAME = "gphotos-sync"
 log = logging.getLogger(__name__)
@@ -196,7 +198,8 @@ class GooglePhotosSyncMain:
         fp = open(lock_file, 'w')
         with fp:
             try:
-                fcntl.lockf(fp, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                if os.name != 'nt':
+                    fcntl.lockf(fp, fcntl.LOCK_EX | fcntl.LOCK_NB)
             except IOError:
                 log.warning('EXITING: database is locked')
                 sys.exit(0)

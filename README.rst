@@ -90,13 +90,18 @@ To do this:
   configuration directory:
 
   - ``~/Library/Application Support/gphotos-sync/`` under Mac OS X,
-  - ``~/.config/gphotos-sync/`` under Linux.
+  - ``~/.config/gphotos-sync/`` under Linux,
+  - ``C:\Users\<username>\AppData\Local\gphotos-sync\gphotos-sync\`` under Windows.
+
+Also note that for Windows you will need to enable symbolic links permission for the account that gphoto-sync
+will run under. See `Enabling SymLinks on Windows`_.
  
 
 .. _`Google Developer Console`: https://developers.google.com/console/
 .. _`Creating a project procedure`: https://cloud.google.com/resource-manager/docs/creating-managing-projects
 .. _`Activating and Deactivating APIs procedure`: https://cloud.google.com/apis/docs/enable-disable-apis
 .. _`setting up oauth 2.0 procedure`: https://support.google.com/cloud/answer/6158849?hl=en
+.. _`Enabling SymLinks on Windows`: https://community.perforce.com/s/article/3472
 
 
 How to use it

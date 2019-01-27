@@ -99,12 +99,14 @@ class TestSystem(TestCase):
         s.gp.start(s.parsed_args)
 
         db = LocalData(s.root)
-
         # Total of 20 media items
         db.cur.execute("SELECT COUNT() FROM SyncFiles")
         count = db.cur.fetchone()
         self.assertEqual(20, count[0])
+        db.store()
+        del db
 
+        s = ts.SetupDbAndCredentials()
         args = ['--start-date', '2017-01-01', '--end-date', '2018-01-01',
                 '--skip-albums', '--index-only',
                 '--skip-video']
@@ -113,7 +115,6 @@ class TestSystem(TestCase):
         s.gp.start(s.parsed_args)
 
         db = LocalData(s.root)
-
         # Total of 10 media items
         db.cur.execute("SELECT COUNT() FROM SyncFiles")
         count = db.cur.fetchone()
