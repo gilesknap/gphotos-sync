@@ -6,7 +6,7 @@ from mock import patch, Mock
 from requests.exceptions import HTTPError
 
 from gphotos.BadIds import BadIds
-from gphotos.GooglePhotosSync import GooglePhotosSync
+from gphotos.GooglePhotosDownload import GooglePhotosDownload
 import gphotos.Utils as Utils
 from gphotos.LocalData import LocalData
 import test.test_setup as ts
@@ -216,7 +216,7 @@ class TestSystem(TestCase):
         count = db.cur.fetchone()
         self.assertEqual(80, count[0])
 
-    @patch.object(GooglePhotosSync, 'do_download_file')
+    @patch.object(GooglePhotosDownload, 'do_download_file')
     def test_bad_ids(self, do_download_file):
 
         do_download_file.side_effect = HTTPError(Mock(status=500), 'ouch!')
