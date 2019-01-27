@@ -30,7 +30,6 @@ class TestSystem(TestCase):
             DSCF0030.JPG|photos/2000/02
         todo investigate above
         """
-        rmtree('/tmp/gpTests/')
         s = ts.SetupDbAndCredentials()
         s.test_setup('test_sys_whole_library', trash_files=True, trash_db=True)
         s.gp.main([s.root])
@@ -224,17 +223,18 @@ class TestSystem(TestCase):
         do_download_file.side_effect = HTTPError(Mock(status=500), 'ouch!')
         s = ts.SetupDbAndCredentials()
         args = ['--start-date', '2016-01-01', '--end-date', '2017-01-01',
-                '--skip-albums', '--index-only']
+                '--skip-albums']
         s.test_setup('test_bad_ids', args=args, trash_db=True,
                      trash_files=True)
         s.gp.start(s.parsed_args)
-
-        args = ['--start-date', '2016-01-01', '--end-date', '2017-01-01',
-                '--skip-albums', '--skip-index']
-
-        s.test_setup('test_bad_ids', args=args)
-        s.gp.start(s.parsed_args)
+        # check we tried to download 10 times
+        self.assertEquals(do_download_file.call_count, 10)
 
         # this should have created a Bad IDs file
         bad_ids = BadIds(s.root)
         self.assertEquals(len(bad_ids.items), 10)
+
+        s.test_setup('test_bad_ids', args=args)
+        s.gp.start(s.parsed_args)
+        # this should have skipped the bad ids and not tried to download
+        self.assertEquals(do_download_file.call_count, 10)

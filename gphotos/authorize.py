@@ -71,7 +71,6 @@ class Authorize:
                                          auto_refresh_kwargs=self.extra,
                                          token_updater=self.save_token)
         else:
-            print(self.scope)
             self.session = OAuth2Session(self.client_id, scope=self.scope,
                                          redirect_uri=self.redirect_uri,
                                          auto_refresh_url=self.token_uri,

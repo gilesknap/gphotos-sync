@@ -1,6 +1,6 @@
 from _datetime import datetime
 import os
-from requests.exceptions import ConnectionError
+from requests import exceptions as exc
 from unittest import TestCase
 import gphotos.authorize as auth
 
@@ -40,12 +40,11 @@ class TestUnits(TestCase):
             _ = a.session.get('https://httpbin.org//delay/5',
                               stream=True,
                               timeout=.2)
-        except ConnectionError as e:
+        except exc.ConnectionError as e:
             retry_error = True
             print(e)
 
         elapsed = datetime.now() - start
-        print('timeout elapsed %d'.format(elapsed.seconds))
         self.assertEquals(retry_error, True)
         # .2 timeout by 5 retries = 1 sec
         self.assertGreater(elapsed.seconds, 1)
