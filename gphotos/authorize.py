@@ -10,6 +10,11 @@ try:
 except ImportError:
     from yaml import Loader, Dumper
 
+
+# OAuth endpoints given in the Google API documentation
+authorization_base_url = "https://accounts.google.com/o/oauth2/v2/auth"
+token_uri = "https://www.googleapis.com/oauth2/v4/token"
+
 '''
 Defines a very simple class to handle google api authorization flow
 for the requests library. Includes saving the token and automatic
@@ -17,10 +22,6 @@ token refresh.
 
 giles 2018
 '''
-
-# OAuth endpoints given in the Google API documentation
-authorization_base_url = "https://accounts.google.com/o/oauth2/v2/auth"
-token_uri = "https://www.googleapis.com/oauth2/v4/token"
 
 
 class Authorize:
@@ -78,7 +79,7 @@ class Authorize:
                                          token_updater=self.save_token)
 
             # Redirect user to Google for authorization
-            authorization_url, state = self.session.authorization_url(
+            authorization_url, _ = self.session.authorization_url(
                 authorization_base_url,
                 access_type="offline",
                 prompt="select_account")

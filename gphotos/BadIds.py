@@ -10,7 +10,7 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 ''' keeps a list of media items with ID in a YAML file. The YAML file
-allows a user to easily investigate their list of media items that have 
+allows a user to easily investigate their list of media items that have
 failed to download '''
 
 

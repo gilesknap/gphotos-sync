@@ -25,7 +25,7 @@ class GoogleAlbumMedia(BaseMedia):
 
     @property
     def description(self):
-        return self.orig_name()
+        return self.orig_name
 
     @property
     def orig_name(self):
@@ -49,3 +49,4 @@ class GoogleAlbumMedia(BaseMedia):
     @property
     def url(self):
         return self.__media_json['productUrl']
+

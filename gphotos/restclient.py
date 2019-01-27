@@ -5,10 +5,10 @@ import logging
 log = logging.getLogger(__name__)
 
 '''
-Defines very simple classes to create a callable interface to a REST api 
+Defines very simple classes to create a callable interface to a REST api
 from a discovery REST description document.
 
-Intended as a super simple replacement for google-api-python-client, using 
+Intended as a super simple replacement for google-api-python-client, using
 requests instead of httplib2
 
 giles 2018
@@ -77,4 +77,3 @@ class RestClient:
             for m_name, method in six.iteritems(collection['methods']):
                 new_method = Method(self, **method)
                 setattr(new_collection, m_name, new_method)
-

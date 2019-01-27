@@ -6,6 +6,7 @@ from gphotos import Utils
 from gphotos.GooglePhotosMedia import GooglePhotosMedia
 from gphotos.BaseMedia import MediaType
 from gphotos.LocalData import LocalData
+from gphotos.restclient import RestClient
 from gphotos.DatabaseMedia import DatabaseMedia
 from gphotos.BadIds import BadIds
 
@@ -28,12 +29,7 @@ class GooglePhotosSync(object):
     MAX_THREADS = 20
     BATCH_SIZE = 40
 
-    def __init__(self, api, root_folder, db):
-        """
-        :param (RestClient) api
-        :param (str) root_folder:
-        :param (LocalData) db:
-        """
+    def __init__(self, api: RestClient, root_folder: str, db: LocalData):
         self._db = db
         self._root_folder = root_folder
         self._api = api
