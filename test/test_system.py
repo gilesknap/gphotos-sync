@@ -4,7 +4,6 @@ import os
 from unittest import TestCase
 from mock import patch, Mock
 from requests.exceptions import HTTPError
-from shutil import rmtree
 
 from gphotos.BadIds import BadIds
 from gphotos.GooglePhotosSync import GooglePhotosSync
