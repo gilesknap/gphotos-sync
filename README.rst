@@ -3,6 +3,10 @@
 
 
 ==================
+
+.. image:: https://api.codacy.com/project/badge/Grade/5a5b8c359800462e90ee2ba21a969f87
+   :alt: Codacy Badge
+   :target: https://app.codacy.com/app/giles.knap/gphotos-sync?utm_source=github.com&utm_medium=referral&utm_content=gilesknap/gphotos-sync&utm_campaign=Badge_Grade_Dashboard
 Google Photos Sync
 ==================
 
