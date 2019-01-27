@@ -10,6 +10,7 @@ from gphotos.DatabaseMedia import DatabaseMedia
 from gphotos.BadIds import BadIds
 
 from itertools import zip_longest
+from typing import Iterable, Mapping, Union, List
 import logging
 import shutil
 import tempfile
@@ -63,10 +64,10 @@ class GooglePhotosDownload(object):
             'https://', HTTPAdapter(max_retries=retries,
                                     pool_maxsize=self.MAX_THREADS))
 
-    def set_start_date(self, val):
+    def set_start_date(self, val: str):
         self._start_date = Utils.string_to_date(val)
 
-    def set_end_date(self, val):
+    def set_end_date(self, val: str):
         self._end_date = Utils.string_to_date(val)
 
     def download_photo_media(self):
@@ -76,7 +77,9 @@ class GooglePhotosDownload(object):
         takes longer than downloading an image
         """
 
-        def grouper(iterable):
+        def grouper(
+                iterable: Iterable[DatabaseMedia]) \
+                -> Iterable[Iterable[DatabaseMedia]]:
             """Collect data into chunks size BATCH_SIZE"""
             return zip_longest(*[iter(iterable)] * self.BATCH_SIZE,
                                fillvalue=None)
@@ -128,7 +131,58 @@ class GooglePhotosDownload(object):
             self.bad_ids.store_ids()
             self.bad_ids.report()
 
-    def do_download_file(self, base_url, media_item):
+    def download_batch(self, batch: Mapping[str, DatabaseMedia]):
+        try:
+            response = self._api.mediaItems.batchGet.execute(
+                mediaItemIds=batch.keys())
+            r_json = response.json()
+            if r_json.get('pageToken'):
+                log.error("Ops - Batch size too big, some items dropped!")
+
+            for media_item_json_status in r_json["mediaItemResults"]:
+                # todo look at media_item_json_status["status"] for errors
+                media_item_json = media_item_json_status.get("mediaItem")
+                if not media_item_json:
+                    log.warning('Null response in mediaItems.batchGet %s',
+                                batch.keys())
+                else:
+                    media_item = batch.get(media_item_json["id"])
+                    self.download_file(media_item, media_item_json)
+
+        except KeyboardInterrupt:
+            log.warning('Cancelling download threads ...')
+            for f in self.pool_future_to_media:
+                f.cancel()
+            futures.wait(self.pool_future_to_media)
+            log.warning('Cancelled download threads')
+            raise
+        except RequestException:
+            self.find_bad_items(batch)
+
+    def download_file(self, media_item: DatabaseMedia, media_json: dict):
+        """ farms media downloads off to the thread pool"""
+        base_url = media_json['baseUrl']
+
+        # we dont want a massive queue so wait until at least one thread is free
+        while len(self.pool_future_to_media) >= self.MAX_THREADS:
+            # check which futures are done, complete the main thread work
+            # and remove them from the dictionary
+            done_list = []
+            for future in self.pool_future_to_media.keys():
+                if future.done():
+                    done_list.append(future)
+
+            self.do_download_complete(done_list)
+
+        # start a new background download
+        self.files_download_started += 1
+        log.info('downloading %d %s', self.files_download_started,
+                 media_item.relative_path)
+        future = self.download_pool.submit(self.do_download_file,
+                                           base_url, media_item)
+        self.pool_future_to_media[future] = media_item
+
+    def do_download_file(self, base_url: str, media_item: DatabaseMedia):
         # this function runs in a process pool and does the actual downloads
         local_folder = os.path.join(self._root_folder,
                                     media_item.relative_folder)
@@ -159,58 +213,10 @@ class GooglePhotosDownload(object):
             if os.path.exists(temp_file.name):
                 os.remove(temp_file.name)
 
-    def download_batch(self, batch):
-        try:
-            response = self._api.mediaItems.batchGet.execute(
-                mediaItemIds=batch.keys())
-            r_json = response.json()
-            if r_json.get('pageToken'):
-                log.error("Ops - Batch size too big, some items dropped!")
-
-            for media_item_json_status in r_json["mediaItemResults"]:
-                # todo look at media_item_json_status["status"] for errors
-                media_item_json = media_item_json_status.get("mediaItem")
-                if not media_item_json:
-                    log.warning('Null response in mediaItems.batchGet %s',
-                                batch.keys())
-                else:
-                    media_item = batch.get(media_item_json["id"])
-                    self.download_file(media_item, media_item_json)
-
-        except KeyboardInterrupt:
-            log.warning('Cancelling download threads ...')
-            for f in self.pool_future_to_media:
-                f.cancel()
-            futures.wait(self.pool_future_to_media)
-            log.warning('Cancelled download threads')
-            raise
-        except RequestException:
-            self.find_bad_items(batch)
-
-    def download_file(self, media_item, media_json):
-        """ farms media downloads off to the thread pool"""
-        base_url = media_json['baseUrl']
-
-        # we dont want a massive queue so wait until at least one thread is free
-        while len(self.pool_future_to_media) >= self.MAX_THREADS:
-            # check which futures are done, complete the main thread work
-            # and remove them from the dictionary
-            done_list = []
-            for future in self.pool_future_to_media.keys():
-                if future.done():
-                    done_list.append(future)
-
-            self.do_download_complete(done_list)
-
-        # start a new background download
-        self.files_download_started += 1
-        log.info('downloading %d %s', self.files_download_started,
-                 media_item.relative_path)
-        future = self.download_pool.submit(self.do_download_file,
-                                           base_url, media_item)
-        self.pool_future_to_media[future] = media_item
-
-    def do_download_complete(self, futures_list):
+    def do_download_complete(self,
+                             futures_list: Union[
+                                 Mapping[futures.Future, DatabaseMedia],
+                                 List[futures.Future]]):
         for future in futures_list:
             media_item = self.pool_future_to_media.get(future)
             e = future.exception()
@@ -231,7 +237,7 @@ class GooglePhotosDownload(object):
                           self.files_downloaded, media_item.relative_path)
             del self.pool_future_to_media[future]
 
-    def find_bad_items(self, batch):
+    def find_bad_items(self, batch: Mapping[str, DatabaseMedia]):
         """
         a batch get failed. Now do all of its contents as individual
         gets so we can work out which ID(s) cause the failure

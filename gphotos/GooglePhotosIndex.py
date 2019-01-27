@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # coding: utf8
 import os.path
+from datetime import datetime
 
 from gphotos import Utils
 from gphotos.GooglePhotosMedia import GooglePhotosMedia
@@ -38,10 +39,10 @@ class GooglePhotosIndex(object):
         self.include_video = True
         self.rescan = False
 
-    def set_start_date(self, val):
+    def set_start_date(self, val: str):
         self._start_date = Utils.string_to_date(val)
 
-    def set_end_date(self, val):
+    def set_end_date(self, val: str):
         self._end_date = Utils.string_to_date(val)
 
     def check_for_removed(self):
@@ -60,13 +61,16 @@ class GooglePhotosIndex(object):
                     os.remove(name)
                     log.warning("%s deleted", name)
 
-    def write_media_index(self, media, update=True):
+    def write_media_index(self, media: GooglePhotosMedia,
+                          update: bool = True):
         media.save_to_db(self._db, update)
         if media.create_date > self.latest_download:
             self.latest_download = media.create_date
 
-    def search_media(self, page_token=None, start_date=None, end_date=None,
-                     do_video=False):
+    def search_media(self, page_token: int = None,
+                     start_date: datetime = None,
+                     end_date: datetime = None,
+                     do_video: bool = False) -> dict:
         class Y:
             def __init__(self, y, m, d):
                 self.year = y
