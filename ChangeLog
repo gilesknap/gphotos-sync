@@ -1,6 +1,48 @@
 CHANGES
 =======
 
+* Fixes to make this work on windows
+
+2.1
+---
+
+* code tidy for coadacy
+* Add Codacy badge
+* tidy code inspections
+* add Main function to test coverage
+* Better test coverage
+* Better test coverage
+* Make "Already Downloaded" more intuitive
+* pi zero fixes
+* added bad ids yaml file generation
+* Update .travis.yml
+* switch to Covdecov
+* fix tests credentials
+* switch user token to sync folder
+* reformat to 80 chars
+* fix 10000 dbase query limit
+* tidy logging and keyboard interrupt handling
+* tests passing using ThreadPoolExecutor
+* first try at ThreadPoolExecutor
+* use requests retires and timeout
+* fix logger names
+* fix coverage badge
+* remove redundant code, tidy
+* Update README.rst
+* better system tests
+* add 1 decent system test
+* fix bug #32
+* add downloaded flag to SyncRows
+* Update README.rst
+* fix relative test issue
+* Update README.rst
+
+2.0
+---
+
+* fix do-delete
+* update readme, tweak versions
+* restored some system tests
 * add retries to download URL connection
 * Update README.rst
 * tidy logging
@@ -10,6 +52,7 @@ CHANGES
 * handle video download errors (needs fix from google)
 * improved loggin
 * skip pre-indexed albums, fix duplicate handling
+* Update README.rst
 * use list instead of search if no filters are supplied
 * fix limit queue size logic - now works well
 * limit task queue
