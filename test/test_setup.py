@@ -6,6 +6,17 @@ from appdirs import AppDirs
 from gphotos import Main
 from gphotos.Main import GooglePhotosSyncMain
 
+import logging
+# if we are debugging requests library is too noisy
+logging.getLogger("requests").setLevel(logging.WARNING)
+logging.getLogger("requests_oauthlib").setLevel(logging.WARNING)
+logging.getLogger("urllib3").setLevel(logging.WARNING)
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s %(name)-12s %(levelname)-8s '
+                           '%(message)s',
+                    datefmt='%m-%d %H:%M:%S',
+                    filemode='w')
+
 
 class SetupDbAndCredentials:
     def __init__(self):

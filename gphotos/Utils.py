@@ -91,7 +91,7 @@ def string_to_date(date_string):
         if m:
             normalized = '{}-{}-{} 00:00:00'.format(*m.groups())
         else:
-            log.warning('WARNING: time string {} illegal', date_string)
+            log.warning('WARNING: time string %s illegal', date_string)
             return minimum_date()
 
     return datetime.strptime(normalized, DATE_FORMAT)

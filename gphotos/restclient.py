@@ -1,15 +1,14 @@
 import six
 from json import dumps
 import logging
-import requests
 
 log = logging.getLogger(__name__)
 
 '''
-Defines very simple classes to create a callable interface to a REST api 
+Defines very simple classes to create a callable interface to a REST api
 from a discovery REST description document.
 
-Intended as a super simple replacement for google-api-python-client, using 
+Intended as a super simple replacement for google-api-python-client, using
 requests instead of httplib2
 
 giles 2018
