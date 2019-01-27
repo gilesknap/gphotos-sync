@@ -133,9 +133,9 @@ class GooglePhotosSyncMain:
                                                    args.root_folder,
                                                    self.data_store)
 
-        self.google_photos_sync.start_date = args.start_date
-        self.google_photos_sync.end_date = args.end_date
-        self.google_photos_sync.includeVideo = not args.skip_video
+        self.google_photos_sync.set_start_date(args.start_date)
+        self.google_photos_sync.set_end_date(args.end_date)
+        self.google_photos_sync.include_video = not args.skip_video
         self.google_photos_sync.rescan = args.rescan
         self.google_photos_sync.retry_download = args.retry_download
 
@@ -213,7 +213,6 @@ class GooglePhotosSyncMain:
                 log.warning('running under unit tests?')
 
             # configure and launch
-
             # noinspection PyBroadException
             try:
                 self.setup(args, db_path)

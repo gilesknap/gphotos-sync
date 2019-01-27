@@ -8,13 +8,14 @@ log = logging.getLogger(__name__)
 
 DATE_NORMALIZE = re.compile(r'(\d\d\d\d).(\d\d).(\d\d).(\d\d).(\d\d).(\d\d)')
 SHORT_DATE_NORMALIZE = re.compile(r'(\d\d\d\d).(\d\d).(\d\d)')
+PatType = type(DATE_NORMALIZE)
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 DATE_ONLY = "%Y-%m-%d"
 MINIMUM_DATE = None
 
 
 # incredibly windows cannot handle dates below 1980
-def safe_str_time(date_time, date_format):
+def safe_str_time(date_time: datetime, date_format: str) -> str:
     if date_time < minimum_date():
         date_time = minimum_date()
     return date_time.strftime(date_format)
@@ -26,20 +27,15 @@ def safe_timestamp(d: datetime) -> float:
     return d.timestamp()
 
 
-def date_to_string(date_t):
-    """
-    :param (int) date_only:
-    :param (datetime) date_t:
-    :return (str):
-    """
+def date_to_string(date_t: datetime):
     return date_t.strftime(DATE_FORMAT)
 
 
-def maximum_date():
+def maximum_date() -> datetime:
     return datetime.max
 
 
-def minimum_date():
+def minimum_date() -> datetime:
     global MINIMUM_DATE
     if MINIMUM_DATE is None:
         # determine the minimum date that is usable on the
@@ -57,16 +53,26 @@ def minimum_date():
     return MINIMUM_DATE
 
 
-def string_to_date(date_string):
-    m = DATE_NORMALIZE.match(date_string)
-    if m:
-        normalized = '{}-{}-{} {}:{}:{}'.format(*m.groups())
-    else:
-        m = SHORT_DATE_NORMALIZE.match(date_string)
-        if m:
-            normalized = '{}-{}-{} 00:00:00'.format(*m.groups())
-        else:
-            log.warning('WARNING: time string %s illegal', date_string)
-            return minimum_date()
+def date_string_normalize(date_in: str,
+                          pattern_in: PatType,
+                          pattern_out: str) -> datetime:
+    result = None
+    matches = pattern_in.match(date_in)
+    if matches:
+        normalized = pattern_out.format(*matches.groups())
+        result = datetime.strptime(normalized, DATE_FORMAT)
+    return result
 
-    return datetime.strptime(normalized, DATE_FORMAT)
+
+def string_to_date(date_string: str) -> datetime:
+    result = None
+    if date_string:
+        result = date_string_normalize(date_string, DATE_NORMALIZE,
+                                       '{}-{}-{} {}:{}:{}')
+        if result is None:
+            result = date_string_normalize(date_string, SHORT_DATE_NORMALIZE,
+                                           '{}-{}-{} 00:00:00')
+        if result is None:
+            log.warning('WARNING: time string %s illegal', date_string)
+
+    return result

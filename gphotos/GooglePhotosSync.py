@@ -25,7 +25,6 @@ log = logging.getLogger(__name__)
 
 
 # for RestClient dynamic attr
-# noinspection PyUnresolvedReferences
 class GooglePhotosSync(object):
     PAGE_SIZE = 100
     MAX_THREADS = 20
@@ -49,17 +48,18 @@ class GooglePhotosSync(object):
         self.files_index_skipped = 0
 
         if db:
-            self._latest_download = self._db.get_scan_date() or \
-                                    Utils.minimum_date()
-        # properties to be set after init
+            self.latest_download = self._db.get_scan_date() or \
+                                   Utils.minimum_date()
+        # attributes to be set after init
+        # those with _ must be set through their set_ function
         # thus in theory one instance could so multiple indexes
-        self._startDate = None
-        self._endDate = None
-        self.includeVideo = True
-        self._rescan = False
-        self._retry_download = False
-        self._video_timeout = 2000
-        self._image_timeout = 60
+        self._start_date = None
+        self._end_date = None
+        self.include_video = True
+        self.rescan = False
+        self.retry_download = False
+        self.video_timeout = 2000
+        self.image_timeout = 60
 
         self._session = requests.Session()
         retries = Retry(total=5,
@@ -72,59 +72,11 @@ class GooglePhotosSync(object):
             'https://', HTTPAdapter(max_retries=retries,
                                     pool_maxsize=self.MAX_THREADS))
 
-    @property
-    def video_timeout(self):
-        return self._video_timeout
+    def set_start_date(self, val):
+        self._start_date = Utils.string_to_date(val)
 
-    @video_timeout.setter
-    def video_timeout(self, val):
-        self._video_timeout = val
-
-    @property
-    def image_timeout(self):
-        return self._image_timeout
-
-    @image_timeout.setter
-    def image_timeout(self, val):
-        self._image_timeout = val
-
-    @property
-    def start_date(self):
-        return self._startDate
-
-    @start_date.setter
-    def start_date(self, val):
-        if val:
-            self._startDate = Utils.string_to_date(val)
-
-    @property
-    def end_date(self):
-        return self._endDate
-
-    @end_date.setter
-    def end_date(self, val):
-        if val:
-            self._endDate = Utils.string_to_date(val)
-
-    @property
-    def latest_download(self):
-        return self._latest_download
-
-    @property
-    def rescan(self):
-        return self._rescan
-
-    @rescan.setter
-    def rescan(self, val):
-        self._rescan = val
-
-    @property
-    def retry_download(self):
-        return self._retry_download
-
-    @retry_download.setter
-    def retry_download(self, val):
-        self._retry_download = val
+    def set_end_date(self, val):
+        self._end_date = Utils.string_to_date(val)
 
     def check_for_removed(self):
         # note for partial scans using date filters this is still OK because
@@ -144,8 +96,8 @@ class GooglePhotosSync(object):
 
     def write_media_index(self, media, update=True):
         media.save_to_db(self._db, update)
-        if media.create_date > self._latest_download:
-            self._latest_download = media.create_date
+        if media.create_date > self.latest_download:
+            self.latest_download = media.create_date
 
     def search_media(self, page_token=None, start_date=None, end_date=None,
                      do_video=False):
@@ -197,14 +149,14 @@ class GooglePhotosSync(object):
     def index_photos_media(self):
         log.warning('Indexing Google Photos Files ...')
 
-        if self._rescan:
+        if self.rescan:
             start_date = None
         else:
-            start_date = self.start_date or self._db.get_scan_date()
+            start_date = self._start_date or self._db.get_scan_date()
 
         items_json = self.search_media(start_date=start_date,
-                                       end_date=self.end_date,
-                                       do_video=self.includeVideo)
+                                       end_date=self._end_date,
+                                       do_video=self.include_video)
         if not self.retry_download:
             self.files_download_skipped = self._db.downloaded_count()
 
@@ -240,15 +192,15 @@ class GooglePhotosSync(object):
             if next_page:
                 items_json = self.search_media(page_token=next_page,
                                                start_date=start_date,
-                                               end_date=self.end_date,
-                                               do_video=self.includeVideo)
+                                               end_date=self._end_date,
+                                               do_video=self.include_video)
             else:
                 break
 
         # scan (in reverse date order) completed so the next incremental scan
         # can start from the most recent file in this scan
-        if not self.start_date:
-            self._db.set_scan_date(last_date=self._latest_download)
+        if not self._start_date:
+            self._db.set_scan_date(last_date=self.latest_download)
 
     def do_download_file(self, base_url, media_item):
         # this function runs in a process pool and does the actual downloads
@@ -257,10 +209,10 @@ class GooglePhotosSync(object):
         local_full_path = os.path.join(local_folder, media_item.filename)
         if media_item.is_video():
             download_url = '{}=dv'.format(base_url)
-            timeout = self._video_timeout
+            timeout = self.video_timeout
         else:
             download_url = '{}=d'.format(base_url)
-            timeout = self._image_timeout
+            timeout = self.image_timeout
         temp_file = tempfile.NamedTemporaryFile(dir=local_folder, delete=False)
 
         try:
@@ -344,9 +296,9 @@ class GooglePhotosSync(object):
                     DatabaseMedia.get_media_by_search(
                         self._db,
                         media_type=MediaType.PHOTOS,
-                        start_date=self.start_date,
-                        end_date=self.end_date,
-                        skip_downloaded=not self._retry_download)):
+                        start_date=self._start_date,
+                        end_date=self._end_date,
+                        skip_downloaded=not self.retry_download)):
                 batch = {}
 
                 items = (mi for mi in media_items_block if mi)
