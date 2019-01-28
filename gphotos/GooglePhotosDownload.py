@@ -244,7 +244,9 @@ class GooglePhotosDownload(object):
         """
         for item_id, media_item in batch.items():
             try:
-                response = self._api.mediaItems.get.execute(item_id)
+                log.debug('BAD ID Retry on %s (%s)', item_id,
+                          media_item.relative_path)
+                response = self._api.mediaItems.get.execute(mediaItemId=item_id)
                 media_item_json = response.json()
                 self.download_file(media_item, media_item_json)
             except RequestException as e:
