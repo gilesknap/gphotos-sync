@@ -7,11 +7,12 @@ import sys
 from pkg_resources import DistributionNotFound
 from datetime import datetime
 from appdirs import AppDirs
-from .GooglePhotosSync import GooglePhotosSync
-from .GoogleAlbumsSync import GoogleAlbumsSync
-from .LocalData import LocalData
-from .authorize import Authorize
-from .restclient import RestClient
+from gphotos.GooglePhotosIndex import GooglePhotosIndex
+from gphotos.GooglePhotosDownload import GooglePhotosDownload
+from gphotos.GoogleAlbumsSync import GoogleAlbumsSync
+from gphotos.LocalData import LocalData
+from gphotos.authorize import Authorize
+from gphotos.restclient import RestClient
 import pkg_resources
 
 if os.name != 'nt':
@@ -25,7 +26,8 @@ class GooglePhotosSyncMain:
     def __init__(self):
         self.data_store = None
         self.google_photos_client = None
-        self.google_photos_sync = None
+        self.google_photos_idx = None
+        self.google_photos_down = None
         self.google_albums_sync = None
         self.trace_file = None
 
@@ -124,20 +126,22 @@ class GooglePhotosSyncMain:
         self.auth = Authorize(scope, credentials_file, secret_file)
         self.auth.authorize()
 
-        self.google_photos_client = RestClient(photos_api_url,
-                                               self.auth.session)
-        self.google_photos_sync = GooglePhotosSync(self.google_photos_client,
-                                                   args.root_folder,
-                                                   self.data_store)
-        self.google_albums_sync = GoogleAlbumsSync(self.google_photos_client,
-                                                   args.root_folder,
-                                                   self.data_store)
+        self.google_photos_client = RestClient(
+            photos_api_url, self.auth.session)
+        self.google_photos_idx = GooglePhotosIndex(
+            self.google_photos_client, args.root_folder, self.data_store)
+        self.google_photos_down = GooglePhotosDownload(
+            self.google_photos_client, args.root_folder, self.data_store)
+        self.google_albums_sync = GoogleAlbumsSync(
+            self.google_photos_client, args.root_folder, self.data_store)
 
-        self.google_photos_sync.start_date = args.start_date
-        self.google_photos_sync.end_date = args.end_date
-        self.google_photos_sync.includeVideo = not args.skip_video
-        self.google_photos_sync.rescan = args.rescan
-        self.google_photos_sync.retry_download = args.retry_download
+        self.google_photos_idx.set_start_date(args.start_date)
+        self.google_photos_idx.set_end_date(args.end_date)
+        self.google_photos_down.set_start_date(args.start_date)
+        self.google_photos_down.set_end_date(args.end_date)
+        self.google_photos_idx.include_video = not args.skip_video
+        self.google_photos_idx.rescan = args.rescan
+        self.google_photos_down.retry_download = args.retry_download
 
     @classmethod
     def logging(cls, args, folder):
@@ -173,16 +177,16 @@ class GooglePhotosSyncMain:
         with self.data_store:
             if not args.skip_index:
                 if not args.skip_files:
-                    self.google_photos_sync.index_photos_media()
+                    self.google_photos_idx.index_photos_media()
                 if not args.skip_albums:
                     self.google_albums_sync.index_album_media()
             if not args.index_only:
                 if not args.skip_files:
-                    self.google_photos_sync.download_photo_media()
+                    self.google_photos_down.download_photo_media()
                 if not args.skip_albums:
                     self.google_albums_sync.create_album_content_links()
                 if args.do_delete:
-                    self.google_photos_sync.check_for_removed()
+                    self.google_photos_idx.check_for_removed()
 
     def main(self, test_args=None):
         start_time = datetime.now()
@@ -213,7 +217,6 @@ class GooglePhotosSyncMain:
                 log.warning('running under unit tests?')
 
             # configure and launch
-
             # noinspection PyBroadException
             try:
                 self.setup(args, db_path)

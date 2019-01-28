@@ -8,8 +8,8 @@ from test.test_setup import SetupDbAndCredentials
 class DatabaseTest(TestCase):
     def test_new_schema(self):
         """
-        check that the database initialization errors if the version of the data store
-        is newer than the code version"""
+        check that the database initialization errors if the version of the
+        data store is newer than the code version"""
         s = SetupDbAndCredentials()
         # get a single file
         args = ['--skip-files', '--skip-albums']
