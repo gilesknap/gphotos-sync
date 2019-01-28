@@ -49,7 +49,7 @@ class LocalData:
     @DbRow.db_row
     class SyncRow(DbRow):
         """
-        generates an object with attributes for each of the columns in the
+        generates a class with attributes for each of the columns in the
         SyncFiles table
         """
         cols_def = {'Id': int, 'RemoteId': str, 'Url': str, 'Path': str,
@@ -63,7 +63,7 @@ class LocalData:
     @DbRow.db_row
     class AlbumsRow(DbRow):
         """
-        generates an object with attributes for each of the columns in the
+        generates a class with attributes for each of the columns in the
         SyncFiles table
         """
         cols_def = {'AlbumId': str, 'AlbumName': str, 'Size': int,
