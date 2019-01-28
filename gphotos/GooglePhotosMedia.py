@@ -2,13 +2,10 @@
 # coding: utf8
 
 from . import Utils
-from .BaseMedia import BaseMedia, MediaType
+from .BaseMedia import BaseMedia
 
 
 class GooglePhotosMedia(BaseMedia):
-    MEDIA_TYPE = MediaType.PHOTOS
-    EXTERNAL_LINKS = 'External-Links'
-
     def __init__(self, media_json):
         self.__media_json = media_json
         self.__path = None

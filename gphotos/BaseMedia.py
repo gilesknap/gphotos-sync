@@ -5,28 +5,18 @@ import re
 from time import gmtime, strftime
 from datetime import datetime
 from gphotos.LocalData import LocalData
-from enum import IntEnum
 
 
-# an enum for identifying the type of subclass during polymorphic use
-# only used for identifying the root folder the media should occupy locally
-class MediaType(IntEnum):
-    PHOTOS = 0
-    ALBUM = 1
-    DATABASE = 2
-    NONE = 3
-
-
-# base class for media model classes
 class BaseMedia(object):
-    MEDIA_TYPE = MediaType.NONE
+    """Base class for media model classes.
+    These provide a standard interface for media items that have been loaded
+    from disk / loaded from DB / retrieved from the Google Photos Library
+    """
     TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
     def __init__(self, **k_args):
-        self.media_type = self.__class__.MEDIA_TYPE
         self._relative_folder = None
         self._duplicate_number = 0
-        self.symlink = False
 
     # regex for illegal characters in file names and database queries
     fix_linux = re.compile(r'[/]|[\x00-\x1f]|\x7f|\x00')
@@ -55,14 +45,12 @@ class BaseMedia(object):
                                          FileName=self.filename,
                                          OrigFileName=self.orig_name,
                                          DuplicateNo=self.duplicate_number,
-                                         MediaType=self.media_type,
                                          FileSize=self.size,
                                          MimeType=self.mime_type,
                                          Description=self.description,
                                          ModifyDate=self.modify_date,
                                          CreateDate=self.create_date,
                                          SyncDate=now_time,
-                                         SymLink=None,
                                          Downloaded=0)
         return db.put_file(new_row, update)
 

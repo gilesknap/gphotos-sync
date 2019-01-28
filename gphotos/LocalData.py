@@ -15,7 +15,8 @@ class LocalData:
     DB_FILE_NAME = 'gphotos.sqlite'
     BLOCK_SIZE = 10000
     EMPTY_FILE_NAME = 'etc/gphotos_empty.sqlite'
-    VERSION = 4.0
+    # this must match 'INSERT INTO Globals' in gphotos_create.sql
+    VERSION = 4.1
 
     class DuplicateDriveIdException(Exception):
         pass
@@ -53,10 +54,9 @@ class LocalData:
         """
         cols_def = {'Id': int, 'RemoteId': str, 'Url': str, 'Path': str,
                     'FileName': str, 'OrigFileName': str, 'DuplicateNo': int,
-                    'MediaType': int, 'FileSize': int, 'MimeType': str,
-                    'Description': str, 'ModifyDate': datetime,
-                    'CreateDate': datetime, 'SyncDate': datetime,
-                    'SymLink': int, 'Downloaded': int}
+                    'FileSize': int, 'MimeType': str, 'Description': str,
+                    'ModifyDate': datetime, 'CreateDate': datetime,
+                    'SyncDate': datetime, 'Downloaded': int}
         no_update = ['Id']
 
     # noinspection PyClassHasNoInit
@@ -113,19 +113,17 @@ class LocalData:
 
         return last_date
 
-    def get_files_by_search(self, remote_id='%', media_type='%',
-                            start_date=None, end_date=None, skip_linked=False,
+    def get_files_by_search(self, remote_id='%',
+                            start_date=None, end_date=None,
                             skip_downloaded=False):
         """
         :param (str) remote_id:
-        :param (int) media_type:
         :param (datetime) start_date:
         :param (datetime) end_date:
-        :param (bool) skip_linked: Don't return entries with non-null SymLink
         :param (bool) skip_downloaded: Dont return entries already downloaded
         :return (self.SyncRow):
         """
-        params = (remote_id, media_type)
+        params = (remote_id,)
         extra_clauses = ''
         if start_date:
             # look for create date too since an photo recently uploaded will
@@ -136,13 +134,10 @@ class LocalData:
         if end_date:
             extra_clauses += 'AND ModifyDate <= ?'
             params += (end_date,)
-        if skip_linked:
-            extra_clauses += 'AND SymLink IS NULL'
         if skip_downloaded:
             extra_clauses += 'AND Downloaded IS 0'
 
-        query = "SELECT {0} FROM SyncFiles WHERE RemoteId LIKE ? AND  " \
-                "MediaType LIKE ? {1};". \
+        query = "SELECT {0} FROM SyncFiles WHERE RemoteId LIKE ? {1};". \
             format(self.SyncRow.columns, extra_clauses)
 
         self.cur2.execute(query, params)
@@ -260,7 +255,7 @@ class LocalData:
     def downloaded_count(self, downloaded=True):
         self.cur.execute(
             "Select Count(Downloaded) from main.SyncFiles WHERE Downloaded=? ",
-            (downloaded, ))
+            (downloaded,))
         result = self.cur.fetchone()[0]
         return result
 

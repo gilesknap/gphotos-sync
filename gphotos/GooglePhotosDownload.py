@@ -3,7 +3,6 @@
 import os.path
 
 from gphotos import Utils
-from gphotos.BaseMedia import MediaType
 from gphotos.LocalData import LocalData
 from gphotos.restclient import RestClient
 from gphotos.DatabaseMedia import DatabaseMedia
@@ -90,10 +89,8 @@ class GooglePhotosDownload(object):
         log.warning('Downloading Photos ...')
         try:
             for media_items_block in grouper(
-                    # todo get rid of mediaType
                     DatabaseMedia.get_media_by_search(
                         self._db,
-                        media_type=MediaType.PHOTOS,
                         start_date=self._start_date,
                         end_date=self._end_date,
                         skip_downloaded=not self.retry_download)):
@@ -250,9 +247,8 @@ class GooglePhotosDownload(object):
                 media_item_json = response.json()
                 self.download_file(media_item, media_item_json)
             except RequestException as e:
-                self.bad_ids.add_id(
-                    media_item.relative_path, media_item.id,
-                    media_item.url, e)
+                self.id = self.bad_ids.add_id(media_item.relative_path,
+                                              media_item.id, media_item.url, e)
                 self.files_download_failed += 1
                 log.error('FAILURE %d in get of %s BAD ID',
                           self.files_download_failed, media_item.relative_path)

@@ -16,10 +16,12 @@ class DbRow:
         q = "INSERT INTO SyncFiles ({0}) VALUES ({1})".format(
             self.SyncRow.query, self.SyncRow.params)
         self.cur.execute(query, row.dict)
+
     Attributes:
-        (dict) cols_def: keys are names of columns and items are their type
-        (str) query: a string to insert after a SELECT or INSERT INTO {db}
-        (str) params: a string to insert after VALUES in a sql INSERT or UPDATE
+        cols_def: keys are names of columns and items are their type
+        query: a string to insert after a SELECT or INSERT INTO {db}
+        params: a string to insert after VALUES in a sql INSERT or UPDATE
+
         The remaining attributes are on a per subclass basis and are
         generated from row_def by the db_row decorator
     """
@@ -31,8 +33,7 @@ class DbRow:
     dict = None
     empty = False
 
-    # allows us to do boolean checks on the row object and return False if it
-    # is empty
+    # empty row object = boolean False
     def __bool__(self):
         return not self.empty
 
