@@ -1,4 +1,3 @@
--- noinspection SpellCheckingInspectionForFile
 drop table if exists Albums;
 create table Albums
 (

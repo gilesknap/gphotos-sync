@@ -1,4 +1,4 @@
-from yaml import load, dump, YAMLError, emitter
+from yaml import load, dump, YAMLError
 from typing import NamedTuple, Dict
 import os
 import logging

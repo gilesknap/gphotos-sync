@@ -13,11 +13,9 @@ import logging
 log = logging.getLogger(__name__)
 
 
-# noinspection PyCompatibility
 class GoogleAlbumsSync(object):
     """A Class for managing the indexing and download Google Photos Albums
     """
-    # noinspection SpellCheckingInspection
     HIDDEN_ALBUMS = [u'Profile Photos']
     ALL_FILES_ALBUMS = [u'Auto Backup']
 

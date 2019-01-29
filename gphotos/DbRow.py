@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # coding: utf8
 from datetime import datetime
-from typing import Mapping, Dict, List, ClassVar, TypeVar, Type
+from typing import Mapping, Any, List, ClassVar, TypeVar, Type
 
 from . import Utils
 import logging
@@ -12,7 +12,6 @@ log = logging.getLogger(__name__)
 DB = TypeVar('DB', bound='DBRow')
 
 
-# noinspection PyClassHasNoInit
 class DbRow:
     """
     base class for classes representing a row in the database to allow easy
@@ -41,13 +40,16 @@ class DbRow:
     dict: ClassVar[dict] = None
     empty: ClassVar[bool] = False
 
+    def __init__(self):
+        pass
+
     # empty row object = boolean False
     def __bool__(self) -> bool:
         return not self.empty
 
     # factory method for delivering a DbRow class based on named arguments
     @classmethod
-    def make(cls, **k_args: Mapping[str, Type]) -> DB:
+    def make(cls, **k_args: Any) -> DB:
         new_row_class = cls()
         for key, value in k_args.items():
             if not hasattr(new_row_class, key):

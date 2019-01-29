@@ -45,7 +45,6 @@ class LocalData:
             self.store()
             self.con.close()
 
-    # noinspection PyClassHasNoInit
     @DbRow.db_row
     class SyncRow(DbRow):
         """
@@ -59,7 +58,6 @@ class LocalData:
                     'SyncDate': datetime, 'Downloaded': int}
         no_update = ['Id']
 
-    # noinspection PyClassHasNoInit
     @DbRow.db_row
     class AlbumsRow(DbRow):
         """
@@ -104,7 +102,6 @@ class LocalData:
         self.cur.execute(query)
         res = self.cur.fetchone()
 
-        # noinspection PyTypeChecker
         d = res['LastIndex']
         if d:
             last_date = Utils.string_to_date(d)
@@ -195,7 +192,6 @@ class LocalData:
 
         if result:
             # return the existing file entry's duplicate no.
-            # noinspection PyTypeChecker
             return result['DuplicateNo'], self.SyncRow(result)
 
         self.cur.execute(
