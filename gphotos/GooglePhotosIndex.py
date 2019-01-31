@@ -15,17 +15,15 @@ log = logging.getLogger(__name__)
 
 class GooglePhotosIndex(object):
     PAGE_SIZE = 100
-    MAX_THREADS = 20
-    BATCH_SIZE = 40
 
     def __init__(self, api: RestClient, root_folder: str, db: LocalData):
-        self._db = db
-        self._root_folder = root_folder
-        self._api = api
-        self._media_folder = 'photos'
+        self._api: RestClient = api
+        self._root_folder: str = root_folder
+        self._db: LocalData = db
+        self._media_folder: str = 'photos'
 
-        self.files_indexed = 0
-        self.files_index_skipped = 0
+        self.files_indexed: int = 0
+        self.files_index_skipped: int = 0
 
         if db:
             self.latest_download = self._db.get_scan_date() or \
@@ -34,10 +32,10 @@ class GooglePhotosIndex(object):
         # attributes to be set after init
         # those with _ must be set through their set_ function
         # thus in theory one instance could so multiple indexes
-        self._start_date = None
-        self._end_date = None
-        self.include_video = True
-        self.rescan = False
+        self._start_date: datetime = None
+        self._end_date: datetime = None
+        self.include_video: bool = True
+        self.rescan: bool = False
 
     def set_start_date(self, val: str):
         self._start_date = Utils.string_to_date(val)
@@ -46,8 +44,12 @@ class GooglePhotosIndex(object):
         self._end_date = Utils.string_to_date(val)
 
     def check_for_removed(self):
-        # note for partial scans using date filters this is still OK because
-        # for a file to exist it must have been indexed in a previous scan
+        """ Removes local files that are no longer represented in the Photos
+        Library - presumably because they were deleted.
+
+        note for partial scans using date filters this is still OK because
+        for a file to exist it must have been indexed in a previous scan
+        """
         log.warning('Finding and removing deleted media ...')
         start_folder = os.path.join(self._root_folder, self._media_folder)
         for (dir_name, _, file_names) in os.walk(start_folder):
@@ -147,7 +149,7 @@ class GooglePhotosIndex(object):
                 elif media_item.modify_date > row.ModifyDate:
                     self.files_indexed += 1
                     # todo at present there is no modify date in the API
-                    #  so updates cannot be monitored
+                    #  so updates cannot be monitored - this won't get called
                     log.info("Updated Index %d %s", self.files_indexed,
                              media_item.relative_path)
                     self.write_media_index(media_item, True)

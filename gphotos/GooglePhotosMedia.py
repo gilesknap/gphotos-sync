@@ -3,12 +3,16 @@
 
 from . import Utils
 from .BaseMedia import BaseMedia
+from typing import Dict, List, Union, Any
+from datetime import datetime
+
+JSONValue = Union[str, int, float, bool, None, Dict[str, Any], List[Any]]
+JSONType = Union[Dict[str, JSONValue], List[JSONValue]]
 
 
 class GooglePhotosMedia(BaseMedia):
     def __init__(self, media_json):
-        self.__media_json = media_json
-        self.__path = None
+        self.__media_json: JSONType = media_json
         super(GooglePhotosMedia, self).__init__()
         if self.is_video():
             self.__media_meta = None
@@ -18,15 +22,15 @@ class GooglePhotosMedia(BaseMedia):
 
     # ----- override Properties below -----
     @property
-    def size(self):
+    def size(self) -> int:
         return 0
 
     @property
-    def id(self):
+    def id(self) -> str:
         return self.__media_json["id"]
 
     @property
-    def description(self):
+    def description(self) -> str:
         try:
             return self.validate_encoding(
                 self.__media_json["description"])
@@ -34,7 +38,7 @@ class GooglePhotosMedia(BaseMedia):
             return ''
 
     @property
-    def orig_name(self):
+    def orig_name(self) -> str:
         try:
             name = self.__media_json["filename"]
         except KeyError:
@@ -42,7 +46,7 @@ class GooglePhotosMedia(BaseMedia):
         return self.validate_encoding(name)
 
     @property
-    def create_date(self):
+    def create_date(self) -> datetime:
         try:
             create_date = self.__media_json["mediaMetadata"].get("creationTime")
             photo_date = Utils.string_to_date(create_date)
@@ -52,21 +56,17 @@ class GooglePhotosMedia(BaseMedia):
         return photo_date
 
     @property
-    def modify_date(self):
+    def modify_date(self) -> datetime:
         date = Utils.minimum_date()
         return date
 
     @property
-    def mime_type(self):
+    def mime_type(self) -> str:
         return self.__media_json['mimeType']
 
     @property
-    def url(self):
+    def url(self) -> str:
         return self.__media_json['productUrl']
-
-    @property
-    def camera_owner(self):
-        return "none"
 
     @property
     def camera_model(self):

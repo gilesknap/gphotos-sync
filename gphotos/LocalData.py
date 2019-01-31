@@ -2,7 +2,9 @@
 # coding: utf8
 import os.path
 import sqlite3 as lite
+from sqlite3.dbapi2 import Connection, Row, Cursor
 from datetime import datetime
+from typing import Iterator
 
 from gphotos import Utils
 from gphotos.DbRow import DbRow
@@ -12,27 +14,24 @@ log = logging.getLogger(__name__)
 
 
 class LocalData:
-    DB_FILE_NAME = 'gphotos.sqlite'
-    BLOCK_SIZE = 10000
-    EMPTY_FILE_NAME = 'etc/gphotos_empty.sqlite'
+    DB_FILE_NAME: str = 'gphotos.sqlite'
+    BLOCK_SIZE: int = 10000
     # this must match 'INSERT INTO Globals' in gphotos_create.sql
-    VERSION = 4.1
+    VERSION: float = 4.1
 
-    class DuplicateDriveIdException(Exception):
-        pass
-
-    def __init__(self, root_folder, flush_index=False):
-        self.file_name = os.path.join(root_folder, LocalData.DB_FILE_NAME)
+    def __init__(self, root_folder: str, flush_index: bool = False):
+        self.file_name: str = os.path.join(root_folder, LocalData.DB_FILE_NAME)
         if not os.path.exists(self.file_name) or flush_index:
             clean_db = True
         else:
             clean_db = False
-        self.con = lite.connect(self.file_name, check_same_thread=False)
-        self.con.row_factory = lite.Row
-        self.cur = self.con.cursor()
+        self.con: Connection = lite.connect(self.file_name,
+                                            check_same_thread=False)
+        self.con.row_factory: Row = lite.Row
+        self.cur: Cursor = self.con.cursor()
         # second cursor for iterator functions so they can interleave with
         # others
-        self.cur2 = self.con.cursor()
+        self.cur2: Cursor = self.con.cursor()
         if clean_db:
             self.clean_db()
         self.check_schema_version()
@@ -91,12 +90,12 @@ class LocalData:
             qry = f.read()
             self.cur.executescript(qry)
 
-    def set_scan_date(self, last_date):
+    def set_scan_date(self, last_date: datetime):
         d = Utils.date_to_string(last_date)
         self.cur.execute('UPDATE Globals SET LastIndex=? '
                          'WHERE Id IS 1', (d,))
 
-    def get_scan_date(self):
+    def get_scan_date(self) -> datetime:
         query = "SELECT LastIndex " \
                 "FROM  Globals WHERE Id IS 1"
         self.cur.execute(query)
@@ -110,15 +109,21 @@ class LocalData:
 
         return last_date
 
-    def get_files_by_search(self, remote_id='%',
-                            start_date=None, end_date=None,
-                            skip_downloaded=False):
+    def get_files_by_search(
+            self, remote_id: str = '%',
+            start_date: datetime = None,
+            end_date: datetime = None,
+            skip_downloaded: bool = False) -> Iterator[SyncRow]:
         """
-        :param (str) remote_id:
-        :param (datetime) start_date:
-        :param (datetime) end_date:
-        :param (bool) skip_downloaded: Dont return entries already downloaded
-        :return (self.SyncRow):
+        Search for a selection of files in the SyncRow table.
+
+        Parameters:
+            remote_id: Google Photos unique ID
+            start_date: start day for search
+            end_date: end day for search
+            skip_downloaded: Dont return entries already downloaded
+        Return:
+            An iterator over query results
         """
         params = (remote_id,)
         extra_clauses = ''
@@ -145,12 +150,7 @@ class LocalData:
             for record in records:
                 yield self.SyncRow(record)
 
-    def get_file_by_path(self, folder, name):
-        """
-        :param (str) folder:
-        :param (str) name:
-        :return (self.SyncRow):
-        """
+    def get_file_by_path(self, folder: str, name: str):
         query = "SELECT {0} FROM SyncFiles WHERE Path = ?" \
                 " AND FileName = ?;".format(self.SyncRow.columns)
         self.cur.execute(query, (folder, name))
@@ -173,17 +173,16 @@ class LocalData:
             raise
         return row_id
 
-    def file_duplicate_no(self, name, path, remote_id):
+    def file_duplicate_no(self, name: str,
+                          path: str, remote_id: str) -> (int, SyncRow):
         """
         determine if there is already an entry for file. If not determine
         if other entries share the same path/filename and determine a duplicate
         number for providing a unique local filename suffix
 
-        :param (str) name:
-        :param (str) path:
-        :param (str) remote_id:
-        :return (int, SyncRow): the next available duplicate number or 0 if
-        file is unique
+        Returns:
+            duplicate no. (zero if there are no duplicates),
+            Single row from the SyncRow table
         """
         query = "SELECT {0} FROM SyncFiles WHERE RemoteId = ?; ". \
             format(self.SyncRow.columns)
@@ -206,20 +205,30 @@ class LocalData:
             # the file is new and has no duplicates
             return 0, None
 
-    def get_album(self, album_id):
+    def get_album(self, album_id: str) -> AlbumsRow:
         query = "SELECT {0} FROM Albums WHERE AlbumId = ?;".format(
             self.AlbumsRow.columns)
         self.cur.execute(query, (album_id,))
         res = self.cur.fetchone()
         return self.AlbumsRow(res)
 
-    def put_album(self, row):
+    def put_album(self, row: AlbumsRow) -> int:
         query = "INSERT OR REPLACE INTO Albums ({0}) VALUES ({1}) ;".format(
             row.columns, row.params)
         self.cur.execute(query, row.dict)
         return self.cur.lastrowid
 
-    def get_album_files(self, album_id='%'):
+    def get_album_files(self, album_id: str = '%'
+                        ) -> (str, str, str, str):
+        """ Join the Albums, SyncFiles and AlbumFiles tables to get a list
+        of the files in an album or all albums.
+        Parameters
+            album_id: the Google Photos unique id for an album or None for all
+            albums
+        Returns:
+            A tuple containing:
+                Path, Filename, AlbumName, Album end date
+        """
         self.cur.execute(
             "SELECT SyncFiles.Path, SyncFiles.Filename, Albums.AlbumName, "
             "Albums.EndDate FROM AlbumFiles "
@@ -232,7 +241,9 @@ class LocalData:
         for result in results:
             yield tuple(result)
 
-    def put_album_file(self, album_rec, file_rec):
+    def put_album_file(self, album_rec: str, file_rec: str):
+        """ Record in the DB a relationship between an album and a media item
+        """
         self.cur.execute(
             "INSERT OR REPLACE INTO AlbumFiles(AlbumRec, DriveRec) "
             "VALUES(?,"
@@ -243,12 +254,12 @@ class LocalData:
         # noinspection SqlWithoutWhere
         self.cur.execute("DELETE FROM AlbumFiles")
 
-    def put_downloaded(self, sync_file_id, downloaded=True):
+    def put_downloaded(self, sync_file_id: str, downloaded: bool = True):
         self.cur.execute(
             "UPDATE SyncFiles SET Downloaded=? "
             "WHERE RemoteId IS ?;", (downloaded, sync_file_id))
 
-    def downloaded_count(self, downloaded=True):
+    def downloaded_count(self, downloaded: bool = True) -> int:
         self.cur.execute(
             "Select Count(Downloaded) from main.SyncFiles WHERE Downloaded=? ",
             (downloaded,))

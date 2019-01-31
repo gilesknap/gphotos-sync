@@ -10,6 +10,7 @@ from gphotos.BadIds import BadIds
 
 from itertools import zip_longest
 from typing import Iterable, Mapping, Union, List
+from datetime import datetime
 import logging
 import shutil
 import tempfile
@@ -24,28 +25,36 @@ log = logging.getLogger(__name__)
 
 
 class GooglePhotosDownload(object):
-    PAGE_SIZE = 100
-    MAX_THREADS = 20
-    BATCH_SIZE = 40
+    """A Class for managing the indexing and download of Google Photos
+    """
+    PAGE_SIZE: int = 100
+    MAX_THREADS: int = 20
+    BATCH_SIZE: int = 40
 
     def __init__(self, api: RestClient, root_folder: str, db: LocalData):
-        self._db = db
-        self._root_folder = root_folder
-        self._api = api
+        """
+        Parameters:
+            api: object representing the Google REST API
+            root_folder: path to the root of local file synchronization
+            db: local database for indexing
+        """
+        self._db: LocalData = db
+        self._root_folder: str = root_folder
+        self._api: RestClient = api
 
-        self.files_downloaded = 0
-        self.files_download_started = 0
-        self.files_download_skipped = 0
-        self.files_download_failed = 0
+        self.files_downloaded: int = 0
+        self.files_download_started: int = 0
+        self.files_download_skipped: int = 0
+        self.files_download_failed: int = 0
 
         # attributes to be set after init
-        # those with _ must be set through their set_ function
         # thus in theory one instance could so multiple indexes
-        self._start_date = None
-        self._end_date = None
-        self.retry_download = False
-        self.video_timeout = 2000
-        self.image_timeout = 60
+        # those with _ must be set through their set_ function
+        self._start_date: datetime = None
+        self._end_date: datetime = None
+        self.retry_download: bool = False
+        self.video_timeout: int = 2000
+        self.image_timeout: int = 60
 
         # attributes related to multi-threaded download
         self.download_pool = futures.ThreadPoolExecutor(
@@ -75,7 +84,6 @@ class GooglePhotosDownload(object):
         This avoids the overhead of one REST call per file. A REST call
         takes longer than downloading an image
         """
-
         def grouper(
                 iterable: Iterable[DatabaseMedia]) \
                 -> Iterable[Iterable[DatabaseMedia]]:
@@ -129,6 +137,12 @@ class GooglePhotosDownload(object):
             self.bad_ids.report()
 
     def download_batch(self, batch: Mapping[str, DatabaseMedia]):
+        """ Downloads a batch of media items collected in download_photo_media.
+
+        A fresh 'base_url' is required since they have limited lifespan and
+        these are obtained by a single call to the service function
+        mediaItems.batchGet.
+        """
         try:
             response = self._api.mediaItems.batchGet.execute(
                 mediaItemIds=batch.keys())
@@ -157,7 +171,13 @@ class GooglePhotosDownload(object):
             self.find_bad_items(batch)
 
     def download_file(self, media_item: DatabaseMedia, media_json: dict):
-        """ farms media downloads off to the thread pool"""
+        """ farms a single media download off to the thread pool.
+
+        Uses a dictionary of Futures -> mediaItem to track downloads that are
+        currently scheduled/running. When a Future is done it calls
+        do_download_complete to remove the Future from the dictionary and
+        complete processing of the media item.
+        """
         base_url = media_json['baseUrl']
 
         # we dont want a massive queue so wait until at least one thread is free
@@ -180,7 +200,8 @@ class GooglePhotosDownload(object):
         self.pool_future_to_media[future] = media_item
 
     def do_download_file(self, base_url: str, media_item: DatabaseMedia):
-        # this function runs in a process pool and does the actual downloads
+        """ Runs in a process pool and does a download of a single media item.
+        """
         local_folder = os.path.join(self._root_folder,
                                     media_item.relative_folder)
         local_full_path = os.path.join(local_folder, media_item.filename)
@@ -214,6 +235,9 @@ class GooglePhotosDownload(object):
                              futures_list: Union[
                                  Mapping[futures.Future, DatabaseMedia],
                                  List[futures.Future]]):
+        """ runs in the main thread and completes processing of a media
+        item once (multi threaded) do_download has completed
+        """
         for future in futures_list:
             media_item = self.pool_future_to_media.get(future)
             e = future.exception()
