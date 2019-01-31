@@ -1,6 +1,7 @@
 from requests.adapters import HTTPAdapter
 from requests_oauthlib import OAuth2Session
 from urllib3.util.retry import Retry
+from typing import List, Optional
 import os
 
 from yaml import load, dump, YAMLError
@@ -10,22 +11,25 @@ try:
 except ImportError:
     from yaml import Loader, Dumper
 
-
 # OAuth endpoints given in the Google API documentation
 authorization_base_url = "https://accounts.google.com/o/oauth2/v2/auth"
 token_uri = "https://www.googleapis.com/oauth2/v4/token"
 
-'''
-Defines a very simple class to handle google api authorization flow
-for the requests library. Includes saving the token and automatic
-token refresh.
-
-giles 2018
-'''
-
 
 class Authorize:
-    def __init__(self, scope, token_file, secrets_file):
+    def __init__(self, scope: List[str], token_file: str, secrets_file: str):
+        """ A very simple class to handle Google API authorization flow
+        for the requests library. Includes saving the token and automatic
+        token refresh.
+
+        Args:
+            scope: list of the scopes for which permission will be granted
+            token_file: full path of a file in which the user token will be
+            placed. After first use the previous token will also be read in from
+            this file
+            secrets_file: full path of the client secrets file obtained from
+            Google Api Console
+        """
         self.scope = scope
         self.token_file = token_file
         self.session = None
@@ -46,7 +50,7 @@ class Authorize:
             print('missing or bad secrets file: {}'.format(secrets_file))
             exit(1)
 
-    def load_token(self):
+    def load_token(self) -> Optional[str]:
         try:
             with open(self.token_file, 'r') as stream:
                 token = load(stream, Loader=Loader)
@@ -54,18 +58,17 @@ class Authorize:
             return None
         return token
 
-    def save_token(self, token):
+    def save_token(self, token: str):
         with open(self.token_file, 'w') as stream:
             dump(token, stream, Dumper=Dumper)
         os.chmod(self.token_file, 0o600)
 
     def authorize(self):
+        """ Initiates OAuth2 authentication and authorization flow
+        """
         token = self.load_token()
 
         if token:
-            # force refresh on load token.expires_in = -30
-            #  todo this is no longer in the token ??
-            #   how to force update?
             self.session = OAuth2Session(self.client_id, token=token,
                                          auto_refresh_url=self.token_uri,
                                          auto_refresh_kwargs=self.extra,

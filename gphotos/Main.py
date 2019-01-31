@@ -1,5 +1,5 @@
 # coding: utf8
-import argparse
+from argparse import Namespace, ArgumentParser
 import os.path
 import logging
 import sys
@@ -24,16 +24,15 @@ log = logging.getLogger(__name__)
 
 class GooglePhotosSyncMain:
     def __init__(self):
-        self.data_store = None
-        self.google_photos_client = None
-        self.google_photos_idx = None
-        self.google_photos_down = None
-        self.google_albums_sync = None
-        self.trace_file = None
+        self.data_store: LocalData = None
+        self.google_photos_client: RestClient = None
+        self.google_photos_idx: GooglePhotosIndex = None
+        self.google_photos_down: GooglePhotosDownload = None
+        self.google_albums_sync: GoogleAlbumsSync = None
 
-        self.auth = None
+        self.auth: Authorize = None
 
-    parser = argparse.ArgumentParser(
+    parser = ArgumentParser(
         description="Google Photos download tool")
     parser.add_argument(
         "root_folder",
@@ -105,7 +104,7 @@ class GooglePhotosSyncMain:
         action='store_true',
         help="Dont download albums (for testing)")
 
-    def setup(self, args, db_path):
+    def setup(self, args: Namespace, db_path: str):
         app_dirs = AppDirs(APP_NAME)
 
         self.data_store = LocalData(db_path, args.flush_index)
@@ -144,7 +143,7 @@ class GooglePhotosSyncMain:
         self.google_photos_down.retry_download = args.retry_download
 
     @classmethod
-    def logging(cls, args, folder):
+    def logging(cls, args: Namespace, folder: str):
         # if we are debugging requests library is too noisy
         logging.getLogger("requests").setLevel(logging.WARNING)
         logging.getLogger("requests_oauthlib").setLevel(logging.WARNING)
@@ -173,7 +172,7 @@ class GooglePhotosSyncMain:
         # add the handler to the root logger
         logging.getLogger('').addHandler(console)
 
-    def start(self, args):
+    def start(self, args: Namespace):
         with self.data_store:
             if not args.skip_index:
                 if not args.skip_files:
@@ -188,7 +187,7 @@ class GooglePhotosSyncMain:
                 if args.do_delete:
                     self.google_photos_idx.check_for_removed()
 
-    def main(self, test_args=None):
+    def main(self, test_args: dict = None):
         start_time = datetime.now()
         args = self.parser.parse_args(test_args)
 

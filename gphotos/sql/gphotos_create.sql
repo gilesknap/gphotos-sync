@@ -1,4 +1,3 @@
--- noinspection SpellCheckingInspectionForFile
 drop table if exists Albums;
 create table Albums
 (
@@ -44,8 +43,6 @@ create table SyncFiles
 	ModifyDate INT,
 	CreateDate INT,
 	SyncDate INT,
-  MediaType INT DEFAULT 0,
-  SymLink INT DEFAULT 0,
   Downloaded INT DEFAULT 0
 )
 ;
@@ -117,5 +114,5 @@ CREATE UNIQUE INDEX Globals_Id_uindex ON Globals (Id);
 
 -- when the database scheme is changed update the second parameter (Version)
 -- also update the LocalData.VERSION in LocalData.py
-INSERT INTO Globals(Id, Version, Albums, Files) VALUES (1, 4.0, 0, 0);
+INSERT INTO Globals(Id, Version, Albums, Files) VALUES (1, 4.1, 0, 0);
 

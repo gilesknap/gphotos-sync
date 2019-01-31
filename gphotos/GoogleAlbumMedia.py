@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 # coding: utf8
-from .BaseMedia import BaseMedia, MediaType
+from .BaseMedia import BaseMedia
 
 
 class GoogleAlbumMedia(BaseMedia):
-    MEDIA_TYPE = MediaType.ALBUM
-
     def __init__(self, media_json):
         self.__media_json = media_json
         self.__path = None

@@ -3,39 +3,36 @@
 import os.path
 import shutil
 from datetime import datetime
+from typing import Dict
 
 from . import Utils
 from .GoogleAlbumMedia import GoogleAlbumMedia
 from .GooglePhotosMedia import GooglePhotosMedia
 from .LocalData import LocalData
+from .restclient import RestClient
 import logging
 
 log = logging.getLogger(__name__)
 
 
-# noinspection PyCompatibility
 class GoogleAlbumsSync(object):
-    """A Class for managing the indexing and download Google Photos Albums
+    """A Class for managing the indexing and download Google of Albums
     """
-    # noinspection SpellCheckingInspection
-    HIDDEN_ALBUMS = [u'Profile Photos']
-    ALL_FILES_ALBUMS = [u'Auto Backup']
 
-    def __init__(self, api, root_folder, db):
+    def __init__(self, api: RestClient, root_folder: str, db: LocalData):
         """
-        :param (RestClient) api
-        :param (str) root_folder:
-        :param (LocalData) db:
+        Parameters:
+            root_folder: path to the root of local file synchronization
+            api: object representing the Google REST API
+            db: local database for indexing
         """
-        self._root_folder = root_folder
-        self._db = db
-        self._gdata_client = None
-        self._api = api
-        # properties to be set after init
-        self.albumName = None
+        self._root_folder: str = root_folder
+        self._db: LocalData = db
+        self._api: RestClient = api
 
     @classmethod
-    def make_search_parameters(cls, album_id, page_token=None):
+    def make_search_parameters(cls, album_id: str,
+                               page_token: str = None) -> Dict:
         body = {
             'pageToken': page_token,
             'albumId': album_id,
@@ -43,7 +40,7 @@ class GoogleAlbumsSync(object):
         }
         return body
 
-    def fetch_album_contents(self, album_id):
+    def fetch_album_contents(self, album_id: str) -> (datetime, datetime):
         first_date = Utils.maximum_date()
         last_date = Utils.minimum_date()
         body = self.make_search_parameters(album_id=album_id)
@@ -100,7 +97,6 @@ class GoogleAlbumsSync(object):
                 else:
                     log.info('Indexing Album: %s, photos: %d', album.filename,
                              album.size)
-                    # todo use parallel execution for fetch album
                     first_date, last_date = self.fetch_album_contents(album.id)
                     # write the album data down now we know the contents'
                     # date range

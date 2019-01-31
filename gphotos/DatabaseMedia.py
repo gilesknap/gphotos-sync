@@ -2,60 +2,57 @@
 # coding: utf8
 from datetime import datetime
 
-from gphotos.BaseMedia import BaseMedia, MediaType
+from gphotos.BaseMedia import BaseMedia
 from gphotos.LocalData import LocalData
-from typing import TypeVar
+from typing import TypeVar, Iterator
 
+# this allows self reference to this class in its factory methods
 D = TypeVar('D', bound='DatabaseMedia')
 
 
 class DatabaseMedia(BaseMedia):
-    """A Class for instantiating a GoogleMedia object from the database
+    """A Class for instantiating a DatabaseMedia object from the database
 
-    The standard GoogleMedia attributes are presented here and are read in
-    from the database using one of the two factory class methods.
+    The standard BaseMedia attributes are presented here and are read in
+    from the database using one of the two class factory methods.
 
     Attributes:
         _id: remote identifier from Google Photos
-        _filename:
-        _orig_name:
-        _duplicate_number:
-        _date:
+        _url: the 'product URL' which takes you to the Web view for this file
+        _relative_folder: root relative path to file
+        _filename: local filename
+        _orig_name: as above minus any duplicate number suffix
+        _duplicate_number: which instance if > 1 file has same orig_name
+        _size: files size on disk
+        _mimeType: string representation of file type
+        _date: modification date
+        _create_date: creation date
         _description:
-        _size:
-        _create_date:
-        _media_type:
-        _sym_link:
+        _downloaded: true if previously downloaded to disk
     """
-    MEDIA_TYPE = MediaType.DATABASE
-
     def __init__(self, row: LocalData.SyncRow):
         """
         This constructor is kept in sync with changes to the SyncFiles table
 
         Args:
-            row: a tuple containing a value for each column in the SyncFiles
+            row: object with an attribute for each column in the SyncFiles
             table.
         """
         super(DatabaseMedia, self).__init__()
 
         if row:
-            self._id = row.RemoteId
-            self._url = row.Url
-            self._relative_folder = row.Path
-            self._filename = row.FileName
-            self._orig_name = row.OrigFileName
-            self._duplicate_number = row.DuplicateNo
-            self._media_type = row.MediaType
-            self._size = row.FileSize
-            self._mimeType = row.MimeType
-            self._description = row.Description
-            self._date = row.ModifyDate
-            self._create_date = row.CreateDate
-            self._sym_link = row.SymLink = None
-            self._downloaded = row.Downloaded = None
-
-            self.duplicate_number = int(self.duplicate_number)
+            self._id: str = row.RemoteId
+            self._url: str = row.Url
+            self._relative_folder: str = row.Path
+            self._filename: str = row.FileName
+            self._orig_name: str = row.OrigFileName
+            self._duplicate_number: int = int(row.DuplicateNo)
+            self._size: int = int(row.FileSize)
+            self._mimeType: str = row.MimeType
+            self._description: str = row.Description
+            self._date: datetime = row.ModifyDate
+            self._create_date: datetime = row.CreateDate
+            self._downloaded: bool = row.Downloaded
         else:
             # this indicates record not found
             self._id = None
@@ -71,17 +68,19 @@ class DatabaseMedia(BaseMedia):
             folder : the root relative path to the file to find
             name: the name of the file to find
             db: the database wrapper object
+
+        Returns:
+            DatabaseMedia object representing a single row
         """
         data_tuple = db.get_file_by_path(folder, name)
         return DatabaseMedia(data_tuple)
 
     @classmethod
-    def get_media_by_search(cls, db: LocalData, remote_id: str = '%',
-                            media_type: MediaType = '%',
+    def get_media_by_search(cls, db: LocalData,
+                            remote_id: str = '%',
                             start_date: datetime = None,
                             end_date: datetime = None,
-                            skip_linked: bool = False,
-                            skip_downloaded: bool = False):
+                            skip_downloaded: bool = False) -> Iterator[D]:
         """
         A factory method to find any number of rows in SyncFile and yield an
         iterator of DataBaseMedia objects representing the results
@@ -89,22 +88,19 @@ class DatabaseMedia(BaseMedia):
         Args:
             db: the database wrapper object
             remote_id: optional id of row to find
-            media_type: optional type of rows to find
             start_date: optional date filter
             end_date: optional date filter
-            skip_linked: skip files with non-null SymLink
             skip_downloaded: skip files with downloaded=1
 
         Returns:
-            yields GoogleMedia object filled from database
+            yields DatabaseMedia objects filled with rows from database
         """
         for record in db.get_files_by_search(
-                remote_id, media_type, start_date, end_date, skip_linked,
-                skip_downloaded):
+                remote_id, start_date, end_date, skip_downloaded):
             new_media = DatabaseMedia(record)
             yield new_media
 
-    # ----- GoogleMedia base class override Properties below -----
+    # ----- BaseMedia base class override Properties below -----
     @property
     def size(self) -> int:
         return self._size

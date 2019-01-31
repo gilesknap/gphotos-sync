@@ -163,6 +163,7 @@ class TestSystem(TestCase):
         self.assertEqual(10, len(files))
 
         db = LocalData(s.root)
+        # noinspection SqlWithoutWhere
         db.cur.execute("DELETE FROM SyncFiles;")
         db.store()
 

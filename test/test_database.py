@@ -4,7 +4,6 @@ from gphotos.LocalData import LocalData
 from test.test_setup import SetupDbAndCredentials
 
 
-# noinspection SqlResolve
 class DatabaseTest(TestCase):
     def test_new_schema(self):
         """
@@ -18,7 +17,7 @@ class DatabaseTest(TestCase):
 
         db = LocalData(s.root)
         db.cur.execute(
-            'UPDATE Globals SET Version = "1.0" WHERE Id IS 1')
+            'UPDATE Globals SET Version = 1.0 WHERE Id IS 1')
         db.store()
         db.con.close()
 
@@ -31,7 +30,7 @@ class DatabaseTest(TestCase):
         self.assertEqual(version, LocalData.VERSION)
 
         db.cur.execute(
-            'UPDATE Globals SET Version = "100.0" WHERE Id IS 1')
+            'UPDATE Globals SET Version = 100.0 WHERE Id IS 1')
         db.store()
 
         with self.assertRaises(ValueError):
