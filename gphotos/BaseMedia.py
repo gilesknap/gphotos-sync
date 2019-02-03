@@ -18,8 +18,13 @@ class BaseMedia(object):
     fix_windows_ending = re.compile('([ .]+$)')
 
     def __init__(self, **k_args):
+        self._id = None
         self._relative_folder = None
         self._duplicate_number = 0
+
+    # Allow boolean check to fail on empty BaseMedia
+    def __bool__(self) -> bool:
+        return self._id is not None
 
     def validate_encoding(self, s: str) -> str:
         """

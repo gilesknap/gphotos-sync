@@ -58,7 +58,8 @@ class GooglePhotosIndex(object):
                 local_path = os.path.relpath(dir_name, self._root_folder)
                 if file_name.startswith('.') or file_name.startswith('gphotos'):
                     continue
-                file_row = self._db.get_file_by_path(local_path, file_name)
+                file_row = self._db.get_file_by_path(
+                    GooglePhotosRow, local_path, file_name)
                 if not file_row:
                     name = os.path.join(dir_name, file_name)
                     os.remove(name)
@@ -66,7 +67,7 @@ class GooglePhotosIndex(object):
 
     def write_media_index(self, media: GooglePhotosMedia,
                           update: bool = True):
-        self._db.put_file(GooglePhotosRow.from_media(media), update)
+        self._db.put_row(GooglePhotosRow.from_media(media), update)
         if media.create_date > self.latest_download:
             self.latest_download = media.create_date
 
@@ -151,7 +152,7 @@ class GooglePhotosIndex(object):
                     self.write_media_index(media_item, False)
                     if self.files_indexed % 2000 == 0:
                         self._db.store()
-                elif media_item.modify_date > row.ModifyDate:
+                elif media_item.modify_date > row.modify_date:
                     self.files_indexed += 1
                     # todo at present there is no modify date in the API
                     #  so updates cannot be monitored - this won't get called

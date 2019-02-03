@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
 # coding: utf8
-import os.path
-import shutil
-from datetime import datetime
-from typing import Dict
 from pathlib import Path
 import piexif
 from libxmp.utils import file_to_dict
@@ -54,7 +50,8 @@ class LocalFilesScan(object):
         else:
             self.index_exif_item(path)
 
-    def index_xmp_item(self, path: Path):
+    @classmethod
+    def index_xmp_item(cls, path: Path):
         # use of xmp
         # this shows up in some video files that have no EXIF
         # most useful would be for google generated MOVIE.mp4 files BUT
@@ -66,7 +63,8 @@ class LocalFilesScan(object):
         xmp = file_to_dict(str(path))
         print(path, xmp)
 
-    def index_exif_item(self, path: Path):
+    @classmethod
+    def index_exif_item(cls, path: Path):
         try:
             exif_dict = piexif.load(str(path))
             date_img = exif_dict["0th"].get(piexif.ImageIFD.DateTime)
@@ -98,6 +96,7 @@ class LocalFilesScan(object):
                             log.error('SECONDARY DATE BAD %s,%s in %s',
                                       date_img, date_create, path)
 
+                log.debug('indexed %s, %s, %s', path, desc, date_img)
             except ValueError:
                 log.error('BAD DATES %s,%s in %s', date_img, date_create, path)
             # log.warning("Date: %s, Desc %s, File %s",

@@ -5,7 +5,7 @@ from datetime import datetime
 from gphotos import Utils
 from gphotos.DbRow import DbRow
 from gphotos.DatabaseMedia import DatabaseMedia
-from gphotos.GooglePhotosMedia import GooglePhotosMedia
+from gphotos.GoogleAlbumMedia import GoogleAlbumMedia
 import logging
 
 log = logging.getLogger(__name__)
@@ -20,6 +20,7 @@ class GoogleAlbumsRow(DbRow):
     generates a class with attributes for each of the columns in the
     SyncFiles table
     """
+    table = "Albums"
     cols_def = {'AlbumId': str, 'AlbumName': str, 'Size': int,
                 'StartDate': datetime,
                 'EndDate': datetime, 'SyncDate': datetime}
@@ -28,7 +29,7 @@ class GoogleAlbumsRow(DbRow):
         pass
 
     @classmethod
-    def from_media(cls, album: GooglePhotosMedia) -> G:
+    def from_media(cls, album: GoogleAlbumMedia) -> G:
         pass
 
     @classmethod

@@ -29,19 +29,19 @@ class GooglePhotosRow(DbRow):
     no_update = ['Id']
 
     def to_media(self) -> DatabaseMedia:
-        db_media = DatabaseMedia()
-        db_media._id: str = self.RemoteId
-        db_media._url: str = self.Url
-        db_media._relative_folder: str = self.Path
-        db_media._filename: str = self.FileName
-        db_media._orig_name: str = self.OrigFileName
-        db_media._duplicate_number: int = int(self.DuplicateNo)
-        db_media._size: int = int(self.FileSize)
-        db_media._mimeType: str = self.MimeType
-        db_media._description: str = self.Description
-        db_media._date: datetime = self.ModifyDate
-        db_media._create_date: datetime = self.CreateDate
-        db_media._downloaded: bool = self.Downloaded
+        db_media = DatabaseMedia(
+            _id=self.RemoteId,
+            _url=self.Url,
+            _relative_folder=self.Path,
+            _filename=self.FileName,
+            _orig_name=self.OrigFileName,
+            _duplicate_number=self.DuplicateNo,
+            _size=self.FileSize,
+            _mime_type=self.MimeType,
+            _description=self.Description,
+            _date=self.ModifyDate,
+            _create_date=self.CreateDate,
+            _downloaded=self.Downloaded)
         return db_media
 
     @classmethod

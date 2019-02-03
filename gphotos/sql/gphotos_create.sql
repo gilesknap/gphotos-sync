@@ -31,6 +31,7 @@ create table LocalFiles
 (
 	Id INTEGER
 		primary key,
+	RemoteId TEXT,
 	DateBasedPath TEXT,
 	FileName TEXT,
 	OriginalFileName TEXT,
@@ -44,9 +45,11 @@ create table LocalFiles
 	SyncDate INT
 )
 ;
+DROP INDEX IF EXISTS LocalRemoteIdIdx;
 DROP INDEX IF EXISTS LocalNameIdx;
 DROP INDEX IF EXISTS LocalCreatedIdx;
 DROP INDEX IF EXISTS LocalFiles_Path_FileName_DuplicateNo_uindex;
+create unique index LocalRemoteIdIdx	on LocalFiles (RemoteId);
 create index LocalNameIdx  on LocalFiles (FileName);
 create index LocalCreatedIdx  on LocalFiles (CreateDate);
 create unique index LocalFiles_Path_FileName_DuplicateNo_uindex
@@ -140,5 +143,5 @@ CREATE UNIQUE INDEX Globals_Id_uindex ON Globals (Id);
 
 -- when the database scheme is changed update the second parameter (Version)
 -- also update the LocalData.VERSION in LocalData.py
-INSERT INTO Globals(Id, Version, Albums, Files) VALUES (1, 5.0, 0, 0);
+INSERT INTO Globals(Id, Version, Albums, Files) VALUES (1, 5.1, 0, 0);
 

@@ -6,6 +6,7 @@ from gphotos import Utils
 from gphotos.LocalData import LocalData
 from gphotos.restclient import RestClient
 from gphotos.DatabaseMedia import DatabaseMedia
+from gphotos.GooglePhotosRow import GooglePhotosRow
 from gphotos.BadIds import BadIds
 
 from itertools import zip_longest
@@ -99,6 +100,7 @@ class GooglePhotosDownload(object):
         try:
             for media_items_block in grouper(
                     self._db.get_files_by_search(
+                        GooglePhotosRow,
                         start_date=self._start_date,
                         end_date=self._end_date,
                         skip_downloaded=not self.retry_download)):

@@ -90,7 +90,7 @@ class GoogleAlbumsSync(object):
 
                 album = GoogleAlbumMedia(album_json)
                 indexed_album = self._db.get_album(album_id=album.id)
-                already_indexed = indexed_album.Size == album.size if \
+                already_indexed = indexed_album.size == album.size if \
                     indexed_album else False
 
                 if already_indexed:
@@ -105,7 +105,7 @@ class GoogleAlbumsSync(object):
                     gar = GoogleAlbumsRow.from_parm(
                         album.id, album.filename, album.size,
                         first_date, last_date)
-                    self._db.put_album(gar)
+                    self._db.put_row(gar)
 
             next_page = results.get('nextPageToken')
             if next_page:

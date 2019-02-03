@@ -1,3 +1,4 @@
+piexif
 urllib3
 mock
 appdirs

@@ -14,6 +14,7 @@ log = logging.getLogger(__name__)
 DB = TypeVar('DB', bound='DBRow')
 
 
+# noinspection PyUnresolvedReferences
 class DbRow:
     """
     base class for classes representing a row in the database to allow easy
@@ -55,7 +56,7 @@ class DbRow:
     def from_media(cls, media: BaseMedia) -> DB:
         raise NotImplementedError
 
-    def __init__(self):
+    def __init__(self, _):
         pass
 
     # empty row object = boolean False
@@ -65,7 +66,7 @@ class DbRow:
     # factory method for delivering a DbRow class based on named arguments
     @classmethod
     def make(cls, **k_args: Any) -> DB:
-        new_row_class = cls()
+        new_row_class = cls(None)
         for key, value in k_args.items():
             if not hasattr(new_row_class, key):
                 raise ValueError("{0} does not have column {1}".format(

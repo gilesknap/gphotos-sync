@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # coding: utf8
 from datetime import datetime
-from typing import TypeVar, Iterator
+from typing import TypeVar
 
 from gphotos.BaseMedia import BaseMedia
 
@@ -9,6 +9,7 @@ from gphotos.BaseMedia import BaseMedia
 D = TypeVar('D', bound='DatabaseMedia')
 
 
+# noinspection PyUnresolvedReferences
 class DatabaseMedia(BaseMedia):
     """A Class for reading and writing BaseMedia objects to and from
     database tables
@@ -25,35 +26,38 @@ class DatabaseMedia(BaseMedia):
         _orig_name: as above minus any duplicate number suffix
         _duplicate_number: which instance if > 1 file has same orig_name
         _size: files size on disk
-        _mimeType: string representation of file type
+        _mime_type: string representation of file type
         _date: modification date
         _create_date: creation date
         _description:
         _downloaded: true if previously downloaded to disk
     """
-    def __init__(self):
+
+    def __init__(self,
+                 _id: str = None,
+                 _url: str = None,
+                 _relative_folder: str = None,
+                 _filename: str = None,
+                 _orig_name: str = None,
+                 _duplicate_number: int = None,
+                 _size: int = None,
+                 _mime_type: str = None,
+                 _description: str = None,
+                 _date: datetime = None,
+                 _create_date: datetime = None,
+                 _downloaded: bool = False):
         super(DatabaseMedia, self).__init__()
-        self._id: str = None
-        self._url: str = None
-        self._relative_folder: str = None
-        self._filename: str = None
-        self._orig_name: str = None
-        self._duplicate_number: int = None
-        self._size: int = None
-        self._mimeType: str = None
-        self._description: str = None
-        self._date: datetime = None
-        self._create_date: datetime = None
-        self._downloaded: bool = None
+        # add all of the arguments as attributes on this object
+        self.__dict__.update(locals())
 
     # ----- BaseMedia base class override Properties below -----
-    @property
+    @ property
     def size(self) -> int:
         return self._size
 
     @property
     def mime_type(self) -> str:
-        return self._mimeType
+        return self._mime_type
 
     @property
     def id(self) -> str:
@@ -74,7 +78,7 @@ class DatabaseMedia(BaseMedia):
         return self.validate_encoding(self._orig_name)
 
     @property
-    def filename(self)->str:
+    def filename(self) -> str:
         """
         filename including a suffix to make it unique if duplicates exist
         """
