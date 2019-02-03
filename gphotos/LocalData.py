@@ -7,8 +7,8 @@ from datetime import datetime
 from typing import Iterator
 
 from gphotos import Utils
-from gphotos.DbRow import DbRow
 from gphotos.GooglePhotosRow import GooglePhotosRow
+from gphotos.GoogleAlbumsRow import GoogleAlbumsRow
 from gphotos.DatabaseMedia import DatabaseMedia
 
 import logging
@@ -46,16 +46,6 @@ class LocalData:
         if self.con:
             self.store()
             self.con.close()
-
-    @DbRow.db_row
-    class AlbumsRow(DbRow):
-        """
-        generates a class with attributes for each of the columns in the
-        SyncFiles table
-        """
-        cols_def = {'AlbumId': str, 'AlbumName': str, 'Size': int,
-                    'StartDate': datetime,
-                    'EndDate': datetime, 'SyncDate': datetime}
 
     def check_schema_version(self):
         query = "SELECT  Version FROM  Globals WHERE Id IS 1"
@@ -150,12 +140,11 @@ class LocalData:
     def put_file(self, row, update=False):
         try:
             if update:
-                query = "UPDATE SyncFiles Set {0} " \
-                        "WHERE RemoteId = '{1}'".format(GooglePhotosRow.update,
-                                                        row.RemoteId)
+                query = "UPDATE {0} Set {1} WHERE RemoteId = '{2}'".format(
+                    row.table, row.update, row.RemoteId)
             else:
-                query = "INSERT INTO SyncFiles ({0}) VALUES ({1})".format(
-                    GooglePhotosRow.columns, GooglePhotosRow.params)
+                query = "INSERT INTO {0} ({1}) VALUES ({2})".format(
+                    row.table, row.columns, row.params)
             self.cur.execute(query, row.dict)
             row_id = self.cur.lastrowid
         except lite.IntegrityError:
@@ -195,14 +184,14 @@ class LocalData:
             # the file is new and has no duplicates
             return 0, None
 
-    def get_album(self, album_id: str) -> AlbumsRow:
+    def get_album(self, album_id: str) -> GoogleAlbumsRow:
         query = "SELECT {0} FROM Albums WHERE AlbumId = ?;".format(
-            self.AlbumsRow.columns)
+            GoogleAlbumsRow.columns)
         self.cur.execute(query, (album_id,))
         res = self.cur.fetchone()
-        return self.AlbumsRow(res)
+        return GoogleAlbumsRow(res)
 
-    def put_album(self, row: AlbumsRow) -> int:
+    def put_album(self, row: GoogleAlbumsRow) -> int:
         query = "INSERT OR REPLACE INTO Albums ({0}) VALUES ({1}) ;".format(
             row.columns, row.params)
         self.cur.execute(query, row.dict)

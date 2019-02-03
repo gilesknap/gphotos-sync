@@ -8,6 +8,7 @@ from typing import Dict
 from . import Utils
 from .GoogleAlbumMedia import GoogleAlbumMedia
 from .GooglePhotosMedia import GooglePhotosMedia
+from .GoogleAlbumsRow import GoogleAlbumsRow
 from .LocalData import LocalData
 from .restclient import RestClient
 import logging
@@ -101,15 +102,10 @@ class GoogleAlbumsSync(object):
                     first_date, last_date = self.fetch_album_contents(album.id)
                     # write the album data down now we know the contents'
                     # date range
-                    row = LocalData.AlbumsRow.make(
-                        AlbumId=album.id,
-                        AlbumName=album.filename,
-                        Size=album.size,
-                        StartDate=first_date,
-                        EndDate=last_date,
-                        SyncDate=Utils.date_to_string(
-                            datetime.now()))
-                    self._db.put_album(row)
+                    gar = GoogleAlbumsRow.from_parm(
+                        album.id, album.filename, album.size,
+                        first_date, last_date)
+                    self._db.put_album(gar)
 
             next_page = results.get('nextPageToken')
             if next_page:
