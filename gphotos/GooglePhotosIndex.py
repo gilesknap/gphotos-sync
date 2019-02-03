@@ -5,6 +5,7 @@ from datetime import datetime
 
 from gphotos import Utils
 from gphotos.GooglePhotosMedia import GooglePhotosMedia
+from gphotos.GooglePhotosRow import GooglePhotosRow
 from gphotos.LocalData import LocalData
 from gphotos.restclient import RestClient
 
@@ -65,7 +66,7 @@ class GooglePhotosIndex(object):
 
     def write_media_index(self, media: GooglePhotosMedia,
                           update: bool = True):
-        media.save_to_db(self._db, update)
+        self._db.put_file(GooglePhotosRow.from_media(media), update)
         if media.create_date > self.latest_download:
             self.latest_download = media.create_date
 
@@ -138,7 +139,11 @@ class GooglePhotosIndex(object):
             for media_item_json in media_json:
                 media_item = GooglePhotosMedia(media_item_json)
                 media_item.set_path_by_date(self._media_folder)
-                row = media_item.is_indexed(self._db)
+                (num, row) = self._db.file_duplicate_no(
+                    media_item.filename, media_item.relative_folder,
+                    media_item.id)
+                # we just learned if there were any duplicates in the db
+                media_item.duplicate_number = num
                 if not row:
                     self.files_indexed += 1
                     log.info("Indexed %d %s", self.files_indexed,

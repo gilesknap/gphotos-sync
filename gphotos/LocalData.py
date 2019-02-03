@@ -8,6 +8,9 @@ from typing import Iterator
 
 from gphotos import Utils
 from gphotos.DbRow import DbRow
+from gphotos.GooglePhotosRow import GooglePhotosRow
+from gphotos.DatabaseMedia import DatabaseMedia
+
 import logging
 
 log = logging.getLogger(__name__)
@@ -43,19 +46,6 @@ class LocalData:
         if self.con:
             self.store()
             self.con.close()
-
-    @DbRow.db_row
-    class SyncRow(DbRow):
-        """
-        generates a class with attributes for each of the columns in the
-        SyncFiles table
-        """
-        cols_def = {'Id': int, 'RemoteId': str, 'Url': str, 'Path': str,
-                    'FileName': str, 'OrigFileName': str, 'DuplicateNo': int,
-                    'FileSize': int, 'MimeType': str, 'Description': str,
-                    'ModifyDate': datetime, 'CreateDate': datetime,
-                    'SyncDate': datetime, 'Downloaded': int}
-        no_update = ['Id']
 
     @DbRow.db_row
     class AlbumsRow(DbRow):
@@ -113,7 +103,7 @@ class LocalData:
             self, remote_id: str = '%',
             start_date: datetime = None,
             end_date: datetime = None,
-            skip_downloaded: bool = False) -> Iterator[SyncRow]:
+            skip_downloaded: bool = False) -> Iterator[DatabaseMedia]:
         """
         Search for a selection of files in the SyncRow table.
 
@@ -140,7 +130,7 @@ class LocalData:
             extra_clauses += 'AND Downloaded IS 0'
 
         query = "SELECT {0} FROM SyncFiles WHERE RemoteId LIKE ? {1};". \
-            format(self.SyncRow.columns, extra_clauses)
+            format(GooglePhotosRow.columns, extra_clauses)
 
         self.cur2.execute(query, params)
         while True:
@@ -148,24 +138,24 @@ class LocalData:
             if not records:
                 break
             for record in records:
-                yield self.SyncRow(record)
+                yield GooglePhotosRow(record).to_media()
 
     def get_file_by_path(self, folder: str, name: str):
         query = "SELECT {0} FROM SyncFiles WHERE Path = ?" \
-                " AND FileName = ?;".format(self.SyncRow.columns)
+                " AND FileName = ?;".format(GooglePhotosRow.columns)
         self.cur.execute(query, (folder, name))
         record = self.cur.fetchone()
-        return self.SyncRow(record)
+        return GooglePhotosRow(record)
 
     def put_file(self, row, update=False):
         try:
             if update:
                 query = "UPDATE SyncFiles Set {0} " \
-                        "WHERE RemoteId = '{1}'".format(self.SyncRow.update,
+                        "WHERE RemoteId = '{1}'".format(GooglePhotosRow.update,
                                                         row.RemoteId)
             else:
                 query = "INSERT INTO SyncFiles ({0}) VALUES ({1})".format(
-                    self.SyncRow.columns, self.SyncRow.params)
+                    GooglePhotosRow.columns, GooglePhotosRow.params)
             self.cur.execute(query, row.dict)
             row_id = self.cur.lastrowid
         except lite.IntegrityError:
@@ -174,7 +164,7 @@ class LocalData:
         return row_id
 
     def file_duplicate_no(self, name: str,
-                          path: str, remote_id: str) -> (int, SyncRow):
+                          path: str, remote_id: str) -> (int, GooglePhotosRow):
         """
         determine if there is already an entry for file. If not determine
         if other entries share the same path/filename and determine a duplicate
@@ -185,13 +175,13 @@ class LocalData:
             Single row from the SyncRow table
         """
         query = "SELECT {0} FROM SyncFiles WHERE RemoteId = ?; ". \
-            format(self.SyncRow.columns)
+            format(GooglePhotosRow.columns)
         self.cur.execute(query, (remote_id,))
         result = self.cur.fetchone()
 
         if result:
             # return the existing file entry's duplicate no.
-            return result['DuplicateNo'], self.SyncRow(result)
+            return result['DuplicateNo'], GooglePhotosRow(result)
 
         self.cur.execute(
             "SELECT MAX(DuplicateNo) FROM SyncFiles "

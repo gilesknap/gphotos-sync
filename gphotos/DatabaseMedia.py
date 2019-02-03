@@ -1,20 +1,21 @@
 #!/usr/bin/env python3
 # coding: utf8
 from datetime import datetime
+from typing import TypeVar, Iterator
 
 from gphotos.BaseMedia import BaseMedia
-from gphotos.LocalData import LocalData
-from typing import TypeVar, Iterator
 
 # this allows self reference to this class in its factory methods
 D = TypeVar('D', bound='DatabaseMedia')
 
 
 class DatabaseMedia(BaseMedia):
-    """A Class for instantiating a DatabaseMedia object from the database
+    """A Class for reading and writing BaseMedia objects to and from
+    database tables
 
-    The standard BaseMedia attributes are presented here and are read in
-    from the database using one of the two class factory methods.
+    The standard BaseMedia attributes are represented here. This dumb class
+    is used for representing any MediaBase derived class that has been read out
+    of the Database.
 
     Attributes:
         _id: remote identifier from Google Photos
@@ -30,75 +31,20 @@ class DatabaseMedia(BaseMedia):
         _description:
         _downloaded: true if previously downloaded to disk
     """
-    def __init__(self, row: LocalData.SyncRow):
-        """
-        This constructor is kept in sync with changes to the SyncFiles table
-
-        Args:
-            row: object with an attribute for each column in the SyncFiles
-            table.
-        """
+    def __init__(self):
         super(DatabaseMedia, self).__init__()
-
-        if row:
-            self._id: str = row.RemoteId
-            self._url: str = row.Url
-            self._relative_folder: str = row.Path
-            self._filename: str = row.FileName
-            self._orig_name: str = row.OrigFileName
-            self._duplicate_number: int = int(row.DuplicateNo)
-            self._size: int = int(row.FileSize)
-            self._mimeType: str = row.MimeType
-            self._description: str = row.Description
-            self._date: datetime = row.ModifyDate
-            self._create_date: datetime = row.CreateDate
-            self._downloaded: bool = row.Downloaded
-        else:
-            # this indicates record not found
-            self._id = None
-
-    @classmethod
-    def get_media_by_filename(cls, folder: str, name: str, db: LocalData) -> D:
-        """
-        A factory method for finding a single row in the SyncFile table by
-        full path to filename and instantiate a DataBaseMedia object to
-        represent it
-
-        Args:
-            folder : the root relative path to the file to find
-            name: the name of the file to find
-            db: the database wrapper object
-
-        Returns:
-            DatabaseMedia object representing a single row
-        """
-        data_tuple = db.get_file_by_path(folder, name)
-        return DatabaseMedia(data_tuple)
-
-    @classmethod
-    def get_media_by_search(cls, db: LocalData,
-                            remote_id: str = '%',
-                            start_date: datetime = None,
-                            end_date: datetime = None,
-                            skip_downloaded: bool = False) -> Iterator[D]:
-        """
-        A factory method to find any number of rows in SyncFile and yield an
-        iterator of DataBaseMedia objects representing the results
-
-        Args:
-            db: the database wrapper object
-            remote_id: optional id of row to find
-            start_date: optional date filter
-            end_date: optional date filter
-            skip_downloaded: skip files with downloaded=1
-
-        Returns:
-            yields DatabaseMedia objects filled with rows from database
-        """
-        for record in db.get_files_by_search(
-                remote_id, start_date, end_date, skip_downloaded):
-            new_media = DatabaseMedia(record)
-            yield new_media
+        self._id: str = None
+        self._url: str = None
+        self._relative_folder: str = None
+        self._filename: str = None
+        self._orig_name: str = None
+        self._duplicate_number: int = None
+        self._size: int = None
+        self._mimeType: str = None
+        self._description: str = None
+        self._date: datetime = None
+        self._create_date: datetime = None
+        self._downloaded: bool = None
 
     # ----- BaseMedia base class override Properties below -----
     @property

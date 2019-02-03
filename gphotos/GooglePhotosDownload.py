@@ -84,6 +84,7 @@ class GooglePhotosDownload(object):
         This avoids the overhead of one REST call per file. A REST call
         takes longer than downloading an image
         """
+
         def grouper(
                 iterable: Iterable[DatabaseMedia]) \
                 -> Iterable[Iterable[DatabaseMedia]]:
@@ -97,8 +98,7 @@ class GooglePhotosDownload(object):
         log.warning('Downloading Photos ...')
         try:
             for media_items_block in grouper(
-                    DatabaseMedia.get_media_by_search(
-                        self._db,
+                    self._db.get_files_by_search(
                         start_date=self._start_date,
                         end_date=self._end_date,
                         skip_downloaded=not self.retry_download)):
