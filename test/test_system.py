@@ -12,10 +12,6 @@ from gphotos.LocalData import LocalData
 import test.test_setup as ts
 
 
-# todo add a test that reads in Sync Date from the Db
-# todo add code coverage tests
-
-
 class TestSystem(TestCase):
     def test_sys_whole_library(self):
         """Download all images in test library. Check filesystem for correct

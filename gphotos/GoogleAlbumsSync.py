@@ -55,6 +55,7 @@ class GoogleAlbumsSync(object):
                 media_item = GooglePhotosMedia(media_item_json)
                 log.debug('----%s', media_item.filename)
                 self._db.put_album_file(album_id, media_item.id)
+                self._db.put_album_file(album_id, media_item.id)
                 last_date = max(media_item.create_date, last_date)
                 first_date = min(media_item.create_date, first_date)
             next_page = items_json.get('nextPageToken')

@@ -47,4 +47,3 @@ class GoogleAlbumMedia(BaseMedia):
     @property
     def url(self):
         return self.__media_json['productUrl']
-

@@ -17,7 +17,7 @@ class LocalData:
     DB_FILE_NAME: str = 'gphotos.sqlite'
     BLOCK_SIZE: int = 10000
     # this must match 'INSERT INTO Globals' in gphotos_create.sql
-    VERSION: float = 4.1
+    VERSION: float = 5.0
 
     def __init__(self, root_folder: str, flush_index: bool = False):
         self.file_name: str = os.path.join(root_folder, LocalData.DB_FILE_NAME)

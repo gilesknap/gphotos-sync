@@ -13,6 +13,7 @@ from gphotos.GoogleAlbumsSync import GoogleAlbumsSync
 from gphotos.LocalData import LocalData
 from gphotos.authorize import Authorize
 from gphotos.restclient import RestClient
+from gphotos.LocalFilesScan import LocalFilesScan
 import pkg_resources
 
 if os.name != 'nt':
@@ -29,6 +30,7 @@ class GooglePhotosSyncMain:
         self.google_photos_idx: GooglePhotosIndex = None
         self.google_photos_down: GooglePhotosDownload = None
         self.google_albums_sync: GoogleAlbumsSync = None
+        self.local_files_scan: LocalFilesScan = None
 
         self.auth: Authorize = None
 
@@ -37,6 +39,10 @@ class GooglePhotosSyncMain:
     parser.add_argument(
         "root_folder",
         help="root of the local folders to download into")
+    parser.add_argument(
+        "--compare-folder",
+        action='store',
+        help="root of the local folders to compare to the Photos Library")
     parser.add_argument(
         "--flush-index",
         action='store_true',
@@ -133,6 +139,9 @@ class GooglePhotosSyncMain:
             self.google_photos_client, args.root_folder, self.data_store)
         self.google_albums_sync = GoogleAlbumsSync(
             self.google_photos_client, args.root_folder, self.data_store)
+        if args.compare_folder:
+            self.local_files_scan = LocalFilesScan(
+                args.compare_folder, self.data_store)
 
         self.google_photos_idx.set_start_date(args.start_date)
         self.google_photos_idx.set_end_date(args.end_date)
@@ -179,6 +188,8 @@ class GooglePhotosSyncMain:
                     self.google_photos_idx.index_photos_media()
                 if not args.skip_albums:
                     self.google_albums_sync.index_album_media()
+            if args.compare_folder:
+                self.local_files_scan.scan_files()
             if not args.index_only:
                 if not args.skip_files:
                     self.google_photos_down.download_photo_media()
