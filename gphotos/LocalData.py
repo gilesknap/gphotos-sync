@@ -21,7 +21,7 @@ class LocalData:
     DB_FILE_NAME: str = 'gphotos.sqlite'
     BLOCK_SIZE: int = 10000
     # this VERSION must match 'INSERT INTO Globals' in gphotos_create.sql
-    VERSION: float = 5.1
+    VERSION: float = 5.2
 
     def __init__(self, root_folder: str, flush_index: bool = False):
         """ Initialize a connection to the DB and create some cursors.
@@ -132,7 +132,7 @@ class LocalData:
             end_date: datetime = None,
             skip_downloaded: bool = False) -> Iterator[DatabaseMedia]:
         """
-        Search for a selection of files in the SyncRow table.
+        Search for a selection of files in a media table.
 
         Parameters:
             row_type: One of the DbRow derived classes - defines which table
@@ -186,6 +186,8 @@ class LocalData:
         return row_type(record).to_media()
 
     # functions for managing the SyncFiles Table ##############################
+
+    # todo this could be generic and support Albums and LocalFiles too
     def file_duplicate_no(self, name: str,
                           path: str, remote_id: str) -> (int, DatabaseMedia):
         """

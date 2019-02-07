@@ -32,10 +32,9 @@ create table LocalFiles
 	Id INTEGER
 		primary key,
 	RemoteId TEXT,
-	DateBasedPath TEXT,
+	Path TEXT,
 	FileName TEXT,
 	OriginalFileName TEXT,
-	Path TEXT,
 	DuplicateNo INT,
 	MimeType TEXT,
 	Description TEXT,
@@ -43,8 +42,8 @@ create table LocalFiles
 	ModifyDate INT,
 	CreateDate INT,
 	SyncDate INT
-)
-;
+);
+
 DROP INDEX IF EXISTS LocalRemoteIdIdx;
 DROP INDEX IF EXISTS LocalNameIdx;
 DROP INDEX IF EXISTS LocalCreatedIdx;
@@ -73,8 +72,8 @@ create table SyncFiles
 	CreateDate INT,
 	SyncDate INT,
   Downloaded INT DEFAULT 0
-)
-;
+);
+
 DROP INDEX IF EXISTS RemoteIdIdx;
 DROP INDEX IF EXISTS FileNameIdx;
 DROP INDEX IF EXISTS FileSizeIdx;
@@ -108,28 +107,6 @@ DROP INDEX IF EXISTS AlbumFiles_AlbumRec_DriveRec_uindex;
 create unique index AlbumFiles_AlbumRec_DriveRec_uindex
 	on AlbumFiles (AlbumRec, DriveRec);
 
-
-drop table if exists LocalFiles;
-create table LocalFiles
-(
-	Id INTEGER
-		primary key,
-	Path TEXT,
-	FileName TEXT,
-	MimeType TEXT,
-	ModifyDate INT,
-	CreateDate INT,
-	SyncDate INT,
-	Uploaded INT
-)
-;
-DROP INDEX IF EXISTS FileNameIdx;
-DROP INDEX IF EXISTS CreatedIdx;
-DROP INDEX IF EXISTS SyncDateIdx;
-create index FileNameIdx  on LocalFiles (FileName);
-create index CreatedIdx  on LocalFiles (CreateDate);
-create index SyncDateIdx  on LocalFiles (SyncDate);
-
 drop table if exists Globals;
 CREATE TABLE Globals
 (
@@ -143,5 +120,5 @@ CREATE UNIQUE INDEX Globals_Id_uindex ON Globals (Id);
 
 -- when the database scheme is changed update the second parameter (Version)
 -- also update the LocalData.VERSION in LocalData.py
-INSERT INTO Globals(Id, Version, Albums, Files) VALUES (1, 5.1, 0, 0);
+INSERT INTO Globals(Id, Version, Albums, Files) VALUES (1, 5.2, 0, 0);
 
