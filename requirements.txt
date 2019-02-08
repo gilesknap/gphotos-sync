@@ -1,4 +1,4 @@
-magic
+python-magic
 piexif
 urllib3
 mock
