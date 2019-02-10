@@ -189,7 +189,7 @@ class GooglePhotosSyncMain:
                 if not args.skip_albums:
                     self.google_albums_sync.index_album_media()
             if args.compare_folder:
-                self.local_files_scan.scan_files()
+                self.local_files_scan.scan_local_files()
             if not args.index_only:
                 if not args.skip_files:
                     self.google_photos_down.download_photo_media()

@@ -21,7 +21,7 @@ class LocalData:
     DB_FILE_NAME: str = 'gphotos.sqlite'
     BLOCK_SIZE: int = 10000
     # this VERSION must match 'INSERT INTO Globals' in gphotos_create.sql
-    VERSION: float = 5.2
+    VERSION: float = 5.3
 
     def __init__(self, root_folder: str, flush_index: bool = False):
         """ Initialize a connection to the DB and create some cursors.
@@ -124,10 +124,12 @@ class LocalData:
         return row_id
 
     # noinspection SqlResolve
-    def get_files_by_search(
+    def get_rows_by_search(
             self,
             row_type: Type[DbRow] = None,
             remote_id: str = '%',
+            file_name: str = '%',
+            path: str = '%',
             start_date: datetime = None,
             end_date: datetime = None,
             skip_downloaded: bool = False) -> Iterator[DatabaseMedia]:
@@ -138,6 +140,8 @@ class LocalData:
             row_type: One of the DbRow derived classes - defines which table
               this request is for
             remote_id: Google Photos unique ID
+            file_name:
+            path:
             start_date: start day for search
             end_date: end day for search
             skip_downloaded: Dont return entries already downloaded
@@ -161,13 +165,17 @@ class LocalData:
         query = "SELECT {0} FROM {1} WHERE RemoteId LIKE ? {2};". \
             format(row_type.columns, row_type.table, extra_clauses)
 
-        self.cur2.execute(query, params)
-        while True:
-            records = self.cur2.fetchmany(LocalData.BLOCK_SIZE)
-            if not records:
-                break
-            for record in records:
-                yield row_type(record).to_media()
+        try:
+            self.cur2.execute(query, params)
+            while True:
+                records = self.cur2.fetchmany(LocalData.BLOCK_SIZE)
+                if not records:
+                    break
+                for record in records:
+                    yield row_type(record).to_media()
+        except Exception:
+            log.error('query: %s\nparams: %s', query, params)
+            raise
 
     # noinspection SqlResolve
     def get_file_by_path(
@@ -275,3 +283,31 @@ class LocalData:
     def remove_all_album_files(self):
         # noinspection SqlWithoutWhere
         self.cur.execute("DELETE FROM AlbumFiles")
+
+    # ---- LocalFiles Queries -------------------------------------------
+    def local_exists(self, file_name: str, path: str):
+        self.cur.execute(
+            "SELECT COUNT() FROM main.LocalFiles WHERE FileName = ?"
+            "AND PATH = ?;", (file_name, path))
+        result = int(self.cur.fetchone()[0])
+        return result
+
+
+    def find_local_matches(self):
+        # noinspection SqlWithoutWhere
+        self.cur.execute("""
+            with matches(Id, FileName, RemoteID, NewRemoteId ) as (
+                select local.Id as Id,
+                local.OriginalFileName as FileName,
+                local.RemoteId as RemoteID,
+                sync.RemoteId as NewRemoteId
+            from LocalFiles local,
+                SyncFiles sync
+            where local.OriginalFileName = sync.OrigFileName
+                AND local.Description like sync.Description
+                AND local.DuplicateNo = sync.DuplicateNo
+            )
+            update LocalFiles
+            Set RemoteId =
+                (SELECT matches.NewRemoteId from matches where 
+                    LocalFiles.Id = matches.Id);""")

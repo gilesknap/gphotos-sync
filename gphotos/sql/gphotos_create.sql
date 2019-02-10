@@ -32,6 +32,7 @@ create table LocalFiles
 	Id INTEGER
 		primary key,
 	RemoteId TEXT,
+	Uid Text,
 	Path TEXT,
 	FileName TEXT,
 	OriginalFileName TEXT,
@@ -45,12 +46,16 @@ create table LocalFiles
 );
 
 DROP INDEX IF EXISTS LocalRemoteIdIdx;
+DROP INDEX IF EXISTS LocalUidIdx;
 DROP INDEX IF EXISTS LocalNameIdx;
 DROP INDEX IF EXISTS LocalCreatedIdx;
+DROP INDEX IF EXISTS LocalMatchIdx;
 DROP INDEX IF EXISTS LocalFiles_Path_FileName_DuplicateNo_uindex;
 create unique index LocalRemoteIdIdx	on LocalFiles (RemoteId);
+create unique index LocalUidIdx	on LocalFiles (RemoteId);
 create index LocalNameIdx  on LocalFiles (FileName);
 create index LocalCreatedIdx  on LocalFiles (CreateDate);
+create index LocalMatchIdx  on LocalFiles (OriginalFileName, DuplicateNo, Description);
 create unique index LocalFiles_Path_FileName_DuplicateNo_uindex
  	on LocalFiles (Path, FileName, DuplicateNo);
 
@@ -80,6 +85,7 @@ DROP INDEX IF EXISTS FileSizeIdx;
 DROP INDEX IF EXISTS FileSizeAndSizeIdx;
 DROP INDEX IF EXISTS CreatedIdx;
 DROP INDEX IF EXISTS ModifyDateIdx;
+DROP INDEX IF EXISTS SyncMatchIdx;
 DROP INDEX IF EXISTS SyncFiles_Path_FileName_DuplicateNo_uindex;
 create unique index RemoteIdIdx	on SyncFiles (RemoteId);
 create index FileNameIdx  on SyncFiles (FileName);
@@ -87,6 +93,7 @@ create index FileSizeIdx  on SyncFiles (FileSize);
 create index FileSizeAndSizeIdx  on SyncFiles (FileName, FileSize);
 create index CreatedIdx  on SyncFiles (CreateDate);
 create index ModifyDateIdx  on SyncFiles (ModifyDate);
+create index SyncMatchIdx  on SyncFiles (OrigFileName, DuplicateNo, Description);
 create unique index SyncFiles_Path_FileName_DuplicateNo_uindex
  	on SyncFiles (Path, FileName, DuplicateNo);
 
@@ -120,5 +127,5 @@ CREATE UNIQUE INDEX Globals_Id_uindex ON Globals (Id);
 
 -- when the database scheme is changed update the second parameter (Version)
 -- also update the LocalData.VERSION in LocalData.py
-INSERT INTO Globals(Id, Version, Albums, Files) VALUES (1, 5.2, 0, 0);
+INSERT INTO Globals(Id, Version, Albums, Files) VALUES (1, 5.3, 0, 0);
 

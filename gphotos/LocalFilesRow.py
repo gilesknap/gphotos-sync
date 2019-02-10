@@ -21,7 +21,7 @@ class LocalFilesRow(DbRow):
     LocalFiles table
     """
     table = 'LocalFiles'
-    cols_def = {'Id': int, 'RemoteId': str, 'Path': str,
+    cols_def = {'Id': int, 'RemoteId': str, 'Uid': str, 'Path': str,
                 'FileName': str, 'OriginalFileName': str, 'DuplicateNo': int,
                 'MimeType': str, 'Description': str, 'FileSize': int,
                 'ModifyDate': datetime, 'CreateDate': datetime,
@@ -46,6 +46,7 @@ class LocalFilesRow(DbRow):
     def from_media(cls, media: LocalFilesMedia) -> G:
         now_time = datetime.now().strftime(BaseMedia.TIME_FORMAT)
         new_row = cls.make(Path=media.relative_folder,
+                           Uid=media.uid,
                            FileName=media.filename,
                            OriginalFileName=media.orig_name,
                            DuplicateNo=media.duplicate_number,

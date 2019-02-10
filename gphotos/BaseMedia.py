@@ -17,9 +17,10 @@ class BaseMedia(object):
     fix_windows = re.compile(r'[<>:"/\\|?*]|[\x00-\x1f]|\x7f|\x00')
     fix_windows_ending = re.compile('([ .]+$)')
 
-    def __init__(self, **k_args):
+    def __init__(self, root_path='', **k_args):
         self._id = None
         self._relative_folder = None
+        self._root_path = root_path
         self._duplicate_number = 0
 
     # Allow boolean check to fail on empty BaseMedia
@@ -67,6 +68,10 @@ class BaseMedia(object):
     @property
     def relative_folder(self) -> str:
         return self._relative_folder
+
+    @property
+    def full_folder(self) -> str:
+        return os.path.join(self._root_path, self._relative_folder)
 
     @property
     def filename(self) -> str:

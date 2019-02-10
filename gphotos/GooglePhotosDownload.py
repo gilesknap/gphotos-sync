@@ -99,7 +99,7 @@ class GooglePhotosDownload(object):
         log.warning('Downloading Photos ...')
         try:
             for media_items_block in grouper(
-                    self._db.get_files_by_search(
+                    self._db.get_rows_by_search(
                         GooglePhotosRow,
                         start_date=self._start_date,
                         end_date=self._end_date,
