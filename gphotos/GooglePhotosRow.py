@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # coding: utf8
 from typing import TypeVar
+from pathlib import Path
 from datetime import datetime
 from gphotos.DbRow import DbRow
 from gphotos.BaseMedia import BaseMedia
@@ -29,10 +30,11 @@ class GooglePhotosRow(DbRow):
     no_update = ['Id']
 
     def to_media(self) -> DatabaseMedia:
+        pth = Path(self.Path) if self.Path else None
         db_media = DatabaseMedia(
             _id=self.RemoteId,
             _url=self.Url,
-            _relative_folder=self.Path,
+            _relative_folder=pth,
             _filename=self.FileName,
             _orig_name=self.OrigFileName,
             _duplicate_number=self.DuplicateNo,
@@ -48,9 +50,9 @@ class GooglePhotosRow(DbRow):
     def from_media(cls, media: GooglePhotosMedia) -> G:
         now_time = datetime.now().strftime(BaseMedia.TIME_FORMAT)
         new_row = cls.make(RemoteId=media.id, Url=media.url,
-                           Path=media.relative_folder,
-                           FileName=media.filename,
-                           OrigFileName=media.orig_name,
+                           Path=str(media.relative_folder),
+                           FileName=str(media.filename),
+                           OrigFileName=str(media.orig_name),
                            DuplicateNo=media.duplicate_number,
                            FileSize=media.size,
                            MimeType=media.mime_type,

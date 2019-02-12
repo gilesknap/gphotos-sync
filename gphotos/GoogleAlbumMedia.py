@@ -6,7 +6,6 @@ from .BaseMedia import BaseMedia
 class GoogleAlbumMedia(BaseMedia):
     def __init__(self, media_json):
         self.__media_json = media_json
-        self.__path = None
         super(GoogleAlbumMedia, self).__init__()
 
     # ----- override Properties below -----
@@ -26,7 +25,7 @@ class GoogleAlbumMedia(BaseMedia):
         return self.orig_name
 
     @property
-    def orig_name(self):
+    def orig_name(self)-> str:
         try:
             return self.__media_json["title"]
         except KeyError:

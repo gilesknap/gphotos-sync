@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # coding: utf8
-import os.path
+from pathlib import Path
 import sqlite3 as lite
 from sqlite3.dbapi2 import Connection, Row, Cursor
 from datetime import datetime
@@ -23,17 +23,17 @@ class LocalData:
     # this VERSION must match 'INSERT INTO Globals' in gphotos_create.sql
     VERSION: float = 5.3
 
-    def __init__(self, root_folder: str, flush_index: bool = False):
+    def __init__(self, root_folder: Path, flush_index: bool = False):
         """ Initialize a connection to the DB and create some cursors.
         If requested or if the DB schema version is old, recreate the DB
         from scratch.
         """
-        self.file_name: str = os.path.join(root_folder, LocalData.DB_FILE_NAME)
-        if not os.path.exists(self.file_name) or flush_index:
+        self.db_file: Path = root_folder / LocalData.DB_FILE_NAME
+        if not self.db_file.exists() or flush_index:
             clean_db = True
         else:
             clean_db = False
-        self.con: Connection = lite.connect(self.file_name,
+        self.con: Connection = lite.connect(str(self.db_file),
                                             check_same_thread=False)
         self.con.row_factory: Row = lite.Row
         self.cur: Cursor = self.con.cursor()
@@ -70,8 +70,8 @@ class LocalData:
                         'A backup of the previous DB has been created')
             self.con.commit()
             self.con.close()
-            os.rename(self.file_name, self.file_name + '.previous')
-            self.con = lite.connect(self.file_name)
+            self.db_file.rename(self.db_file.name + '.previous')
+            self.con = lite.connect(str(self.db_file))
             self.con.row_factory = lite.Row
             self.cur = self.con.cursor()
             self.clean_db()
@@ -79,9 +79,10 @@ class LocalData:
     def clean_db(self):
         """ Execute the DB creation script, erasing old data and bringing
         the schema up to date if necessary """
-        sql_file = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                "sql", "gphotos_create.sql")
-        with open(sql_file, 'r') as f:
+        sql_file = Path(__file__).absolute().parent
+        sql_file = sql_file / "sql" / "gphotos_create.sql"
+
+        with sql_file.open('r') as f:
             qry = f.read()
             self.cur.executescript(qry)
 
@@ -148,7 +149,7 @@ class LocalData:
         Return:
             An iterator over query results
         """
-        params = (remote_id,)
+        params = (remote_id, file_name, path)
         extra_clauses = ''
         if start_date:
             # look for create date too since an photo recently uploaded will
@@ -162,7 +163,8 @@ class LocalData:
         if skip_downloaded:
             extra_clauses += 'AND Downloaded IS 0'
 
-        query = "SELECT {0} FROM {1} WHERE RemoteId LIKE ? {2};". \
+        query = "SELECT {0} FROM {1} WHERE RemoteId LIKE ? " \
+                "AND FileName LIKE ? and Path LIKE ? {2};". \
             format(row_type.columns, row_type.table, extra_clauses)
 
         try:
@@ -181,7 +183,7 @@ class LocalData:
     def get_file_by_path(
             self,
             row_type: Type[DbRow],
-            folder: str,
+            folder: Path,
             name: str) -> DatabaseMedia:
         """
         Search for a media item by filename, this applies to any of the
@@ -189,7 +191,7 @@ class LocalData:
         """
         query = "SELECT {0} FROM {1} WHERE Path = ?" \
                 " AND FileName = ?;".format(row_type.columns, row_type.table)
-        self.cur.execute(query, (folder, name))
+        self.cur.execute(query, (str(folder), name))
         record = self.cur.fetchone()
         return row_type(record).to_media()
 
@@ -291,7 +293,6 @@ class LocalData:
             "AND PATH = ?;", (file_name, path))
         result = int(self.cur.fetchone()[0])
         return result
-
 
     def find_local_matches(self):
         # noinspection SqlWithoutWhere

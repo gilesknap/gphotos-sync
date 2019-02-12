@@ -1,9 +1,9 @@
 from _datetime import datetime
-import os
 from pathlib import Path
 from requests import exceptions as exc
 import piexif
 from unittest import TestCase
+
 import gphotos.authorize as auth
 from gphotos.LocalFilesMedia import LocalFilesMedia
 
@@ -12,11 +12,10 @@ scope = [
     'https://www.googleapis.com/auth/photoslibrary.sharing',
 ]
 
-token_file = os.path.join(os.path.dirname(os.path.abspath(
-    __file__)), 'test_credentials', '.gphotos.token')
-
-secrets_file = os.path.join(os.path.dirname(os.path.abspath(
-    __file__)), 'test_credentials', 'client_secret.json')
+token_file = Path(__file__).absolute().parent \
+             / 'test_credentials' / '.gphotos.token'
+secrets_file = Path(__file__).absolute().parent \
+               / 'test_credentials' / 'client_secret.json'
 
 
 class TestUnits(TestCase):

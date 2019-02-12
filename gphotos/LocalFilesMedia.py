@@ -47,9 +47,9 @@ class LocalFilesMedia(BaseMedia):
             # extract the original name and duplicate no.
             # -1 is because the first duplicate is labelled ' (2)'
             self.duplicate_number = int(matches[2]) - 1
-            self.__original_name = matches[1] + '.' + matches[3]
+            self.__original_name: Path = Path(matches[1] + '.' + matches[3])
         else:
-            self.__original_name = full_path.name
+            self.__original_name: Path = full_path.name
         self.__full_path: Path = full_path
 
     @property
@@ -58,8 +58,8 @@ class LocalFilesMedia(BaseMedia):
 
     # ----- override Properties below -----
     @property
-    def relative_folder(self) -> str:
-        return str(self.__full_path.parent)
+    def relative_folder(self) -> Path:
+        return self.__full_path.parent
 
     @property
     def size(self) -> int:
@@ -81,7 +81,7 @@ class LocalFilesMedia(BaseMedia):
         return result
 
     @property
-    def orig_name(self) -> str:
+    def orig_name(self) -> Path:
         return self.__original_name
 
     @property

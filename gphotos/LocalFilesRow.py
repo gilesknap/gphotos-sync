@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # coding: utf8
 from typing import TypeVar
+from pathlib import Path
 from datetime import datetime
 from gphotos.DbRow import DbRow
 from gphotos.BaseMedia import BaseMedia
@@ -29,9 +30,10 @@ class LocalFilesRow(DbRow):
     no_update = ['Id']
 
     def to_media(self) -> DatabaseMedia:
+        pth = Path(self.Path) if self.Path else None
         db_media = DatabaseMedia(
             _id=self.RemoteId,
-            _relative_folder=self.Path,
+            _relative_folder=pth,
             _filename=self.FileName,
             _orig_name=self.OriginalFileName,
             _duplicate_number=self.DuplicateNo,

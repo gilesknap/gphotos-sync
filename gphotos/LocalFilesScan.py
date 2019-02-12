@@ -17,28 +17,28 @@ class LocalFilesScan(object):
     Google Photos Library
     """
 
-    def __init__(self, root_folder: str, db: LocalData):
+    def __init__(self, root_folder: Path, db: LocalData):
         """
         Parameters:
             root_folder: path to the root of local files to scan
             db: local database for indexing
         """
-        self._root_folder: str = root_folder
-        self._sync_root: str = None
+        self._root_folder: Path = root_folder
+        self._sync_root: Path = None
         self._db: LocalData = db
         self.count = 0
 
     def scan_local_files(self):
         log.warning('Indexing comparison folder %s', self._root_folder)
-        self.scan_folder(Path(self._root_folder), self.index_local_item)
+        self.scan_folder(self._root_folder, self.index_local_item)
         log.warning("Indexed %d files in comparison folder %s",
                     self.count, self._root_folder)
 
-    def scan_sync_files(self, sync_root: str):
+    def scan_sync_files(self, sync_root: Path):
         log.warning('Extracting extra metadata from synced files in %s',
                     sync_root)
         self._sync_root = sync_root
-        self.scan_folder(Path(sync_root), self.index_sync_item)
+        self.scan_folder(sync_root, self.index_sync_item)
         log.warning('Completed metadata extraction from synced files in %s',
                     sync_root)
 
@@ -68,21 +68,17 @@ class LocalFilesScan(object):
                           exc_info=True)
                 raise
 
-        # if path.suffix in ['.AVI', '.avi', '.mp4', '.mov', '.MOV',
-        #                    '.m4v', '.3gp', '.MTS', '.gif', '.png',
-        #                    '.bmp', '.pdf', '.wmv', '.mpg']:
-        #     pass  # todo - non exif processing
-        # else:
-        #     self.index_exif_item(path)
-
-    def index_sync_item(self, path: Path):
+    @classmethod
+    def index_sync_item(cls, path: Path):
         try:
             lf = LocalFilesMedia(path)
             log.info('indexed EXIF for synced file: %s %s',
                      lf.relative_folder, lf.filename)
+            # TODO --------------------------------------------------------
+            # TODO after pathlib.Path conversion
             # todo - need to have root and relative paths in LocalFilesMedia
             #  then we can extract CreateDate and UID from EXIF and add it
-            #  to syncfiles columns
+            #  to sync files columns
             # self._db.put_row(LocalFilesRow.from_media(lf))
         except Exception:
             log.error("file %s could not be made into a media obj", path,

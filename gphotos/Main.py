@@ -1,8 +1,9 @@
 # coding: utf8
 from argparse import Namespace, ArgumentParser
-import os.path
 import logging
 import sys
+import os
+from pathlib import Path
 
 from pkg_resources import DistributionNotFound
 from datetime import datetime
@@ -110,16 +111,16 @@ class GooglePhotosSyncMain:
         action='store_true',
         help="Dont download albums (for testing)")
 
-    def setup(self, args: Namespace, db_path: str):
+    def setup(self, args: Namespace, db_path: Path):
+        root_folder = Path(args.root_folder).absolute()
         app_dirs = AppDirs(APP_NAME)
 
         self.data_store = LocalData(db_path, args.flush_index)
 
-        credentials_file = os.path.join(db_path, ".gphotos.token")
-        secret_file = os.path.join(
-            app_dirs.user_config_dir, "client_secret.json")
-        if args.new_token and os.path.exists(credentials_file):
-            os.remove(credentials_file)
+        credentials_file = db_path / ".gphotos.token"
+        secret_file = Path(app_dirs.user_config_dir) / "client_secret.json"
+        if args.new_token and credentials_file.exists():
+            credentials_file.unlink()
 
         scope = [
             'https://www.googleapis.com/auth/photoslibrary.readonly',
@@ -134,11 +135,11 @@ class GooglePhotosSyncMain:
         self.google_photos_client = RestClient(
             photos_api_url, self.auth.session)
         self.google_photos_idx = GooglePhotosIndex(
-            self.google_photos_client, args.root_folder, self.data_store)
+            self.google_photos_client, root_folder, self.data_store)
         self.google_photos_down = GooglePhotosDownload(
-            self.google_photos_client, args.root_folder, self.data_store)
+            self.google_photos_client, root_folder, self.data_store)
         self.google_albums_sync = GoogleAlbumsSync(
-            self.google_photos_client, args.root_folder, self.data_store)
+            self.google_photos_client, root_folder, self.data_store)
         if args.compare_folder:
             self.local_files_scan = LocalFilesScan(
                 args.compare_folder, self.data_store)
@@ -152,7 +153,7 @@ class GooglePhotosSyncMain:
         self.google_photos_down.retry_download = args.retry_download
 
     @classmethod
-    def logging(cls, args: Namespace, folder: str):
+    def logging(cls, args: Namespace, folder: Path):
         # if we are debugging requests library is too noisy
         logging.getLogger("requests").setLevel(logging.WARNING)
         logging.getLogger("requests_oauthlib").setLevel(logging.WARNING)
@@ -162,7 +163,7 @@ class GooglePhotosSyncMain:
         if not isinstance(numeric_level, int):
             raise ValueError('Invalid log level: %s' % args.log_level)
 
-        log_file = os.path.join(folder, 'gphotos.log')
+        log_file = folder / 'gphotos.log'
         logging.basicConfig(level=logging.DEBUG,
                             format='%(asctime)s %(name)-12s %(levelname)-8s '
                                    '%(message)s',
@@ -202,14 +203,14 @@ class GooglePhotosSyncMain:
         start_time = datetime.now()
         args = self.parser.parse_args(test_args)
 
-        db_path = args.db_path if args.db_path else args.root_folder
-        args.root_folder = os.path.abspath(args.root_folder)
-        if not os.path.exists(args.root_folder):
-            os.makedirs(args.root_folder, 0o700)
-        self.logging(args, db_path)
+        root_folder = Path(args.root_folder).absolute()
+        db_path = Path(args.db_path) if args.db_path else root_folder
+        if not root_folder.exists():
+            root_folder.mkdir(parents=True, mode=0o700)
+        self.logging(args, root_folder)
 
-        lock_file = os.path.join(db_path, 'gphotos.lock')
-        fp = open(lock_file, 'w')
+        lock_file = db_path / 'gphotos.lock'
+        fp = lock_file.open('w')
         with fp:
             try:
                 if os.name != 'nt':

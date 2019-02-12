@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # coding: utf8
-import os.path
+from pathlib import Path
 from datetime import datetime
 
 from gphotos import Utils
@@ -17,11 +17,11 @@ log = logging.getLogger(__name__)
 class GooglePhotosIndex(object):
     PAGE_SIZE = 100
 
-    def __init__(self, api: RestClient, root_folder: str, db: LocalData):
+    def __init__(self, api: RestClient, root_folder: Path, db: LocalData):
         self._api: RestClient = api
-        self._root_folder: str = root_folder
+        self._root_folder: Path = root_folder
         self._db: LocalData = db
-        self._media_folder: str = 'photos'
+        self._media_folder: Path = Path('photos')
 
         self.files_indexed: int = 0
         self.files_index_skipped: int = 0
@@ -44,6 +44,20 @@ class GooglePhotosIndex(object):
     def set_end_date(self, val: str):
         self._end_date = Utils.string_to_date(val)
 
+    def check_for_removed_in_folder(self, folder: Path):
+        for pth in folder.iterdir():
+            if pth.is_dir():
+                self.check_for_removed_in_folder(pth)
+            else:
+                local_path = pth.relative_to(self._root_folder).parent
+                if pth.match('.*') or pth.match('gphotos*'):
+                    continue
+                file_row = self._db.get_file_by_path(
+                    GooglePhotosRow, local_path, pth.name)
+                if not file_row:
+                    pth.unlink()
+                    log.warning("%s deleted", pth)
+
     def check_for_removed(self):
         """ Removes local files that are no longer represented in the Photos
         Library - presumably because they were deleted.
@@ -52,18 +66,7 @@ class GooglePhotosIndex(object):
         for a file to exist it must have been indexed in a previous scan
         """
         log.warning('Finding and removing deleted media ...')
-        start_folder = os.path.join(self._root_folder, self._media_folder)
-        for (dir_name, _, file_names) in os.walk(start_folder):
-            for file_name in file_names:
-                local_path = os.path.relpath(dir_name, self._root_folder)
-                if file_name.startswith('.') or file_name.startswith('gphotos'):
-                    continue
-                file_row = self._db.get_file_by_path(
-                    GooglePhotosRow, local_path, file_name)
-                if not file_row:
-                    name = os.path.join(dir_name, file_name)
-                    os.remove(name)
-                    log.warning("%s deleted", name)
+        self.check_for_removed_in_folder(self._root_folder / self._media_folder)
 
     def write_media_index(self, media: GooglePhotosMedia,
                           update: bool = True):
@@ -141,7 +144,7 @@ class GooglePhotosIndex(object):
                 media_item = GooglePhotosMedia(media_item_json)
                 media_item.set_path_by_date(self._media_folder)
                 (num, row) = self._db.file_duplicate_no(
-                    media_item.filename, media_item.relative_folder,
+                    str(media_item.filename), str(media_item.relative_folder),
                     media_item.id)
                 # we just learned if there were any duplicates in the db
                 media_item.duplicate_number = num

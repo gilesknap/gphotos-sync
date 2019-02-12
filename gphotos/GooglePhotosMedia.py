@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # coding: utf8
 
+from pathlib import Path
 from . import Utils
 from .BaseMedia import BaseMedia
 from typing import Dict, List, Union, Any
@@ -38,12 +39,12 @@ class GooglePhotosMedia(BaseMedia):
             return ''
 
     @property
-    def orig_name(self) -> str:
+    def orig_name(self) -> Path:
         try:
             name = self.__media_json["filename"]
         except KeyError:
             name = ''
-        return self.validate_encoding(name)
+        return Path(self.validate_encoding(name))
 
     @property
     def create_date(self) -> datetime:

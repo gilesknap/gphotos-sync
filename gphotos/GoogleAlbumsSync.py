@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # coding: utf8
-import os.path
 import shutil
 from datetime import datetime
 from typing import Dict
+from pathlib import Path
+import os.path
 
 from . import Utils
 from .GoogleAlbumMedia import GoogleAlbumMedia
@@ -20,14 +21,14 @@ class GoogleAlbumsSync(object):
     """A Class for managing the indexing and download Google of Albums
     """
 
-    def __init__(self, api: RestClient, root_folder: str, db: LocalData):
+    def __init__(self, api: RestClient, root_folder: Path, db: LocalData):
         """
         Parameters:
             root_folder: path to the root of local file synchronization
             api: object representing the Google REST API
             db: local database for indexing
         """
-        self._root_folder: str = root_folder
+        self._root_folder: Path = root_folder
         self._db: LocalData = db
         self._api: RestClient = api
 
@@ -120,8 +121,8 @@ class GoogleAlbumsSync(object):
         count = 0
         # create all links from scratch every time, these are quickly
         # recreated anyway
-        links_root = os.path.join(self._root_folder, 'albums')
-        if os.path.exists(links_root):
+        links_root = self._root_folder / 'albums'
+        if links_root.exists():
             log.debug('removing previous album links tree')
             shutil.rmtree(links_root)
 
@@ -129,29 +130,32 @@ class GoogleAlbumsSync(object):
                 path, file_name, album_name,
                 end_date) in self._db.get_album_files():
 
-            full_file_name = os.path.join(self._root_folder, path, file_name)
+            full_file_name = self._root_folder / path / file_name
 
             year = Utils.safe_str_time(Utils.string_to_date(end_date), '%Y')
             month = Utils.safe_str_time(Utils.string_to_date(end_date), '%m%d')
 
             rel_path = u"{0} {1}".format(month, album_name)
-            link_folder = os.path.join(links_root, year, rel_path)
-            link_file = os.path.join(link_folder, file_name)
+            link_folder: Path = links_root / year / rel_path
+            link_file = link_folder / file_name
 
             original_link_file = link_file
             duplicates = 0
-            while os.path.exists(link_file):
+            while link_file.exists():
                 duplicates += 1
                 link_file = '{} ({})'.format(original_link_file, duplicates)
 
-            relative_filename = os.path.relpath(full_file_name, link_folder)
+            # incredibly, pathlib.Path.relative_to cannot handle the need for
+            # '../' in a relative path !!! reverting to os.path for this.
+            relative_filename = os.path.relpath(full_file_name,
+                                                str(link_folder))
             log.debug('adding album link %s -> %s', relative_filename,
                       link_file)
-            if not os.path.isdir(link_folder):
+            if not link_folder.is_dir():
                 log.debug('new album folder %s', link_folder)
-                os.makedirs(link_folder)
+                link_folder.mkdir(parents=True)
             try:
-                os.symlink(relative_filename, link_file)
+                link_file.symlink_to(relative_filename)
                 count += 1
             except FileExistsError:
                 pass  # copes with existent broken symbolic links (
