@@ -31,7 +31,7 @@ create table LocalFiles
 (
 	Id INTEGER
 		primary key,
-	RemoteId TEXT,
+	RemoteId TEXT default '',
 	Uid Text,
 	Path TEXT,
 	FileName TEXT,
@@ -51,8 +51,8 @@ DROP INDEX IF EXISTS LocalNameIdx;
 DROP INDEX IF EXISTS LocalCreatedIdx;
 DROP INDEX IF EXISTS LocalMatchIdx;
 DROP INDEX IF EXISTS LocalFiles_Path_FileName_DuplicateNo_uindex;
-create unique index LocalRemoteIdIdx	on LocalFiles (RemoteId);
-create unique index LocalUidIdx	on LocalFiles (RemoteId);
+create index LocalRemoteIdIdx	on LocalFiles (RemoteId);
+create index LocalUidIdx	on LocalFiles (Uid);
 create index LocalNameIdx  on LocalFiles (FileName);
 create index LocalCreatedIdx  on LocalFiles (CreateDate);
 create index LocalMatchIdx  on LocalFiles (OriginalFileName, DuplicateNo, Description);
@@ -65,6 +65,7 @@ create table SyncFiles
 	Id INTEGER
 		primary key,
 	RemoteId TEXT,
+	Uid Text,
 	Url TEXT,
 	Path TEXT,
 	FileName TEXT,
@@ -80,6 +81,7 @@ create table SyncFiles
 );
 
 DROP INDEX IF EXISTS RemoteIdIdx;
+DROP INDEX IF EXISTS UidIdx;
 DROP INDEX IF EXISTS FileNameIdx;
 DROP INDEX IF EXISTS FileSizeIdx;
 DROP INDEX IF EXISTS FileSizeAndSizeIdx;
@@ -89,6 +91,7 @@ DROP INDEX IF EXISTS SyncMatchIdx;
 DROP INDEX IF EXISTS SyncFiles_Path_FileName_DuplicateNo_uindex;
 create unique index RemoteIdIdx	on SyncFiles (RemoteId);
 create index FileNameIdx  on SyncFiles (FileName);
+create index UidIdx  on SyncFiles (Uid);
 create index FileSizeIdx  on SyncFiles (FileSize);
 create index FileSizeAndSizeIdx  on SyncFiles (FileName, FileSize);
 create index CreatedIdx  on SyncFiles (CreateDate);

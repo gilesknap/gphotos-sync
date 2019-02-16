@@ -6,6 +6,7 @@ from datetime import datetime
 from gphotos import Utils
 from gphotos.GooglePhotosMedia import GooglePhotosMedia
 from gphotos.GooglePhotosRow import GooglePhotosRow
+from gphotos.LocalFilesMedia import LocalFilesMedia
 from gphotos.LocalData import LocalData
 from gphotos.restclient import RestClient
 
@@ -180,3 +181,32 @@ class GooglePhotosIndex(object):
         # can start from the most recent file in this scan
         if not self._start_date:
             self._db.set_scan_date(last_date=self.latest_download)
+
+    def get_extra_meta(self):
+        count = 0
+        log.warning('updating index with extra metadata for comparison '
+                    '(may take some time) ...')
+        media_items = self._db.get_rows_by_search(GooglePhotosRow)
+        for item in media_items:
+            file_path = self._root_folder / item.relative_path
+            # if this item has a uid it has been scanned before
+            if file_path.exists() and not item.uid:
+                local_file = LocalFilesMedia(file_path)
+                if local_file.got_meta:
+                    count += 1
+                    log.info('updating metadata on %s', file_path)
+                    item.update_extra_meta(local_file.uid,
+                                           local_file.create_date)
+                    # erm lets try some duck typing then !
+                    # todo is the class model rubbish or is it brilliant Python?
+                    # noinspection PyTypeChecker
+                    self._db.put_row(GooglePhotosRow.from_media(item),
+                                     update=True)
+                    if count % 2000 == 0:
+                        self._db.store()
+                else:
+                    log.debug('NO metadata on %s', file_path)
+            else:
+                log.debug('skipping metadata (already scanned) on %s',
+                              file_path)
+        log.warning('updating index with extra metadata complete')

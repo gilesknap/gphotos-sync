@@ -22,7 +22,7 @@ class GooglePhotosRow(DbRow):
     SyncFiles table
     """
     table = 'SyncFiles'
-    cols_def = {'Id': int, 'RemoteId': str, 'Url': str, 'Path': str,
+    cols_def = {'Id': int, 'RemoteId': str, 'Uid': str, 'Url': str, 'Path': str,
                 'FileName': str, 'OrigFileName': str, 'DuplicateNo': int,
                 'FileSize': int, 'MimeType': str, 'Description': str,
                 'ModifyDate': datetime, 'CreateDate': datetime,
@@ -34,6 +34,7 @@ class GooglePhotosRow(DbRow):
         db_media = DatabaseMedia(
             _id=self.RemoteId,
             _url=self.Url,
+            _uid=self.Uid,
             _relative_folder=pth,
             _filename=self.FileName,
             _orig_name=self.OrigFileName,
@@ -49,7 +50,9 @@ class GooglePhotosRow(DbRow):
     @classmethod
     def from_media(cls, media: GooglePhotosMedia) -> G:
         now_time = datetime.now().strftime(BaseMedia.TIME_FORMAT)
-        new_row = cls.make(RemoteId=media.id, Url=media.url,
+        new_row = cls.make(RemoteId=media.id,
+                           Url=media.url,
+                           Uid=media.uid,
                            Path=str(media.relative_folder),
                            FileName=str(media.filename),
                            OrigFileName=str(media.orig_name),

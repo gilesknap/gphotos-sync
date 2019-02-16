@@ -162,3 +162,4 @@ class GoogleAlbumsSync(object):
                 # os.path.exists fails for these)
 
         log.warning("Created %d album folder links", count)
+

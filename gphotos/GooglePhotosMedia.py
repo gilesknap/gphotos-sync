@@ -14,12 +14,17 @@ JSONType = Union[Dict[str, JSONValue], List[JSONValue]]
 class GooglePhotosMedia(BaseMedia):
     def __init__(self, media_json):
         self.__media_json: JSONType = media_json
+        self.__uid = None
         super(GooglePhotosMedia, self).__init__()
         if self.is_video():
             self.__media_meta = None
             # self.__media_meta = media_json.get('mediaMetadata').get('video')
         else:
             self.__media_meta = media_json.get('mediaMetadata').get('photo')
+
+    @property
+    def uid(self) -> str:
+        return self.__uid
 
     # ----- override Properties below -----
     @property

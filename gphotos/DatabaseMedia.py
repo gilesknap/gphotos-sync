@@ -35,6 +35,7 @@ class DatabaseMedia(BaseMedia):
 
     def __init__(self,
                  _id: str = None,
+                 _uid: str = None,
                  _url: str = None,
                  _relative_folder: str = None,
                  _filename: str = None,
@@ -50,6 +51,13 @@ class DatabaseMedia(BaseMedia):
         # add all of the arguments as attributes on this object
         self.__dict__.update(locals())
 
+    # this is used to replace meta data that has been extracted from the
+    # file system and overrides that provided by Google API
+    # noinspection PyAttributeOutsideInit
+    def update_extra_meta(self, uid, create_date):
+        self._uid = uid
+        self._create_date = create_date
+
     # ----- BaseMedia base class override Properties below -----
     @ property
     def size(self) -> int:
@@ -62,6 +70,10 @@ class DatabaseMedia(BaseMedia):
     @property
     def id(self) -> str:
         return self._id
+
+    @property
+    def uid(self) -> str:
+        return self._uid
 
     @property
     def description(self) -> str:

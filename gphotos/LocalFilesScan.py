@@ -34,14 +34,6 @@ class LocalFilesScan(object):
         log.warning("Indexed %d files in comparison folder %s",
                     self.count, self._root_folder)
 
-    def scan_sync_files(self, sync_root: Path):
-        log.warning('Extracting extra metadata from synced files in %s',
-                    sync_root)
-        self._sync_root = sync_root
-        self.scan_folder(sync_root, self.index_sync_item)
-        log.warning('Completed metadata extraction from synced files in %s',
-                    sync_root)
-
     def scan_folder(self, folder: Path, index: Callable):
         if folder.exists():
             log.debug("scanning %s", folder)
@@ -51,7 +43,7 @@ class LocalFilesScan(object):
                 else:
                     self.count += 1
                     index(pth)
-                    if self.count % 2000 == 0:
+                    if self.count % 20000 == 0:
                         self._db.store()
 
     def index_local_item(self, path: Path):
@@ -60,30 +52,14 @@ class LocalFilesScan(object):
         else:
             try:
                 lf = LocalFilesMedia(path)
-                log.info('indexed local file: %s %s',
-                         lf.relative_folder, lf.filename)
+                log.info('indexed local file: %s %s %s %s',
+                         lf.relative_folder, lf.filename,
+                         lf.create_date, lf.uid)
                 self._db.put_row(LocalFilesRow.from_media(lf))
             except Exception:
                 log.error("file %s could not be made into a media obj", path,
                           exc_info=True)
                 raise
-
-    @classmethod
-    def index_sync_item(cls, path: Path):
-        try:
-            lf = LocalFilesMedia(path)
-            log.info('indexed EXIF for synced file: %s %s',
-                     lf.relative_folder, lf.filename)
-            # TODO --------------------------------------------------------
-            # TODO after pathlib.Path conversion
-            # todo - need to have root and relative paths in LocalFilesMedia
-            #  then we can extract CreateDate and UID from EXIF and add it
-            #  to sync files columns
-            # self._db.put_row(LocalFilesRow.from_media(lf))
-        except Exception:
-            log.error("file %s could not be made into a media obj", path,
-                      exc_info=True)
-            raise
 
     @classmethod
     def dump_exif(cls, path: Path):

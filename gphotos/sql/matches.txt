@@ -1,0 +1,36 @@
+The following create dates for MOVIE.mv4 end up matched to the same RemoteID
+AHsKWi_vJCn5ajuWrQm8UZnqPjSQB8KS0Cx977VwjyDTjKlOaN63kSDRofDRDFfB-S_GpO6Ej7P6M1UD9IxsRb9yYPclNseP7w
+2016-07-26 04:25:07
+2016-08-09 16:11:46
+2018-12-26 20:31:35
+2018-09-29 17:09:34
+2018-09-03 16:58:54
+2018-09-08 22:43:36
+2018-09-02 01:20:27
+2018-10-13 16:13:51
+Do they also get single matches to the correct RemoteId (match on Create and name)?
+No they do not, they might have but their RemoteId was overwritten by the loose match.
+To fix this need to do staged matching and do the Uid and Filename last on remaining unmatched items.
+
+Cant work out how to get sql lite to do this. Apparently the syntax should be:
+
+UPDATE LocalFiles
+set RemoteId = (SELECT RemoteId
+                FROM SyncFiles
+                WHERE
+                (LocalFiles.OriginalFileName == SyncFiles.OrigFileName or
+                       LocalFiles.FileName == SyncFiles.FileName)
+                  AND (LocalFiles.Uid == SyncFiles.Uid or
+                       LocalFiles.CreateDate = SyncFiles.CreateDate)
+)
+WHERE EXISTS
+                (LocalFiles.OriginalFileName == SyncFiles.OrigFileName or
+                       LocalFiles.FileName == SyncFiles.FileName)
+                  AND (LocalFiles.Uid == SyncFiles.Uid or
+                       LocalFiles.CreateDate = SyncFiles.CreateDate)
+)
+;
+;
+
+
+
