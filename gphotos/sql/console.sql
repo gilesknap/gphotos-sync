@@ -1,8 +1,8 @@
 -- THIS works but creates duplicates ---------------------------------------------------------------------------
 -- stage 1
--- affects 84060 rows
--- 81137, remoteIDs found
--- duplicate count 1905
+-- affects 80167 rows
+-- 80167, remoteIDs found
+-- duplicate count 1905 (in local files)
 UPDATE LocalFiles
 set RemoteId = (SELECT RemoteId
                 FROM SyncFiles
@@ -16,29 +16,41 @@ WHERE LocalFiles.Uid notnull and LocalFiles.Uid != 'not_supported'
 
 -- stage 2 - mop up entries that have no UID (this is a small enough population that filename is probably unique)
 -- affects 16109 rows
--- 91143 total remoteIDs found
--- duplicate count 1905
+-- 90057 total remoteIDs found
+-- duplicate count 2569
+DROP TABLE IF EXISTS PreMatched;
+-- create a temp table of FILES that are already matched, this allows for finding duplicates
+-- that are still left over (if this clause is included in the main query the list
+-- of matches will include those from earlier in the main query)
+CREATE TEMPORARY TABLE PreMatched AS
+  SELECT RemoteId from LocalFiles where RemoteId notnull ;
 UPDATE LocalFiles
 set RemoteId = (SELECT RemoteId
                 FROM SyncFiles
                 WHERE (LocalFiles.OriginalFileName == SyncFiles.OrigFileName or
                        LocalFiles.FileName == SyncFiles.FileName)
                   AND LocalFiles.CreateDate = SyncFiles.CreateDate
-                  AND not Exists (SELECT 1 FROM LocalFiles L WHERE L.RemoteId = Syncfiles.RemoteId)
+                AND SyncFiles.RemoteId NOT IN (select RemoteId from PreMatched)
+                  --AND not Exists (SELECT 1 FROM LocalFiles L WHERE L.RemoteId = Syncfiles.RemoteId)
 )
 WHERE LocalFiles.RemoteId isnull
 ;
 
--- stage 3 - mop up on filename alone
--- affects 6103 rows
--- 93344 total remoteIDs found
--- duplicate count 1905
+-- stage 3 - mop up on filename alone - FINAL
+-- affects 5841 rows
+-- 92141 total remoteIDs found
+-- duplicate count 2680
+-- missing 3689, Only in SyncFiles 4554, Total in SyncFiles 96695
+-- 92141+4554 = 96695 so that verifies the numbers
+DROP TABLE IF EXISTS PreMatched;
+CREATE TEMPORARY TABLE PreMatched AS
+  SELECT RemoteId from LocalFiles where RemoteId notnull ;
 UPDATE LocalFiles
 set RemoteId = (SELECT RemoteId
                 FROM SyncFiles
                 WHERE (LocalFiles.OriginalFileName == SyncFiles.OrigFileName or
                        LocalFiles.FileName == SyncFiles.FileName)
-                AND not Exists (SELECT 1 FROM LocalFiles L WHERE L.RemoteId = Syncfiles.RemoteId)
+                AND SyncFiles.RemoteId NOT IN (select RemoteId from PreMatched)
 )
 WHERE LocalFiles.RemoteId isnull
 ;
@@ -47,15 +59,8 @@ WHERE LocalFiles.RemoteId isnull
 --  stage 2 and 3 will not match duplicates, because after the first is found, the Exists eliminates it
 --  this means that where Google Drive has two copies of a file with no Uid, the 2nd will end up in the missing list
 --  it looks like about 200 files fit this category and lots are AVIs
-select * from SyncFiles
-where OrigFileName in
-(select OriginalFileName
-from LocalFiles
-where RemoteId isnull)
-GROUP BY OrigFileName
-HAVING COUNT() > 13
-;
--- Todo the above looks for such files
+-- Fixed with temporary Table approach
+-- Todo this could probably be compressed into a single CTE ???
 
 -- THIS demonstrates that the duplicates are actually duplicates created by InSync (probably) -------------------
 -- 1905 total
@@ -68,23 +73,25 @@ with matches(RemoteId) as (
 SELECT *
 FROM LocalFiles
        JOIN matches
-WHERE LocalFiles.RemoteId = matches.RemoteId;
+WHERE LocalFiles.RemoteId = matches.RemoteId
+ORDER BY Uid;
 
--- THIS discovers the matched files - 90039
+-- THIS discovers the matched files
 select *
 from SyncFiles
 where RemoteId = (SELECT RemoteId
                   from LocalFiles
-                  where SyncFiles.RemoteId = LocalFiles.RemoteId);
+                  where SyncFiles.RemoteId = LocalFiles.RemoteId)
+;
 
--- THIS discovers the remaining unmatched LocalFiles (3902 - looks like they are genuinely missing)
+-- THIS discovers the remaining unmatched LocalFile (looks like they are genuinely missing)
 -- REPRESENTS missing files that Insync has eaten and I restored manually back up to Google Drive
 --  looks good and is the whole point of this entire exercise!
 select *
 from LocalFiles
 where RemoteId isnull;
 
--- THIS discovers the remaining unmatched in Syncfiles - 4321
+-- THIS discovers the remaining unmatched in Syncfiles
 -- REPRESENTS files that Google Drive has not synced over from Google Photos
 -- ALSO this is files that Google Drive holds OUTSIDE of the Google Photos folder
 --  because drive integration copies them to Photos, but their location in drive
@@ -358,3 +365,5 @@ WHERE RemoteId LIKE "%"
 select *
 from SyncFiles
 where FileName like 'Y2006 M07 D29 %'
+
+select * from PreMatched;
