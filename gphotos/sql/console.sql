@@ -18,39 +18,35 @@ WHERE LocalFiles.Uid notnull and LocalFiles.Uid != 'not_supported'
 -- affects 16109 rows
 -- 90057 total remoteIDs found
 -- duplicate count 2569
-DROP TABLE IF EXISTS PreMatched;
--- create a temp table of FILES that are already matched, this allows for finding duplicates
--- that are still left over (if this clause is included in the main query the list
--- of matches will include those from earlier in the main query)
-CREATE TEMPORARY TABLE PreMatched AS
-  SELECT RemoteId from LocalFiles where RemoteId notnull ;
+-- important: prematch provides the list of matches before we start the main query
+with prematch(RemoteId) as
+       (SELECT RemoteId from LocalFiles where RemoteId notnull)
 UPDATE LocalFiles
 set RemoteId = (SELECT RemoteId
                 FROM SyncFiles
                 WHERE (LocalFiles.OriginalFileName == SyncFiles.OrigFileName or
                        LocalFiles.FileName == SyncFiles.FileName)
                   AND LocalFiles.CreateDate = SyncFiles.CreateDate
-                AND SyncFiles.RemoteId NOT IN (select RemoteId from PreMatched)
+                AND SyncFiles.RemoteId NOT IN (select RemoteId from prematch)
                   --AND not Exists (SELECT 1 FROM LocalFiles L WHERE L.RemoteId = Syncfiles.RemoteId)
 )
 WHERE LocalFiles.RemoteId isnull
 ;
 
--- stage 3 - mop up on filename alone - FINAL
+-- stage 3 FINAL - mop up on filename alone
 -- affects 5841 rows
 -- 92141 total remoteIDs found
 -- duplicate count 2680
 -- missing 3689, Only in SyncFiles 4554, Total in SyncFiles 96695
 -- 92141+4554 = 96695 so that verifies the numbers
-DROP TABLE IF EXISTS PreMatched;
-CREATE TEMPORARY TABLE PreMatched AS
-  SELECT RemoteId from LocalFiles where RemoteId notnull ;
+with prematch(RemoteId) as
+       (SELECT RemoteId from LocalFiles where RemoteId notnull)
 UPDATE LocalFiles
 set RemoteId = (SELECT RemoteId
                 FROM SyncFiles
                 WHERE (LocalFiles.OriginalFileName == SyncFiles.OrigFileName or
                        LocalFiles.FileName == SyncFiles.FileName)
-                AND SyncFiles.RemoteId NOT IN (select RemoteId from PreMatched)
+                AND SyncFiles.RemoteId NOT IN (select RemoteId from prematch)
 )
 WHERE LocalFiles.RemoteId isnull
 ;
