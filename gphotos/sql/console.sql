@@ -68,8 +68,7 @@ with matches(RemoteId) as (
 SELECT *
 FROM LocalFiles
        JOIN matches
-WHERE LocalFiles.RemoteId = matches.RemoteId
-ORDER BY Uid;
+WHERE LocalFiles.RemoteId = matches.RemoteId;
 
 -- THIS discovers the matched files
 select *

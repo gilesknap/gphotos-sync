@@ -187,10 +187,6 @@ class GooglePhotosSyncMain:
 
     def start(self, args: Namespace):
         with self.data_store:
-            # todo test - remove !!
-            self.local_files_scan.find_missing_gphotos()
-            exit(1)
-
             if not args.skip_index:
                 if not args.skip_files:
                     self.google_photos_idx.index_photos_media()

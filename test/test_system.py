@@ -230,7 +230,7 @@ class TestSystem(TestCase):
                      trash_files=True)
         s.gp.start(s.parsed_args)
         # check we tried to download 10 times
-        self.assertEquals(do_download_file.call_count, 10)
+        self.assertEqual(do_download_file.call_count, 10)
 
         # this should have created a Bad IDs file
         bad_ids = BadIds(s.root)
