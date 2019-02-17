@@ -16,6 +16,7 @@ token_file = Path(__file__).absolute().parent \
              / 'test_credentials' / '.gphotos.token'
 secrets_file = Path(__file__).absolute().parent \
                / 'test_credentials' / 'client_secret.json'
+test_data = Path(__file__).absolute().parent / 'test-data'
 
 
 class TestUnits(TestCase):
@@ -65,28 +66,28 @@ class TestUnits(TestCase):
             print("no EXIF")
 
     def test_jpg_description(self):
-        p = Path('test-data/IMG_20190102_112832.jpg')
+        p = test_data / 'IMG_20190102_112832.jpg'
         lfm = LocalFilesMedia(p)
         self.dump_exif(p)
         self.assertEqual(lfm.description, '')
 
-        p = Path('test-data/20180126_185832.jpg')
+        p = test_data / '20180126_185832.jpg'
         lfm = LocalFilesMedia(p)
         self.dump_exif(p)
         self.assertEqual(lfm.description, '')
 
-        p = Path('test-data/1987-JohnWoodAndGiles.jpg')
+        p = test_data / '1987-JohnWoodAndGiles.jpg'
         lfm = LocalFilesMedia(p)
         self.dump_exif(p)
         self.assertEqual(lfm.description, '')
 
     def test_jpg_description2(self):
-        p = Path('test-data/IMG_20180908_132733-gphotos.jpg')
+        p = test_data / 'IMG_20180908_132733-gphotos.jpg'
         lfm = LocalFilesMedia(p)
         self.dump_exif(p)
         self.assertEqual(lfm.description, '')
 
-        p = Path('test-data/IMG_20180908_132733-insync.jpg')
+        p = test_data / 'IMG_20180908_132733-insync.jpg'
         lfm = LocalFilesMedia(p)
         self.dump_exif(p)
         self.assertEqual(lfm.description, '')
