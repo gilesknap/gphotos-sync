@@ -145,7 +145,7 @@ class GooglePhotosSyncMain:
             self.google_photos_client, root_folder, self.data_store)
         if args.compare_folder:
             self.local_files_scan = LocalFilesScan(
-                compare_folder, self.data_store)
+                root_folder, compare_folder, self.data_store)
 
         self.google_photos_idx.set_start_date(args.start_date)
         self.google_photos_idx.set_end_date(args.end_date)
@@ -187,6 +187,10 @@ class GooglePhotosSyncMain:
 
     def start(self, args: Namespace):
         with self.data_store:
+            # todo test - remove !!
+            self.local_files_scan.find_missing_gphotos()
+            exit(1)
+
             if not args.skip_index:
                 if not args.skip_files:
                     self.google_photos_idx.index_photos_media()
@@ -203,6 +207,7 @@ class GooglePhotosSyncMain:
             if args.compare_folder:
                 self.local_files_scan.scan_local_files()
                 self.google_photos_idx.get_extra_meta()
+                self.local_files_scan.find_missing_gphotos()
 
     def main(self, test_args: dict = None):
         start_time = datetime.now()

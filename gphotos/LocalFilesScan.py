@@ -2,6 +2,7 @@
 # coding: utf8
 
 from pathlib import Path
+import shutil
 from typing import Callable
 from .LocalData import LocalData
 import piexif
@@ -17,22 +18,22 @@ class LocalFilesScan(object):
     Google Photos Library
     """
 
-    def __init__(self, root_folder: Path, db: LocalData):
+    def __init__(self, root_folder: Path, scan_folder: Path, db: LocalData):
         """
         Parameters:
-            root_folder: path to the root of local files to scan
+            scan_folder: path to the root of local files to scan
             db: local database for indexing
         """
+        self._scan_folder: Path = scan_folder
         self._root_folder: Path = root_folder
-        self._sync_root: Path = None
         self._db: LocalData = db
         self.count = 0
 
     def scan_local_files(self):
-        log.warning('Indexing comparison folder %s', self._root_folder)
-        self.scan_folder(self._root_folder, self.index_local_item)
+        log.warning('Indexing comparison folder %s', self._scan_folder)
+        self.scan_folder(self._scan_folder, self.index_local_item)
         log.warning("Indexed %d files in comparison folder %s",
-                    self.count, self._root_folder)
+                    self.count, self._scan_folder)
 
     def scan_folder(self, folder: Path, index: Callable):
         if folder.exists():
@@ -84,3 +85,37 @@ class LocalFilesScan(object):
         except piexif.InvalidImageDataError:
             pass
             log.debug("NO EXIF. %s", path)
+
+    def find_missing_gphotos(self):
+        log.warning('matching local files and photos library ...')
+        self._db.find_local_matches()
+        log.warning('creating missing files folder ...')
+        comparison_folder = self._root_folder / 'comparison'
+        flat_missing = comparison_folder / 'missing_files'
+        folders_missing = comparison_folder / 'missing_files_folders'
+        if comparison_folder.exists():
+            log.debug('removing previous missing files tree')
+            shutil.rmtree(comparison_folder)
+
+        flat_missing.mkdir(parents=True)
+        for i, orig_path in enumerate(self._db.get_missing_paths()):
+            link_path = folders_missing / \
+                        orig_path.relative_to(self._scan_folder)
+            log.debug('adding missing file %d link %s', i, link_path)
+            if not link_path.parent.exists():
+                link_path.parent.mkdir(parents=True)
+            link_path.symlink_to(orig_path)
+            flat_link = flat_missing / "{:05d}_{}".format(i, orig_path.name)
+            flat_link.symlink_to(orig_path)
+        #
+        # flat_extras = comparison_folder / 'extra_files'
+        # folders_extras = comparison_folder / 'extra_files_folders'
+        # flat_extras.mkdir(parents=True)
+        # for i, orig_path in enumerate(self._db.get_extra_paths()):
+        #     link_path = folders_extras / orig_path
+        #     log.debug('adding extra file %d link %s', i, link_path)
+        #     if not link_path.parent.exists():
+        #         link_path.parent.mkdir(parents=True)
+        #     link_path.symlink_to(self._root_folder / orig_path)
+        #     flat_link = flat_missing / "{:05d}_{}".format(i, orig_path.name)
+        #     flat_link.symlink_to(orig_path)

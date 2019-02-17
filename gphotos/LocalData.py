@@ -4,11 +4,12 @@ from pathlib import Path
 import sqlite3 as lite
 from sqlite3.dbapi2 import Connection, Row, Cursor
 from datetime import datetime
-from typing import Iterator, Type
+from typing import Iterator, Type, Union
 
 from gphotos import Utils
-from gphotos.GooglePhotosRow import GooglePhotosRow
 from gphotos.GoogleAlbumsRow import GoogleAlbumsRow
+from gphotos.LocalFilesRow import LocalFilesRow
+from gphotos.GooglePhotosRow import GooglePhotosRow
 from gphotos.DbRow import DbRow
 from gphotos.DatabaseMedia import DatabaseMedia
 
@@ -128,7 +129,7 @@ class LocalData:
     def get_rows_by_search(
             self,
             row_type: Type[DbRow] = None,
-            remote_id: str = '%',
+            remote_id: str = None,
             file_name: str = '%',
             path: str = '%',
             start_date: datetime = None,
@@ -287,6 +288,40 @@ class LocalData:
         self.cur.execute("DELETE FROM AlbumFiles")
 
     # ---- LocalFiles Queries -------------------------------------------
+
+    def get_missing_paths(self):
+        query = "select * from LocalFiles where RemoteId isnull;"
+
+        self.cur2.execute(query)
+        while True:
+            records = self.cur2.fetchmany(LocalData.BLOCK_SIZE)
+            if not records:
+                break
+            for record in records:
+                r = LocalFilesRow(record).to_media()
+                pth = Path(r.relative_path.parent / r.filename)
+                yield pth
+
+    def get_extra_paths(self):
+        query = """
+select *
+from Syncfiles
+where RemoteId
+        in (SELECT S.RemoteId
+           FROM SyncFiles S
+                  LEFT JOIN LocalFiles L ON S.RemoteId = L.RemoteId
+           WHERE L.RemoteId ISNULL);
+"""
+        self.cur2.execute(query)
+        while True:
+            records = self.cur2.fetchmany(LocalData.BLOCK_SIZE)
+            if not records:
+                break
+            for record in records:
+                r = GooglePhotosRow(record).to_media()
+                pth = Path(r.relative_path / r.filename)
+                yield pth
+
     def local_exists(self, file_name: str, path: str):
         self.cur.execute(
             "SELECT COUNT() FROM main.LocalFiles WHERE FileName = ?"
@@ -294,21 +329,53 @@ class LocalData:
         result = int(self.cur.fetchone()[0])
         return result
 
+    monster_query = [
+        """
+        -- stage 1 - look for unique matches 
+                UPDATE LocalFiles
+        set RemoteId = (SELECT RemoteId
+                        FROM SyncFiles
+                        WHERE (LocalFiles.OriginalFileName == SyncFiles.OrigFileName or
+                               LocalFiles.FileName == SyncFiles.FileName)
+                          AND (LocalFiles.Uid == SyncFiles.Uid or
+                               LocalFiles.CreateDate = SyncFiles.CreateDate)
+        )
+        WHERE LocalFiles.Uid notnull and LocalFiles.Uid != 'not_supported' and 
+        LocalFiles.RemoteId ISNULL
+        ;
+        """,
+        """    
+        -- stage 2 - mop up entries that have no UID (this is a small enough 
+        -- population that filename is probably unique)
+        with pre_match(RemoteId) as
+               (SELECT RemoteId from LocalFiles where RemoteId notnull)
+        UPDATE LocalFiles
+        set RemoteId = (SELECT RemoteId
+                        FROM SyncFiles
+                        WHERE (LocalFiles.OriginalFileName == SyncFiles.OrigFileName or
+                               LocalFiles.FileName == SyncFiles.FileName)
+                          AND LocalFiles.CreateDate = SyncFiles.CreateDate
+                        AND SyncFiles.RemoteId NOT IN (select RemoteId from pre_match)
+        )
+        WHERE LocalFiles.RemoteId isnull
+        ;
+        """,
+        """        
+        -- stage 3 FINAL - mop up on filename alone
+        with pre_match(RemoteId) as
+               (SELECT RemoteId from LocalFiles where RemoteId notnull)
+        UPDATE LocalFiles
+        set RemoteId = (SELECT RemoteId
+                        FROM SyncFiles
+                        WHERE (LocalFiles.OriginalFileName == SyncFiles.OrigFileName or
+                               LocalFiles.FileName == SyncFiles.FileName)
+                        AND SyncFiles.RemoteId NOT IN (select RemoteId from pre_match)
+        )
+        WHERE LocalFiles.RemoteId isnull
+        ;
+        """]
+
     def find_local_matches(self):
         # noinspection SqlWithoutWhere
-        self.cur.execute("""
-            with matches(Id, FileName, RemoteID, NewRemoteId ) as (
-                select local.Id as Id,
-                local.OriginalFileName as FileName,
-                local.RemoteId as RemoteID,
-                sync.RemoteId as NewRemoteId
-            from LocalFiles local,
-                SyncFiles sync
-            where local.OriginalFileName = sync.OrigFileName
-                AND local.Description like sync.Description
-                AND local.DuplicateNo = sync.DuplicateNo
-            )
-            update LocalFiles
-            Set RemoteId =
-                (SELECT matches.NewRemoteId from matches where 
-                    LocalFiles.Id = matches.Id);""")
+        for q in self.monster_query:
+            self.cur.execute(q)

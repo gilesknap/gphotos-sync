@@ -1,4 +1,3 @@
--- THIS works but creates duplicates ---------------------------------------------------------------------------
 -- stage 1
 -- affects 80167 rows
 -- 80167, remoteIDs found
