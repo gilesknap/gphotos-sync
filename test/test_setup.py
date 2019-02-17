@@ -50,7 +50,8 @@ class SetupDbAndCredentials:
             from_file = src_folder / 'testDb1.sqlite'
             shutil.copy(from_file, self.db_file)
         elif trash_files:
-            shutil.rmtree(self.root)
+            if self.root.exists():
+                shutil.rmtree(self.root)
         elif trash_db:
             self.db_file.unlink()
         if not self.root.exists():
