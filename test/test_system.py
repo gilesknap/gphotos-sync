@@ -72,6 +72,10 @@ class TestSystem(TestCase):
         d_date = db.get_scan_date()
         self.assertEqual(d_date.date(), datetime.date(2017, 9, 26))
 
+        # check that re-running does not get any db constraint violations etc.
+        s.test_setup('test_sys_whole_library')
+        s.gp.start(s.parsed_args)
+
     def test_system_date_range(self):
         s = ts.SetupDbAndCredentials()
         args = ['--start-date', '2016-01-01', '--end-date', '2017-01-01',

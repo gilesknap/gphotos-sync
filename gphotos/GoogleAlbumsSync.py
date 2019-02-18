@@ -78,11 +78,8 @@ class GoogleAlbumsSync(object):
         """
         log.warning('Indexing Albums ...')
 
-        # # there is no filters in album listing at present so it always a
+        # there are no filters in album listing at present so it always a
         # full rescan - it's quite quick
-        # log.debug("removing all album - file links from db, in preparation
-        # for indexing")
-        # self._db.remove_all_album_files()
 
         count = 0
         response = self._api.albums.list.execute(pageSize=50)
@@ -157,4 +154,3 @@ class GoogleAlbumsSync(object):
                     log.error('bad link to %s', full_file_name)
 
         log.warning("Created %d new album folder links", count)
-

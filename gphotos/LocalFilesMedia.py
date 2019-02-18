@@ -123,6 +123,8 @@ class LocalFilesMedia(BaseMedia):
             uid = 'not_supported'
         else:
             uid = self.__exif.get(piexif.ExifIFD.ImageUniqueID)
+            if not uid:
+                uid = 'no_uid_in_exif'
         return uid
 
     # ----- override Properties below -----

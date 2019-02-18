@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # coding: utf8
 from typing import TypeVar
+from pathlib import Path
 from datetime import datetime
 from gphotos import Utils
 from gphotos.DbRow import DbRow
@@ -25,8 +26,14 @@ class GoogleAlbumsRow(DbRow):
                 'StartDate': datetime,
                 'EndDate': datetime, 'SyncDate': datetime}
 
+    # todo - overloading GoogleAlbumsRow as a Database Row does not really work
     def to_media(self) -> DatabaseMedia:
-        pass
+        db_media = DatabaseMedia(
+            _id=self.AlbumId,
+            _filename=self.AlbumName,
+            _size=self.Size,
+            _create_date=self.StartDate)
+        return db_media
 
     @classmethod
     def from_media(cls, album: GoogleAlbumMedia) -> G:

@@ -168,6 +168,8 @@ class GooglePhotosIndex(object):
                     log.debug("Skipped Index (already indexed) %d %s",
                               self.files_index_skipped,
                               media_item.relative_path)
+                    self.latest_download = max(self.latest_download,
+                                               media_item.create_date)
             next_page = items_json.get('nextPageToken')
             if next_page:
                 items_json = self.search_media(page_token=next_page,
@@ -199,7 +201,7 @@ class GooglePhotosIndex(object):
                     item.update_extra_meta(local_file.uid,
                                            local_file.create_date)
                     # erm lets try some duck typing then !
-                    # todo is the class model rubbish or is it brilliant Python?
+                    # todo is the DbRow class model rubbish or brilliant Python?
                     # noinspection PyTypeChecker
                     self._db.put_row(GooglePhotosRow.from_media(item),
                                      update=True)
