@@ -38,6 +38,9 @@ WHERE LocalFiles.RemoteId isnull
 -- duplicate count 2680
 -- missing 3689, Only in SyncFiles 4554, Total in SyncFiles 96695
 -- 92141+4554 = 96695 so that verifies the numbers
+-- ALSO - when I uploaded the 3689 missing to Google Photos, it reports 1691 when I go to
+--  https://photos.google.com/search/_tra_ - I think this implies many are duplicates of
+--  files that already reside in GP
 with prematch(RemoteId) as
        (SELECT RemoteId from LocalFiles where RemoteId notnull)
 UPDATE LocalFiles

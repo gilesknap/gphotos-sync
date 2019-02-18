@@ -33,11 +33,14 @@ class LocalData:
         If requested or if the DB schema version is old, recreate the DB
         from scratch.
         """
+        clean_db = False
         self.db_file: Path = root_folder / LocalData.DB_FILE_NAME
-        if not self.db_file.exists() or flush_index:
+        if not self.db_file.exists():
             clean_db = True
-        else:
-            clean_db = False
+        elif flush_index:
+            clean_db = True
+            self.db_file.rename(self.db_file.name + '.previous')
+
         self.con: Connection = lite.connect(str(self.db_file),
                                             check_same_thread=False)
         self.con.row_factory: Row = lite.Row

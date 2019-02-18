@@ -1,6 +1,34 @@
 CHANGES
 =======
 
+* speed up re-scans when no new photos have arrived
+* comparison folder generation fully working
+* fix relative path in tests
+* duplicates and extras monitoring complete
+* link folder for missing files now working
+* Fix tests
+* Remove use of temporary table!
+* Update example queries with verified numbers
+* Indexing for matching complete
+* Replace os.path with pathlib.Path throughout
+* working on matching scanned exif info with library
+* fix requirements
+* now comparison folder is indexed to db
+* Major refactor to generalize database access (3)
+* Major refactor to generalize database access (2)
+* Major refactor to generalize database access
+* First pass at scanning filesystem and looking at EXIF
+* Final? Python Type Hints addittion
+* minimize no-inspections
+* type hints up to DbRow.py
+* adding python type hints
+* fix to bad ID discovery function
+* type hints in GooglePhotosDownload GooglePhotosIndex
+* split GooglePhotosSync
+* code tidy
+* codacy tidy
+* codecov and codacy tidy
+* update changelog
 * Fixes to make this work on windows
 
 2.1
@@ -107,10 +135,6 @@ CHANGES
 * fix root id finding
 * clean up pycharm inspections
 * tidy todos into todo.txt
-
-v1.0
-----
-
 * final version of readme
 * restore build status badges
 * update Readme

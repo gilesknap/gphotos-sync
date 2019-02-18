@@ -96,7 +96,7 @@ class LocalFilesScan(object):
         flat_missing = comparison_folder / 'missing_files'
         folders_missing = comparison_folder / 'missing_folders'
         if comparison_folder.exists():
-            log.debug('removing previous missing files tree')
+            log.debug('removing previous comparison tree')
             shutil.rmtree(comparison_folder)
 
         flat_missing.mkdir(parents=True)
@@ -106,7 +106,8 @@ class LocalFilesScan(object):
             log.debug('adding missing file %d link %s', i, link_path)
             if not link_path.parent.exists():
                 link_path.parent.mkdir(parents=True)
-            link_path.symlink_to(orig_path)
+            if not link_path.exists():
+                link_path.symlink_to(orig_path)
             flat_link = flat_missing / "{:05d}_{}".format(i, orig_path.name)
             flat_link.symlink_to(orig_path)
 
@@ -118,7 +119,8 @@ class LocalFilesScan(object):
             log.debug('adding extra file %d link %s', i, link_path)
             if not link_path.parent.exists():
                 link_path.parent.mkdir(parents=True)
-            link_path.symlink_to(self._root_folder / orig_path)
+            if not link_path.exists():
+                link_path.symlink_to(self._root_folder / orig_path)
             flat_link = flat_extras / "{:05d}_{}".format(i, orig_path.name)
             flat_link.symlink_to(self._root_folder / orig_path)
 

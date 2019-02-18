@@ -10,6 +10,9 @@ set RemoteId = (SELECT RemoteId
                        LocalFiles.FileName == SyncFiles.FileName)
                   AND (LocalFiles.Uid == SyncFiles.Uid or
                        LocalFiles.CreateDate = SyncFiles.CreateDate)
+                  -- 32 character ids are legitimate and unique
+                  OR (LocalFiles.Uid == SyncFiles.Uid AND
+                  length(LocalFiles.Uid) == 32)
 )
 WHERE LocalFiles.Uid notnull and LocalFiles.Uid != 'not_supported' and 
 LocalFiles.RemoteId ISNULL

@@ -6,6 +6,7 @@ module_name = "gphotos-sync"
 packages = [x for x in find_packages()]
 setup(
     name=module_name,
+    python_requires='>=3.6',
     setup_requires=['pbr'],
     pbr=True,
     packages=packages,
