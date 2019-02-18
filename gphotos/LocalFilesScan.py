@@ -42,15 +42,16 @@ class LocalFilesScan(object):
                 if pth.is_dir():
                     self.scan_folder(pth, index)
                 else:
-                    self.count += 1
-                    index(pth)
-                    if self.count % 20000 == 0:
+                    self.count += index(pth)
+                    if self.count and self.count % 20000 == 0:
                         self._db.store()
 
-    def index_local_item(self, path: Path):
+    def index_local_item(self, path: Path) -> int:
         if self._db.local_exists(file_name=path.name, path=str(path.parent)):
+            result = 0
             log.debug("already indexed local file: %s", path)
         else:
+            result = 1
             try:
                 lf = LocalFilesMedia(path)
                 log.info('indexed local file: %s %s %s %s',
@@ -61,6 +62,7 @@ class LocalFilesScan(object):
                 log.error("file %s could not be made into a media obj", path,
                           exc_info=True)
                 raise
+        return result
 
     @classmethod
     def dump_exif(cls, path: Path):
@@ -87,38 +89,38 @@ class LocalFilesScan(object):
             log.debug("NO EXIF. %s", path)
 
     def find_missing_gphotos(self):
-        # log.warning('matching local files and photos library ...')
-        # self._db.find_local_matches()
-        # log.warning('creating comparison folder ...')
+        log.warning('matching local files and photos library ...')
+        self._db.find_local_matches()
+        log.warning('creating comparison folder ...')
         comparison_folder = self._root_folder / 'comparison'
         flat_missing = comparison_folder / 'missing_files'
-        folders_missing = comparison_folder / 'missing_files_folders'
+        folders_missing = comparison_folder / 'missing_folders'
         if comparison_folder.exists():
             log.debug('removing previous missing files tree')
             shutil.rmtree(comparison_folder)
 
-        # flat_missing.mkdir(parents=True)
-        # for i, orig_path in enumerate(self._db.get_missing_paths()):
-        #     link_path = folders_missing / \
-        #                 orig_path.relative_to(self._scan_folder)
-        #     log.debug('adding missing file %d link %s', i, link_path)
-        #     if not link_path.parent.exists():
-        #         link_path.parent.mkdir(parents=True)
-        #     link_path.symlink_to(orig_path)
-        #     flat_link = flat_missing / "{:05d}_{}".format(i, orig_path.name)
-        #     flat_link.symlink_to(orig_path)
-        #
-        # flat_extras = comparison_folder / 'extra_files'
-        # folders_extras = comparison_folder / 'extra_files_folders'
-        # flat_extras.mkdir(parents=True)
-        # for i, orig_path in enumerate(self._db.get_extra_paths()):
-        #     link_path = folders_extras / orig_path
-        #     log.debug('adding extra file %d link %s', i, link_path)
-        #     if not link_path.parent.exists():
-        #         link_path.parent.mkdir(parents=True)
-        #     link_path.symlink_to(self._root_folder / orig_path)
-        #     flat_link = flat_extras / "{:05d}_{}".format(i, orig_path.name)
-        #     flat_link.symlink_to(self._root_folder / orig_path)
+        flat_missing.mkdir(parents=True)
+        for i, orig_path in enumerate(self._db.get_missing_paths()):
+            link_path = folders_missing / \
+                        orig_path.relative_to(self._scan_folder)
+            log.debug('adding missing file %d link %s', i, link_path)
+            if not link_path.parent.exists():
+                link_path.parent.mkdir(parents=True)
+            link_path.symlink_to(orig_path)
+            flat_link = flat_missing / "{:05d}_{}".format(i, orig_path.name)
+            flat_link.symlink_to(orig_path)
+
+        flat_extras = comparison_folder / 'extra_files'
+        folders_extras = comparison_folder / 'extra_folders'
+        flat_extras.mkdir(parents=True)
+        for i, orig_path in enumerate(self._db.get_extra_paths()):
+            link_path = folders_extras / orig_path
+            log.debug('adding extra file %d link %s', i, link_path)
+            if not link_path.parent.exists():
+                link_path.parent.mkdir(parents=True)
+            link_path.symlink_to(self._root_folder / orig_path)
+            flat_link = flat_extras / "{:05d}_{}".format(i, orig_path.name)
+            flat_link.symlink_to(self._root_folder / orig_path)
 
         flat_duplicates = comparison_folder / 'duplicates'
         flat_duplicates.mkdir(parents=True)

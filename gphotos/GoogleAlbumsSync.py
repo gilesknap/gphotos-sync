@@ -21,7 +21,8 @@ class GoogleAlbumsSync(object):
     """A Class for managing the indexing and download Google of Albums
     """
 
-    def __init__(self, api: RestClient, root_folder: Path, db: LocalData):
+    def __init__(self, api: RestClient, root_folder: Path, db: LocalData,
+                 flush: bool):
         """
         Parameters:
             root_folder: path to the root of local file synchronization
@@ -31,6 +32,7 @@ class GoogleAlbumsSync(object):
         self._root_folder: Path = root_folder
         self._db: LocalData = db
         self._api: RestClient = api
+        self.flush = flush
 
     @classmethod
     def make_search_parameters(cls, album_id: str,
@@ -119,16 +121,13 @@ class GoogleAlbumsSync(object):
     def create_album_content_links(self):
         log.warning("Creating album folder links to media ...")
         count = 0
-        # create all links from scratch every time, these are quickly
-        # recreated anyway
         links_root = self._root_folder / 'albums'
-        if links_root.exists():
+        if links_root.exists() and self.flush:
             log.debug('removing previous album links tree')
             shutil.rmtree(links_root)
 
-        for (
-                path, file_name, album_name,
-                end_date) in self._db.get_album_files():
+        for (path, file_name, album_name, end_date) in \
+                self._db.get_album_files():
 
             full_file_name = self._root_folder / path / file_name
 
@@ -138,28 +137,24 @@ class GoogleAlbumsSync(object):
             rel_path = u"{0} {1}".format(month, album_name)
             link_folder: Path = links_root / year / rel_path
             link_file = link_folder / file_name
+            if link_file.exists():
+                log.debug('album link exists: %s', link_file)
+            else:
+                # incredibly, pathlib.Path.relative_to cannot handle
+                # '../' in a relative path !!! reverting to os.path for this.
+                relative_filename = os.path.relpath(full_file_name,
+                                                    str(link_folder))
+                log.debug('adding album link %s -> %s', relative_filename,
+                          link_file)
+                try:
+                    if not link_folder.is_dir():
+                        log.debug('new album folder %s', link_folder)
+                        link_folder.mkdir(parents=True)
 
-            original_link_file = link_file
-            duplicates = 0
-            while link_file.exists():
-                duplicates += 1
-                link_file = '{} ({})'.format(original_link_file, duplicates)
+                    link_file.symlink_to(relative_filename)
+                    count += 1
+                except FileExistsError:
+                    log.error('bad link to %s', full_file_name)
 
-            # incredibly, pathlib.Path.relative_to cannot handle the need for
-            # '../' in a relative path !!! reverting to os.path for this.
-            relative_filename = os.path.relpath(full_file_name,
-                                                str(link_folder))
-            log.debug('adding album link %s -> %s', relative_filename,
-                      link_file)
-            if not link_folder.is_dir():
-                log.debug('new album folder %s', link_folder)
-                link_folder.mkdir(parents=True)
-            try:
-                link_file.symlink_to(relative_filename)
-                count += 1
-            except FileExistsError:
-                pass  # copes with existent broken symbolic links (
-                # os.path.exists fails for these)
-
-        log.warning("Created %d album folder links", count)
+        log.warning("Created %d new album folder links", count)
 

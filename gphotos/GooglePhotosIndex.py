@@ -186,15 +186,16 @@ class GooglePhotosIndex(object):
         count = 0
         log.warning('updating index with extra metadata for comparison '
                     '(may take some time) ...')
-        media_items = self._db.get_rows_by_search(GooglePhotosRow)
+        media_items = self._db.get_rows_by_search(
+            GooglePhotosRow, uid='ISNULL')
         for item in media_items:
             file_path = self._root_folder / item.relative_path
             # if this item has a uid it has been scanned before
-            if file_path.exists() and not item.uid:
+            if file_path.exists():
                 local_file = LocalFilesMedia(file_path)
                 if local_file.got_meta:
                     count += 1
-                    log.info('updating metadata on %s', file_path)
+                    log.info('updating metadata %d on %s', count, file_path)
                     item.update_extra_meta(local_file.uid,
                                            local_file.create_date)
                     # erm lets try some duck typing then !

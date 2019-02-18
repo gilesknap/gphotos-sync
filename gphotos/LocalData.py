@@ -133,6 +133,7 @@ class LocalData:
     def get_rows_by_search(
             self,
             row_type: Type[DbRow] = None,
+            uid: str = '',
             remote_id: str = '%',
             file_name: str = '%',
             path: str = '%',
@@ -145,6 +146,7 @@ class LocalData:
         Parameters:
             row_type: One of the DbRow derived classes - defines which table
               this request is for
+            uid: the exif unique identifier search entry (can be ISNULL)
             remote_id: Google Photos unique ID
             file_name:
             path:
@@ -167,6 +169,8 @@ class LocalData:
             params += (end_date,)
         if skip_downloaded:
             extra_clauses += 'AND Downloaded IS 0'
+        if uid:
+            extra_clauses += 'AND Uid ' + uid
 
         query = "SELECT {0} FROM {1} WHERE RemoteId LIKE ? " \
                 "AND FileName LIKE ? and Path LIKE ? {2};". \
