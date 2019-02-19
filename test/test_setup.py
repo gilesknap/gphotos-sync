@@ -38,18 +38,12 @@ class SetupDbAndCredentials:
         self.db_file = None
         self.root = None
 
-    def test_setup(self, test_name, init_db=False, args=None, trash_db=False,
+    def test_setup(self, test_name, args=None, trash_db=False,
                    trash_files=False):
         self.root = Path(u'/tmp/gpTests/{}'.format(test_name))
 
         self.db_file = self.root / 'gphotos.sqlite'
-        if init_db:
-            if not self.root.exists():
-                self.root.mkdir(parents=True, mode=0o700)
-            src_folder = Path(__file__).parent
-            from_file = src_folder / 'testDb1.sqlite'
-            shutil.copy(from_file, self.db_file)
-        elif trash_files:
+        if trash_files:
             if self.root.exists():
                 shutil.rmtree(self.root)
         elif trash_db:

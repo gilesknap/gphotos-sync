@@ -1,6 +1,7 @@
 CHANGES
 =======
 
+* faster rescan
 * speed up re-scans when no new photos have arrived
 * comparison folder generation fully working
 * fix relative path in tests
@@ -135,6 +136,10 @@ CHANGES
 * fix root id finding
 * clean up pycharm inspections
 * tidy todos into todo.txt
+
+v1.0
+----
+
 * final version of readme
 * restore build status badges
 * update Readme
