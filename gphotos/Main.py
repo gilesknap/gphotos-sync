@@ -17,6 +17,9 @@ from gphotos.restclient import RestClient
 from gphotos.LocalFilesScan import LocalFilesScan
 import pkg_resources
 
+__version__ = pkg_resources.require("gphotos-sync")[0].version
+# todo use __version__ in DB and version reporting
+
 if os.name != 'nt':
     import fcntl
 
@@ -228,7 +231,7 @@ class GooglePhotosSyncMain:
 
             try:
                 log.info('version: {}'.format(
-                    pkg_resources.get_distribution("gphotos-sync").version))
+                    __version__))
             except TypeError:
                 log.info('version not available')
             except DistributionNotFound:
@@ -249,3 +252,7 @@ class GooglePhotosSyncMain:
 
         elapsed_time = datetime.now() - start_time
         log.info('Elapsed time = %s', elapsed_time)
+
+
+def main():
+    GooglePhotosSyncMain().main()

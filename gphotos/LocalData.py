@@ -25,8 +25,7 @@ log = logging.getLogger(__name__)
 class LocalData:
     DB_FILE_NAME: str = 'gphotos.sqlite'
     BLOCK_SIZE: int = 10000
-    # this VERSION must match 'INSERT INTO Globals' in gphotos_create.sql
-    VERSION: float = 5.3
+    VERSION: float = 5.4
 
     def __init__(self, root_folder: Path, flush_index: bool = False):
         """ Initialize a connection to the DB and create some cursors.
@@ -39,7 +38,8 @@ class LocalData:
             clean_db = True
         elif flush_index:
             clean_db = True
-            self.db_file.rename(self.db_file.name + '.previous')
+            self.db_file.rename(self.db_file.parent /
+                                (self.db_file.name + '.previous'))
 
         self.con: Connection = lite.connect(str(self.db_file),
                                             check_same_thread=False)
@@ -78,7 +78,8 @@ class LocalData:
                         'A backup of the previous DB has been created')
             self.con.commit()
             self.con.close()
-            self.db_file.rename(self.db_file.name + '.previous')
+            self.db_file.rename(self.db_file.parent /
+                                (self.db_file.name + '.previous'))
             self.con = lite.connect(str(self.db_file))
             self.con.row_factory = lite.Row
             self.cur = self.con.cursor()
@@ -93,6 +94,11 @@ class LocalData:
         with sql_file.open('r') as f:
             qry = f.read()
             self.cur.executescript(qry)
+        self.store()
+        self.cur.execute('INSERT INTO Globals(Id, Version, Albums, Files) '
+                         'VALUES(1, ?, 0, 0);',
+                         (self.VERSION,))
+        self.store()
 
     # functions to set global values ##########################################
     def set_scan_date(self, last_date: datetime):

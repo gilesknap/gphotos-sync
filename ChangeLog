@@ -1,6 +1,7 @@
 CHANGES
 =======
 
+* tidy db tests
 * faster rescan
 * speed up re-scans when no new photos have arrived
 * comparison folder generation fully working

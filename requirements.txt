@@ -4,6 +4,5 @@ urllib3
 mock
 appdirs
 requests
-six
 requests_oauthlib
 PyYaml

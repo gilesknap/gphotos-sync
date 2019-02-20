@@ -128,7 +128,4 @@ CREATE TABLE Globals
 );
 CREATE UNIQUE INDEX Globals_Id_uindex ON Globals (Id);
 
--- when the database scheme is changed update the second parameter (Version)
--- also update the LocalData.VERSION in LocalData.py
-INSERT INTO Globals(Id, Version, Albums, Files) VALUES (1, 5.3, 0, 0);
 
