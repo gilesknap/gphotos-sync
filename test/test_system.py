@@ -1,6 +1,5 @@
 import datetime
-import glob
-import os
+from pathlib import Path
 from unittest import TestCase
 from mock import patch, Mock
 from requests.exceptions import HTTPError
@@ -11,9 +10,8 @@ import gphotos.Utils as Utils
 from gphotos.LocalData import LocalData
 import test.test_setup as ts
 
-
-# todo add a test that reads in Sync Date from the Db
-# todo add code coverage tests
+photos_root = Path('photos')
+albums_root = Path('albums')
 
 
 class TestSystem(TestCase):
@@ -31,7 +29,7 @@ class TestSystem(TestCase):
         """
         s = ts.SetupDbAndCredentials()
         s.test_setup('test_sys_whole_library', trash_files=True, trash_db=True)
-        s.gp.main([s.root])
+        s.gp.main([str(s.root)])
 
         db = LocalData(s.root)
 
@@ -53,25 +51,30 @@ class TestSystem(TestCase):
         image_years = [2017, 2016, 2015, 2001, 2000, 1998, 1965]
         for y in image_years:
             # looking for .jpg .JPG .png .jfif
-            pat = os.path.join(s.root, 'photos', str(y), '*', '*.[JjpP]*')
-            self.assertEqual(10, len(glob.glob(pat)))
+            pat = str(photos_root / str(y) / '*' / '*.[JjpP]*')
+            self.assertEqual(10, len(sorted(s.root.glob(pat))))
 
         # and 10 mp4 for 2017
-        pat = os.path.join(s.root, 'photos', '2017', '*', '*.mp4')
-        self.assertEqual(10, len(glob.glob(pat)))
+        pat = str(photos_root / '2017' / '*' / '*.mp4')
+        files = sorted(s.root.glob(pat))
+        self.assertEqual(10, len(files))
 
         # 4 albums the following item counts
         album_items = [10, 10, 4, 16]
         albums = [r'0101?Album?2001', r'0528?Movies', r'0923?Clones',
                   r'0926?Album?2016']
         for idx, a in enumerate(albums):
-            pat = os.path.join(s.root, 'albums', '*', a, '*')
+            pat = str(albums_root / '*' / a / '*')
             print('looking for album items at {}'.format(pat))
-            self.assertEqual(album_items[idx], len(glob.glob(pat)))
+            self.assertEqual(album_items[idx], len(sorted(s.root.glob(pat))))
 
         # check that the most recent scanned file date was recorded
         d_date = db.get_scan_date()
         self.assertEqual(d_date.date(), datetime.date(2017, 9, 26))
+
+        # check that re-running does not get any db constraint violations etc.
+        s.test_setup('test_sys_whole_library')
+        s.gp.start(s.parsed_args)
 
     def test_system_date_range(self):
         s = ts.SetupDbAndCredentials()
@@ -127,19 +130,21 @@ class TestSystem(TestCase):
                      trash_files=True)
         s.gp.start(s.parsed_args)
 
-        pat = os.path.join(s.root, 'photos', '2017', '??', '*.[JjpP]*')
-        files = glob.glob(pat)
+        pat = str(photos_root / '2017' / '??' / '*.[JjpP]*')
+        files = sorted(s.root.glob(pat))
         self.assertEqual(10, len(files))
 
-        os.remove(files[0])
-        self.assertEqual(9, len(glob.glob(pat)))
+        files[0].unlink()
+        files = sorted(s.root.glob(pat))
+        self.assertEqual(9, len(files))
 
         # re-run should not download since file is marked as downloaded
         s = ts.SetupDbAndCredentials()
         s.test_setup('test_system_retry_download', args=args)
         s.gp.start(s.parsed_args)
 
-        self.assertEqual(9, len(glob.glob(pat)))
+        files = sorted(s.root.glob(pat))
+        self.assertEqual(9, len(files))
 
         # but adding --retry-download should get us back to 10 files
         args.append('--retry-download')
@@ -147,7 +152,8 @@ class TestSystem(TestCase):
         s.test_setup('test_system_retry_download', args=args)
         s.gp.start(s.parsed_args)
 
-        self.assertEqual(10, len(glob.glob(pat)))
+        files = sorted(s.root.glob(pat))
+        self.assertEqual(10, len(files))
 
     def test_do_delete(self):
         s = ts.SetupDbAndCredentials()
@@ -158,8 +164,8 @@ class TestSystem(TestCase):
                      trash_files=True)
         s.gp.start(s.parsed_args)
 
-        pat = os.path.join(s.root, 'photos', '2017', '??', '*.[JjpP]*')
-        files = glob.glob(pat)
+        pat = str(photos_root / '2017' / '??' / '*.[JjpP]*')
+        files = sorted(s.root.glob(pat))
         self.assertEqual(10, len(files))
 
         db = LocalData(s.root)
@@ -173,7 +179,7 @@ class TestSystem(TestCase):
         s.gp.start(s.parsed_args)
 
         # should have removed all files
-        files = glob.glob(pat)
+        files = sorted(s.root.glob(pat))
         self.assertEqual(0, len(files))
 
     def test_system_incremental(self):
@@ -228,7 +234,7 @@ class TestSystem(TestCase):
                      trash_files=True)
         s.gp.start(s.parsed_args)
         # check we tried to download 10 times
-        self.assertEquals(do_download_file.call_count, 10)
+        self.assertEqual(do_download_file.call_count, 10)
 
         # this should have created a Bad IDs file
         bad_ids = BadIds(s.root)

@@ -1,6 +1,6 @@
+from pathlib import Path
 from yaml import load, dump, YAMLError
 from typing import NamedTuple, Dict
-import os
 import logging
 
 try:
@@ -27,10 +27,10 @@ class BadIds:
         bad_ids_found: count of Ids found since instantiation
     """
 
-    def __init__(self, root_folder: str):
+    def __init__(self, root_folder: Path):
         self.items: Dict[str, Item] = {}
-        self.bad_ids_filename: str = \
-            os.path.join(root_folder, "gphotos.bad_ids.yaml")
+        self.bad_ids_filename: Path = \
+            root_folder / "gphotos.bad_ids.yaml"
         self.bad_ids_found: int = 0
         self.load_ids()
 
@@ -39,14 +39,14 @@ class BadIds:
 
     def load_ids(self):
         try:
-            with open(self.bad_ids_filename, 'r') as stream:
+            with self.bad_ids_filename.open('r') as stream:
                 self.items = load(stream, Loader=Loader)
             log.debug("bad_ids file, loaded %d bad ids", len(self.items))
         except (YAMLError, IOError):
             log.debug("no bad_ids file, bad ids list is empty")
 
     def store_ids(self):
-        with open(self.bad_ids_filename, 'w') as stream:
+        with self.bad_ids_filename.open('w') as stream:
             dump(self.items, stream, Dumper=Dumper, default_flow_style=False)
 
     def add_id(self, path: str, gid: str, product_url: str, e: Exception):

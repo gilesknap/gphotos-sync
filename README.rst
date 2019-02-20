@@ -1,6 +1,8 @@
 |build_status|
 |coverage|
 |codacy|
+|pypi|
+
 
 Google Photos Sync
 ==================
@@ -52,7 +54,9 @@ Primary Goals
 * Provide a file system backup so it is easy to monitor for accidental deletions (or deletions caused by bugs)
   in very large photo collections.
 
-* Make it feasible to switch to a different photo management system in future if this ever becomes desirable/necessary
+* Make it feasible to switch to a different photo management system in future if this ever becomes desirable/necessary.
+
+* Provide a comparison function so that your current Photos library can be verified against a historical backup.
 
 Known Issues
 ------------
@@ -69,11 +73,16 @@ Known Issues
 
 Install and configure
 ---------------------
-Clone the git repository and run the following from the source directory to install it in your system ::
+To install latest published version from PyPi, simply::
 
-  python setup.py build
-  sudo pip install -r requirements.txt
-  sudo python setup.py install
+   pip install gphotos-sync
+
+To work from the source code, clone the git repository and run setup.py from the source
+directory. (if required use a virtualenv) ::
+
+  git clone https://github.com/gilesknap/gphotos-sync.git
+  cd gphotos-sync
+  sudo python3 setup.py install
 
 In order to work, ``gphotos-sync`` first needs a valid client id linked to a project
 authorized to use the 'Photos Library API'. It is not provided in the distribution. Each client id
@@ -134,3 +143,6 @@ For a description of additional command line parameters type::
 .. |codacy| image:: https://api.codacy.com/project/badge/Grade/5a5b8c359800462e90ee2ba21a969f87
    :alt: Codacy Badge
    :target: https://app.codacy.com/app/giles.knap/gphotos-sync?utm_source=github.com&utm_medium=referral&utm_content=gilesknap/gphotos-sync&utm_campaign=Badge_Grade_Dashboard
+
+.. |pypi| image:: https://badge.fury.io/py/gphotos-sync.svg
+   :target: https://badge.fury.io/py/gphotos-sync

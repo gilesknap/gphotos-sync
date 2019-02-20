@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # coding: utf8
 
+from pathlib import Path
 from . import Utils
 from .BaseMedia import BaseMedia
 from typing import Dict, List, Union, Any
@@ -13,12 +14,17 @@ JSONType = Union[Dict[str, JSONValue], List[JSONValue]]
 class GooglePhotosMedia(BaseMedia):
     def __init__(self, media_json):
         self.__media_json: JSONType = media_json
+        self.__uid = None
         super(GooglePhotosMedia, self).__init__()
         if self.is_video():
             self.__media_meta = None
             # self.__media_meta = media_json.get('mediaMetadata').get('video')
         else:
             self.__media_meta = media_json.get('mediaMetadata').get('photo')
+
+    @property
+    def uid(self) -> str:
+        return self.__uid
 
     # ----- override Properties below -----
     @property
@@ -38,12 +44,12 @@ class GooglePhotosMedia(BaseMedia):
             return ''
 
     @property
-    def orig_name(self) -> str:
+    def orig_name(self) -> Path:
         try:
             name = self.__media_json["filename"]
         except KeyError:
             name = ''
-        return self.validate_encoding(name)
+        return Path(self.validate_encoding(name))
 
     @property
     def create_date(self) -> datetime:

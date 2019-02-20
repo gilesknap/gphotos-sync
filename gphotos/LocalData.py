@@ -1,13 +1,22 @@
 #!/usr/bin/env python3
 # coding: utf8
-import os.path
+from pathlib import Path
 import sqlite3 as lite
 from sqlite3.dbapi2 import Connection, Row, Cursor
 from datetime import datetime
-from typing import Iterator
+from typing import Iterator, Type
 
+# todo this module could be tidied quite a bit
+#  too much application logic at this level in some cases
+#  also the generic functions seem a bit ugly and could do with rework
+import gphotos.Queries as Queries
 from gphotos import Utils
+from gphotos.GoogleAlbumsRow import GoogleAlbumsRow
+from gphotos.LocalFilesRow import LocalFilesRow
+from gphotos.GooglePhotosRow import GooglePhotosRow
 from gphotos.DbRow import DbRow
+from gphotos.DatabaseMedia import DatabaseMedia
+
 import logging
 
 log = logging.getLogger(__name__)
@@ -16,16 +25,23 @@ log = logging.getLogger(__name__)
 class LocalData:
     DB_FILE_NAME: str = 'gphotos.sqlite'
     BLOCK_SIZE: int = 10000
-    # this must match 'INSERT INTO Globals' in gphotos_create.sql
-    VERSION: float = 4.1
+    VERSION: float = 5.4
 
-    def __init__(self, root_folder: str, flush_index: bool = False):
-        self.file_name: str = os.path.join(root_folder, LocalData.DB_FILE_NAME)
-        if not os.path.exists(self.file_name) or flush_index:
+    def __init__(self, root_folder: Path, flush_index: bool = False):
+        """ Initialize a connection to the DB and create some cursors.
+        If requested or if the DB schema version is old, recreate the DB
+        from scratch.
+        """
+        clean_db = False
+        self.db_file: Path = root_folder / LocalData.DB_FILE_NAME
+        if not self.db_file.exists():
             clean_db = True
-        else:
-            clean_db = False
-        self.con: Connection = lite.connect(self.file_name,
+        elif flush_index:
+            clean_db = True
+            self.db_file.rename(self.db_file.parent /
+                                (self.db_file.name + '.previous'))
+
+        self.con: Connection = lite.connect(str(self.db_file),
                                             check_same_thread=False)
         self.con.row_factory: Row = lite.Row
         self.cur: Cursor = self.con.cursor()
@@ -40,32 +56,16 @@ class LocalData:
         pass
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        """ Always clean up and close the connection when this object is
+        destroyed. """
         if self.con:
             self.store()
             self.con.close()
 
-    @DbRow.db_row
-    class SyncRow(DbRow):
-        """
-        generates a class with attributes for each of the columns in the
-        SyncFiles table
-        """
-        cols_def = {'Id': int, 'RemoteId': str, 'Url': str, 'Path': str,
-                    'FileName': str, 'OrigFileName': str, 'DuplicateNo': int,
-                    'FileSize': int, 'MimeType': str, 'Description': str,
-                    'ModifyDate': datetime, 'CreateDate': datetime,
-                    'SyncDate': datetime, 'Downloaded': int}
-        no_update = ['Id']
-
-    @DbRow.db_row
-    class AlbumsRow(DbRow):
-        """
-        generates a class with attributes for each of the columns in the
-        SyncFiles table
-        """
-        cols_def = {'AlbumId': str, 'AlbumName': str, 'Size': int,
-                    'StartDate': datetime,
-                    'EndDate': datetime, 'SyncDate': datetime}
+    def store(self):
+        log.info("Saving Database ...")
+        self.con.commit()
+        log.info("Database Saved.")
 
     def check_schema_version(self):
         query = "SELECT  Version FROM  Globals WHERE Id IS 1"
@@ -74,22 +74,33 @@ class LocalData:
         if version > self.VERSION:
             raise ValueError('Database version is newer than gphotos-sync')
         elif version < self.VERSION:
-            log.warning('Database schema out of date. Flushing index ...')
+            log.warning('Database schema out of date. Flushing index ...\n'
+                        'A backup of the previous DB has been created')
             self.con.commit()
             self.con.close()
-            os.rename(self.file_name, self.file_name + '.previous')
-            self.con = lite.connect(self.file_name)
+            self.db_file.rename(self.db_file.parent /
+                                (self.db_file.name + '.previous'))
+            self.con = lite.connect(str(self.db_file))
             self.con.row_factory = lite.Row
             self.cur = self.con.cursor()
             self.clean_db()
 
     def clean_db(self):
-        sql_file = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                "sql", "gphotos_create.sql")
-        with open(sql_file, 'r') as f:
+        """ Execute the DB creation script, erasing old data and bringing
+        the schema up to date if necessary """
+        sql_file = Path(__file__).absolute().parent
+        sql_file = sql_file / "sql" / "gphotos_create.sql"
+
+        with sql_file.open('r') as f:
             qry = f.read()
             self.cur.executescript(qry)
+        self.store()
+        self.cur.execute('INSERT INTO Globals(Id, Version, Albums, Files) '
+                         'VALUES(1, ?, 0, 0);',
+                         (self.VERSION,))
+        self.store()
 
+    # functions to set global values ##########################################
     def set_scan_date(self, last_date: datetime):
         d = Utils.date_to_string(last_date)
         self.cur.execute('UPDATE Globals SET LastIndex=? '
@@ -109,23 +120,52 @@ class LocalData:
 
         return last_date
 
-    def get_files_by_search(
-            self, remote_id: str = '%',
+    # functions for managing the (any) Media Tables ###########################
+    # noinspection SqlResolve
+    def put_row(self, row: DbRow, update=False):
+        try:
+            if update:
+                # noinspection PyUnresolvedReferences
+                query = "UPDATE {0} Set {1} WHERE RemoteId = '{2}'".format(
+                    row.table, row.update, row.RemoteId)
+            else:
+                query = "INSERT INTO {0} ({1}) VALUES ({2})".format(
+                    row.table, row.columns, row.params)
+            self.cur.execute(query, row.dict)
+            row_id = self.cur.lastrowid
+        except lite.IntegrityError:
+            log.error('SQL constraint issue with {}'.format(row.dict))
+            raise
+        return row_id
+
+    # noinspection SqlResolve
+    def get_rows_by_search(
+            self,
+            row_type: Type[DbRow] = None,
+            uid: str = '',
+            remote_id: str = '%',
+            file_name: str = '%',
+            path: str = '%',
             start_date: datetime = None,
             end_date: datetime = None,
-            skip_downloaded: bool = False) -> Iterator[SyncRow]:
+            skip_downloaded: bool = False) -> Iterator[DatabaseMedia]:
         """
-        Search for a selection of files in the SyncRow table.
+        Search for a selection of files in a media table.
 
         Parameters:
+            row_type: One of the DbRow derived classes - defines which table
+              this request is for
+            uid: the exif unique identifier search entry (can be ISNULL)
             remote_id: Google Photos unique ID
+            file_name:
+            path:
             start_date: start day for search
             end_date: end day for search
             skip_downloaded: Dont return entries already downloaded
         Return:
             An iterator over query results
         """
-        params = (remote_id,)
+        params = (remote_id, file_name, path)
         extra_clauses = ''
         if start_date:
             # look for create date too since an photo recently uploaded will
@@ -138,43 +178,46 @@ class LocalData:
             params += (end_date,)
         if skip_downloaded:
             extra_clauses += 'AND Downloaded IS 0'
+        if uid:
+            extra_clauses += 'AND Uid ' + uid
 
-        query = "SELECT {0} FROM SyncFiles WHERE RemoteId LIKE ? {1};". \
-            format(self.SyncRow.columns, extra_clauses)
+        query = "SELECT {0} FROM {1} WHERE RemoteId LIKE ? " \
+                "AND FileName LIKE ? and Path LIKE ? {2};". \
+            format(row_type.columns, row_type.table, extra_clauses)
 
-        self.cur2.execute(query, params)
-        while True:
-            records = self.cur2.fetchmany(LocalData.BLOCK_SIZE)
-            if not records:
-                break
-            for record in records:
-                yield self.SyncRow(record)
-
-    def get_file_by_path(self, folder: str, name: str):
-        query = "SELECT {0} FROM SyncFiles WHERE Path = ?" \
-                " AND FileName = ?;".format(self.SyncRow.columns)
-        self.cur.execute(query, (folder, name))
-        record = self.cur.fetchone()
-        return self.SyncRow(record)
-
-    def put_file(self, row, update=False):
         try:
-            if update:
-                query = "UPDATE SyncFiles Set {0} " \
-                        "WHERE RemoteId = '{1}'".format(self.SyncRow.update,
-                                                        row.RemoteId)
-            else:
-                query = "INSERT INTO SyncFiles ({0}) VALUES ({1})".format(
-                    self.SyncRow.columns, self.SyncRow.params)
-            self.cur.execute(query, row.dict)
-            row_id = self.cur.lastrowid
-        except lite.IntegrityError:
-            log.error('SQL constraint issue with {}'.format(row.dict))
+            self.cur2.execute(query, params)
+            while True:
+                records = self.cur2.fetchmany(LocalData.BLOCK_SIZE)
+                if not records:
+                    break
+                for record in records:
+                    yield row_type(record).to_media()
+        except Exception:
+            log.error('query: %s\nparams: %s', query, params)
             raise
-        return row_id
 
+    # noinspection SqlResolve
+    def get_file_by_path(
+            self,
+            row_type: Type[DbRow],
+            folder: Path,
+            name: str) -> DatabaseMedia:
+        """
+        Search for a media item by filename, this applies to any of the
+        BaseMedia/DbRow derived class pairs
+        """
+        query = "SELECT {0} FROM {1} WHERE Path = ?" \
+                " AND FileName = ?;".format(row_type.columns, row_type.table)
+        self.cur.execute(query, (str(folder), name))
+        record = self.cur.fetchone()
+        return row_type(record).to_media()
+
+    # functions for managing the SyncFiles Table ##############################
+
+    # todo this could be generic and support Albums and LocalFiles too
     def file_duplicate_no(self, name: str,
-                          path: str, remote_id: str) -> (int, SyncRow):
+                          path: str, remote_id: str) -> (int, DatabaseMedia):
         """
         determine if there is already an entry for file. If not determine
         if other entries share the same path/filename and determine a duplicate
@@ -185,13 +228,13 @@ class LocalData:
             Single row from the SyncRow table
         """
         query = "SELECT {0} FROM SyncFiles WHERE RemoteId = ?; ". \
-            format(self.SyncRow.columns)
+            format(GooglePhotosRow.columns)
         self.cur.execute(query, (remote_id,))
         result = self.cur.fetchone()
 
         if result:
             # return the existing file entry's duplicate no.
-            return result['DuplicateNo'], self.SyncRow(result)
+            return result['DuplicateNo'], GooglePhotosRow(result).to_media()
 
         self.cur.execute(
             "SELECT MAX(DuplicateNo) FROM SyncFiles "
@@ -205,18 +248,25 @@ class LocalData:
             # the file is new and has no duplicates
             return 0, None
 
-    def get_album(self, album_id: str) -> AlbumsRow:
+    def put_downloaded(self, sync_file_id: str, downloaded: bool = True):
+        self.cur.execute(
+            "UPDATE SyncFiles SET Downloaded=? "
+            "WHERE RemoteId IS ?;", (downloaded, sync_file_id))
+
+    def downloaded_count(self, downloaded: bool = True) -> int:
+        self.cur.execute(
+            "Select Count(Downloaded) from main.SyncFiles WHERE Downloaded=? ",
+            (downloaded,))
+        result = self.cur.fetchone()[0]
+        return result
+
+    # functions for managing Albums ###########################################
+    def get_album(self, album_id: str) -> DatabaseMedia:
         query = "SELECT {0} FROM Albums WHERE AlbumId = ?;".format(
-            self.AlbumsRow.columns)
+            GoogleAlbumsRow.columns)
         self.cur.execute(query, (album_id,))
         res = self.cur.fetchone()
-        return self.AlbumsRow(res)
-
-    def put_album(self, row: AlbumsRow) -> int:
-        query = "INSERT OR REPLACE INTO Albums ({0}) VALUES ({1}) ;".format(
-            row.columns, row.params)
-        self.cur.execute(query, row.dict)
-        return self.cur.lastrowid
+        return GoogleAlbumsRow(res).to_media()
 
     def get_album_files(self, album_id: str = '%'
                         ) -> (str, str, str, str):
@@ -254,19 +304,49 @@ class LocalData:
         # noinspection SqlWithoutWhere
         self.cur.execute("DELETE FROM AlbumFiles")
 
-    def put_downloaded(self, sync_file_id: str, downloaded: bool = True):
-        self.cur.execute(
-            "UPDATE SyncFiles SET Downloaded=? "
-            "WHERE RemoteId IS ?;", (downloaded, sync_file_id))
+    # ---- LocalFiles Queries -------------------------------------------
 
-    def downloaded_count(self, downloaded: bool = True) -> int:
+    def get_missing_paths(self):
+        self.cur2.execute(Queries.missing_files)
+        while True:
+            records = self.cur2.fetchmany(LocalData.BLOCK_SIZE)
+            if not records:
+                break
+            for record in records:
+                r = LocalFilesRow(record).to_media()
+                pth = Path(r.relative_path.parent / r.filename)
+                yield pth
+
+    def get_duplicates(self):
+        self.cur2.execute(Queries.duplicate_files)
+        while True:
+            records = self.cur2.fetchmany(LocalData.BLOCK_SIZE)
+            if not records:
+                break
+            for record in records:
+                r = LocalFilesRow(record).to_media()
+                pth = r.relative_path.parent / r.filename
+                yield r.id, pth
+
+    def get_extra_paths(self):
+        self.cur2.execute(Queries.extra_files)
+        while True:
+            records = self.cur2.fetchmany(LocalData.BLOCK_SIZE)
+            if not records:
+                break
+            for record in records:
+                r = GooglePhotosRow(record).to_media()
+                pth = r.relative_path.parent / r.filename
+                yield pth
+
+    def local_exists(self, file_name: str, path: str):
         self.cur.execute(
-            "Select Count(Downloaded) from main.SyncFiles WHERE Downloaded=? ",
-            (downloaded,))
-        result = self.cur.fetchone()[0]
+            "SELECT COUNT() FROM main.LocalFiles WHERE FileName = ?"
+            "AND PATH = ?;", (file_name, path))
+        result = int(self.cur.fetchone()[0])
         return result
 
-    def store(self):
-        log.info("Saving Database ...")
-        self.con.commit()
-        log.info("Database Saved.")
+    def find_local_matches(self):
+        # noinspection SqlWithoutWhere
+        for q in Queries.match:
+            self.cur.execute(q)

@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 # coding: utf8
-import os.path
-
+from pathlib import Path
+import os
 from gphotos import Utils
 from gphotos.LocalData import LocalData
 from gphotos.restclient import RestClient
 from gphotos.DatabaseMedia import DatabaseMedia
+from gphotos.GooglePhotosRow import GooglePhotosRow
 from gphotos.BadIds import BadIds
 
 from itertools import zip_longest
@@ -31,7 +32,7 @@ class GooglePhotosDownload(object):
     MAX_THREADS: int = 20
     BATCH_SIZE: int = 40
 
-    def __init__(self, api: RestClient, root_folder: str, db: LocalData):
+    def __init__(self, api: RestClient, root_folder: Path, db: LocalData):
         """
         Parameters:
             api: object representing the Google REST API
@@ -39,7 +40,7 @@ class GooglePhotosDownload(object):
             db: local database for indexing
         """
         self._db: LocalData = db
-        self._root_folder: str = root_folder
+        self._root_folder: Path = root_folder
         self._api: RestClient = api
 
         self.files_downloaded: int = 0
@@ -60,7 +61,7 @@ class GooglePhotosDownload(object):
         self.download_pool = futures.ThreadPoolExecutor(
             max_workers=self.MAX_THREADS)
         self.pool_future_to_media = {}
-        self.bad_ids = BadIds(root_folder)
+        self.bad_ids = BadIds(self._root_folder)
 
         self._session = requests.Session()
         retries = Retry(total=5,
@@ -84,6 +85,7 @@ class GooglePhotosDownload(object):
         This avoids the overhead of one REST call per file. A REST call
         takes longer than downloading an image
         """
+
         def grouper(
                 iterable: Iterable[DatabaseMedia]) \
                 -> Iterable[Iterable[DatabaseMedia]]:
@@ -97,8 +99,8 @@ class GooglePhotosDownload(object):
         log.warning('Downloading Photos ...')
         try:
             for media_items_block in grouper(
-                    DatabaseMedia.get_media_by_search(
-                        self._db,
+                    self._db.get_rows_by_search(
+                        GooglePhotosRow,
                         start_date=self._start_date,
                         end_date=self._end_date,
                         skip_downloaded=not self.retry_download)):
@@ -106,12 +108,12 @@ class GooglePhotosDownload(object):
 
                 items = (mi for mi in media_items_block if mi)
                 for media_item in items:
-                    local_folder = os.path.join(
-                        self._root_folder, media_item.relative_folder)
-                    local_full_path = os.path.join(
-                        local_folder, media_item.filename)
+                    local_folder = \
+                        self._root_folder / media_item.relative_folder
+                    local_full_path = \
+                        local_folder / media_item.filename
 
-                    if os.path.exists(local_full_path):
+                    if local_full_path.exists():
                         self.files_download_skipped += 1
                         log.debug('SKIPPED download (file exists) %d %s',
                                   self.files_download_skipped,
@@ -120,8 +122,8 @@ class GooglePhotosDownload(object):
 
                     elif self.bad_ids.check_id_ok(media_item.id):
                         batch[media_item.id] = media_item
-                        if not os.path.isdir(local_folder):
-                            os.makedirs(local_folder)
+                        if not local_folder.is_dir():
+                            local_folder.mkdir(parents=True)
 
                 if len(batch) > 0:
                     self.download_batch(batch)
@@ -202,9 +204,8 @@ class GooglePhotosDownload(object):
     def do_download_file(self, base_url: str, media_item: DatabaseMedia):
         """ Runs in a process pool and does a download of a single media item.
         """
-        local_folder = os.path.join(self._root_folder,
-                                    media_item.relative_folder)
-        local_full_path = os.path.join(local_folder, media_item.filename)
+        local_folder = self._root_folder / media_item.relative_folder
+        local_full_path = local_folder / media_item.filename
         if media_item.is_video():
             download_url = '{}=dv'.format(base_url)
             timeout = self.video_timeout
@@ -212,6 +213,7 @@ class GooglePhotosDownload(object):
             download_url = '{}=d'.format(base_url)
             timeout = self.image_timeout
         temp_file = tempfile.NamedTemporaryFile(dir=local_folder, delete=False)
+        t_path = Path(temp_file.name)
 
         try:
             response = self._session.get(download_url, stream=True,
@@ -220,16 +222,17 @@ class GooglePhotosDownload(object):
             shutil.copyfileobj(response.raw, temp_file)
             temp_file.close()
             response.close()
-            os.rename(temp_file.name, local_full_path)
-            os.utime(local_full_path,
+            t_path.rename(local_full_path)
+            # todo is there a path lib equivalent
+            os.utime(str(local_full_path),
                      (Utils.safe_timestamp(media_item.modify_date),
                       Utils.safe_timestamp(media_item.create_date)))
         except KeyboardInterrupt:
             log.debug("User cancelled download thread")
             raise
         finally:
-            if os.path.exists(temp_file.name):
-                os.remove(temp_file.name)
+            if t_path.exists():
+                t_path.unlink()
 
     def do_download_complete(self,
                              futures_list: Union[
@@ -271,7 +274,7 @@ class GooglePhotosDownload(object):
                 media_item_json = response.json()
                 self.download_file(media_item, media_item_json)
             except RequestException as e:
-                self.bad_ids.add_id(media_item.relative_path,
+                self.bad_ids.add_id(str(media_item.relative_path),
                                     media_item.id, media_item.url, e)
                 self.files_download_failed += 1
                 log.error('FAILURE %d in get of %s BAD ID',

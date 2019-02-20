@@ -26,12 +26,46 @@ create index Albums_StartDate_index
 ;
 
 
+drop table if exists LocalFiles;
+create table LocalFiles
+(
+	Id INTEGER
+		primary key,
+	RemoteId TEXT default '',
+	Uid Text,
+	Path TEXT,
+	FileName TEXT,
+	OriginalFileName TEXT,
+	DuplicateNo INT,
+	MimeType TEXT,
+	Description TEXT,
+	FileSize INT,
+	ModifyDate INT,
+	CreateDate INT,
+	SyncDate INT
+);
+
+DROP INDEX IF EXISTS LocalRemoteIdIdx;
+DROP INDEX IF EXISTS LocalUidIdx;
+DROP INDEX IF EXISTS LocalNameIdx;
+DROP INDEX IF EXISTS LocalCreatedIdx;
+DROP INDEX IF EXISTS LocalMatchIdx;
+DROP INDEX IF EXISTS LocalFiles_Path_FileName_DuplicateNo_uindex;
+create index LocalRemoteIdIdx	on LocalFiles (RemoteId);
+create index LocalUidIdx	on LocalFiles (Uid);
+create index LocalNameIdx  on LocalFiles (FileName);
+create index LocalCreatedIdx  on LocalFiles (CreateDate);
+create index LocalMatchIdx  on LocalFiles (OriginalFileName, DuplicateNo, Description);
+create unique index LocalFiles_Path_FileName_DuplicateNo_uindex
+ 	on LocalFiles (Path, FileName, DuplicateNo);
+
 drop table if exists SyncFiles;
 create table SyncFiles
 (
 	Id INTEGER
 		primary key,
 	RemoteId TEXT,
+	Uid Text,
 	Url TEXT,
 	Path TEXT,
 	FileName TEXT,
@@ -44,21 +78,25 @@ create table SyncFiles
 	CreateDate INT,
 	SyncDate INT,
   Downloaded INT DEFAULT 0
-)
-;
+);
+
 DROP INDEX IF EXISTS RemoteIdIdx;
+DROP INDEX IF EXISTS UidIdx;
 DROP INDEX IF EXISTS FileNameIdx;
 DROP INDEX IF EXISTS FileSizeIdx;
 DROP INDEX IF EXISTS FileSizeAndSizeIdx;
 DROP INDEX IF EXISTS CreatedIdx;
 DROP INDEX IF EXISTS ModifyDateIdx;
+DROP INDEX IF EXISTS SyncMatchIdx;
 DROP INDEX IF EXISTS SyncFiles_Path_FileName_DuplicateNo_uindex;
 create unique index RemoteIdIdx	on SyncFiles (RemoteId);
 create index FileNameIdx  on SyncFiles (FileName);
+create index UidIdx  on SyncFiles (Uid);
 create index FileSizeIdx  on SyncFiles (FileSize);
 create index FileSizeAndSizeIdx  on SyncFiles (FileName, FileSize);
 create index CreatedIdx  on SyncFiles (CreateDate);
 create index ModifyDateIdx  on SyncFiles (ModifyDate);
+create index SyncMatchIdx  on SyncFiles (OrigFileName, DuplicateNo, Description);
 create unique index SyncFiles_Path_FileName_DuplicateNo_uindex
  	on SyncFiles (Path, FileName, DuplicateNo);
 
@@ -79,28 +117,6 @@ DROP INDEX IF EXISTS AlbumFiles_AlbumRec_DriveRec_uindex;
 create unique index AlbumFiles_AlbumRec_DriveRec_uindex
 	on AlbumFiles (AlbumRec, DriveRec);
 
-
-drop table if exists LocalFiles;
-create table LocalFiles
-(
-	Id INTEGER
-		primary key,
-	Path TEXT,
-	FileName TEXT,
-	MimeType TEXT,
-	ModifyDate INT,
-	CreateDate INT,
-	SyncDate INT,
-	Uploaded INT
-)
-;
-DROP INDEX IF EXISTS FileNameIdx;
-DROP INDEX IF EXISTS CreatedIdx;
-DROP INDEX IF EXISTS SyncDateIdx;
-create index FileNameIdx  on LocalFiles (FileName);
-create index CreatedIdx  on LocalFiles (CreateDate);
-create index SyncDateIdx  on LocalFiles (SyncDate);
-
 drop table if exists Globals;
 CREATE TABLE Globals
 (
@@ -112,7 +128,4 @@ CREATE TABLE Globals
 );
 CREATE UNIQUE INDEX Globals_Id_uindex ON Globals (Id);
 
--- when the database scheme is changed update the second parameter (Version)
--- also update the LocalData.VERSION in LocalData.py
-INSERT INTO Globals(Id, Version, Albums, Files) VALUES (1, 4.1, 0, 0);
 

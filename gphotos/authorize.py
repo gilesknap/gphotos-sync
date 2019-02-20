@@ -1,8 +1,8 @@
 from requests.adapters import HTTPAdapter
 from requests_oauthlib import OAuth2Session
+from pathlib import Path
 from urllib3.util.retry import Retry
 from typing import List, Optional
-import os
 
 from yaml import load, dump, YAMLError
 
@@ -17,7 +17,7 @@ token_uri = "https://www.googleapis.com/oauth2/v4/token"
 
 
 class Authorize:
-    def __init__(self, scope: List[str], token_file: str, secrets_file: str):
+    def __init__(self, scope: List[str], token_file: Path, secrets_file: Path):
         """ A very simple class to handle Google API authorization flow
         for the requests library. Includes saving the token and automatic
         token refresh.
@@ -30,12 +30,12 @@ class Authorize:
             secrets_file: full path of the client secrets file obtained from
             Google Api Console
         """
-        self.scope = scope
-        self.token_file = token_file
+        self.scope: List[str] = scope
+        self.token_file: Path = token_file
         self.session = None
         self.token = None
         try:
-            with open(secrets_file, 'r') as stream:
+            with secrets_file.open('r') as stream:
                 all_yaml = load(stream, Loader=Loader)
             secrets = all_yaml['installed']
             self.client_id = secrets['client_id']
@@ -52,16 +52,16 @@ class Authorize:
 
     def load_token(self) -> Optional[str]:
         try:
-            with open(self.token_file, 'r') as stream:
+            with self.token_file.open('r') as stream:
                 token = load(stream, Loader=Loader)
         except (YAMLError, IOError):
             return None
         return token
 
     def save_token(self, token: str):
-        with open(self.token_file, 'w') as stream:
+        with self.token_file.open('w') as stream:
             dump(token, stream, Dumper=Dumper)
-        os.chmod(self.token_file, 0o600)
+        self.token_file.chmod(0o600)
 
     def authorize(self):
         """ Initiates OAuth2 authentication and authorization flow

@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 # coding: utf8
-import os.path
+from pathlib import Path
 from datetime import datetime
 
 from gphotos import Utils
 from gphotos.GooglePhotosMedia import GooglePhotosMedia
+from gphotos.GooglePhotosRow import GooglePhotosRow
+from gphotos.LocalFilesMedia import LocalFilesMedia
 from gphotos.LocalData import LocalData
 from gphotos.restclient import RestClient
 
@@ -16,11 +18,11 @@ log = logging.getLogger(__name__)
 class GooglePhotosIndex(object):
     PAGE_SIZE = 100
 
-    def __init__(self, api: RestClient, root_folder: str, db: LocalData):
+    def __init__(self, api: RestClient, root_folder: Path, db: LocalData):
         self._api: RestClient = api
-        self._root_folder: str = root_folder
+        self._root_folder: Path = root_folder
         self._db: LocalData = db
-        self._media_folder: str = 'photos'
+        self._media_folder: Path = Path('photos')
 
         self.files_indexed: int = 0
         self.files_index_skipped: int = 0
@@ -43,6 +45,20 @@ class GooglePhotosIndex(object):
     def set_end_date(self, val: str):
         self._end_date = Utils.string_to_date(val)
 
+    def check_for_removed_in_folder(self, folder: Path):
+        for pth in folder.iterdir():
+            if pth.is_dir():
+                self.check_for_removed_in_folder(pth)
+            else:
+                local_path = pth.relative_to(self._root_folder).parent
+                if pth.match('.*') or pth.match('gphotos*'):
+                    continue
+                file_row = self._db.get_file_by_path(
+                    GooglePhotosRow, local_path, pth.name)
+                if not file_row:
+                    pth.unlink()
+                    log.warning("%s deleted", pth)
+
     def check_for_removed(self):
         """ Removes local files that are no longer represented in the Photos
         Library - presumably because they were deleted.
@@ -51,21 +67,11 @@ class GooglePhotosIndex(object):
         for a file to exist it must have been indexed in a previous scan
         """
         log.warning('Finding and removing deleted media ...')
-        start_folder = os.path.join(self._root_folder, self._media_folder)
-        for (dir_name, _, file_names) in os.walk(start_folder):
-            for file_name in file_names:
-                local_path = os.path.relpath(dir_name, self._root_folder)
-                if file_name.startswith('.') or file_name.startswith('gphotos'):
-                    continue
-                file_row = self._db.get_file_by_path(local_path, file_name)
-                if not file_row:
-                    name = os.path.join(dir_name, file_name)
-                    os.remove(name)
-                    log.warning("%s deleted", name)
+        self.check_for_removed_in_folder(self._root_folder / self._media_folder)
 
     def write_media_index(self, media: GooglePhotosMedia,
                           update: bool = True):
-        media.save_to_db(self._db, update)
+        self._db.put_row(GooglePhotosRow.from_media(media), update)
         if media.create_date > self.latest_download:
             self.latest_download = media.create_date
 
@@ -138,7 +144,11 @@ class GooglePhotosIndex(object):
             for media_item_json in media_json:
                 media_item = GooglePhotosMedia(media_item_json)
                 media_item.set_path_by_date(self._media_folder)
-                row = media_item.is_indexed(self._db)
+                (num, row) = self._db.file_duplicate_no(
+                    str(media_item.filename), str(media_item.relative_folder),
+                    media_item.id)
+                # we just learned if there were any duplicates in the db
+                media_item.duplicate_number = num
                 if not row:
                     self.files_indexed += 1
                     log.info("Indexed %d %s", self.files_indexed,
@@ -146,7 +156,7 @@ class GooglePhotosIndex(object):
                     self.write_media_index(media_item, False)
                     if self.files_indexed % 2000 == 0:
                         self._db.store()
-                elif media_item.modify_date > row.ModifyDate:
+                elif media_item.modify_date > row.modify_date:
                     self.files_indexed += 1
                     # todo at present there is no modify date in the API
                     #  so updates cannot be monitored - this won't get called
@@ -158,6 +168,8 @@ class GooglePhotosIndex(object):
                     log.debug("Skipped Index (already indexed) %d %s",
                               self.files_index_skipped,
                               media_item.relative_path)
+                    self.latest_download = max(self.latest_download,
+                                               media_item.create_date)
             next_page = items_json.get('nextPageToken')
             if next_page:
                 items_json = self.search_media(page_token=next_page,
@@ -171,3 +183,33 @@ class GooglePhotosIndex(object):
         # can start from the most recent file in this scan
         if not self._start_date:
             self._db.set_scan_date(last_date=self.latest_download)
+
+    def get_extra_meta(self):
+        count = 0
+        log.warning('updating index with extra metadata for comparison '
+                    '(may take some time) ...')
+        media_items = self._db.get_rows_by_search(
+            GooglePhotosRow, uid='ISNULL')
+        for item in media_items:
+            file_path = self._root_folder / item.relative_path
+            # if this item has a uid it has been scanned before
+            if file_path.exists():
+                local_file = LocalFilesMedia(file_path)
+                if local_file.got_meta:
+                    count += 1
+                    log.info('updating metadata %d on %s', count, file_path)
+                    item.update_extra_meta(local_file.uid,
+                                           local_file.create_date)
+                    # erm lets try some duck typing then !
+                    # todo is the DbRow class model rubbish or brilliant Python?
+                    # noinspection PyTypeChecker
+                    self._db.put_row(GooglePhotosRow.from_media(item),
+                                     update=True)
+                    if count % 2000 == 0:
+                        self._db.store()
+                else:
+                    log.debug('NO metadata on %s', file_path)
+            else:
+                log.debug('skipping metadata (already scanned) on %s',
+                              file_path)
+        log.warning('updating index with extra metadata complete')
