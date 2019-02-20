@@ -6,7 +6,7 @@ matrix:
       sudo: true
 
 install:
-  - pip install -r .
+  - pip install .
   - pip install codecov
   - pip install pytest
   - pip install pytest-cov
