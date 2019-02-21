@@ -1,0 +1,7 @@
+include AUTHORS
+include LICENSE
+include Pipfile*
+include README.rst
+include gphotos/sql/gphotos_create.sql
+prune test
+prune etc

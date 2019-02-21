@@ -1,8 +1,0 @@
-python-magic
-piexif
-urllib3
-mock
-appdirs
-requests
-requests_oauthlib
-PyYaml
