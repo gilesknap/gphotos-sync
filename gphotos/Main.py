@@ -190,19 +190,24 @@ class GooglePhotosSyncMain:
         logging.getLogger('').addHandler(console)
 
     def start(self, args: Namespace):
+        new_files = True
         with self.data_store:
             if not args.skip_index:
                 if not args.skip_files:
-                    self.google_photos_idx.index_photos_media()
-                if not args.skip_albums:
+                    new_files = self.google_photos_idx.index_photos_media()
+            # if there are no new files and no arguments that specify specific
+            # scan requirements, then we have done all we need to do
+            if new_files or args.rescan or args.retry_download or \
+                    args.start_date:
+                if not args.skip_albums and not args.skip_index:
                     self.google_albums_sync.index_album_media()
-            if not args.index_only:
-                if not args.skip_files:
-                    self.google_photos_down.download_photo_media()
-                if not args.skip_albums:
-                    self.google_albums_sync.create_album_content_links()
-                if args.do_delete:
-                    self.google_photos_idx.check_for_removed()
+                if not args.index_only:
+                    if not args.skip_files:
+                        self.google_photos_down.download_photo_media()
+                    if not args.skip_albums:
+                        self.google_albums_sync.create_album_content_links()
+                    if args.do_delete:
+                        self.google_photos_idx.check_for_removed()
 
             if args.compare_folder:
                 self.local_files_scan.scan_local_files()

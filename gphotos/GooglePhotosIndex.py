@@ -124,7 +124,7 @@ class GooglePhotosIndex(object):
             }
             return self._api.mediaItems.search.execute(body).json()
 
-    def index_photos_media(self):
+    def index_photos_media(self) -> bool:
         log.warning('Indexing Google Photos Files ...')
 
         if self.rescan:
@@ -183,6 +183,8 @@ class GooglePhotosIndex(object):
         # can start from the most recent file in this scan
         if not self._start_date:
             self._db.set_scan_date(last_date=self.latest_download)
+
+        return self.files_indexed > 0
 
     def get_extra_meta(self):
         count = 0

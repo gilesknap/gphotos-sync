@@ -19,12 +19,12 @@ with open("README.rst", "rb") as f:
 
 setup(
     name=module_name,
-    version=2.7,
+    version=2.8,
     python_requires='>=3.6',
     license='MIT',
     platforms=['Linux', 'Windows', 'Mac'],
     description='Google Photos backup tool',
-    # packages=find_packages(exclude=("tests.*", "tests", "etc.*", "etc")),
+    packages=find_packages(exclude=("tests.*", "tests", "etc.*", "etc")),
     entry_points={
         "console_scripts": ['gphotos-sync = gphotos.Main:main']
     },
