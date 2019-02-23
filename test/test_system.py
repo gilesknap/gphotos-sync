@@ -238,9 +238,9 @@ class TestSystem(TestCase):
 
         # this should have created a Bad IDs file
         bad_ids = BadIds(s.root)
-        self.assertEquals(len(bad_ids.items), 10)
+        self.assertEqual(len(bad_ids.items), 10)
 
         s.test_setup('test_bad_ids', args=args)
         s.gp.start(s.parsed_args)
         # this should have skipped the bad ids and not tried to download
-        self.assertEquals(do_download_file.call_count, 10)
+        self.assertEqual(do_download_file.call_count, 10)

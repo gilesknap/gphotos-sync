@@ -28,7 +28,7 @@ class TestUnits(TestCase):
 
         result = a.session.get('https://httpbin.org/status/500',
                                timeout=10)
-        self.assertEquals(result.status_code, 500)
+        self.assertEqual(result.status_code, 500)
         elapsed = datetime.now() - start
         # timeout should not affect the 5 retries
         self.assertLess(elapsed.seconds, 10)
@@ -48,7 +48,7 @@ class TestUnits(TestCase):
             print(e)
 
         elapsed = datetime.now() - start
-        self.assertEquals(retry_error, True)
+        self.assertEqual(retry_error, True)
         # .2 timeout by 5 retries = 1 sec
         self.assertGreater(elapsed.seconds, 1)
 

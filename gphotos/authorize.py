@@ -4,12 +4,12 @@ from pathlib import Path
 from urllib3.util.retry import Retry
 from typing import List, Optional
 
-from yaml import load, dump, YAMLError
+# from yaml import safe_load, safe_dump, YAMLError
+from json import load, dump, JSONDecodeError
+import logging
 
-try:
-    from yaml import CLoader as Loader, CDumper as Dumper
-except ImportError:
-    from yaml import Loader, Dumper
+log = logging.getLogger(__name__)
+
 
 # OAuth endpoints given in the Google API documentation
 authorization_base_url = "https://accounts.google.com/o/oauth2/v2/auth"
@@ -36,8 +36,8 @@ class Authorize:
         self.token = None
         try:
             with secrets_file.open('r') as stream:
-                all_yaml = load(stream, Loader=Loader)
-            secrets = all_yaml['installed']
+                all_json = load(stream)
+            secrets = all_json['installed']
             self.client_id = secrets['client_id']
             self.client_secret = secrets['client_secret']
             self.redirect_uri = secrets['redirect_uris'][0]
@@ -46,21 +46,22 @@ class Authorize:
                 'client_id': self.client_id,
                 'client_secret': self.client_secret}
 
-        except (YAMLError, IOError):
+        except (JSONDecodeError, IOError):
             print('missing or bad secrets file: {}'.format(secrets_file))
             exit(1)
 
     def load_token(self) -> Optional[str]:
         try:
             with self.token_file.open('r') as stream:
-                token = load(stream, Loader=Loader)
-        except (YAMLError, IOError):
+                token = load(stream)
+        except (JSONDecodeError, IOError):
+            log.warning('Failed to read authorization token', exc_info=True)
             return None
         return token
 
     def save_token(self, token: str):
         with self.token_file.open('w') as stream:
-            dump(token, stream, Dumper=Dumper)
+            dump(token, stream)
         self.token_file.chmod(0o600)
 
     def authorize(self):
