@@ -22,14 +22,14 @@ class GoogleAlbumsRow(DbRow):
     SyncFiles table
     """
     table = "Albums"
-    cols_def = {'AlbumId': str, 'AlbumName': str, 'Size': int,
+    cols_def = {'RemoteId': str, 'AlbumName': str, 'Size': int,
                 'StartDate': datetime,
                 'EndDate': datetime, 'SyncDate': datetime}
 
     # todo - overloading GoogleAlbumsRow as a Database Row does not really work
     def to_media(self) -> DatabaseMedia:
         db_media = DatabaseMedia(
-            _id=self.AlbumId,
+            _id=self.RemoteId,
             _filename=self.AlbumName,
             _size=self.Size,
             _create_date=self.StartDate)
@@ -42,7 +42,7 @@ class GoogleAlbumsRow(DbRow):
     @classmethod
     def from_parm(cls, album_id, filename, size, start, end) -> G:
         new_row = cls.make(
-            AlbumId=album_id,
+            RemoteId=album_id,
             AlbumName=filename,
             Size=size,
             StartDate=start,

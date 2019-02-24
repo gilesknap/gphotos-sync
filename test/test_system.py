@@ -123,9 +123,10 @@ class TestSystem(TestCase):
 
     def test_system_retry_download(self):
         s = ts.SetupDbAndCredentials()
+        # note we do index albums because there was a bug on retrying
+        # downloads with albums enabled
         args = ['--start-date', '2017-01-01', '--end-date', '2018-01-01',
-                '--skip-video',
-                '--skip-albums']
+                '--skip-video']
         s.test_setup('test_system_retry_download', args=args, trash_db=True,
                      trash_files=True)
         s.gp.start(s.parsed_args)

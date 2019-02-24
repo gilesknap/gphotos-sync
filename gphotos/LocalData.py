@@ -262,7 +262,7 @@ class LocalData:
 
     # functions for managing Albums ###########################################
     def get_album(self, album_id: str) -> DatabaseMedia:
-        query = "SELECT {0} FROM Albums WHERE AlbumId = ?;".format(
+        query = "SELECT {0} FROM Albums WHERE RemoteId = ?;".format(
             GoogleAlbumsRow.columns)
         self.cur.execute(query, (album_id,))
         res = self.cur.fetchone()
@@ -283,8 +283,8 @@ class LocalData:
             "SELECT SyncFiles.Path, SyncFiles.Filename, Albums.AlbumName, "
             "Albums.EndDate FROM AlbumFiles "
             "INNER JOIN SyncFiles ON AlbumFiles.DriveRec=SyncFiles.RemoteId "
-            "INNER JOIN Albums ON AlbumFiles.AlbumRec=Albums.AlbumId "
-            "WHERE Albums.AlbumId LIKE ?;",
+            "INNER JOIN Albums ON AlbumFiles.AlbumRec=Albums.RemoteId "
+            "WHERE Albums.RemoteId LIKE ?;",
             (album_id,))
         results = self.cur.fetchall()
         # fetchall does not need to use cur2

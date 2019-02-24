@@ -105,7 +105,7 @@ class GoogleAlbumsSync(object):
                     gar = GoogleAlbumsRow.from_parm(
                         album.id, album.filename, album.size,
                         first_date, last_date)
-                    self._db.put_row(gar)
+                    self._db.put_row(gar, update=indexed_album)
 
             next_page = results.get('nextPageToken')
             if next_page:
