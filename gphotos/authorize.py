@@ -55,7 +55,6 @@ class Authorize:
             with self.token_file.open('r') as stream:
                 token = load(stream)
         except (JSONDecodeError, IOError):
-            log.warning('Failed to read authorization token', exc_info=True)
             return None
         return token
 
