@@ -117,7 +117,7 @@ class TestSystem(TestCase):
         pat = str(albums_root / '2017' / '0920 Clones' / '*.*')
         files = sorted(s.root.glob(pat))
         self.assertEqual(4, len(files))
-        self.assertFalse((albums_root / '2017' / '0923 Clones').exists())
+        self.assertFalse((albums_root / '2017' / '0923 Clones').is_dir())
 
     def test_system_date_range(self):
         s = ts.SetupDbAndCredentials()

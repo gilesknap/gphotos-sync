@@ -19,7 +19,7 @@ with open("README.rst", "rb") as f:
 
 setup(
     name=module_name,
-    version='2.8.2',
+    version='2.8.3',
     python_requires='>=3.6',
     license='MIT',
     platforms=['Linux', 'Windows', 'Mac'],
