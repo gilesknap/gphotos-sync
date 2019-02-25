@@ -25,7 +25,7 @@ log = logging.getLogger(__name__)
 class LocalData:
     DB_FILE_NAME: str = 'gphotos.sqlite'
     BLOCK_SIZE: int = 10000
-    VERSION: float = 5.4
+    VERSION: float = 5.5
 
     def __init__(self, root_folder: Path, flush_index: bool = False):
         """ Initialize a connection to the DB and create some cursors.
@@ -268,7 +268,12 @@ class LocalData:
         res = self.cur.fetchone()
         return GoogleAlbumsRow(res).to_media()
 
-    def get_album_files(self, album_id: str = '%'
+    def put_album_downloaded(self, album_id: str, downloaded: bool = True):
+        self.cur.execute(
+            "UPDATE Albums SET Downloaded=? "
+            "WHERE RemoteId IS ?;", (downloaded, album_id))
+
+    def get_album_files(self, album_id: str = '%', download_again: bool = False
                         ) -> (str, str, str, str):
         """ Join the Albums, SyncFiles and AlbumFiles tables to get a list
         of the files in an album or all albums.
@@ -279,13 +284,19 @@ class LocalData:
             A tuple containing:
                 Path, Filename, AlbumName, Album end date
         """
-        self.cur.execute(
-            "SELECT SyncFiles.Path, SyncFiles.Filename, Albums.AlbumName, "
-            "Albums.EndDate FROM AlbumFiles "
-            "INNER JOIN SyncFiles ON AlbumFiles.DriveRec=SyncFiles.RemoteId "
-            "INNER JOIN Albums ON AlbumFiles.AlbumRec=Albums.RemoteId "
-            "WHERE Albums.RemoteId LIKE ?;",
-            (album_id,))
+
+        extra_clauses = '' if download_again else 'AND Albums.Downloaded==0'
+
+        query = """
+        SELECT SyncFiles.Path, SyncFiles.Filename, Albums.AlbumName,
+        Albums.EndDate, Albums.RemoteId FROM AlbumFiles
+        INNER JOIN SyncFiles ON AlbumFiles.DriveRec=SyncFiles.RemoteId
+        INNER JOIN Albums ON AlbumFiles.AlbumRec=Albums.RemoteId
+        WHERE Albums.RemoteId LIKE ? 
+        {}
+        ORDER BY AlbumName, SyncFiles.CreateDate;""".format(extra_clauses)
+
+        self.cur.execute(query, (album_id,))
         results = self.cur.fetchall()
         # fetchall does not need to use cur2
         for result in results:
@@ -300,9 +311,11 @@ class LocalData:
             "?) ;",
             (album_rec, file_rec))
 
+
     def remove_all_album_files(self):
         # noinspection SqlWithoutWhere
         self.cur.execute("DELETE FROM AlbumFiles")
+
 
     # ---- LocalFiles Queries -------------------------------------------
 
@@ -317,6 +330,7 @@ class LocalData:
                 pth = Path(r.relative_path.parent / r.filename)
                 yield pth
 
+
     def get_duplicates(self):
         self.cur2.execute(Queries.duplicate_files)
         while True:
@@ -327,6 +341,7 @@ class LocalData:
                 r = LocalFilesRow(record).to_media()
                 pth = r.relative_path.parent / r.filename
                 yield r.id, pth
+
 
     def get_extra_paths(self):
         self.cur2.execute(Queries.extra_files)
@@ -339,12 +354,14 @@ class LocalData:
                 pth = r.relative_path.parent / r.filename
                 yield pth
 
+
     def local_exists(self, file_name: str, path: str):
         self.cur.execute(
             "SELECT COUNT() FROM main.LocalFiles WHERE FileName = ?"
             "AND PATH = ?;", (file_name, path))
         result = int(self.cur.fetchone()[0])
         return result
+
 
     def find_local_matches(self):
         # noinspection SqlWithoutWhere

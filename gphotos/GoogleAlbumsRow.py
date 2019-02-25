@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # coding: utf8
 from typing import TypeVar
-from pathlib import Path
 from datetime import datetime
 from gphotos import Utils
 from gphotos.DbRow import DbRow
@@ -24,15 +23,15 @@ class GoogleAlbumsRow(DbRow):
     table = "Albums"
     cols_def = {'RemoteId': str, 'AlbumName': str, 'Size': int,
                 'StartDate': datetime,
-                'EndDate': datetime, 'SyncDate': datetime}
+                'EndDate': datetime, 'SyncDate': datetime,
+                'Downloaded': bool}
 
-    # todo - overloading GoogleAlbumsRow as a Database Row does not really work
     def to_media(self) -> DatabaseMedia:
         db_media = DatabaseMedia(
             _id=self.RemoteId,
             _filename=self.AlbumName,
             _size=self.Size,
-            _create_date=self.StartDate)
+            _create_date=self.EndDate)
         return db_media
 
     @classmethod
@@ -48,5 +47,6 @@ class GoogleAlbumsRow(DbRow):
             StartDate=start,
             EndDate=end,
             SyncDate=Utils.date_to_string(
-                datetime.now()))
+                datetime.now()),
+            Downloaded=0)
         return new_row

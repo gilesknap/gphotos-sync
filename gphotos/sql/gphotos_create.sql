@@ -8,7 +8,8 @@ create table Albums
 	Description TEXT,
 	StartDate INT,
 	EndDate INT,
-	SyncDate INT
+	SyncDate INT,
+  Downloaded INT DEFAULT 0
 )
 ;
 DROP INDEX IF EXISTS Albums_RemoteId_uindex;

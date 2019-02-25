@@ -146,7 +146,7 @@ class GooglePhotosSyncMain:
             self.google_photos_client, root_folder, self.data_store)
         self.google_albums_sync = GoogleAlbumsSync(
             self.google_photos_client, root_folder, self.data_store,
-            args.flush_index)
+            args.flush_index or args.retry_download)
         if args.compare_folder:
             self.local_files_scan = LocalFilesScan(
                 root_folder, compare_folder, self.data_store)
