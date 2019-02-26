@@ -41,7 +41,7 @@ class LocalFilesScan(object):
             for pth in folder.iterdir():
                 if pth.is_dir():
                     self.scan_folder(pth, index)
-                else:
+                elif not pth.is_symlink():
                     self.count += index(pth)
                     if self.count and self.count % 20000 == 0:
                         self._db.store()
