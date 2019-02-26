@@ -40,7 +40,9 @@ class LocalFilesScan(object):
             log.debug("scanning %s", folder)
             for pth in folder.iterdir():
                 if pth.is_dir():
-                    self.scan_folder(pth, index)
+                    # this stops recursive checks if comparing against 'self'
+                    if pth.name not in ['albums', 'comparison', 'gphotos-code']:
+                        self.scan_folder(pth, index)
                 elif not pth.is_symlink():
                     self.count += index(pth)
                     if self.count and self.count % 20000 == 0:
