@@ -1,16 +1,12 @@
 from pathlib import Path
-from yaml import load, dump, YAMLError
+from yaml import safe_load, safe_dump, YAMLError
 from typing import NamedTuple, Dict
 import logging
-
-try:
-    from yaml import CLoader as Loader, CDumper as Dumper
-except ImportError:
-    from yaml import Loader, Dumper
 
 log = logging.getLogger(__name__)
 
 
+# sadly, I cant use this with safe_load / safe_dump
 class Item(NamedTuple):
     path: str
     product_url: str
@@ -28,7 +24,7 @@ class BadIds:
     """
 
     def __init__(self, root_folder: Path):
-        self.items: Dict[str, Item] = {}
+        self.items: Dict[str, dict] = {}
         self.bad_ids_filename: Path = \
             root_folder / "gphotos.bad_ids.yaml"
         self.bad_ids_found: int = 0
@@ -40,18 +36,18 @@ class BadIds:
     def load_ids(self):
         try:
             with self.bad_ids_filename.open('r') as stream:
-                self.items = load(stream, Loader=Loader)
+                self.items = safe_load(stream)
             log.debug("bad_ids file, loaded %d bad ids", len(self.items))
         except (YAMLError, IOError):
             log.debug("no bad_ids file, bad ids list is empty")
 
     def store_ids(self):
         with self.bad_ids_filename.open('w') as stream:
-            dump(self.items, stream, Dumper=Dumper, default_flow_style=False)
+            safe_dump(self.items, stream, default_flow_style=False)
 
     def add_id(self, path: str, gid: str, product_url: str, e: Exception):
-        item = Item(
-            path=path,
+        item = dict(
+            path=str(path),
             product_url=product_url
         )
         self.items[gid] = item

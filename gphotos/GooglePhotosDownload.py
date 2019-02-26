@@ -243,7 +243,9 @@ class GooglePhotosDownload(object):
         """
         for future in futures_list:
             media_item = self.pool_future_to_media.get(future)
-            e = future.exception()
+            timeout = self.video_timeout if media_item.is_video() else \
+                self.image_timeout
+            e = future.exception(timeout=timeout)
             if e:
                 self.files_download_failed += 1
                 log.error('FAILURE %d downloading %s',

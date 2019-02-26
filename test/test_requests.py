@@ -65,5 +65,5 @@ class TestRequests(TestCase):
             print(e)
 
         elapsed = datetime.now() - start
-        self.assertEquals(retry_error, True)
+        self.assertEqual(retry_error, True)
         self.assertGreater(elapsed.seconds, retries * timeout)

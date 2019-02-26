@@ -30,6 +30,7 @@ class GoogleAlbumsSync(object):
             db: local database for indexing
         """
         self._root_folder: Path = root_folder
+        self._links_root = self._root_folder / 'albums'
         self._db: LocalData = db
         self._api: RestClient = api
         self.flush = flush
@@ -58,7 +59,6 @@ class GoogleAlbumsSync(object):
             for media_item_json in media_json:
                 media_item = GooglePhotosMedia(media_item_json)
                 log.debug('----%s', media_item.filename)
-                self._db.put_album_file(album_id, media_item.id)
                 self._db.put_album_file(album_id, media_item.id)
                 last_date = max(media_item.create_date, last_date)
                 first_date = min(media_item.create_date, first_date)
@@ -105,7 +105,17 @@ class GoogleAlbumsSync(object):
                     gar = GoogleAlbumsRow.from_parm(
                         album.id, album.filename, album.size,
                         first_date, last_date)
-                    self._db.put_row(gar)
+                    self._db.put_row(gar, update=indexed_album)
+
+                    # re-indexing means the local links are out of date: remove
+                    # links in preparation for create_album_content_links
+                    if indexed_album:
+                        old_album_folder = self.album_folder_name(
+                            indexed_album.filename, indexed_album.create_date)
+                        if old_album_folder.exists():
+                            log.debug('removing previous album folder %s',
+                                      old_album_folder)
+                            shutil.rmtree(old_album_folder)
 
             next_page = results.get('nextPageToken')
             if next_page:
@@ -115,42 +125,53 @@ class GoogleAlbumsSync(object):
                 break
         log.warning('Indexed %d Albums', count)
 
+    def album_folder_name(self, album_name: str, end_date: datetime) -> Path:
+        year = Utils.safe_str_time(end_date, '%Y')
+        month = Utils.safe_str_time(end_date, '%m%d')
+
+        rel_path = u"{0} {1}".format(month, album_name)
+        link_folder: Path = self._links_root / year / rel_path
+        return link_folder
+
     def create_album_content_links(self):
         log.warning("Creating album folder links to media ...")
         count = 0
-        links_root = self._root_folder / 'albums'
-        if links_root.exists() and self.flush:
+        album_item = 0
+        current_rid = ''
+        if self._links_root.exists() and self.flush:
             log.debug('removing previous album links tree')
-            shutil.rmtree(links_root)
+            shutil.rmtree(self._links_root)
+        re_download = not self._links_root.exists()
 
-        for (path, file_name, album_name, end_date) in \
-                self._db.get_album_files():
-
+        for (path, file_name, album_name, end_date_str, rid) in \
+                self._db.get_album_files(download_again=re_download):
+            if current_rid == rid:
+                album_item += 1
+            else:
+                self._db.put_album_downloaded(rid)
+                current_rid = rid
+                album_item = 0
+            end_date = Utils.string_to_date(end_date_str)
             full_file_name = self._root_folder / path / file_name
 
-            year = Utils.safe_str_time(Utils.string_to_date(end_date), '%Y')
-            month = Utils.safe_str_time(Utils.string_to_date(end_date), '%m%d')
+            link_folder: Path = self.album_folder_name(album_name, end_date)
 
-            rel_path = u"{0} {1}".format(month, album_name)
-            link_folder: Path = links_root / year / rel_path
-            link_file = link_folder / file_name
-            if link_file.exists():
-                log.debug('album link exists: %s', link_file)
-            else:
-                # incredibly, pathlib.Path.relative_to cannot handle
-                # '../' in a relative path !!! reverting to os.path for this.
-                relative_filename = os.path.relpath(full_file_name,
-                                                    str(link_folder))
-                log.debug('adding album link %s -> %s', relative_filename,
-                          link_file)
-                try:
-                    if not link_folder.is_dir():
-                        log.debug('new album folder %s', link_folder)
-                        link_folder.mkdir(parents=True)
+            link_file = link_folder / "{:04d}_{}".format(album_item, file_name)
+            # incredibly, pathlib.Path.relative_to cannot handle
+            # '../' in a relative path !!! reverting to os.path
+            relative_filename = os.path.relpath(full_file_name,
+                                                str(link_folder))
+            log.debug('adding album link %s -> %s', relative_filename,
+                      link_file)
+            try:
+                if not link_folder.is_dir():
+                    log.debug('new album folder %s', link_folder)
+                    link_folder.mkdir(parents=True)
 
-                    link_file.symlink_to(relative_filename)
-                    count += 1
-                except FileExistsError:
-                    log.error('bad link to %s', full_file_name)
+                link_file.symlink_to(relative_filename)
+                count += 1
+            except FileExistsError:
+                log.error('bad link to %s', full_file_name)
 
         log.warning("Created %d new album folder links", count)
+

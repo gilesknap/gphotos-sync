@@ -44,7 +44,9 @@ Currently Download Only
 ``gphotos-sync`` currently does not have upload features. I do intend to provide an upload facility so that it would
 be possible to download your library and upload it to another account, or to upload new photos. Full two way
 synchronization capability is a much bigger challenge and at present I've not come up with a robust enough approach
-for this.
+for this. UPDATE: there are a couple of limitations on the API that will stop me from bothering to do upload until they are 
+addressed: (1) all uploads count against quota - Google probably won't address this (2) you can only add media to 
+albums at upload time, not rearrange existing media into albums.
 
 
 Primary Goals

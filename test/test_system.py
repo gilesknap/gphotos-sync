@@ -76,6 +76,49 @@ class TestSystem(TestCase):
         s.test_setup('test_sys_whole_library')
         s.gp.start(s.parsed_args)
 
+    def test_sys_album_add_file(self):
+        """tests that the album links get re-created in a new folder with
+        a new last-date prefix when a recent photo is added to an album,
+         also that the old folder is removed """
+        s = ts.SetupDbAndCredentials()
+        args = ['--start-date', '2017-09-19', '--end-date', '2017-09-20']
+        s.test_setup('test_sys_album_add_file', args=args, trash_db=True,
+                     trash_files=True)
+        s.gp.start(s.parsed_args)
+
+        # the date will be picked from the album contents which still includes
+        # the file that is not yet downloaded
+        pat = str(albums_root / '2017' / '0923 Clones' / '*.*')
+        files = sorted(s.root.glob(pat))
+        self.assertEqual(3, len(files))
+
+        # spoof the album to pretend it only got 3 files up to 2017-09-20
+        db = LocalData(s.root)
+        db.cur.execute("UPDATE Albums SET EndDate='2017-09-20',"
+                       "Size=3 WHERE "
+                       "AlbumName='Clones'")
+        db.store()
+
+        args = ['--start-date', '2017-09-19', '--end-date', '2017-09-23',
+                '--index-only']
+        s.test_setup('test_sys_album_add_file', args=args)
+        s.gp.start(s.parsed_args)
+
+        # the rescan will reset the date so set it back
+        db = LocalData(s.root)
+        db.cur.execute("UPDATE Albums SET EndDate='2017-09-20' "
+                       "WHERE AlbumName='Clones'")
+        db.store()
+
+        args = ['--skip-index', '--skip-files']
+        s.test_setup('test_sys_album_add_file', args=args)
+        s.gp.start(s.parsed_args)
+
+        pat = str(albums_root / '2017' / '0920 Clones' / '*.*')
+        files = sorted(s.root.glob(pat))
+        self.assertEqual(4, len(files))
+        self.assertFalse((albums_root / '2017' / '0923 Clones').is_dir())
+
     def test_system_date_range(self):
         s = ts.SetupDbAndCredentials()
         args = ['--start-date', '2016-01-01', '--end-date', '2017-01-01',
@@ -123,9 +166,10 @@ class TestSystem(TestCase):
 
     def test_system_retry_download(self):
         s = ts.SetupDbAndCredentials()
+        # note we do index albums because there was a bug on retrying
+        # downloads with albums enabled
         args = ['--start-date', '2017-01-01', '--end-date', '2018-01-01',
-                '--skip-video',
-                '--skip-albums']
+                '--skip-video']
         s.test_setup('test_system_retry_download', args=args, trash_db=True,
                      trash_files=True)
         s.gp.start(s.parsed_args)
@@ -238,9 +282,9 @@ class TestSystem(TestCase):
 
         # this should have created a Bad IDs file
         bad_ids = BadIds(s.root)
-        self.assertEquals(len(bad_ids.items), 10)
+        self.assertEqual(len(bad_ids.items), 10)
 
         s.test_setup('test_bad_ids', args=args)
         s.gp.start(s.parsed_args)
         # this should have skipped the bad ids and not tried to download
-        self.assertEquals(do_download_file.call_count, 10)
+        self.assertEqual(do_download_file.call_count, 10)

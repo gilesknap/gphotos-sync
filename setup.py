@@ -19,7 +19,7 @@ with open("README.rst", "rb") as f:
 
 setup(
     name=module_name,
-    version=2.8,
+    version='2.8.3',
     python_requires='>=3.6',
     license='MIT',
     platforms=['Linux', 'Windows', 'Mac'],
@@ -30,6 +30,8 @@ setup(
     },
     long_description=long_description,
     install_requires=install_reqs,
+    package_data={'': ['gphotos/sql/gphotos_create.sql', 'LICENSE']},
+    include_package_data=True,
     author='Giles Knap',
     author_email='gilesknap@gmail.com',
     url='https://github.com/gilesknap/gphotos-sync'

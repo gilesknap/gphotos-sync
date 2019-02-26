@@ -1,22 +1,23 @@
 drop table if exists Albums;
 create table Albums
 (
-	AlbumId TEXT
+	RemoteId TEXT
 		primary key,
 	AlbumName TEXT,
 	Size INT,
 	Description TEXT,
 	StartDate INT,
 	EndDate INT,
-	SyncDate INT
+	SyncDate INT,
+  Downloaded INT DEFAULT 0
 )
 ;
-DROP INDEX IF EXISTS Albums_AlbumId_uindex;
+DROP INDEX IF EXISTS Albums_RemoteId_uindex;
 DROP INDEX IF EXISTS Albums_StartDate_index;
 DROP INDEX IF EXISTS Albums_AlbumName_index;
 
-create unique index Albums_AlbumId_uindex
-	on Albums (AlbumId)
+create unique index Albums_RemoteId_uindex
+	on Albums (RemoteId)
 ;
 create index Albums_AlbumName_index
 	on Albums (AlbumName)
@@ -108,7 +109,7 @@ create table AlbumFiles
 		primary key,
 	AlbumRec INT,
 	DriveRec INT,
-	foreign key (AlbumRec) references Albums (AlbumId)
+	foreign key (AlbumRec) references Albums (RemoteId)
 			on delete cascade,
 	foreign key (DriveRec) references SyncFiles (Id)
 			on update cascade on delete cascade)

@@ -22,7 +22,7 @@ class SetupDbAndCredentials:
         # set up the test account credentials
         Main.APP_NAME = 'gphotos-sync-test'
         app_dirs = AppDirs(Main.APP_NAME)
-        self.test_folder = Path(__file__).absolute().parent /'test_credentials'
+        self.test_folder = Path(__file__).absolute().parent / 'test_credentials'
         user_data = Path(app_dirs.user_data_dir)
         if not user_data.exists():
             user_data.mkdir(parents=True)
