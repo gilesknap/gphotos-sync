@@ -2,7 +2,7 @@
 # coding: utf8
 import shutil
 from datetime import datetime
-from typing import Dict
+from typing import Dict, Callable
 from pathlib import Path
 import os.path
 
@@ -72,20 +72,28 @@ class GoogleAlbumsSync(object):
         return first_date, last_date
 
     def index_album_media(self):
+        self.index_albums_type(self._api.sharedAlbums.list.execute,
+                               'sharedAlbums', "Shared (titled) Albums",
+                               False)
+        self.index_albums_type(self._api.albums.list.execute,
+                               'albums', "Albums", True)
+
+    def index_albums_type(self, api_function: Callable, item_key: str,
+                          description: str, allow_null_title: bool):
         """
         query google photos interface for a list of all albums and index their
         contents into the db
         """
-        log.warning('Indexing Albums ...')
+        log.warning('Indexing {} ...'.format(description))
 
         # there are no filters in album listing at present so it always a
         # full rescan - it's quite quick
 
         count = 0
-        response = self._api.albums.list.execute(pageSize=50)
+        response = api_function(pageSize=50)
         while response:
             results = response.json()
-            for album_json in results['albums']:
+            for album_json in results.get(item_key, []):
                 count += 1
 
                 album = GoogleAlbumMedia(album_json)
@@ -93,7 +101,10 @@ class GoogleAlbumsSync(object):
                 already_indexed = indexed_album.size == album.size if \
                     indexed_album else False
 
-                if already_indexed:
+                if not allow_null_title and album.description == 'none':
+                    log.debug('Skipping no-title album, photos: %d',
+                              album.size)
+                elif already_indexed and not self.flush:
                     log.debug('Skipping Album: %s, photos: %d', album.filename,
                               album.size)
                 else:
@@ -119,11 +130,11 @@ class GoogleAlbumsSync(object):
 
             next_page = results.get('nextPageToken')
             if next_page:
-                response = self._api.albums.list.execute(pageSize=50,
-                                                         pageToken=next_page)
+                response = api_function(pageSize=50,
+                                        pageToken=next_page)
             else:
                 break
-        log.warning('Indexed %d Albums', count)
+        log.warning('Indexed %d %s', count, description)
 
     def album_folder_name(self, album_name: str, end_date: datetime) -> Path:
         year = Utils.safe_str_time(end_date, '%Y')
@@ -174,4 +185,3 @@ class GoogleAlbumsSync(object):
                 log.error('bad link to %s', full_file_name)
 
         log.warning("Created %d new album folder links", count)
-
