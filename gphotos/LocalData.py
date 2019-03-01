@@ -129,8 +129,13 @@ class LocalData:
                 query = "UPDATE {0} Set {1} WHERE RemoteId = '{2}'".format(
                     row.table, row.update, row.RemoteId)
             else:
-                query = "INSERT INTO {0} ({1}) VALUES ({2})".format(
-                    row.table, row.columns, row.params)
+                # EXISTS - allows for no action when trying to re-insert
+                # noinspection PyUnresolvedReferences
+                query = \
+                    "INSERT INTO {0} ({1}) SELECT {2} " \
+                    "WHERE NOT EXISTS (SELECT * FROM SyncFiles " \
+                    "WHERE RemoteId = '{3}')".format(
+                        row.table, row.columns, row.params, row.RemoteId)
             self.cur.execute(query, row.dict)
             row_id = self.cur.lastrowid
         except lite.IntegrityError:
@@ -311,11 +316,9 @@ class LocalData:
             "?) ;",
             (album_rec, file_rec))
 
-
     def remove_all_album_files(self):
         # noinspection SqlWithoutWhere
         self.cur.execute("DELETE FROM AlbumFiles")
-
 
     # ---- LocalFiles Queries -------------------------------------------
 
@@ -330,7 +333,6 @@ class LocalData:
                 pth = Path(r.relative_path.parent / r.filename)
                 yield pth
 
-
     def get_duplicates(self):
         self.cur2.execute(Queries.duplicate_files)
         while True:
@@ -341,7 +343,6 @@ class LocalData:
                 r = LocalFilesRow(record).to_media()
                 pth = r.relative_path.parent / r.filename
                 yield r.id, pth
-
 
     def get_extra_paths(self):
         self.cur2.execute(Queries.extra_files)
@@ -354,14 +355,12 @@ class LocalData:
                 pth = r.relative_path.parent / r.filename
                 yield pth
 
-
     def local_exists(self, file_name: str, path: str):
         self.cur.execute(
             "SELECT COUNT() FROM main.LocalFiles WHERE FileName = ?"
             "AND PATH = ?;", (file_name, path))
         result = int(self.cur.fetchone()[0])
         return result
-
 
     def find_local_matches(self):
         # noinspection SqlWithoutWhere

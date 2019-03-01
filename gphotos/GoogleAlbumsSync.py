@@ -10,6 +10,7 @@ from . import Utils
 from .GoogleAlbumMedia import GoogleAlbumMedia
 from .GooglePhotosMedia import GooglePhotosMedia
 from .GoogleAlbumsRow import GoogleAlbumsRow
+from .GooglePhotosRow import GooglePhotosRow
 from .LocalData import LocalData
 from .restclient import RestClient
 import logging
@@ -45,7 +46,8 @@ class GoogleAlbumsSync(object):
         }
         return body
 
-    def fetch_album_contents(self, album_id: str) -> (datetime, datetime):
+    def fetch_album_contents(self, album_id: str,
+                             add_media_items: bool) -> (datetime, datetime):
         first_date = Utils.maximum_date()
         last_date = Utils.minimum_date()
         body = self.make_search_parameters(album_id=album_id)
@@ -62,6 +64,14 @@ class GoogleAlbumsSync(object):
                 self._db.put_album_file(album_id, media_item.id)
                 last_date = max(media_item.create_date, last_date)
                 first_date = min(media_item.create_date, first_date)
+                # this adds other users photos from shared albums
+                log.debug('Adding album media item %s %s %s',
+                          media_item.relative_path, media_item.filename,
+                          media_item.duplicate_number)
+                if add_media_items:
+                    media_item.set_path_by_date(self._root_folder)
+                    self._db.put_row(
+                        GooglePhotosRow.from_media(media_item), False)
             next_page = items_json.get('nextPageToken')
             if next_page:
                 body = self.make_search_parameters(album_id=album_id,
@@ -74,12 +84,13 @@ class GoogleAlbumsSync(object):
     def index_album_media(self):
         self.index_albums_type(self._api.sharedAlbums.list.execute,
                                'sharedAlbums', "Shared (titled) Albums",
-                               False)
+                               False, True)
         self.index_albums_type(self._api.albums.list.execute,
-                               'albums', "Albums", True)
+                               'albums', "Albums", True, False)
 
     def index_albums_type(self, api_function: Callable, item_key: str,
-                          description: str, allow_null_title: bool):
+                          description: str, allow_null_title: bool,
+                          add_media_items: bool):
         """
         query google photos interface for a list of all albums and index their
         contents into the db
@@ -110,7 +121,8 @@ class GoogleAlbumsSync(object):
                 else:
                     log.info('Indexing Album: %s, photos: %d', album.filename,
                              album.size)
-                    first_date, last_date = self.fetch_album_contents(album.id)
+                    first_date, last_date = self.fetch_album_contents(
+                        album.id, add_media_items)
                     # write the album data down now we know the contents'
                     # date range
                     gar = GoogleAlbumsRow.from_parm(
