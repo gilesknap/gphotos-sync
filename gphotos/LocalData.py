@@ -299,7 +299,7 @@ class LocalData:
         INNER JOIN Albums ON AlbumFiles.AlbumRec=Albums.RemoteId
         WHERE Albums.RemoteId LIKE ? 
         {}
-        ORDER BY AlbumName, SyncFiles.CreateDate;""".format(extra_clauses)
+        ORDER BY Albums.RemoteId, SyncFiles.CreateDate;""".format(extra_clauses)
 
         self.cur.execute(query, (album_id,))
         results = self.cur.fetchall()

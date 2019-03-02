@@ -32,6 +32,7 @@ class GoogleAlbumsSync(object):
         """
         self._root_folder: Path = root_folder
         self._links_root = self._root_folder / 'albums'
+        self._photos_root = self._root_folder / 'photos'
         self._db: LocalData = db
         self._api: RestClient = api
         self.flush = flush
@@ -69,7 +70,7 @@ class GoogleAlbumsSync(object):
                           media_item.relative_path, media_item.filename,
                           media_item.duplicate_number)
                 if add_media_items:
-                    media_item.set_path_by_date(self._root_folder)
+                    media_item.set_path_by_date(self._photos_root)
                     self._db.put_row(
                         GooglePhotosRow.from_media(media_item), False)
             next_page = items_json.get('nextPageToken')
