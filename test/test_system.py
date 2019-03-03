@@ -12,6 +12,7 @@ import test.test_setup as ts
 
 photos_root = Path('photos')
 albums_root = Path('albums')
+comparison_root = Path('comparison')
 
 
 class TestSystem(TestCase):
@@ -73,8 +74,25 @@ class TestSystem(TestCase):
         self.assertEqual(d_date.date(), datetime.date(2017, 9, 26))
 
         # check that re-running does not get any db constraint violations etc.
-        s.test_setup('test_sys_whole_library')
+        # also test the comparison feature, by comparing the library with its
+        # own gphotos-sync output
+        s.test_setup('test_sys_whole_library',
+                     args=['--compare-folder', str(s.root)])
         s.gp.start(s.parsed_args)
+
+        # There is one pair of files that are copies of the same image with
+        # same UID. This looks like one pair of duplicates and one extra file
+        # in the comparison folder. (also the gphotos database etc appear
+        # as missing files)
+        pat = str(comparison_root / 'missing_files' / 'gphotos*')
+        files = sorted(s.root.glob(pat))
+        self.assertEqual(4, len(files))
+        pat = str(comparison_root / 'extra_files' / '*' / '*' / '*' / '*')
+        files = sorted(s.root.glob(pat))
+        self.assertEqual(1, len(files))
+        pat = str(comparison_root / 'duplicates' / '*')
+        files = sorted(s.root.glob(pat))
+        self.assertEqual(2, len(files))
 
     def test_sys_album_add_file(self):
         """tests that the album links get re-created in a new folder with

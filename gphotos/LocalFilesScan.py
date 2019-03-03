@@ -95,13 +95,11 @@ class LocalFilesScan(object):
         self._db.find_local_matches()
         log.warning('creating comparison folder ...')
         comparison_folder = self._root_folder / 'comparison'
-        flat_missing = comparison_folder / 'missing_files'
-        folders_missing = comparison_folder / 'missing_folders'
+        folders_missing = comparison_folder / 'missing_files'
         if comparison_folder.exists():
             log.debug('removing previous comparison tree')
             shutil.rmtree(comparison_folder)
 
-        flat_missing.mkdir(parents=True)
         for i, orig_path in enumerate(self._db.get_missing_paths()):
             link_path = folders_missing / \
                         orig_path.relative_to(self._scan_folder)
@@ -110,12 +108,8 @@ class LocalFilesScan(object):
                 link_path.parent.mkdir(parents=True)
             if not link_path.exists():
                 link_path.symlink_to(orig_path)
-            flat_link = flat_missing / "{:05d}_{}".format(i, orig_path.name)
-            flat_link.symlink_to(orig_path)
 
-        flat_extras = comparison_folder / 'extra_files'
-        folders_extras = comparison_folder / 'extra_folders'
-        flat_extras.mkdir(parents=True)
+        folders_extras = comparison_folder / 'extra_files'
         for i, orig_path in enumerate(self._db.get_extra_paths()):
             link_path = folders_extras / orig_path
             log.debug('adding extra file %d link %s', i, link_path)
@@ -123,8 +117,6 @@ class LocalFilesScan(object):
                 link_path.parent.mkdir(parents=True)
             if not link_path.exists():
                 link_path.symlink_to(self._root_folder / orig_path)
-            flat_link = flat_extras / "{:05d}_{}".format(i, orig_path.name)
-            flat_link.symlink_to(self._root_folder / orig_path)
 
         flat_duplicates = comparison_folder / 'duplicates'
         flat_duplicates.mkdir(parents=True)
