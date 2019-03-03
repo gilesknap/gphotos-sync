@@ -44,6 +44,12 @@ class GooglePhotosSyncMain:
         "root_folder",
         help="root of the local folders to download into")
     parser.add_argument(
+        "--logfile",
+        action='store',
+        help="full path to debug level logfile, default: <root>/gphotos.log."
+             "If a directory is specified then a unique filename will be"
+             "generated.")
+    parser.add_argument(
         "--compare-folder",
         action='store',
         help="root of the local folders to compare to the Photos Library")
@@ -146,7 +152,7 @@ class GooglePhotosSyncMain:
             self.google_photos_client, root_folder, self.data_store)
         self.google_albums_sync = GoogleAlbumsSync(
             self.google_photos_client, root_folder, self.data_store,
-            args.flush_index or args.retry_download)
+            args.flush_index or args.retry_download or args.rescan)
         if args.compare_folder:
             self.local_files_scan = LocalFilesScan(
                 root_folder, compare_folder, self.data_store)
@@ -170,7 +176,14 @@ class GooglePhotosSyncMain:
         if not isinstance(numeric_level, int):
             raise ValueError('Invalid log level: %s' % args.log_level)
 
-        log_file = folder / 'gphotos.log'
+        if args.logfile:
+            log_file = folder / args.logfile
+            if log_file.is_dir():
+                log_file = log_file / 'gphotos{}.log'.format(
+                    datetime.now().strftime("%y%m%d_%H%M%S")
+                )
+        else:
+            log_file = folder / 'gphotos.log'
         logging.basicConfig(level=logging.DEBUG,
                             format='%(asctime)s %(name)-12s %(levelname)-8s '
                                    '%(message)s',
