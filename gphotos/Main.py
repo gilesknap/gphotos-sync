@@ -18,7 +18,6 @@ from gphotos.LocalFilesScan import LocalFilesScan
 import pkg_resources
 
 __version__ = pkg_resources.require("gphotos-sync")[0].version
-# todo use __version__ in DB and version reporting
 
 if os.name != 'nt':
     import fcntl
@@ -248,8 +247,8 @@ class GooglePhotosSyncMain:
                 sys.exit(0)
 
             try:
-                log.info('version: {}'.format(
-                    __version__))
+                log.info('version: {}, database schema version {}'.format(
+                    __version__, LocalData.VERSION))
             except TypeError:
                 log.info('version not available')
             except DistributionNotFound:

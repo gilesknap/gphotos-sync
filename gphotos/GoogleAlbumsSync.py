@@ -167,7 +167,7 @@ class GoogleAlbumsSync(object):
             shutil.rmtree(self._links_root)
         re_download = not self._links_root.exists()
 
-        for (path, file_name, album_name, end_date_str, rid) in \
+        for (path, file_name, album_name, end_date_str, rid, created) in \
                 self._db.get_album_files(download_again=re_download):
             if current_rid == rid:
                 album_item += 1
@@ -192,7 +192,12 @@ class GoogleAlbumsSync(object):
                     log.debug('new album folder %s', link_folder)
                     link_folder.mkdir(parents=True)
 
+                created_date = Utils.string_to_date(created)
                 link_file.symlink_to(relative_filename)
+                os.utime(str(link_file),
+                         (Utils.safe_timestamp(created_date),
+                          Utils.safe_timestamp(created_date)),
+                         follow_symlinks=False)
                 count += 1
             except FileExistsError:
                 log.error('bad link to %s', full_file_name)

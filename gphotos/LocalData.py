@@ -279,7 +279,7 @@ class LocalData:
             "WHERE RemoteId IS ?;", (downloaded, album_id))
 
     def get_album_files(self, album_id: str = '%', download_again: bool = False
-                        ) -> (str, str, str, str):
+                        ) -> (str, str, str, str, str):
         """ Join the Albums, SyncFiles and AlbumFiles tables to get a list
         of the files in an album or all albums.
         Parameters
@@ -294,7 +294,7 @@ class LocalData:
 
         query = """
         SELECT SyncFiles.Path, SyncFiles.Filename, Albums.AlbumName,
-        Albums.EndDate, Albums.RemoteId FROM AlbumFiles
+        Albums.EndDate, Albums.RemoteId, SyncFiles.CreateDate FROM AlbumFiles
         INNER JOIN SyncFiles ON AlbumFiles.DriveRec=SyncFiles.RemoteId
         INNER JOIN Albums ON AlbumFiles.AlbumRec=Albums.RemoteId
         WHERE Albums.RemoteId LIKE ? 
