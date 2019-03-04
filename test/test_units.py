@@ -3,6 +3,8 @@ from pathlib import Path
 from requests import exceptions as exc
 import piexif
 from unittest import TestCase
+from gphotos.GoogleAlbumMedia import GoogleAlbumMedia
+import json
 
 import gphotos.authorize as auth
 from gphotos.LocalFilesMedia import LocalFilesMedia
@@ -91,3 +93,21 @@ class TestUnits(TestCase):
         lfm = LocalFilesMedia(p)
         self.dump_exif(p)
         self.assertEqual(lfm.description, '')
+
+    def test_empty_media(self):
+        g = GoogleAlbumMedia(json.loads('{"emptyJson":"0"}'))
+        self.assertEqual(0, g.size)
+        self.assertEqual('none', g.mime_type)
+        self.assertEqual('none', g.description)
+        self.assertEqual(None, g.create_date)
+        self.assertEqual(None, g.modify_date)
+        # noinspection PyBroadException
+        try:
+            _ = g.url
+            assert False, "empty album url should throw"
+        except Exception:
+            pass
+        self.assertEquals(Path('') / '', g.full_folder)
+        g.duplicate_number = 1
+        self.assertEqual('none (2)', g.filename)
+
