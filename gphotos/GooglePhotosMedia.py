@@ -12,7 +12,7 @@ JSONType = Union[Dict[str, JSONValue], List[JSONValue]]
 
 
 class GooglePhotosMedia(BaseMedia):
-    def __init__(self, media_json):
+    def __init__(self, media_json: JSONType):
         self.__media_json: JSONType = media_json
         self.__uid = None
         super(GooglePhotosMedia, self).__init__()

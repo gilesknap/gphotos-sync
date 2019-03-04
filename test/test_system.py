@@ -37,7 +37,7 @@ class TestSystem(TestCase):
         # Total of 80 media items
         db.cur.execute("SELECT COUNT() FROM SyncFiles")
         count = db.cur.fetchone()
-        self.assertEqual(80, count[0])
+        self.assertEqual(85, count[0])
         # with 10 videos
         db.cur.execute(
             "SELECT COUNT() FROM SyncFiles where MimeType like 'video%'")
@@ -46,14 +46,15 @@ class TestSystem(TestCase):
         # and 4 albums
         db.cur.execute("SELECT COUNT() FROM Albums;")
         count = db.cur.fetchone()
-        self.assertEqual(4, count[0])
+        self.assertEqual(5, count[0])
 
         # downloaded 10 images in each of the years in the test data
         image_years = [2017, 2016, 2015, 2001, 2000, 1998, 1965]
-        for y in image_years:
+        image_count = [15, 10, 10, 10, 10, 10, 10]
+        for year, count in zip(image_years, image_count):
             # looking for .jpg .JPG .png .jfif
-            pat = str(photos_root / str(y) / '*' / '*.[JjpP]*')
-            self.assertEqual(10, len(sorted(s.root.glob(pat))))
+            pat = str(photos_root / str(year) / '*' / '*.[JjpP]*')
+            self.assertEqual(count, len(sorted(s.root.glob(pat))))
 
         # and 10 mp4 for 2017
         pat = str(photos_root / '2017' / '*' / '*.mp4')
@@ -194,11 +195,11 @@ class TestSystem(TestCase):
 
         pat = str(photos_root / '2017' / '??' / '*.[JjpP]*')
         files = sorted(s.root.glob(pat))
-        self.assertEqual(10, len(files))
+        self.assertEqual(15, len(files))
 
         files[0].unlink()
         files = sorted(s.root.glob(pat))
-        self.assertEqual(9, len(files))
+        self.assertEqual(14, len(files))
 
         # re-run should not download since file is marked as downloaded
         s = ts.SetupDbAndCredentials()
@@ -206,7 +207,7 @@ class TestSystem(TestCase):
         s.gp.start(s.parsed_args)
 
         files = sorted(s.root.glob(pat))
-        self.assertEqual(9, len(files))
+        self.assertEqual(14, len(files))
 
         # but adding --retry-download should get us back to 10 files
         args.append('--retry-download')
@@ -215,7 +216,7 @@ class TestSystem(TestCase):
         s.gp.start(s.parsed_args)
 
         files = sorted(s.root.glob(pat))
-        self.assertEqual(10, len(files))
+        self.assertEqual(15, len(files))
 
     def test_do_delete(self):
         s = ts.SetupDbAndCredentials()
