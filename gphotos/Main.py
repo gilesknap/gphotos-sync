@@ -18,7 +18,6 @@ from gphotos.LocalFilesScan import LocalFilesScan
 import pkg_resources
 
 __version__ = pkg_resources.require("gphotos-sync")[0].version
-# todo use __version__ in DB and version reporting
 
 if os.name != 'nt':
     import fcntl
@@ -43,6 +42,12 @@ class GooglePhotosSyncMain:
     parser.add_argument(
         "root_folder",
         help="root of the local folders to download into")
+    parser.add_argument(
+        "--logfile",
+        action='store',
+        help="full path to debug level logfile, default: <root>/gphotos.log."
+             "If a directory is specified then a unique filename will be"
+             "generated.")
     parser.add_argument(
         "--compare-folder",
         action='store',
@@ -114,7 +119,7 @@ class GooglePhotosSyncMain:
         action='store_true',
         help="Dont download albums (for testing)")
 
-    def setup(self, args: Namespace, db_path: Path):
+    def     setup(self, args: Namespace, db_path: Path):
         root_folder = Path(args.root_folder).absolute()
         compare_folder = None
         if args.compare_folder:
@@ -146,7 +151,7 @@ class GooglePhotosSyncMain:
             self.google_photos_client, root_folder, self.data_store)
         self.google_albums_sync = GoogleAlbumsSync(
             self.google_photos_client, root_folder, self.data_store,
-            args.flush_index or args.retry_download)
+            args.flush_index or args.retry_download or args.rescan)
         if args.compare_folder:
             self.local_files_scan = LocalFilesScan(
                 root_folder, compare_folder, self.data_store)
@@ -170,7 +175,14 @@ class GooglePhotosSyncMain:
         if not isinstance(numeric_level, int):
             raise ValueError('Invalid log level: %s' % args.log_level)
 
-        log_file = folder / 'gphotos.log'
+        if args.logfile:
+            log_file = folder / args.logfile
+            if log_file.is_dir():
+                log_file = log_file / 'gphotos{}.log'.format(
+                    datetime.now().strftime("%y%m%d_%H%M%S")
+                )
+        else:
+            log_file = folder / 'gphotos.log'
         logging.basicConfig(level=logging.DEBUG,
                             format='%(asctime)s %(name)-12s %(levelname)-8s '
                                    '%(message)s',
@@ -235,8 +247,8 @@ class GooglePhotosSyncMain:
                 sys.exit(0)
 
             try:
-                log.info('version: {}'.format(
-                    __version__))
+                log.info('version: {}, database schema version {}'.format(
+                    __version__, LocalData.VERSION))
             except TypeError:
                 log.info('version not available')
             except DistributionNotFound:

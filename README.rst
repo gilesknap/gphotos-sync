@@ -7,16 +7,6 @@
 Google Photos Sync
 ==================
 
-Version 2.0 Major Upgrade
-==============================
-Google has released a new Google Photos API and this project is now based on that API. The myriad issues with the
-previous approach using Drive API and Picasa API are now resolved. However, see new known issues below.
-
-In addition to this, the new code uses parallel processing to speed up downloads considerably.
-
-Description
-===========
-
 Google Photos Sync downloads your Google Photos to the local file system. It will backup all the photos the
 user uploaded to
 Google Photos, but also the album information and additional Google Photos 'Creations' (animations, panoramas,
@@ -27,39 +17,43 @@ After doing a full sync you will have 2 directories off of the specified root:
 * **photos** - contains all photos and videos from your Google Photos Library organized into folders with the
   structure 'photos/YYYY/MM' where 'YYYY/MM' is the date the photo/video was taken. The filenames within a folder
   will be as per the original upload except that duplicate names will have a suffix ' (n)' where n is the duplicate number
-  of the file (this matched the approach used in the official Google tool for Windows).
+  of the file (this matches the approach used in the official Google tool for Windows).
 
 * **albums** - contains a folder hierarchy representing the set of albums  and shared albums in your library. All
   the files are symlinks to content in one of the other folders. The folder names  will be
   'albums/YYYY/MM Original Album Name'.
 
-In the root folder a sqlite database holds an index of all media and albums. Useful to find out about the state of your
-photo store. You can open it with the sqlite3 tool and perform any sql queries.
+In addition there will be further folders when using the --compare-folder option.  The option is used to make a
+comparison of the contents of your library with a local folder such as a previous backup. The comparison does not require
+that the files are arranged in the same folders, it uses meta-data in the files such as create date and
+exif UID to match pairs of items. The additional folders after a comparison will be:
 
-This has been tested against my photo store of nearly 100,000 photos.
+* **comparison** a new folder off of the specified root containing the following:
 
+* **missing_files** - contains symlinks to the files in the comparison folder that were not found in the Google
+  Photos Library. The folder structure is the same as that in the comparison folder. These are the
+  files that you would upload to Google Photos via the Web interface to restore from backup.
 
-Currently Download Only
------------------------
-``gphotos-sync`` currently does not have upload features. I do intend to provide an upload facility so that it would
-be possible to download your library and upload it to another account, or to upload new photos. Full two way
-synchronization capability is a much bigger challenge and at present I've not come up with a robust enough approach
-for this. UPDATE: there are a couple of limitations on the API that will stop me from bothering to do upload until they are 
-addressed: (1) all uploads count against quota - Google probably won't address this (2) you can only add media to 
-albums at upload time, not rearrange existing media into albums.
+* **extra_files** - contains symlinks into to the files in photos folder which appear in the Library but not in the
+  comparison folder. The folder structure is the same as the photos folder.
 
+* **duplicates** - contains symlinks to any duplicate files found in the comparison folder. This is a flat structure
+  and the symlink filenames have a numeric prefix to make them unique and group the duplicates together.
 
-Primary Goals
--------------
-* Provide a file system backup so it is easy to monitor for accidental deletions (or deletions caused by bugs)
-  in very large photo collections.
+NOTES:
 
-* Make it feasible to switch to a different photo management system in future if this ever becomes desirable/necessary.
-
-* Provide a comparison function so that your current Photos library can be verified against a historical backup.
+* the comparison code uses an external tool 'ffprobe'. It will run without it but will not be able to
+  extract metadata from video files and revert to relying on Google Photos meta data and file modified date (this is
+  a much less reliable way to match video files, but the results should be OK if the backup folder
+  was originally created using gphotos-sync).
+* If the library contains two separate items that have the same exif UID then this will result in seeing one
+  pair of duplicates, plus one of those duplicates will appear in the extra_files list.
 
 Known Issues
 ------------
+A few outstanding limitations of the Google API restrict what can be achieved. All these issues have been reported
+to Google and this project will be updated once they are resolved.
+
 * There is no way to discover modified date of library media items. Currently ``gphotos-sync`` will refresh your local
   copy with any new photos added since the last scan but will not update any photos that have been modified in Google
   Photos. A feature request has been submitted to Google see https://issuetracker.google.com/issues/122737849.
@@ -67,22 +61,29 @@ Known Issues
   my library it is a subset of videos shot before 2010). Google is looking at this problem see
   https://issuetracker.google.com/issues/116842164
 * The API strips GPS data from images see https://issuetracker.google.com/issues/80379228.
-* Video download transcodes the videos even if you ask for the original file (=vd parameter) see https://issuetracker.google.com/issues/80149160. My experience is that the result is indistinguishable visually but it is a smaller file with approximately 60% bitrate (same resolution).
-
+* Video download transcodes the videos even if you ask for the original file (=vd parameter) see
+  https://issuetracker.google.com/issues/80149160. My experience is that the result is looks similar to the original
+  but the compression is more clearly visible. It is a smaller file with approximately 60% bitrate (same resolution).
 
 
 Install and configure
 ---------------------
-To install latest published version from PyPi, simply::
+To install the latest published version from PyPi, simply::
 
-   pip install gphotos-sync
+   pipenv install gphotos-sync
 
-To work from the source code, clone the git repository and run setup.py from the source
-directory. (if required use a virtualenv) ::
+Or if you don't want to use pipenv::
+
+   sudo pip install gphotos-sync
+
+To work from the source code, clone the git repository and use pipenv to create a virtual environment and run
+the code. (if you don't have pipenv, then I recommend getting it - but you can use
+'sudo python setup.py install' instead) ::
 
   git clone https://github.com/gilesknap/gphotos-sync.git
   cd gphotos-sync
-  sudo python3 setup.py install
+  pipenv install .
+  pipenv run gphotos-sync
 
 In order to work, ``gphotos-sync`` first needs a valid client id linked to a project
 authorized to use the 'Photos Library API'. It is not provided in the distribution. Each client id

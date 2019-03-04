@@ -364,3 +364,22 @@ from SyncFiles
 where FileName like 'Y2006 M07 D29 %'
 
 select * from PreMatched;
+
+        SELECT SyncFiles.Path, SyncFiles.Filename, Albums.AlbumName,
+        Albums.EndDate, Albums.RemoteId FROM AlbumFiles
+        INNER JOIN SyncFiles ON AlbumFiles.DriveRec=SyncFiles.RemoteId
+        INNER JOIN Albums ON AlbumFiles.AlbumRec=Albums.RemoteId
+        WHERE Albums.AlbumName LIKE '%Brick%'
+
+select * from Albums where Albums.AlbumName LIKE '%Brick%';
+select * from AlbumFiles where AlbumFiles.AlbumRec='AHsKWi_BLrIVGjOhABLD0FRbYKA_BHHiTpi1yYsD_bVnw7PkYfwd63kCLNHnWSyRfmv1P3XnWgXaO7HiWkEaFbc8heU7tZL-aw';
+select * from SyncFiles where SyncFiles.RemoteId='AHsKWi-FYFJ3yjQWFZTnB8-KlRVmJU6QEAevu5LcBrVDANQ_JrQhUl27hgiqxjcrAojUcXyN3awY'
+select FileName from SyncFiles where FileName like '%HEIC';
+
+select * from SyncFiles where exists(select * from SyncFiles where FileName like '%HEIC');
+
+INSERT INTO SyncFiles (FileName, RemoteId)  SELECT 'TT', 'aaa' WHERE NOT EXISTS
+                    (SELECT * FROM SyncFiles
+                    WHERE Filename = 'TTP');
+select * from SyncFiles where FileName = 'TT';
+delete from SyncFiles where FileName = 'TT';

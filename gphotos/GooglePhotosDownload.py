@@ -223,7 +223,6 @@ class GooglePhotosDownload(object):
             temp_file.close()
             response.close()
             t_path.rename(local_full_path)
-            # todo is there a path lib equivalent
             os.utime(str(local_full_path),
                      (Utils.safe_timestamp(media_item.modify_date),
                       Utils.safe_timestamp(media_item.create_date)))

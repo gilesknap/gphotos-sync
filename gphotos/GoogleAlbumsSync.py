@@ -2,7 +2,7 @@
 # coding: utf8
 import shutil
 from datetime import datetime
-from typing import Dict
+from typing import Dict, Callable
 from pathlib import Path
 import os.path
 
@@ -10,6 +10,7 @@ from . import Utils
 from .GoogleAlbumMedia import GoogleAlbumMedia
 from .GooglePhotosMedia import GooglePhotosMedia
 from .GoogleAlbumsRow import GoogleAlbumsRow
+from .GooglePhotosRow import GooglePhotosRow
 from .LocalData import LocalData
 from .restclient import RestClient
 import logging
@@ -31,6 +32,7 @@ class GoogleAlbumsSync(object):
         """
         self._root_folder: Path = root_folder
         self._links_root = self._root_folder / 'albums'
+        self._photos_root = self._root_folder / 'photos'
         self._db: LocalData = db
         self._api: RestClient = api
         self.flush = flush
@@ -45,7 +47,8 @@ class GoogleAlbumsSync(object):
         }
         return body
 
-    def fetch_album_contents(self, album_id: str) -> (datetime, datetime):
+    def fetch_album_contents(self, album_id: str,
+                             add_media_items: bool) -> (datetime, datetime):
         first_date = Utils.maximum_date()
         last_date = Utils.minimum_date()
         body = self.make_search_parameters(album_id=album_id)
@@ -62,6 +65,14 @@ class GoogleAlbumsSync(object):
                 self._db.put_album_file(album_id, media_item.id)
                 last_date = max(media_item.create_date, last_date)
                 first_date = min(media_item.create_date, first_date)
+                # this adds other users photos from shared albums
+                log.debug('Adding album media item %s %s %s',
+                          media_item.relative_path, media_item.filename,
+                          media_item.duplicate_number)
+                if add_media_items:
+                    media_item.set_path_by_date(self._photos_root)
+                    self._db.put_row(
+                        GooglePhotosRow.from_media(media_item), False)
             next_page = items_json.get('nextPageToken')
             if next_page:
                 body = self.make_search_parameters(album_id=album_id,
@@ -72,20 +83,29 @@ class GoogleAlbumsSync(object):
         return first_date, last_date
 
     def index_album_media(self):
+        self.index_albums_type(self._api.sharedAlbums.list.execute,
+                               'sharedAlbums', "Shared (titled) Albums",
+                               False, True)
+        self.index_albums_type(self._api.albums.list.execute,
+                               'albums', "Albums", True, False)
+
+    def index_albums_type(self, api_function: Callable, item_key: str,
+                          description: str, allow_null_title: bool,
+                          add_media_items: bool):
         """
         query google photos interface for a list of all albums and index their
         contents into the db
         """
-        log.warning('Indexing Albums ...')
+        log.warning('Indexing {} ...'.format(description))
 
         # there are no filters in album listing at present so it always a
         # full rescan - it's quite quick
 
         count = 0
-        response = self._api.albums.list.execute(pageSize=50)
+        response = api_function(pageSize=50)
         while response:
             results = response.json()
-            for album_json in results['albums']:
+            for album_json in results.get(item_key, []):
                 count += 1
 
                 album = GoogleAlbumMedia(album_json)
@@ -93,13 +113,17 @@ class GoogleAlbumsSync(object):
                 already_indexed = indexed_album.size == album.size if \
                     indexed_album else False
 
-                if already_indexed:
+                if not allow_null_title and album.description == 'none':
+                    log.debug('Skipping no-title album, photos: %d',
+                              album.size)
+                elif already_indexed and not self.flush:
                     log.debug('Skipping Album: %s, photos: %d', album.filename,
                               album.size)
                 else:
                     log.info('Indexing Album: %s, photos: %d', album.filename,
                              album.size)
-                    first_date, last_date = self.fetch_album_contents(album.id)
+                    first_date, last_date = self.fetch_album_contents(
+                        album.id, add_media_items)
                     # write the album data down now we know the contents'
                     # date range
                     gar = GoogleAlbumsRow.from_parm(
@@ -119,11 +143,11 @@ class GoogleAlbumsSync(object):
 
             next_page = results.get('nextPageToken')
             if next_page:
-                response = self._api.albums.list.execute(pageSize=50,
-                                                         pageToken=next_page)
+                response = api_function(pageSize=50,
+                                        pageToken=next_page)
             else:
                 break
-        log.warning('Indexed %d Albums', count)
+        log.warning('Indexed %d %s', count, description)
 
     def album_folder_name(self, album_name: str, end_date: datetime) -> Path:
         year = Utils.safe_str_time(end_date, '%Y')
@@ -143,7 +167,7 @@ class GoogleAlbumsSync(object):
             shutil.rmtree(self._links_root)
         re_download = not self._links_root.exists()
 
-        for (path, file_name, album_name, end_date_str, rid) in \
+        for (path, file_name, album_name, end_date_str, rid, created) in \
                 self._db.get_album_files(download_again=re_download):
             if current_rid == rid:
                 album_item += 1
@@ -168,10 +192,14 @@ class GoogleAlbumsSync(object):
                     log.debug('new album folder %s', link_folder)
                     link_folder.mkdir(parents=True)
 
+                created_date = Utils.string_to_date(created)
                 link_file.symlink_to(relative_filename)
+                os.utime(str(link_file),
+                         (Utils.safe_timestamp(created_date),
+                          Utils.safe_timestamp(created_date)),
+                         follow_symlinks=False)
                 count += 1
             except FileExistsError:
                 log.error('bad link to %s', full_file_name)
 
         log.warning("Created %d new album folder links", count)
-
