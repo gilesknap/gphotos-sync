@@ -121,8 +121,13 @@ How to use it
 
 Once the script is configured, you are now ready to use it using the simple following command line::
 
-  gphotos-sync TARGET_DIRECTORY
+  cd <installed directory>
+  pipenv run gphotos-sync TARGET_DIRECTORY
 
+Or if you used sudo pip instead of pipenv::
+
+  gphotos-sync TARGET_DIRECTORY
+  
 The first time, it will give you a link to an authorization page in order to authorize the client to access your
 Google Photos.
 
