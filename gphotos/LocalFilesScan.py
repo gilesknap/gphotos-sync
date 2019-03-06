@@ -12,6 +12,8 @@ from .LocalFilesRow import LocalFilesRow
 
 log = logging.getLogger(__name__)
 
+IGNORE_FOLDERS = ['albums', 'comparison', 'gphotos-code']
+
 
 class LocalFilesScan(object):
     """A Class for indexing media files in a folder for comparison to a
@@ -26,6 +28,8 @@ class LocalFilesScan(object):
         """
         self._scan_folder: Path = scan_folder
         self._root_folder: Path = root_folder
+        self._ignore_files: str = str(root_folder / '*gphotos*')
+        self._ignore_folders = [root_folder/path for path in IGNORE_FOLDERS]
         self._db: LocalData = db
         self.count = 0
 
@@ -40,13 +44,14 @@ class LocalFilesScan(object):
             log.debug("scanning %s", folder)
             for pth in folder.iterdir():
                 if pth.is_dir():
-                    # this stops recursive checks if comparing against 'self'
-                    if pth.name not in ['albums', 'comparison', 'gphotos-code']:
+                    # IGNORE_FOLDERS for comparing against 'self'
+                    if pth not in self._ignore_folders:
                         self.scan_folder(pth, index)
                 elif not pth.is_symlink():
-                    self.count += index(pth)
-                    if self.count and self.count % 20000 == 0:
-                        self._db.store()
+                    if not pth.match(self._ignore_files):
+                        self.count += index(pth)
+                        if self.count and self.count % 20000 == 0:
+                            self._db.store()
 
     def index_local_item(self, path: Path) -> int:
         if self._db.local_exists(file_name=path.name, path=str(path.parent)):

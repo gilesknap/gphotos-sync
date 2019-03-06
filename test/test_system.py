@@ -85,9 +85,9 @@ class TestSystem(TestCase):
         # same UID. This looks like one pair of duplicates and one extra file
         # in the comparison folder. (also the gphotos database etc appear
         # as missing files)
-        pat = str(comparison_root / 'missing_files' / 'gphotos*')
+        pat = str(comparison_root / 'missing_files' / '*')
         files = sorted(s.root.glob(pat))
-        self.assertEqual(4, len(files))
+        self.assertEqual(0, len(files))
         pat = str(comparison_root / 'extra_files' / '*' / '*' / '*' / '*')
         files = sorted(s.root.glob(pat))
         self.assertEqual(1, len(files))

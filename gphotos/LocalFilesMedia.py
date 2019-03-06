@@ -119,7 +119,9 @@ class LocalFilesMedia(BaseMedia):
 
     @property
     def uid(self) -> str:
-        if self.got_meta and self.is_video:
+        if not self.got_meta:
+            uid = None
+        elif self.is_video:
             uid = 'not_supported'
         else:
             uid = self.__exif.get(piexif.ExifIFD.ImageUniqueID)
@@ -134,7 +136,8 @@ class LocalFilesMedia(BaseMedia):
 
     @property
     def size(self) -> int:
-        return self.__full_path.stat().st_size
+        s = self.__full_path.stat().st_size
+        return s
 
     @property
     def id(self) -> Optional[str]:
