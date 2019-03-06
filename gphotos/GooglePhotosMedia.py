@@ -6,6 +6,9 @@ from . import Utils
 from .BaseMedia import BaseMedia
 from typing import Dict, List, Union, Any
 from datetime import datetime
+import re
+
+DuplicateSuffix = re.compile(r'(.*)[ ]\(\d+\)(\..*)')
 
 JSONValue = Union[str, int, float, bool, None, Dict[str, Any], List[Any]]
 JSONType = Union[Dict[str, JSONValue], List[JSONValue]]
@@ -47,6 +50,10 @@ class GooglePhotosMedia(BaseMedia):
     def orig_name(self) -> Path:
         try:
             name = self.__media_json["filename"]
+            matches = DuplicateSuffix.match(name)
+            if matches:
+                # append the prefix and the suffix, ditching the ' (n)'
+                name = '{}{}'.format(*matches.groups())
         except KeyError:
             name = ''
         return Path(self.validate_encoding(name))

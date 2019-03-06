@@ -90,10 +90,10 @@ class TestSystem(TestCase):
         self.assertEqual(0, len(files))
         pat = str(comparison_root / 'extra_files' / '*' / '*' / '*' / '*')
         files = sorted(s.root.glob(pat))
-        self.assertEqual(1, len(files))
+        self.assertEqual(0, len(files))
         pat = str(comparison_root / 'duplicates' / '*')
         files = sorted(s.root.glob(pat))
-        self.assertEqual(2, len(files))
+        self.assertEqual(0, len(files))
 
     def test_sys_album_add_file(self):
         """tests that the album links get re-created in a new folder with
