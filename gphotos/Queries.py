@@ -8,7 +8,7 @@ set RemoteId = (SELECT RemoteId
                 FROM SyncFiles
                 WHERE (LocalFiles.OriginalFileName == SyncFiles.OrigFileName or
                        LocalFiles.FileName == SyncFiles.FileName)
-                  AND (LocalFiles.Uid == SyncFiles.Uid or
+                  AND (LocalFiles.Uid == SyncFiles.Uid AND
                        LocalFiles.CreateDate = SyncFiles.CreateDate)
                   -- 32 character ids are legitimate and unique
                   OR (LocalFiles.Uid == SyncFiles.Uid AND
@@ -20,7 +20,7 @@ LocalFiles.RemoteId ISNULL
 """,
      """    
 -- stage 2 - mop up entries that have no UID (this is a small enough 
--- population that filename is probably unique)
+-- population that filename + CreateDate is probably unique)
 with pre_match(RemoteId) as
    (SELECT RemoteId from LocalFiles where RemoteId notnull)
 UPDATE LocalFiles
@@ -35,7 +35,7 @@ WHERE LocalFiles.RemoteId isnull
 ;
 """,
      """        
--- stage 3 FINAL - mop up on filename alone
+-- stage 3 FINAL - mop up on filename and file size
 with pre_match(RemoteId) as
    (SELECT RemoteId from LocalFiles where RemoteId notnull)
 UPDATE LocalFiles
@@ -43,6 +43,7 @@ set RemoteId = (SELECT RemoteId
             FROM SyncFiles
             WHERE (LocalFiles.OriginalFileName == SyncFiles.OrigFileName or
                    LocalFiles.FileName == SyncFiles.FileName)
+            AND SyncFiles.FileSize == LocalFiles.FileSize
             AND SyncFiles.RemoteId NOT IN (select RemoteId from pre_match)
 )
 WHERE LocalFiles.RemoteId isnull

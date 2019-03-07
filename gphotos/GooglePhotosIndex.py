@@ -197,20 +197,18 @@ class GooglePhotosIndex(object):
             # if this item has a uid it has been scanned before
             if file_path.exists():
                 local_file = LocalFilesMedia(file_path)
-                if local_file.got_meta:
-                    count += 1
-                    log.info('updating metadata %d on %s', count, file_path)
-                    item.update_extra_meta(local_file.uid,
-                                           local_file.create_date)
-                    # erm lets try some duck typing then !
-                    # todo is the DbRow class model rubbish or brilliant Python?
-                    # noinspection PyTypeChecker
-                    self._db.put_row(GooglePhotosRow.from_media(item),
-                                     update=True)
-                    if count % 2000 == 0:
-                        self._db.store()
-                else:
-                    log.debug('NO metadata on %s', file_path)
+                count += 1
+                log.info('updating metadata %d on %s', count, file_path)
+                item.update_extra_meta(local_file.uid,
+                                       local_file.create_date,
+                                       local_file.size)
+                # erm lets try some duck typing then !
+                # todo is the DbRow class model rubbish or brilliant Python?
+                # noinspection PyTypeChecker
+                self._db.put_row(GooglePhotosRow.from_media(item),
+                                 update=True)
+                if count % 2000 == 0:
+                    self._db.store()
             else:
                 log.debug('skipping metadata (already scanned) on %s',
                               file_path)

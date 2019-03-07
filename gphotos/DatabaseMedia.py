@@ -54,9 +54,10 @@ class DatabaseMedia(BaseMedia):
     # this is used to replace meta data that has been extracted from the
     # file system and overrides that provided by Google API
     # noinspection PyAttributeOutsideInit
-    def update_extra_meta(self, uid, create_date):
+    def update_extra_meta(self, uid, create_date, size):
         self._uid = uid
         self._create_date = create_date
+        self._size = size
 
     # ----- BaseMedia base class override Properties below -----
     @ property
