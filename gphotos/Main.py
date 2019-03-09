@@ -222,8 +222,9 @@ class GooglePhotosSyncMain:
                         self.google_photos_idx.check_for_removed()
 
             if args.compare_folder:
-                self.local_files_scan.scan_local_files()
-                self.google_photos_idx.get_extra_meta()
+                if not args.skip_index:
+                    self.local_files_scan.scan_local_files()
+                    self.google_photos_idx.get_extra_meta()
                 self.local_files_scan.find_missing_gphotos()
 
     def main(self, test_args: dict = None):

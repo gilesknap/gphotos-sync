@@ -1,9 +1,15 @@
 # coding: utf8
 
+# noinspection SqlWithoutWhere
 match = \
     ["""
+-- stage 0 - remove previous matches 
+UPDATE LocalFiles
+set RemoteId = NULL  ;
+""",
+     """
 -- stage 1 - look for unique matches 
-        UPDATE LocalFiles
+UPDATE LocalFiles
 set RemoteId = (SELECT RemoteId
                 FROM SyncFiles
                 WHERE (LocalFiles.OriginalFileName == SyncFiles.OrigFileName or
@@ -14,8 +20,7 @@ set RemoteId = (SELECT RemoteId
                   OR (LocalFiles.Uid == SyncFiles.Uid AND
                   length(LocalFiles.Uid) == 32)
 )
-WHERE LocalFiles.Uid notnull and LocalFiles.Uid != 'not_supported' and 
-LocalFiles.RemoteId ISNULL
+WHERE LocalFiles.Uid notnull and LocalFiles.Uid != 'not_supported'
 ;
 """,
      """    
@@ -35,7 +40,7 @@ WHERE LocalFiles.RemoteId isnull
 ;
 """,
      """        
--- stage 3 FINAL - mop up on filename and file size
+-- stage 3 FINAL - mop up on filename only
 with pre_match(RemoteId) as
    (SELECT RemoteId from LocalFiles where RemoteId notnull)
 UPDATE LocalFiles
@@ -43,7 +48,6 @@ set RemoteId = (SELECT RemoteId
             FROM SyncFiles
             WHERE (LocalFiles.OriginalFileName == SyncFiles.OrigFileName or
                    LocalFiles.FileName == SyncFiles.FileName)
-            AND SyncFiles.FileSize == LocalFiles.FileSize
             AND SyncFiles.RemoteId NOT IN (select RemoteId from pre_match)
 )
 WHERE LocalFiles.RemoteId isnull

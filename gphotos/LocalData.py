@@ -122,12 +122,17 @@ class LocalData:
 
     # functions for managing the (any) Media Tables ###########################
     # noinspection SqlResolve
-    def put_row(self, row: DbRow, update=False):
+    def put_row(self, row: DbRow, update=False, album=False):
         try:
             if update:
-                # noinspection PyUnresolvedReferences
-                query = "UPDATE {0} Set {1} WHERE RemoteId = '{2}'".format(
-                    row.table, row.update, row.RemoteId)
+                if album:
+                    # noinspection PyUnresolvedReferences
+                    query = "UPDATE {0} Set {1} WHERE RemoteId = '{2}'".format(
+                        row.table, row.update, row.RemoteId)
+                else:
+                    # noinspection PyUnresolvedReferences
+                    query = "UPDATE {0} Set {1} WHERE RemoteId = '{2}'".format(
+                        row.table, row.update, row.RemoteId)
             else:
                 # EXISTS - allows for no action when trying to re-insert
                 # noinspection PyUnresolvedReferences
