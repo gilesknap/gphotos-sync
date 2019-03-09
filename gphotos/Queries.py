@@ -12,8 +12,7 @@ set RemoteId = NULL  ;
 UPDATE LocalFiles
 set RemoteId = (SELECT RemoteId
                 FROM SyncFiles
-                WHERE (LocalFiles.OriginalFileName == SyncFiles.OrigFileName or
-                       LocalFiles.FileName == SyncFiles.FileName)
+                WHERE LocalFiles.OriginalFileName == SyncFiles.OrigFileName
                   AND (LocalFiles.Uid == SyncFiles.Uid AND
                        LocalFiles.CreateDate = SyncFiles.CreateDate)
                   -- 32 character ids are legitimate and unique
@@ -31,8 +30,7 @@ with pre_match(RemoteId) as
 UPDATE LocalFiles
 set RemoteId = (SELECT RemoteId
             FROM SyncFiles
-            WHERE (LocalFiles.OriginalFileName == SyncFiles.OrigFileName or
-                   LocalFiles.FileName == SyncFiles.FileName)
+            WHERE LocalFiles.OriginalFileName == SyncFiles.OrigFileName
               AND LocalFiles.CreateDate = SyncFiles.CreateDate
             AND SyncFiles.RemoteId NOT IN (select RemoteId from pre_match)
 )
@@ -46,8 +44,7 @@ with pre_match(RemoteId) as
 UPDATE LocalFiles
 set RemoteId = (SELECT RemoteId
             FROM SyncFiles
-            WHERE (LocalFiles.OriginalFileName == SyncFiles.OrigFileName or
-                   LocalFiles.FileName == SyncFiles.FileName)
+            WHERE LocalFiles.OriginalFileName == SyncFiles.OrigFileName
             AND SyncFiles.RemoteId NOT IN (select RemoteId from pre_match)
 )
 WHERE LocalFiles.RemoteId isnull
@@ -57,13 +54,8 @@ WHERE LocalFiles.RemoteId isnull
 missing_files = """select * from LocalFiles where RemoteId isnull;"""
 
 extra_files = """
-select *
-from Syncfiles
-where RemoteId
-        in (SELECT S.RemoteId
-           FROM SyncFiles S
-                  LEFT JOIN LocalFiles L ON S.RemoteId = L.RemoteId
-           WHERE L.RemoteId ISNULL)
+select * from SyncFiles where RemoteId not in (select RemoteId from LocalFiles)
+and uid not in (select uid from LocalFiles where length(SyncFiles.Uid) = 32)
 ;
 """
 
