@@ -30,7 +30,7 @@ class LocalFilesScan(object):
         self._root_folder: Path = root_folder
         self._comparison_folder = self._root_folder / 'comparison'
         self._ignore_files: str = str(root_folder / '*gphotos*')
-        self._ignore_folders = [root_folder/path for path in IGNORE_FOLDERS]
+        self._ignore_folders = [root_folder / path for path in IGNORE_FOLDERS]
         self._db: LocalData = db
         self.count = 0
 
@@ -85,21 +85,19 @@ class LocalFilesScan(object):
             exif_dict = piexif.load(str(path))
             uid = exif_dict['Exif'].get(piexif.ExifIFD.ImageUniqueID)
             if uid and uid != '':
-                log.warning(
-                    '%s = %s', path,
-                    exif_dict['Exif'].get(piexif.ExifIFD.ImageUniqueID))
+                print('{} = {}'.format(path,
+                      exif_dict['Exif'].get(piexif.ExifIFD.ImageUniqueID)))
             else:
                 count += 1
-                log.warning('No ID on %d %s', count, path)
+                print('No ID on {} {}'.format(count, path))
 
-            # for ifd in ("0th", "Exif", "GPS", "1st"):
-            #     print('--------', ifd)
-            #     for tag in exif_dict[ifd]:
-            #         print(piexif.TAGS[ifd][tag], tag,
-            #               exif_dict[ifd][tag])
+            for ifd in ("0th", "Exif", "GPS", "1st"):
+                print('-------- {}'.format(ifd))
+                for tag in exif_dict[ifd]:
+                    print(piexif.TAGS[ifd][tag], tag,
+                          exif_dict[ifd][tag])
         except piexif.InvalidImageDataError:
-            pass
-            log.debug("NO EXIF. %s", path)
+            print("NO EXIF. {}".format(path))
 
     def find_missing_gphotos(self):
         log.warning('matching local files and photos library ...')

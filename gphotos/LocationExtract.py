@@ -1,11 +1,13 @@
 from time import sleep
 import pickle
+
 from appdirs import AppDirs
 from pathlib import Path
 from getpass import getpass
 from selenium import webdriver
 from selenium.webdriver import ChromeOptions
 from selenium.common.exceptions import WebDriverException
+from urllib.parse import urlparse, parse_qs
 
 import logging
 
@@ -14,12 +16,14 @@ log = logging.getLogger(__name__)
 CHROME_DRIVER_PATH = 'chromedriver'
 XPATH_MAP_URL = '//div[starts-with(@data-mapurl,"https:")]'
 XPATH_FILENAME = '//div[starts-with(@aria-label,"Filename")]'
+XPATH_INFO_BUTTON = '//button[@title="Info"]'
 
 
 class LocationExtract:
-    def __init__(self):
+    def __init__(self, with_gui: bool = False):
         self.user: str = None
         self.pwd: str = None
+        self.with_gui = with_gui
         self.driver: webdriver.Chrome = None
         app_dirs = AppDirs('gphotos-sync')
         self.cookie_file: Path = Path(
@@ -32,13 +36,12 @@ class LocationExtract:
         self.pwd = pwd or getpass()
 
     def authenticate(self, url: str):
-        if self.user is None:
-            self.get_credentials()
         options = ChromeOptions()
-        options.headless = True
+        if not self.with_gui:
+            options.headless = True
         self.driver = webdriver.Chrome(CHROME_DRIVER_PATH,
                                        chrome_options=options)
-        self.driver.implicitly_wait(1)
+        self.driver.implicitly_wait(2)
         self.driver.get("https://www.google.com")
 
         if self.cookie_file.exists():
@@ -49,46 +52,97 @@ class LocationExtract:
         self.driver.get(url)
         if str(self.driver.current_url).startswith(
                 'https://accounts.google.com'):
-            # assume we have been re-directed to Google Authentication
-            self.driver.find_element_by_id('identifierId').send_keys(self.user)
-            self.driver.find_element_by_id('identifierNext').click()
-            self.driver.find_element_by_name('password').send_keys(self.pwd)
-            sleep(.1)
-            self.driver.find_element_by_id('passwordNext').click()
-            if '2-step' in self.driver.page_source:
-                # wait for two step authentication to be completed
-                while self.driver.current_url != url:
-                    sleep(1)
+            # we have been re-directed to Google Authentication
+            if not self.with_gui:
+                if self.user is None:
+                    self.get_credentials()
+                identifier = self.driver.find_element_by_id('identifierId')
+                identifier.send_keys(self.user)
+                id_next = self.driver.find_element_by_id('identifierNext')
+                id_next.click()
+                pwd = self.driver.find_element_by_name('password')
+                pwd.send_keys(self.pwd)
+                sleep(.1)
+                pwd_next = self.driver.find_element_by_id('passwordNext')
+                pwd_next.click()
+
+            # wait for authentication (including two step) to be completed
+            while self.driver.current_url != url:
+                sleep(1)
         pickle.dump(self.driver.get_cookies(),
                     open(str(self.cookie_file), "wb"))
 
     def extract_location(self, url: str):
         location = None
+        filename = None
         if self.driver is None:
             self.authenticate(url)
         else:
             self.driver.get(url)
 
         try:
-            info_button = self.driver.find_element_by_xpath(
-                '//button[@title="Info"]')
-            map_urls = self.driver.find_elements_by_xpath(XPATH_MAP_URL)
-            if len(map_urls) == 0:
+            info_button = self.driver.find_element_by_xpath(XPATH_INFO_BUTTON)
+            file = self.driver.find_elements_by_xpath(XPATH_FILENAME)
+            if len(file) == 0:
                 info_button.click()
-                map_urls = self.driver.find_elements_by_xpath(XPATH_MAP_URL)
-            file = self.driver.find_element_by_xpath(XPATH_FILENAME).text
-        except (WebDriverException, IndexError):
-            log.warning('cannot fetch filename')
-            raise
-        try:
-            log.debug('reading location for %s', file)
+                file = self.driver.find_element_by_xpath(XPATH_FILENAME)
+                filename = file.text
+            else:
+                filename = file[0].text
+            map_urls = self.driver.find_elements_by_xpath(XPATH_MAP_URL)
+
             if len(map_urls) == 0:
-                log.warning('no location for %s', file)
+                log.warning('no location for %s', filename)
             else:
                 location = map_urls[0].get_attribute("data-mapurl")
-                log.warning(location)
         except WebDriverException:
-            log.warning('no location info for %s',
-                        file.text)
+            log.warning('cannot fetch GPS info for %s', filename)
 
+        if location:
+            parsed = urlparse(location)
+            params = parse_qs(parsed.query)
+            location = params.get('center')
+            if location:
+                location = location[0]
+            log.info('%s GPS location is %s', filename, location)
         return location
+
+    @staticmethod
+    def to_deg(value, loc):
+            if value < 0:
+                loc_value = loc[0]
+            elif value > 0:
+                loc_value = loc[1]
+            else:
+                loc_value = ""
+            abs_value = abs(value)
+            deg = int(abs_value)
+            t1 = (abs_value-deg)*60
+            minutes = int(t1)
+            sec = round((t1 - minutes) * 60, 5)
+            return deg, minutes, sec, loc_value
+
+    # @staticmethod
+    # def set_gps_location(file_name, lat, lng):
+    #     """Adds GPS position as EXIF metadata
+    #     """
+    #     lat_deg = to_deg(lat, ["S", "N"])
+    #     lng_deg = to_deg(lng, ["W", "E"])
+    #
+    #     # convert decimal coordinates into degrees, munutes and seconds
+    #     exiv_lat = (pyexiv2.Rational(lat_deg[0]*60+lat_deg[1],60),pyexiv2.Rational(lat_deg[2]*100,6000), pyexiv2.Rational(0, 1))
+    #     exiv_lng = (pyexiv2.Rational(lng_deg[0]*60+lng_deg[1],60),pyexiv2.Rational(lng_deg[2]*100,6000), pyexiv2.Rational(0, 1))
+    #
+    #     exiv_image = pyexiv2.Image(file_name)
+    #     exiv_image.readMetadata()
+    #     exif_keys = exiv_image.exifKeys()
+    #
+    #     exiv_image["Exif.GPSInfo.GPSLatitude"] = exiv_lat
+    #     exiv_image["Exif.GPSInfo.GPSLatitudeRef"] = lat_deg[3]
+    #     exiv_image["Exif.GPSInfo.GPSLongitude"] = exiv_lng
+    #     exiv_image["Exif.GPSInfo.GPSLongitudeRef"] = lng_deg[3]
+    #     exiv_image["Exif.Image.GPSTag"] = 654
+    #     exiv_image["Exif.GPSInfo.GPSMapDatum"] = "WGS-84"
+    #     exiv_image["Exif.GPSInfo.GPSVersionID"] = '2 0 0 0'
+    #
+    #     exiv_image.writeMetadata()
