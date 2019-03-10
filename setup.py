@@ -11,6 +11,7 @@ install_reqs = [
     'appdirs',
     'requests',
     'requests_oauthlib',
+    'selenium',
     'PyYaml',
 ]
 

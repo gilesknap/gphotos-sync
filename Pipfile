@@ -5,8 +5,6 @@ name = "pypi"
 
 [packages]
 appdirs = "*"
-requests = "*"
-six = "*"
 requests_oauthlib = "*"
 # pin a beta version which fixes vunerability:
 # https://nvd.nist.gov/vuln/detail/CVE-2017-18342
@@ -15,12 +13,12 @@ pyyaml = "==4.2b1"
 # pyyaml = "*"
 piexif = "*"
 python-magic = "*"
-gphotos-sync = {path = "."}
-coverage = "*"
+selenium = "*"
 
 [dev-packages]
 mock = "*"
 pytest = "*"
+coverage = "*"
 
 [requires]
 python_version = "3.6"

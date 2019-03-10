@@ -119,7 +119,7 @@ class GooglePhotosSyncMain:
         action='store_true',
         help="Dont download albums (for testing)")
 
-    def     setup(self, args: Namespace, db_path: Path):
+    def setup(self, args: Namespace, db_path: Path):
         root_folder = Path(args.root_folder).absolute()
         compare_folder = None
         if args.compare_folder:

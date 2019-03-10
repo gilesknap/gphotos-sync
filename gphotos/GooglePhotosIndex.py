@@ -9,6 +9,7 @@ from gphotos.GooglePhotosRow import GooglePhotosRow
 from gphotos.LocalFilesMedia import LocalFilesMedia
 from gphotos.LocalData import LocalData
 from gphotos.restclient import RestClient
+from gphotos.LocationExtract import extract_location
 
 import logging
 
@@ -149,6 +150,7 @@ class GooglePhotosIndex(object):
                     media_item.id)
                 # we just learned if there were any duplicates in the db
                 media_item.duplicate_number = num
+
                 if not row:
                     self.files_indexed += 1
                     log.info("Indexed %d %s", self.files_indexed,
