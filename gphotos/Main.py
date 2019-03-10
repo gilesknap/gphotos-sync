@@ -15,6 +15,8 @@ from gphotos.LocalData import LocalData
 from gphotos.authorize import Authorize
 from gphotos.restclient import RestClient
 from gphotos.LocalFilesScan import LocalFilesScan
+from gphotos.LocationUpdate import LocationUpdate
+from gphotos import Utils
 import pkg_resources
 
 __version__ = pkg_resources.require("gphotos-sync")[0].version
@@ -34,6 +36,9 @@ class GooglePhotosSyncMain:
         self.google_photos_down: GooglePhotosDownload = None
         self.google_albums_sync: GoogleAlbumsSync = None
         self.local_files_scan: LocalFilesScan = None
+        self.location_update: LocationUpdate = None
+        self._start_date = None
+        self._end_date = None
 
         self.auth: Authorize = None
 
@@ -118,6 +123,11 @@ class GooglePhotosSyncMain:
         "--skip-albums",
         action='store_true',
         help="Dont download albums (for testing)")
+    parser.add_argument(
+        "--get-locations",
+        action='store_true',
+        help="Scrape the Google Photos website for location metadata"
+             " and add it to the local files' EXIF metadata")
 
     def setup(self, args: Namespace, db_path: Path):
         root_folder = Path(args.root_folder).absolute()
@@ -152,14 +162,21 @@ class GooglePhotosSyncMain:
         self.google_albums_sync = GoogleAlbumsSync(
             self.google_photos_client, root_folder, self.data_store,
             args.flush_index or args.retry_download or args.rescan)
+        self.location_update = LocationUpdate(root_folder, self.data_store)
         if args.compare_folder:
             self.local_files_scan = LocalFilesScan(
                 root_folder, compare_folder, self.data_store)
 
-        self.google_photos_idx.set_start_date(args.start_date)
-        self.google_photos_idx.set_end_date(args.end_date)
-        self.google_photos_down.set_start_date(args.start_date)
-        self.google_photos_down.set_end_date(args.end_date)
+        self._start_date = Utils.string_to_date(args.start_date)
+        self._end_date = Utils.string_to_date(args.end_date)
+
+        self.google_photos_idx.start_date = self._start_date
+        self.google_photos_idx.end_date = self._end_date
+        self.google_photos_down.start_date = self._start_date
+        self.google_photos_down.end_date = self._end_date
+        self.location_update.start_date = self._start_date
+        self.location_update.end_date = self._end_date
+
         self.google_photos_idx.include_video = not args.skip_video
         self.google_photos_idx.rescan = args.rescan
         self.google_photos_down.retry_download = args.retry_download
@@ -201,7 +218,14 @@ class GooglePhotosSyncMain:
         # add the handler to the root logger
         logging.getLogger('').addHandler(console)
 
-    def start(self, args: Namespace):
+    def do_location(self, args: Namespace):
+        with self.data_store:
+            if not args.skip_index:
+                self.location_update.index_locations()
+            if not args.index_only:
+                self.location_update.set_locations()
+
+    def do_sync(self, args: Namespace):
         new_files = True
         with self.data_store:
             if not args.skip_index:
@@ -226,6 +250,12 @@ class GooglePhotosSyncMain:
                     self.local_files_scan.scan_local_files()
                     self.google_photos_idx.get_extra_meta()
                 self.local_files_scan.find_missing_gphotos()
+
+    def start(self, args: Namespace):
+        if args.get_locations:
+            self.do_location(args)
+        else:
+            self.do_sync(args)
 
     def main(self, test_args: dict = None):
         start_time = datetime.now()

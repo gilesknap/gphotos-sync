@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 
 CHROME_DRIVER_PATH = 'chromedriver'
 XPATH_MAP_URL = '//div[starts-with(@data-mapurl,"https:")]'
-XPATH_FILENAME = '//div[starts-with(@aria-label,"FilenameX")]'
+XPATH_FILENAME = '//div[starts-with(@aria-label,"Filename")]'
 
 
 class LocationExtract:
@@ -32,6 +32,8 @@ class LocationExtract:
         self.pwd = pwd or getpass()
 
     def authenticate(self, url: str):
+        if self.user is None:
+            self.get_credentials()
         options = ChromeOptions()
         options.headless = True
         self.driver = webdriver.Chrome(CHROME_DRIVER_PATH,
@@ -45,7 +47,8 @@ class LocationExtract:
                 self.driver.add_cookie(cookie)
 
         self.driver.get(url)
-        if self.driver.current_url != url:
+        if str(self.driver.current_url).startswith(
+                'https://accounts.google.com'):
             # assume we have been re-directed to Google Authentication
             self.driver.find_element_by_id('identifierId').send_keys(self.user)
             self.driver.find_element_by_id('identifierNext').click()
@@ -74,24 +77,18 @@ class LocationExtract:
                 info_button.click()
                 map_urls = self.driver.find_elements_by_xpath(XPATH_MAP_URL)
             file = self.driver.find_element_by_xpath(XPATH_FILENAME).text
-        except WebDriverException:
+        except (WebDriverException, IndexError):
             log.warning('cannot fetch filename')
             raise
         try:
             log.debug('reading location for %s', file)
-            location = map_urls[0].get_attribute("data-mapurl")
-            print(location)
+            if len(map_urls) == 0:
+                log.warning('no location for %s', file)
+            else:
+                location = map_urls[0].get_attribute("data-mapurl")
+                log.warning(location)
         except WebDriverException:
             log.warning('no location info for %s',
                         file.text)
 
         return location
-
-
-log.setLevel(10)
-e = LocationExtract()
-e.get_credentials()
-location1 = e.extract_location('https://photos.google.com/photo/'
-                               'AF1QipNGfNgsw1lV38B_-Tws8hc6THeRz8GHxLxVIRqH')
-location2 = e.extract_location('https://photos.google.com/photo/'
-                               'AF1QipOciEoySVzzLjmMcFSrUPRrd0v0FzhKX3WHLbGK')

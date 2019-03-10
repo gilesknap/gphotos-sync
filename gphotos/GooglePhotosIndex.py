@@ -9,7 +9,6 @@ from gphotos.GooglePhotosRow import GooglePhotosRow
 from gphotos.LocalFilesMedia import LocalFilesMedia
 from gphotos.LocalData import LocalData
 from gphotos.restclient import RestClient
-from gphotos.LocationExtract import extract_location
 
 import logging
 
@@ -33,18 +32,11 @@ class GooglePhotosIndex(object):
                                    Utils.minimum_date()
 
         # attributes to be set after init
-        # those with _ must be set through their set_ function
         # thus in theory one instance could so multiple indexes
-        self._start_date: datetime = None
-        self._end_date: datetime = None
+        self.start_date: datetime = None
+        self.end_date: datetime = None
         self.include_video: bool = True
         self.rescan: bool = False
-
-    def set_start_date(self, val: str):
-        self._start_date = Utils.string_to_date(val)
-
-    def set_end_date(self, val: str):
-        self._end_date = Utils.string_to_date(val)
 
     def check_for_removed_in_folder(self, folder: Path):
         for pth in folder.iterdir():
@@ -131,10 +123,10 @@ class GooglePhotosIndex(object):
         if self.rescan:
             start_date = None
         else:
-            start_date = self._start_date or self._db.get_scan_date()
+            start_date = self.start_date or self._db.get_scan_date()
 
         items_json = self.search_media(start_date=start_date,
-                                       end_date=self._end_date,
+                                       end_date=self.end_date,
                                        do_video=self.include_video)
 
         while items_json:
@@ -176,14 +168,14 @@ class GooglePhotosIndex(object):
             if next_page:
                 items_json = self.search_media(page_token=next_page,
                                                start_date=start_date,
-                                               end_date=self._end_date,
+                                               end_date=self.end_date,
                                                do_video=self.include_video)
             else:
                 break
 
         # scan (in reverse date order) completed so the next incremental scan
         # can start from the most recent file in this scan
-        if not self._start_date:
+        if not self.start_date:
             self._db.set_scan_date(last_date=self.latest_download)
 
         return self.files_indexed > 0
@@ -213,5 +205,5 @@ class GooglePhotosIndex(object):
                     self._db.store()
             else:
                 log.debug('skipping metadata (already scanned) on %s',
-                              file_path)
+                          file_path)
         log.warning('updating index with extra metadata complete')
