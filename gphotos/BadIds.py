@@ -1,15 +1,9 @@
 from pathlib import Path
 from yaml import safe_load, safe_dump, YAMLError
-from typing import NamedTuple, Dict
+from typing import Dict
 import logging
 
 log = logging.getLogger(__name__)
-
-
-# sadly, I cant use this with safe_load / safe_dump
-class Item(NamedTuple):
-    path: str
-    product_url: str
 
 
 class BadIds:

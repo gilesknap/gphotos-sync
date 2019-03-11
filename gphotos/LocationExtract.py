@@ -122,27 +122,3 @@ class LocationExtract:
             sec = round((t1 - minutes) * 60, 5)
             return deg, minutes, sec, loc_value
 
-    # @staticmethod
-    # def set_gps_location(file_name, lat, lng):
-    #     """Adds GPS position as EXIF metadata
-    #     """
-    #     lat_deg = to_deg(lat, ["S", "N"])
-    #     lng_deg = to_deg(lng, ["W", "E"])
-    #
-    #     # convert decimal coordinates into degrees, munutes and seconds
-    #     exiv_lat = (pyexiv2.Rational(lat_deg[0]*60+lat_deg[1],60),pyexiv2.Rational(lat_deg[2]*100,6000), pyexiv2.Rational(0, 1))
-    #     exiv_lng = (pyexiv2.Rational(lng_deg[0]*60+lng_deg[1],60),pyexiv2.Rational(lng_deg[2]*100,6000), pyexiv2.Rational(0, 1))
-    #
-    #     exiv_image = pyexiv2.Image(file_name)
-    #     exiv_image.readMetadata()
-    #     exif_keys = exiv_image.exifKeys()
-    #
-    #     exiv_image["Exif.GPSInfo.GPSLatitude"] = exiv_lat
-    #     exiv_image["Exif.GPSInfo.GPSLatitudeRef"] = lat_deg[3]
-    #     exiv_image["Exif.GPSInfo.GPSLongitude"] = exiv_lng
-    #     exiv_image["Exif.GPSInfo.GPSLongitudeRef"] = lng_deg[3]
-    #     exiv_image["Exif.Image.GPSTag"] = 654
-    #     exiv_image["Exif.GPSInfo.GPSMapDatum"] = "WGS-84"
-    #     exiv_image["Exif.GPSInfo.GPSVersionID"] = '2 0 0 0'
-    #
-    #     exiv_image.writeMetadata()

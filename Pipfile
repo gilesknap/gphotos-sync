@@ -10,10 +10,9 @@ requests_oauthlib = "*"
 # https://nvd.nist.gov/vuln/detail/CVE-2017-18342
 # todo won't accept >= for some reason so will need changing in future
 pyyaml = "==4.2b1"
-# pyyaml = "*"
-piexif = "*"
-python-magic = "*"
+exif = "*"
 selenium = "*"
+gphotos-sync = {path = "."}
 
 [dev-packages]
 mock = "*"
@@ -21,4 +20,4 @@ pytest = "*"
 coverage = "*"
 
 [requires]
-python_version = "3.6"
+python_version = "3.7"

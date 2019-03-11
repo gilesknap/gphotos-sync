@@ -5,7 +5,6 @@ from pathlib import Path
 import shutil
 from typing import Callable
 from .LocalData import LocalData
-import piexif
 import logging
 from .LocalFilesMedia import LocalFilesMedia
 from .LocalFilesRow import LocalFilesRow
@@ -76,28 +75,6 @@ class LocalFilesScan(object):
                           exc_info=True)
                 raise
         return result
-
-    @classmethod
-    def dump_exif(cls, path: Path):
-        count = 0
-        # use this for analysis if struggling to find relevant EXIF tags
-        try:
-            exif_dict = piexif.load(str(path))
-            uid = exif_dict['Exif'].get(piexif.ExifIFD.ImageUniqueID)
-            if uid and uid != '':
-                print('{} = {}'.format(path,
-                      exif_dict['Exif'].get(piexif.ExifIFD.ImageUniqueID)))
-            else:
-                count += 1
-                print('No ID on {} {}'.format(count, path))
-
-            for ifd in ("0th", "Exif", "GPS", "1st"):
-                print('-------- {}'.format(ifd))
-                for tag in exif_dict[ifd]:
-                    print(piexif.TAGS[ifd][tag], tag,
-                          exif_dict[ifd][tag])
-        except piexif.InvalidImageDataError:
-            print("NO EXIF. {}".format(path))
 
     def find_missing_gphotos(self):
         log.warning('matching local files and photos library ...')
