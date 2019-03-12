@@ -1,7 +1,7 @@
 language: python
 matrix:
   include:
-    - python: 3.6.7
+    - python: 3.7.2
       dist: xenial
       sudo: true
 

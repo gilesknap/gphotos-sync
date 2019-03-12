@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "6ff65b63c775cbe03453ee0e8a4b5e475a1695f562d2a49f09ab9b236c022c36"
+            "sha256": "8fb7d97784e1d6eea05811123d2dc6166e2e93ddc5c30cafa41c86f7f8fa3ee4"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -163,6 +163,9 @@
             "index": "pypi",
             "version": "==4.5.3"
         },
+        "gphotos-sync": {
+            "path": "."
+        },
         "mock": {
             "hashes": [
                 "sha256:5ce3c71c5545b472da17b72268978914d0252980348636840bd34a00b5cc96c1",
@@ -202,11 +205,11 @@
         },
         "pytest": {
             "hashes": [
-                "sha256:067a1d4bf827ffdd56ad21bd46674703fce77c5957f6c1eef731f6146bfcef1c",
-                "sha256:9687049d53695ad45cf5fdc7bbd51f0c49f1ea3ecfc4b7f3fde7501b541f17f4"
+                "sha256:592eaa2c33fae68c7d75aacf042efc9f77b27c08a6224a4f59beab8d9a420523",
+                "sha256:ad3ad5c450284819ecde191a654c09b0ec72257a2c711b9633d677c71c9850c4"
             ],
             "index": "pypi",
-            "version": "==4.3.0"
+            "version": "==4.3.1"
         },
         "six": {
             "hashes": [

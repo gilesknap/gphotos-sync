@@ -18,6 +18,7 @@ gphotos-sync = {path = "."}
 mock = "*"
 pytest = "*"
 coverage = "*"
+gphotos-sync = {path = "."}
 
 [requires]
 python_version = "3.7"

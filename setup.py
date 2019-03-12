@@ -5,8 +5,7 @@ from setuptools import setup, find_packages
 module_name = "gphotos-sync"
 
 install_reqs = [
-    'python-magic',
-    'piexif',
+    'exif',
     'urllib3',
     'appdirs',
     'requests',
@@ -20,8 +19,8 @@ with open("README.rst", "rb") as f:
 
 setup(
     name=module_name,
-    version='2.8.4',
-    python_requires='>=3.6',
+    version='2.8.5',
+    python_requires='>=3.7',
     license='MIT',
     platforms=['Linux', 'Windows', 'Mac'],
     description='Google Photos backup tool',
