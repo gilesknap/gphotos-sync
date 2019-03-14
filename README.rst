@@ -64,6 +64,8 @@ to Google and this project will be updated once they are resolved.
 * Video download transcodes the videos even if you ask for the original file (=vd parameter) see
   https://issuetracker.google.com/issues/80149160. My experience is that the result is looks similar to the original
   but the compression is more clearly visible. It is a smaller file with approximately 60% bitrate (same resolution).
+* Burst shots are not supported. You will only see the first file of a burst shot. See 
+  https://issuetracker.google.com/issues/124656564
 
 
 Install and configure
