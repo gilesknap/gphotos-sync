@@ -25,7 +25,7 @@ log = logging.getLogger(__name__)
 class LocalData:
     DB_FILE_NAME: str = 'gphotos.sqlite'
     BLOCK_SIZE: int = 10000
-    VERSION: float = 5.5
+    VERSION: float = 5.6
 
     def __init__(self, root_folder: Path, flush_index: bool = False):
         """ Initialize a connection to the DB and create some cursors.
@@ -122,12 +122,17 @@ class LocalData:
 
     # functions for managing the (any) Media Tables ###########################
     # noinspection SqlResolve
-    def put_row(self, row: DbRow, update=False):
+    def put_row(self, row: DbRow, update=False, album=False):
         try:
             if update:
-                # noinspection PyUnresolvedReferences
-                query = "UPDATE {0} Set {1} WHERE RemoteId = '{2}'".format(
-                    row.table, row.update, row.RemoteId)
+                if album:
+                    # noinspection PyUnresolvedReferences
+                    query = "UPDATE {0} Set {1} WHERE RemoteId = '{2}'".format(
+                        row.table, row.update, row.RemoteId)
+                else:
+                    # noinspection PyUnresolvedReferences
+                    query = "UPDATE {0} Set {1} WHERE RemoteId = '{2}'".format(
+                        row.table, row.update, row.RemoteId)
             else:
                 # EXISTS - allows for no action when trying to re-insert
                 # noinspection PyUnresolvedReferences
@@ -252,6 +257,11 @@ class LocalData:
         else:
             # the file is new and has no duplicates
             return 0, None
+
+    def put_location(self, sync_file_id: str, location: str):
+        self.cur.execute(
+            "UPDATE SyncFiles SET Location=? "
+            "WHERE RemoteId IS ?;", (location, sync_file_id))
 
     def put_downloaded(self, sync_file_id: str, downloaded: bool = True):
         self.cur.execute(

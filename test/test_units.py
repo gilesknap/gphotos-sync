@@ -1,7 +1,6 @@
 from _datetime import datetime
 from pathlib import Path
 from requests import exceptions as exc
-import piexif
 from unittest import TestCase
 from gphotos.GoogleAlbumMedia import GoogleAlbumMedia
 import json
@@ -54,44 +53,26 @@ class TestUnits(TestCase):
         # .2 timeout by 5 retries = 1 sec
         self.assertGreater(elapsed.seconds, 1)
 
-    @classmethod
-    def dump_exif(cls, p: Path):
-        # use this for analysis if struggling to find relevant EXIF tags
-        try:
-            exif_dict = piexif.load(str(p))
-            for ifd in ("0th", "Exif", "GPS", "1st"):
-                print('--------', ifd)
-                for tag in exif_dict[ifd]:
-                    print(piexif.TAGS[ifd][tag], tag,
-                          exif_dict[ifd][tag])
-        except piexif.InvalidImageDataError:
-            print("no EXIF")
-
     def test_jpg_description(self):
         p = test_data / 'IMG_20190102_112832.jpg'
         lfm = LocalFilesMedia(p)
-        self.dump_exif(p)
         self.assertEqual(lfm.description, '')
 
         p = test_data / '20180126_185832.jpg'
         lfm = LocalFilesMedia(p)
-        self.dump_exif(p)
         self.assertEqual(lfm.description, '')
 
         p = test_data / '1987-JohnWoodAndGiles.jpg'
         lfm = LocalFilesMedia(p)
-        self.dump_exif(p)
         self.assertEqual(lfm.description, '')
 
     def test_jpg_description2(self):
         p = test_data / 'IMG_20180908_132733-gphotos.jpg'
         lfm = LocalFilesMedia(p)
-        self.dump_exif(p)
         self.assertEqual(lfm.description, '')
 
         p = test_data / 'IMG_20180908_132733-insync.jpg'
         lfm = LocalFilesMedia(p)
-        self.dump_exif(p)
         self.assertEqual(lfm.description, '')
 
     def test_empty_media(self):

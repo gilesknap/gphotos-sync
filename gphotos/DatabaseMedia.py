@@ -46,7 +46,8 @@ class DatabaseMedia(BaseMedia):
                  _description: str = None,
                  _date: datetime = None,
                  _create_date: datetime = None,
-                 _downloaded: bool = False):
+                 _downloaded: bool = False,
+                 _location: str = None):
         super(DatabaseMedia, self).__init__()
         # add all of the arguments as attributes on this object
         self.__dict__.update(locals())
@@ -59,8 +60,15 @@ class DatabaseMedia(BaseMedia):
         self._create_date = create_date
         self._size = size
 
+    @property
+    def location(self) -> str:
+        """
+        image GPS information
+        """
+        return self._location
+
     # ----- BaseMedia base class override Properties below -----
-    @ property
+    @property
     def size(self) -> int:
         return self._size
 

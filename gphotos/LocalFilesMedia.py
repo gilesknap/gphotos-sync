@@ -8,8 +8,8 @@ from . import Utils
 from .BaseMedia import BaseMedia
 from typing import Dict, List, Union, Any, Optional
 from datetime import datetime
-import piexif
-import magic
+from mimetypes import guess_type
+import exif
 import re
 
 JSONValue = Union[str, int, float, bool, None, Dict[str, Any], List[Any]]
@@ -36,11 +36,10 @@ DUPLICATE_MATCH = re.compile(r'(.*) \(([2-9]|\d{2,3})\)\.(.*)')
 
 
 class LocalFilesMedia(BaseMedia):
-    mime = magic.Magic(mime=True)
-
     def __init__(self, full_path: Path):
         super(LocalFilesMedia, self).__init__()
-        self.__mime_type: str = self.mime.from_file(str(full_path))
+        (mime, _) = guess_type(str(full_path))
+        self.__mime_type: str = mime or 'application/octet-stream'
         self.is_video: bool = self.__mime_type.startswith('video')
         self.__full_path: Path = full_path
         self.__original_name: Path = full_path.name
@@ -90,31 +89,29 @@ class LocalFilesMedia(BaseMedia):
                 self.__full_path.stat().st_mtime)
 
     def get_image_date(self):
-        photo_date = None
+        p_date = None
         if self.got_meta:
             try:
-                d_bytes = self.__exif.get(piexif.ExifIFD.DateTimeOriginal)
-                photo_date = Utils.string_to_date(d_bytes.decode("utf-8"))
-            except (KeyError, ValueError, AttributeError):
+                # noinspection PyUnresolvedReferences
+                p_date = Utils.string_to_date(self.__exif.datetime_original)
+            except AttributeError:
                 try:
-                    d_bytes = self.__exif_0.get(piexif.ImageIFD.DateTime)
-                    photo_date = Utils.string_to_date(d_bytes.decode("utf-8"))
-                except (KeyError, ValueError, AttributeError):
+                    # noinspection PyUnresolvedReferences
+                    p_date = Utils.string_to_date(self.__exif.datetime)
+                except AttributeError:
                     pass
-
-        if not photo_date:
+        if not p_date:
             # just use file date
-            photo_date = datetime.utcfromtimestamp(
+            p_date = datetime.utcfromtimestamp(
                 self.__full_path.stat().st_mtime)
-        self.__createDate = photo_date
+        self.__createDate = p_date
 
     def get_exif(self):
         try:
-            exif = piexif.load(str(self.__full_path))
+            with open('image_file.jpg', 'rb') as image_file:
+                self.__exif = exif.Image(image_file)
             self.got_meta = True
-            self.__exif_0: dict = exif["0th"]
-            self.__exif: dict = exif["Exif"]
-        except piexif.InvalidImageDataError:
+        except IOError:
             self.got_meta = False
 
     @property
@@ -124,8 +121,10 @@ class LocalFilesMedia(BaseMedia):
         elif self.is_video:
             uid = 'not_supported'
         else:
-            uid = self.__exif.get(piexif.ExifIFD.ImageUniqueID)
-            if not uid:
+            try:
+                # noinspection PyUnresolvedReferences
+                uid = self.__exif.image_unique_id
+            except AttributeError:
                 uid = 'no_uid_in_exif'
         return uid
 
@@ -145,7 +144,11 @@ class LocalFilesMedia(BaseMedia):
 
     @property
     def description(self) -> str:
-        d = self.__exif_0.get(piexif.ImageIFD.ImageDescription)
+        try:
+            # noinspection PyUnresolvedReferences
+            d = self.__exif.image_unique_id
+        except AttributeError:
+            d = None
         if d:
             result = d.decode("utf-8")
             if result in HUAWEI_JUNK:
@@ -176,4 +179,10 @@ class LocalFilesMedia(BaseMedia):
 
     @property
     def camera_model(self):
-        return self.__exif_0.get(piexif.ImageIFD.CameraSerialNumber)
+        try:
+            # noinspection PyUnresolvedReferences
+            cam = '{} {}'.format(
+                self.__exif.make, self.__exif.model)
+        except AttributeError:
+            cam = None
+        return cam

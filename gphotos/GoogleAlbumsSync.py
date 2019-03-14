@@ -31,8 +31,10 @@ class GoogleAlbumsSync(object):
             db: local database for indexing
         """
         self._root_folder: Path = root_folder
-        self._links_root = self._root_folder / 'albums'
-        self._photos_root = self._root_folder / 'photos'
+        self._photos_folder = Path('photos')
+        self._albums_folder = Path('albums')
+        self._links_root = self._root_folder / self._albums_folder
+        self._photos_root = self._root_folder / self._photos_folder
         self._db: LocalData = db
         self._api: RestClient = api
         self.flush = flush
@@ -65,14 +67,30 @@ class GoogleAlbumsSync(object):
                 self._db.put_album_file(album_id, media_item.id)
                 last_date = max(media_item.create_date, last_date)
                 first_date = min(media_item.create_date, first_date)
+
                 # this adds other users photos from shared albums
-                log.debug('Adding album media item %s %s %s',
-                          media_item.relative_path, media_item.filename,
-                          media_item.duplicate_number)
+                # Todo - This will cause two copies of a file to appear for
+                #  those shared items you have imported into your own library.
+                #  They will have different RemoteIds, one will point to your
+                #  library copy (you own) and one to the shared item in the
+                #  the folder. Currently with the meta data available it would
+                #  be impossible to eliminate these without eliminating other
+                #  cases where date and filename (TITLE) match
                 if add_media_items:
-                    media_item.set_path_by_date(self._photos_root)
+                    media_item.set_path_by_date(self._photos_folder)
+                    (num, row) = self._db.file_duplicate_no(
+                        str(media_item.filename),
+                        str(media_item.relative_folder),
+                        media_item.id)
+                    # we just learned if there were any duplicates in the db
+                    media_item.duplicate_number = num
+
+                    log.debug('Adding album media item %s %s %s',
+                              media_item.relative_path, media_item.filename,
+                              media_item.duplicate_number)
                     self._db.put_row(
                         GooglePhotosRow.from_media(media_item), False)
+
             next_page = items_json.get('nextPageToken')
             if next_page:
                 body = self.make_search_parameters(album_id=album_id,

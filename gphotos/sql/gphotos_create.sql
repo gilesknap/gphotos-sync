@@ -78,7 +78,8 @@ create table SyncFiles
 	ModifyDate INT,
 	CreateDate INT,
 	SyncDate INT,
-  Downloaded INT DEFAULT 0
+  Downloaded INT DEFAULT 0,
+  Location Text
 );
 
 DROP INDEX IF EXISTS RemoteIdIdx;

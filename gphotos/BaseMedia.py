@@ -119,3 +119,4 @@ class BaseMedia(object):
     @property
     def url(self) -> str:
         raise NotImplementedError
+

@@ -1,21 +1,25 @@
 # coding: utf8
 
+# noinspection SqlWithoutWhere
 match = \
     ["""
+-- stage 0 - remove previous matches 
+UPDATE LocalFiles
+set RemoteId = NULL  ;
+""",
+     """
 -- stage 1 - look for unique matches 
-        UPDATE LocalFiles
+UPDATE LocalFiles
 set RemoteId = (SELECT RemoteId
                 FROM SyncFiles
-                WHERE (LocalFiles.OriginalFileName == SyncFiles.OrigFileName or
-                       LocalFiles.FileName == SyncFiles.FileName)
+                WHERE LocalFiles.OriginalFileName == SyncFiles.OrigFileName
                   AND (LocalFiles.Uid == SyncFiles.Uid AND
                        LocalFiles.CreateDate = SyncFiles.CreateDate)
                   -- 32 character ids are legitimate and unique
                   OR (LocalFiles.Uid == SyncFiles.Uid AND
                   length(LocalFiles.Uid) == 32)
 )
-WHERE LocalFiles.Uid notnull and LocalFiles.Uid != 'not_supported' and 
-LocalFiles.RemoteId ISNULL
+WHERE LocalFiles.Uid notnull and LocalFiles.Uid != 'not_supported'
 ;
 """,
      """    
@@ -26,8 +30,7 @@ with pre_match(RemoteId) as
 UPDATE LocalFiles
 set RemoteId = (SELECT RemoteId
             FROM SyncFiles
-            WHERE (LocalFiles.OriginalFileName == SyncFiles.OrigFileName or
-                   LocalFiles.FileName == SyncFiles.FileName)
+            WHERE LocalFiles.OriginalFileName == SyncFiles.OrigFileName
               AND LocalFiles.CreateDate = SyncFiles.CreateDate
             AND SyncFiles.RemoteId NOT IN (select RemoteId from pre_match)
 )
@@ -35,15 +38,13 @@ WHERE LocalFiles.RemoteId isnull
 ;
 """,
      """        
--- stage 3 FINAL - mop up on filename and file size
+-- stage 3 FINAL - mop up on filename only
 with pre_match(RemoteId) as
    (SELECT RemoteId from LocalFiles where RemoteId notnull)
 UPDATE LocalFiles
 set RemoteId = (SELECT RemoteId
             FROM SyncFiles
-            WHERE (LocalFiles.OriginalFileName == SyncFiles.OrigFileName or
-                   LocalFiles.FileName == SyncFiles.FileName)
-            AND SyncFiles.FileSize == LocalFiles.FileSize
+            WHERE LocalFiles.OriginalFileName == SyncFiles.OrigFileName
             AND SyncFiles.RemoteId NOT IN (select RemoteId from pre_match)
 )
 WHERE LocalFiles.RemoteId isnull
@@ -53,13 +54,8 @@ WHERE LocalFiles.RemoteId isnull
 missing_files = """select * from LocalFiles where RemoteId isnull;"""
 
 extra_files = """
-select *
-from Syncfiles
-where RemoteId
-        in (SELECT S.RemoteId
-           FROM SyncFiles S
-                  LEFT JOIN LocalFiles L ON S.RemoteId = L.RemoteId
-           WHERE L.RemoteId ISNULL)
+select * from SyncFiles where RemoteId not in (select RemoteId from LocalFiles)
+and uid not in (select uid from LocalFiles where length(SyncFiles.Uid) = 32)
 ;
 """
 

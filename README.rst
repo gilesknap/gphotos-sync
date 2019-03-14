@@ -20,7 +20,7 @@ After doing a full sync you will have 2 directories off of the specified root:
   of the file (this matches the approach used in the official Google tool for Windows).
 
 * **albums** - contains a folder hierarchy representing the set of albums  and shared albums in your library. All
-  the files are symlinks to content in one of the other folders. The folder names  will be
+  the files are symlinks to content in the photos folder. The folder names  will be
   'albums/YYYY/MM Original Album Name'.
 
 In addition there will be further folders when using the --compare-folder option.  The option is used to make a
@@ -46,8 +46,8 @@ NOTES:
   extract metadata from video files and revert to relying on Google Photos meta data and file modified date (this is
   a much less reliable way to match video files, but the results should be OK if the backup folder
   was originally created using gphotos-sync).
-* If the library contains two separate items that have the same exif UID then this will result in seeing one
-  pair of duplicates, plus one of those duplicates will appear in the extra_files list.
+* If you have shared albums and have clicked 'add to library' on items from others' libraries then you will have two
+  copies of those items and they will show as duplicates too.
 
 Known Issues
 ------------

@@ -26,7 +26,7 @@ class GooglePhotosRow(DbRow):
                 'FileName': str, 'OrigFileName': str, 'DuplicateNo': int,
                 'FileSize': int, 'MimeType': str, 'Description': str,
                 'ModifyDate': datetime, 'CreateDate': datetime,
-                'SyncDate': datetime, 'Downloaded': int}
+                'SyncDate': datetime, 'Downloaded': int, 'Location': str}
     no_update = ['Id']
 
     def to_media(self) -> DatabaseMedia:
@@ -44,7 +44,8 @@ class GooglePhotosRow(DbRow):
             _description=self.Description,
             _date=self.ModifyDate,
             _create_date=self.CreateDate,
-            _downloaded=self.Downloaded)
+            _downloaded=self.Downloaded,
+            _location=self.Location)
         return db_media
 
     @classmethod
@@ -63,5 +64,6 @@ class GooglePhotosRow(DbRow):
                            ModifyDate=media.modify_date,
                            CreateDate=media.create_date,
                            SyncDate=now_time,
-                           Downloaded=0)
+                           Downloaded=0,
+                           Location='')
         return new_row

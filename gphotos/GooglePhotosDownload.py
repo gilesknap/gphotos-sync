@@ -50,9 +50,8 @@ class GooglePhotosDownload(object):
 
         # attributes to be set after init
         # thus in theory one instance could so multiple indexes
-        # those with _ must be set through their set_ function
-        self._start_date: datetime = None
-        self._end_date: datetime = None
+        self.start_date: datetime = None
+        self.end_date: datetime = None
         self.retry_download: bool = False
         self.video_timeout: int = 2000
         self.image_timeout: int = 60
@@ -72,12 +71,6 @@ class GooglePhotosDownload(object):
         self._session.mount(
             'https://', HTTPAdapter(max_retries=retries,
                                     pool_maxsize=self.MAX_THREADS))
-
-    def set_start_date(self, val: str):
-        self._start_date = Utils.string_to_date(val)
-
-    def set_end_date(self, val: str):
-        self._end_date = Utils.string_to_date(val)
 
     def download_photo_media(self):
         """
@@ -101,8 +94,8 @@ class GooglePhotosDownload(object):
             for media_items_block in grouper(
                     self._db.get_rows_by_search(
                         GooglePhotosRow,
-                        start_date=self._start_date,
-                        end_date=self._end_date,
+                        start_date=self.start_date,
+                        end_date=self.end_date,
                         skip_downloaded=not self.retry_download)):
                 batch = {}
 
