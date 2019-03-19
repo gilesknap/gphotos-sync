@@ -48,6 +48,11 @@ class GooglePhotosSyncMain:
         "root_folder",
         help="root of the local folders to download into")
     parser.add_argument(
+        "--album",
+        action='store',
+        help="only synchronize the contents of a single album."
+             "use quotes e.g. \"album name\" for album names with spaces")
+    parser.add_argument(
         "--logfile",
         action='store',
         help="full path to debug level logfile, default: <root>/gphotos.log."
@@ -180,6 +185,7 @@ class GooglePhotosSyncMain:
         self.google_photos_idx.include_video = not args.skip_video
         self.google_photos_idx.rescan = args.rescan
         self.google_photos_down.retry_download = args.retry_download
+        self.google_albums_sync.album = args.album
 
     @classmethod
     def logging(cls, args: Namespace, folder: Path):
@@ -229,12 +235,12 @@ class GooglePhotosSyncMain:
         new_files = True
         with self.data_store:
             if not args.skip_index:
-                if not args.skip_files:
+                if not args.skip_files and not args.album:
                     new_files = self.google_photos_idx.index_photos_media()
             # if there are no new files and no arguments that specify specific
             # scan requirements, then we have done all we need to do
             if new_files or args.rescan or args.retry_download or \
-                    args.start_date:
+                    args.start_date or args.album:
                 if not args.skip_albums and not args.skip_index:
                     self.google_albums_sync.index_album_media()
                 if not args.index_only:

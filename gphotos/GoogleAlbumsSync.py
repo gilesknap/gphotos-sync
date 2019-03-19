@@ -38,6 +38,7 @@ class GoogleAlbumsSync(object):
         self._db: LocalData = db
         self._api: RestClient = api
         self.flush = flush
+        self.album = None
 
     @classmethod
     def make_search_parameters(cls, album_id: str,
@@ -101,11 +102,12 @@ class GoogleAlbumsSync(object):
         return first_date, last_date
 
     def index_album_media(self):
+        index_all_contents = self.album is not None
         self.index_albums_type(self._api.sharedAlbums.list.execute,
                                'sharedAlbums', "Shared (titled) Albums",
                                False, True)
         self.index_albums_type(self._api.albums.list.execute,
-                               'albums', "Albums", True, False)
+                               'albums', "Albums", True, index_all_contents)
 
     def index_albums_type(self, api_function: Callable, item_key: str,
                           description: str, allow_null_title: bool,
@@ -131,7 +133,11 @@ class GoogleAlbumsSync(object):
                 already_indexed = indexed_album.size == album.size if \
                     indexed_album else False
 
-                if not allow_null_title and album.description == 'none':
+                if self.album and self.album != album.orig_name:
+                    log.debug('Skipping Album: %s, photos: %d '
+                              '(does not match --album)', album.filename,
+                              album.size)
+                elif not allow_null_title and album.description == 'none':
                     log.debug('Skipping no-title album, photos: %d',
                               album.size)
                 elif already_indexed and not self.flush:
