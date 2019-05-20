@@ -19,6 +19,12 @@ giles 2018
 '''
 
 
+# a dummy decorator to suppress unresolved references on this dynamic class
+def dynamic_attrs(cls):
+    return cls
+
+
+@dynamic_attrs
 class RestClient:
     """ To create a callable client to a REST API, instantiate this class.
     For details of the discovery API see:
