@@ -6,10 +6,7 @@ name = "pypi"
 [packages]
 appdirs = "*"
 requests_oauthlib = "*"
-# pin a beta version which fixes vunerability:
-# https://nvd.nist.gov/vuln/detail/CVE-2017-18342
-# todo won't accept >= for some reason so will need changing in future
-pyyaml = "==4.2b1"
+pyyaml = "*"
 exif = "*"
 selenium = "*"
 gphotos-sync = {path = "."}
