@@ -90,13 +90,15 @@ To install the latest published version from PyPi, simply::
 
    pipenv install gphotos-sync
 
-Or if you don't want to use pipenv::
+Or if you don't want to use pipenv, create a virtual environment and::
 
-   sudo pip install gphotos-sync
+   pip install gphotos-sync
+
+(see https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/ if you are not familiar with virtualenv)
 
 To work from the source code, clone the git repository and use pipenv to create a virtual environment and run
-the code. (if you don't have pipenv, then I recommend getting it - but you can use
-'sudo python setup.py install' instead) ::
+the code. (if you don't have pipenv, then I recommend getting it - but you can manually create a virtualenv and use
+'python setup.py install' instead) ::
 
   git clone https://github.com/gilesknap/gphotos-sync.git
   cd gphotos-sync
@@ -142,7 +144,7 @@ Once the script is configured, you are now ready to use it using the simple foll
   cd <installed directory>
   pipenv run gphotos-sync TARGET_DIRECTORY
 
-Or if you used sudo pip instead of pipenv::
+Or, if you used virtualenv and pip instead of pipenv, activate the virtualenv and::
 
   gphotos-sync TARGET_DIRECTORY
   
