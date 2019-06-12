@@ -7,7 +7,13 @@
 Google Photos Sync
 ==================
 
-GPS Info update
+Warning
+-------
+I have just experienced an issue with duplication of files when doing a rescan (--rescan or --flush-index). It looks like some items have been allocated new remoteIds in the library and this can result in the same file downloading twice. I would guess this has something to do with Google the removing the Drive link to Photos. 
+
+I will update when I have investigated further.
+
+Google GPS Info update
 ---------------
 Google does not seem to be interested in fxing the issue of stripping location info from the EXIF info of images
 downloaded via their API. So I am investigating a workaround. See the option --get-locations. It uses
