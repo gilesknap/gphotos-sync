@@ -42,7 +42,7 @@ class LocalFilesMedia(BaseMedia):
         self.__mime_type: str = mime or 'application/octet-stream'
         self.is_video: bool = self.__mime_type.startswith('video')
         self.__full_path: Path = full_path
-        self.__original_name: Path = full_path.name
+        self.__original_name: str = full_path.name
         self.__ffprobe_installed = True
         self.__createDate: datetime = None
 
@@ -94,11 +94,11 @@ class LocalFilesMedia(BaseMedia):
             try:
                 # noinspection PyUnresolvedReferences
                 p_date = Utils.string_to_date(self.__exif.datetime_original)
-            except AttributeError:
+            except (AttributeError, ValueError):
                 try:
                     # noinspection PyUnresolvedReferences
                     p_date = Utils.string_to_date(self.__exif.datetime)
-                except AttributeError:
+                except (AttributeError, ValueError):
                     pass
         if not p_date:
             # just use file date
@@ -108,10 +108,11 @@ class LocalFilesMedia(BaseMedia):
 
     def get_exif(self):
         try:
-            with open('image_file.jpg', 'rb') as image_file:
+            with open(str(self.relative_folder / self.filename),
+                      'rb') as image_file:
                 self.__exif = exif.Image(image_file)
             self.got_meta = True
-        except IOError:
+        except (IOError, AssertionError):
             self.got_meta = False
 
     @property
@@ -146,11 +147,10 @@ class LocalFilesMedia(BaseMedia):
     def description(self) -> str:
         try:
             # noinspection PyUnresolvedReferences
-            d = self.__exif.image_unique_id
+            result = self.__exif.image_unique_id
         except AttributeError:
-            d = None
-        if d:
-            result = d.decode("utf-8")
+            result = None
+        if result:
             if result in HUAWEI_JUNK:
                 result = ''
         else:

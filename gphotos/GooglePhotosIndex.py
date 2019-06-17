@@ -32,7 +32,7 @@ class GooglePhotosIndex(object):
                                    Utils.minimum_date()
 
         # attributes to be set after init
-        # thus in theory one instance could so multiple indexes
+        # thus in theory one instance could do multiple indexes
         self.start_date: datetime = None
         self.end_date: datetime = None
         self.include_video: bool = True

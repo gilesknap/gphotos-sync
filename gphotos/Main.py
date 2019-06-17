@@ -42,7 +42,16 @@ class GooglePhotosSyncMain:
 
         self.auth: Authorize = None
 
+    try:
+        version_string = 'version: {}, database schema version {}'.format(
+            __version__, LocalData.VERSION)
+    except TypeError:
+        version_string = '(version not available)'
+    except DistributionNotFound:
+        version_string = '(version not available under unit tests)'
+
     parser = ArgumentParser(
+        epilog=version_string,
         description="Google Photos download tool")
     parser.add_argument(
         "root_folder",
@@ -133,6 +142,7 @@ class GooglePhotosSyncMain:
         action='store_true',
         help="Scrape the Google Photos website for location metadata"
              " and add it to the local files' EXIF metadata")
+    parser.add_help = True
 
     def setup(self, args: Namespace, db_path: Path):
         root_folder = Path(args.root_folder).absolute()
@@ -283,13 +293,7 @@ class GooglePhotosSyncMain:
                 log.warning('EXITING: database is locked')
                 sys.exit(0)
 
-            try:
-                log.info('version: {}, database schema version {}'.format(
-                    __version__, LocalData.VERSION))
-            except TypeError:
-                log.info('version not available')
-            except DistributionNotFound:
-                log.warning('running under unit tests?')
+            log.info(self.version_string)
 
             # configure and launch
             # noinspection PyBroadException
