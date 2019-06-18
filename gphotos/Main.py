@@ -113,6 +113,11 @@ class GooglePhotosSyncMain:
              "Defaults to the 'photos' in the local download folders",
         default=None)
     parser.add_argument(
+        "--use-flat-path",
+        action='store_true',
+        help="mandated use of a flat directory stracture ('YYYY-MMM') and not a nested one ('YYYY/MM') . "
+        )
+    parser.add_argument(
         "--new-token",
         action='store_true',
         help="Request new token")
@@ -171,12 +176,12 @@ class GooglePhotosSyncMain:
         self.google_photos_client = RestClient(
             photos_api_url, self.auth.session)
         self.google_photos_idx = GooglePhotosIndex(self.google_photos_client, root_folder, self.data_store,
-                                                   args.photos_path)
+                                                   args.photos_path, args.use_flat_path)
         self.google_photos_down = GooglePhotosDownload(
             self.google_photos_client, root_folder, self.data_store)
         self.google_albums_sync = GoogleAlbumsSync(self.google_photos_client, root_folder, self.data_store,
                                                    args.flush_index or args.retry_download or args.rescan,
-                                                   args.photos_path, args.albums_path)
+                                                   args.photos_path, args.albums_path, args.use_flat_path)
         self.location_update = LocationUpdate(root_folder, self.data_store, args.photos_path)
         if args.compare_folder:
             self.local_files_scan = LocalFilesScan(
