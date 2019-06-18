@@ -103,6 +103,16 @@ class GooglePhotosSyncMain:
              "Defaults to the root of the local download folders",
         default=None)
     parser.add_argument(
+        "--albums-path",
+        help="Specify a folder for the albums "
+             "Defaults to the 'albums' in the local download folders",
+        default='albums')
+    parser.add_argument(
+        "--photos-path",
+        help="Specify a folder for the photo files. "
+             "Defaults to the 'photos' in the local download folders",
+        default=None)
+    parser.add_argument(
         "--new-token",
         action='store_true',
         help="Request new token")
@@ -160,14 +170,14 @@ class GooglePhotosSyncMain:
 
         self.google_photos_client = RestClient(
             photos_api_url, self.auth.session)
-        self.google_photos_idx = GooglePhotosIndex(
-            self.google_photos_client, root_folder, self.data_store)
+        self.google_photos_idx = GooglePhotosIndex(self.google_photos_client, root_folder, self.data_store,
+                                                   args.photos_path)
         self.google_photos_down = GooglePhotosDownload(
             self.google_photos_client, root_folder, self.data_store)
-        self.google_albums_sync = GoogleAlbumsSync(
-            self.google_photos_client, root_folder, self.data_store,
-            args.flush_index or args.retry_download or args.rescan)
-        self.location_update = LocationUpdate(root_folder, self.data_store)
+        self.google_albums_sync = GoogleAlbumsSync(self.google_photos_client, root_folder, self.data_store,
+                                                   args.flush_index or args.retry_download or args.rescan,
+                                                   args.photos_path, args.albums_path)
+        self.location_update = LocationUpdate(root_folder, self.data_store, args.photos_path)
         if args.compare_folder:
             self.local_files_scan = LocalFilesScan(
                 root_folder, compare_folder, self.data_store)

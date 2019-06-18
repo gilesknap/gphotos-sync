@@ -12,10 +12,10 @@ log = logging.getLogger(__name__)
 
 
 class LocationUpdate:
-    def __init__(self, root_folder: Path, db: LocalData):
+    def __init__(self, root_folder: Path, db: LocalData, photos_path="photos"):
         self._root_folder: Path = root_folder
         self._db: LocalData = db
-        self._media_folder: Path = Path('photos')
+        self._media_folder: Path = Path(photos_path)
         self.files_indexed: int = 0
         self.files_index_skipped: int = 0
         self.start_date: datetime = None

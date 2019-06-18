@@ -22,17 +22,18 @@ class GoogleAlbumsSync(object):
     """A Class for managing the indexing and download Google of Albums
     """
 
-    def __init__(self, api: RestClient, root_folder: Path, db: LocalData,
-                 flush: bool):
+    def __init__(self, api: RestClient, root_folder: Path, db: LocalData, flush: bool, photos_path='photos', albums_path='albums'):
         """
         Parameters:
             root_folder: path to the root of local file synchronization
             api: object representing the Google REST API
             db: local database for indexing
+            :param photos_path:
+            :param albums_path:
         """
         self._root_folder: Path = root_folder
-        self._photos_folder = Path('photos')
-        self._albums_folder = Path('albums')
+        self._photos_folder = Path(photos_path)
+        self._albums_folder = Path(albums_path)
         self._links_root = self._root_folder / self._albums_folder
         self._photos_root = self._root_folder / self._photos_folder
         self._db: LocalData = db
