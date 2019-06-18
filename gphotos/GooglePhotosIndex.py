@@ -18,7 +18,8 @@ log = logging.getLogger(__name__)
 class GooglePhotosIndex(object):
     PAGE_SIZE = 100
 
-    def __init__(self, api: RestClient, root_folder: Path, db: LocalData, photos_path = 'photos', use_flat_path=True):
+    def __init__(self, api: RestClient, root_folder: Path, db: LocalData,
+                 photos_path: Path, use_flat_path: bool = False):
         self._api: RestClient = api
         self._root_folder: Path = root_folder
         self._db: LocalData = db
@@ -137,7 +138,8 @@ class GooglePhotosIndex(object):
                 break
             for media_item_json in media_json:
                 media_item = GooglePhotosMedia(media_item_json)
-                media_item.set_path_by_date(self._media_folder, self._use_flat_path)
+                media_item.set_path_by_date(self._media_folder,
+                                            self._use_flat_path)
                 (num, row) = self._db.file_duplicate_no(
                     str(media_item.filename), str(media_item.relative_folder),
                     media_item.id)
