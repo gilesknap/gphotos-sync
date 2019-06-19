@@ -25,7 +25,7 @@ class GoogleAlbumMedia(BaseMedia):
         return self.orig_name
 
     @property
-    def orig_name(self)-> str:
+    def orig_name(self) -> str:
         try:
             return self.__media_json["title"]
         except KeyError:

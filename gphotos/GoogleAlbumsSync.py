@@ -23,20 +23,25 @@ class GoogleAlbumsSync(object):
     """
 
     def __init__(self, api: RestClient, root_folder: Path, db: LocalData,
-                 flush: bool):
+                 flush: bool, photos_path: Path,
+                 albums_path: Path, use_flat_path=True):
         """
         Parameters:
             root_folder: path to the root of local file synchronization
             api: object representing the Google REST API
             db: local database for indexing
+            :param use_flat_path:
+            :param photos_path:
+            :param albums_path:
         """
         self._root_folder: Path = root_folder
-        self._photos_folder = Path('photos')
-        self._albums_folder = Path('albums')
+        self._photos_folder = Path(photos_path)
+        self._albums_folder = Path(albums_path)
         self._links_root = self._root_folder / self._albums_folder
         self._photos_root = self._root_folder / self._photos_folder
         self._db: LocalData = db
         self._api: RestClient = api
+        self._use_flat_path = use_flat_path
         self.flush = flush
         self.album = None
 
@@ -78,7 +83,8 @@ class GoogleAlbumsSync(object):
                 #  be impossible to eliminate these without eliminating other
                 #  cases where date and filename (TITLE) match
                 if add_media_items:
-                    media_item.set_path_by_date(self._photos_folder)
+                    media_item.set_path_by_date(self._photos_folder,
+                                                self._use_flat_path)
                     (num, row) = self._db.file_duplicate_no(
                         str(media_item.filename),
                         str(media_item.relative_folder),

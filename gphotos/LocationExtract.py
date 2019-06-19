@@ -109,16 +109,16 @@ class LocationExtract:
 
     @staticmethod
     def to_deg(value, loc):
-            if value < 0:
-                loc_value = loc[0]
-            elif value > 0:
-                loc_value = loc[1]
-            else:
-                loc_value = ""
-            abs_value = abs(value)
-            deg = int(abs_value)
-            t1 = (abs_value-deg)*60
-            minutes = int(t1)
-            sec = round((t1 - minutes) * 60, 5)
-            return deg, minutes, sec, loc_value
+        if value < 0:
+            loc_value = loc[0]
+        elif value > 0:
+            loc_value = loc[1]
+        else:
+            loc_value = ""
+        abs_value = abs(value)
+        deg = int(abs_value)
+        t1 = (abs_value-deg)*60
+        minutes = int(t1)
+        sec = round((t1 - minutes) * 60, 5)
+        return deg, minutes, sec, loc_value
 
