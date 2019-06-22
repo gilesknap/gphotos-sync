@@ -118,7 +118,7 @@ class LocalFilesMedia(BaseMedia):
     @property
     def uid(self) -> str:
         if not self.got_meta:
-            uid = None
+            uid = 'none'
         elif self.is_video:
             uid = 'not_supported'
         else:
@@ -147,7 +147,7 @@ class LocalFilesMedia(BaseMedia):
     def description(self) -> str:
         try:
             # noinspection PyUnresolvedReferences
-            result = self.__exif.image_unique_id
+            result = self.__exif.image_description
         except AttributeError:
             result = None
         if result:
