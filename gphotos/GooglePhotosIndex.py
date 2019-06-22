@@ -122,10 +122,12 @@ class GooglePhotosIndex(object):
     def index_photos_media(self) -> bool:
         log.warning('Indexing Google Photos Files ...')
 
-        if self.rescan:
+        if self.start_date:
+            start_date = self.start_date
+        elif self.rescan:
             start_date = None
         else:
-            start_date = self.start_date or self._db.get_scan_date()
+            start_date = self._db.get_scan_date()
 
         items_json = self.search_media(start_date=start_date,
                                        end_date=self.end_date,

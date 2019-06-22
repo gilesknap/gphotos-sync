@@ -21,7 +21,7 @@ class GooglePhotosMedia(BaseMedia):
         super(GooglePhotosMedia, self).__init__()
         if self.is_video():
             self.__media_meta = None
-            # self.__media_meta = media_json.get('mediaMetadata').get('video')
+            self.__media_meta = media_json.get('mediaMetadata').get('video')
         else:
             self.__media_meta = media_json.get('mediaMetadata').get('photo')
 
