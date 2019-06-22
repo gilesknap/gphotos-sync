@@ -7,23 +7,6 @@
 Google Photos Sync
 ==================
 
-Warning
--------
-I have just experienced an issue with duplication of files when doing a rescan (--rescan or --flush-index). It looks like some items have been allocated new remoteIds in the library and this can result in the same file downloading twice. I would guess this has something to do with Google removing the Drive link to Photos. 
-
-I will update when I have investigated further.
-
-Google GPS Info update
----------------
-Google does not seem to be interested in fxing the issue of stripping location info from the EXIF info of images
-downloaded via their API. So I am investigating a workaround. See the option --get-locations. It uses
-Selenium to scrape the GPS info off of the Google Website (your google creds required I'm afraid) and
-insert them into the DB of synchronized files. It does not yet update the EXIF on the local files but this
-is a minor addition and I'll implement if there is interest.
-
-Have a try and let me know what you think. Hurry, because Google is removing the ability to log in using
-automation soon! 
-
 Introduction
 ------------
 
@@ -162,6 +145,25 @@ For a description of additional command line parameters type::
   gphotos-sync --help
 
 
+Appendix
+========
+
+Rescans
+-------
+I have just experienced an issue with duplication of files when doing a rescan (--rescan or --flush-index). It looks like some items have been allocated new remoteIds in the library and this can result in the same file downloading twice. I would guess this has something to do with Google removing the Drive link to Photos. 
+
+I will update when I have investigated further.
+
+Google GPS Info update
+---------------
+Google does not seem to be interested in fxing the issue of stripping location info from the EXIF info of images
+downloaded via their API (see https://issuetracker.google.com/issues/80379228#comment80). So I am investigating a workaround. See the option --get-locations. It uses
+Selenium to scrape the GPS info off of the Google Website (your google creds required I'm afraid) and
+insert them into the DB of synchronized files. It does not yet update the EXIF on the local files but this
+is a minor addition and I'll implement if there is interest.
+
+Have a try and let me know what you think. Hurry, because Google is removing the ability to log in using
+automation soon! 
 
 
 .. |build_status| image:: https://travis-ci.org/gilesknap/gphotos-sync.svg?style=flat

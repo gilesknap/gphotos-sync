@@ -43,10 +43,13 @@ class BaseMedia(object):
             s = self.fix_linux.sub('_', s)
         return s
 
-    def set_path_by_date(self, root: Path):
+    def set_path_by_date(self, root: Path, use_flat_path: bool = False):
         y = "{:04d}".format(self.create_date.year)
         m = "{:02d}".format(self.create_date.month)
-        self._relative_folder = root / y / m
+        if use_flat_path:
+            self._relative_folder = root / (y + "-" + m)
+        else:
+            self._relative_folder = root / y / m
 
     def is_video(self) -> bool:
         return self.mime_type.startswith('video')
@@ -119,4 +122,3 @@ class BaseMedia(object):
     @property
     def url(self) -> str:
         raise NotImplementedError
-
