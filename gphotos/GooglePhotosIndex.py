@@ -34,7 +34,7 @@ class GooglePhotosIndex(object):
                                    Utils.minimum_date()
 
         # attributes to be set after init
-        # thus in theory one instance could so multiple indexes
+        # thus in theory one instance could do multiple indexes
         self.start_date: datetime = None
         self.end_date: datetime = None
         self.include_video: bool = True
@@ -83,6 +83,17 @@ class GooglePhotosIndex(object):
             def to_dict(self):
                 return {"year": self.year, "month": self.month, "day": self.day}
 
+        start = Y(1900, 1, 1)
+        end = Y(3000, 1, 1)
+        type_list = ["ALL_MEDIA"]
+
+        if start_date:
+            start = Y(start_date.year, start_date.month, start_date.day)
+        if end_date:
+            end = Y(end_date.year, end_date.month, end_date.day)
+        if not do_video:
+            type_list = ["PHOTO"]
+
         if not page_token:
             log.info('searching for media start=%s, end=%s, videos=%s',
                      start_date, end_date, do_video)
@@ -91,17 +102,6 @@ class GooglePhotosIndex(object):
             return self._api.mediaItems.list.execute(
                 pageToken=page_token, pageSize=self.PAGE_SIZE).json()
         else:
-            start = Y(1900, 1, 1)
-            end = Y(3000, 1, 1)
-            type_list = ["ALL_MEDIA"]
-
-            if start_date:
-                start = Y(start_date.year, start_date.month, start_date.day)
-            if end_date:
-                end = Y(end_date.year, end_date.month, end_date.day)
-            if not do_video:
-                type_list = ["PHOTO"]
-
             body = {
                 'pageToken': page_token,
                 'pageSize': self.PAGE_SIZE,
@@ -122,10 +122,12 @@ class GooglePhotosIndex(object):
     def index_photos_media(self) -> bool:
         log.warning('Indexing Google Photos Files ...')
 
-        if self.rescan:
+        if self.start_date:
+            start_date = self.start_date
+        elif self.rescan:
             start_date = None
         else:
-            start_date = self.start_date or self._db.get_scan_date()
+            start_date = self._db.get_scan_date()
 
         items_json = self.search_media(start_date=start_date,
                                        end_date=self.end_date,

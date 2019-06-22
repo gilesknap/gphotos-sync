@@ -355,6 +355,7 @@ class LocalData:
                 yield r.id, pth
 
     def get_extra_paths(self):
+        self.cur2.execute(Queries.pre_extra_files)
         self.cur2.execute(Queries.extra_files)
         while True:
             records = self.cur2.fetchmany(LocalData.BLOCK_SIZE)
@@ -371,6 +372,10 @@ class LocalData:
             "AND PATH = ?;", (file_name, path))
         result = int(self.cur.fetchone()[0])
         return result
+
+    def local_erase(self):
+        # noinspection SqlWithoutWhere
+        self.cur.execute("DELETE FROM main.LocalFiles")
 
     def find_local_matches(self):
         # noinspection SqlWithoutWhere

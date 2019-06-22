@@ -34,11 +34,16 @@ class LocalFilesScan(object):
         self.count = 0
 
     def scan_local_files(self):
+        if not self._scan_folder.exists():
+            raise FileNotFoundError(
+                'Compare folder {} does not exist'.format(self._scan_folder))
         # for self-comparison, make sure there is no comparison folder
         # or we'll get recursive entries
         if self._comparison_folder.exists():
             log.debug('removing previous comparison tree')
             shutil.rmtree(self._comparison_folder)
+        log.warning('removing previous local scan data')
+        self._db.local_erase()
         log.warning('Indexing comparison folder %s', self._scan_folder)
         self.scan_folder(self._scan_folder, self.index_local_item)
         log.warning("Indexed %d files in comparison folder %s",

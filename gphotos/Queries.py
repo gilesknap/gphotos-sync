@@ -53,9 +53,14 @@ WHERE LocalFiles.RemoteId isnull
 
 missing_files = """select * from LocalFiles where RemoteId isnull;"""
 
+pre_extra_files = """
+-- overwrite NULL RemoteIds or extra_files will get no matches
+update LocalFiles set RemoteId='not_found' where RemoteId isnull
+"""
+
 extra_files = """
 select * from SyncFiles where RemoteId not in (select RemoteId from LocalFiles)
-and uid not in (select uid from LocalFiles where length(SyncFiles.Uid) = 32)
+-- and uid not in (select uid from LocalFiles where length(SyncFiles.Uid) = 32)
 ;
 """
 
