@@ -72,6 +72,10 @@ class GooglePhotosSyncMain:
         action='store',
         help="root of the local folders to compare to the Photos Library")
     parser.add_argument(
+        "--favourites-only",
+        action='store_true',
+        help="only download media marked as favourite (star)")
+    parser.add_argument(
         "--flush-index",
         action='store_true',
         help="delete the index db, re-scan everything")
@@ -216,6 +220,7 @@ class GooglePhotosSyncMain:
 
         self.google_photos_idx.include_video = not args.skip_video
         self.google_photos_idx.rescan = args.rescan
+        self.google_photos_idx.favourites = args.favourites_only
         self.google_photos_down.retry_download = args.retry_download
         self.google_albums_sync.album = args.album
 
