@@ -95,6 +95,22 @@ class TestSystem(TestCase):
         files = sorted(s.root.glob(pat))
         self.assertEqual(0, len(files))
 
+    def test_sys_favourites(self):
+        """Download favourite images in test library.
+        """
+        s = ts.SetupDbAndCredentials()
+        args = ['--favourites-only', '--skip-albums']
+        s.test_setup('test_sys_favourites', args=args,
+                     trash_files=True, trash_db=True)
+        s.gp.start(s.parsed_args)
+
+        db = LocalData(s.root)
+
+        # Total of 80 media items
+        db.cur.execute("SELECT COUNT() FROM SyncFiles")
+        count = db.cur.fetchone()
+        self.assertEqual(1, count[0])
+
     def test_sys_album_add_file(self):
         """tests that the album links get re-created in a new folder with
         a new last-date prefix when a recent photo is added to an album,
