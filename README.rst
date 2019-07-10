@@ -157,7 +157,7 @@ I have just experienced an issue with duplication of files when doing a rescan (
 I will update when I have investigated further.
 
 Google GPS Info update
----------------
+----------------------
 Google does not seem to be interested in fxing the issue of stripping location info from the EXIF info of images
 downloaded via their API (see https://issuetracker.google.com/issues/80379228#comment80). So I am investigating a workaround. See the option --get-locations. It uses
 Selenium to scrape the GPS info off of the Google Website (your google creds required I'm afraid) and
