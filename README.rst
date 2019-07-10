@@ -71,6 +71,8 @@ to Google and this project will be updated once they are resolved.
   but the compression is more clearly visible. It is a smaller file with approximately 60% bitrate (same resolution).
 * Burst shots are not supported. You will only see the first file of a burst shot. See 
   https://issuetracker.google.com/issues/124656564
+* Pipenv has a hard Python version requirement see etc/Python3.6.rst
+  for a workaround
 
 
 Install and configure
