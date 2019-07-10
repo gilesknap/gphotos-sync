@@ -13,7 +13,6 @@ requests_oauthlib = "*"
 pyyaml = "*"
 selenium = "*"
 gphotos-sync = {path = "."}
-pysqlite = "*"
 
 [dev-packages]
 mock = "*"
