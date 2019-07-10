@@ -379,5 +379,6 @@ class LocalData:
 
     def find_local_matches(self):
         # noinspection SqlWithoutWhere
-        for q in Queries.match:
+        for i, q in enumerate(Queries.match):
+            log.info('Executing local match query {}'.format(i))
             self.cur.execute(q)

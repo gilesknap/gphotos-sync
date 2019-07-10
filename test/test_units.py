@@ -88,7 +88,7 @@ class TestUnits(TestCase):
             assert False, "empty album url should throw"
         except Exception:
             pass
-        self.assertEquals(Path('') / '', g.full_folder)
+        self.assertEqual(Path('') / '', g.full_folder)
         g.duplicate_number = 1
         self.assertEqual('none (2)', g.filename)
 
