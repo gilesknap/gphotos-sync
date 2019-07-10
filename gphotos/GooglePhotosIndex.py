@@ -39,6 +39,7 @@ class GooglePhotosIndex(object):
         self.end_date: datetime = None
         self.include_video: bool = True
         self.rescan: bool = False
+        self.favourites = False
 
     def check_for_removed_in_folder(self, folder: Path):
         for pth in folder.iterdir():
@@ -73,7 +74,8 @@ class GooglePhotosIndex(object):
     def search_media(self, page_token: int = None,
                      start_date: datetime = None,
                      end_date: datetime = None,
-                     do_video: bool = False) -> dict:
+                     do_video: bool = False,
+                     favourites: bool = False) -> dict:
         class Y:
             def __init__(self, y, m, d):
                 self.year = y
@@ -93,12 +95,17 @@ class GooglePhotosIndex(object):
             end = Y(end_date.year, end_date.month, end_date.day)
         if not do_video:
             type_list = ["PHOTO"]
+        if favourites:
+            feature = 'FAVORITES'
+        else:
+            feature = 'NONE'
 
         if not page_token:
             log.info('searching for media start=%s, end=%s, videos=%s',
                      start_date, end_date, do_video)
-        if not start_date and not end_date and do_video:
+        if not start_date and not end_date and do_video and not favourites:
             # no search criteria so do a list of the entire library
+            log.debug('mediaItems.list ...')
             return self._api.mediaItems.list.execute(
                 pageToken=page_token, pageSize=self.PAGE_SIZE).json()
         else:
@@ -115,8 +122,12 @@ class GooglePhotosIndex(object):
                             ]
                     },
                     'mediaTypeFilter': {'mediaTypes': type_list},
+                    "featureFilter": {
+                        "includedFeatures": [feature]
+                    },
                 }
             }
+            log.debug('mediaItems.search with body:\n{}'.format(body))
             return self._api.mediaItems.search.execute(body).json()
 
     def index_photos_media(self) -> bool:
@@ -131,7 +142,8 @@ class GooglePhotosIndex(object):
 
         items_json = self.search_media(start_date=start_date,
                                        end_date=self.end_date,
-                                       do_video=self.include_video)
+                                       do_video=self.include_video,
+                                       favourites=self.favourites)
 
         while items_json:
             media_json = items_json.get('mediaItems')
@@ -174,7 +186,8 @@ class GooglePhotosIndex(object):
                 items_json = self.search_media(page_token=next_page,
                                                start_date=start_date,
                                                end_date=self.end_date,
-                                               do_video=self.include_video)
+                                               do_video=self.include_video,
+                                               favourites=self.favourites)
             else:
                 break
 

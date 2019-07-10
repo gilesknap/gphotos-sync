@@ -4,21 +4,21 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+exif = "*"
 appdirs = "*"
 requests_oauthlib = "*"
 # pin a beta version which fixes vunerability:
 # https://nvd.nist.gov/vuln/detail/CVE-2017-18342
 # todo won't accept >= for some reason so will need changing in future
-pyyaml = "==4.2b1"
-exif = "*"
+pyyaml = "*"
 selenium = "*"
 gphotos-sync = {path = "."}
+pysqlite = "*"
 
 [dev-packages]
 mock = "*"
 pytest = "*"
 coverage = "*"
-gphotos-sync = {path = "."}
 
 [requires]
 python_version = "3.7"

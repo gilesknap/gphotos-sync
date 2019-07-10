@@ -11,7 +11,7 @@ class TestLocalScan(TestCase):
         p = Path(test_data) / Path(ps)
 
         lf = LocalFilesMedia(p)
-        self.assertEquals(lf.duplicate_number, 1)
+        self.assertEqual(lf.duplicate_number, 1)
 
         assert str(lf.filename) == ps
 
@@ -19,6 +19,6 @@ class TestLocalScan(TestCase):
         p = Path(test_data) / Path(ps)
 
         lf = LocalFilesMedia(p)
-        self.assertEquals(lf.duplicate_number, 0)
+        self.assertEqual(lf.duplicate_number, 0)
 
         assert str(lf.filename) == ps
