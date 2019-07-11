@@ -1,6 +1,17 @@
 
 Gphotos sync and Python 3.6
----------------------------
+===========================
+
+Installing the latest distribution only
+---------------------------------------
+If you want to install the latest distribution from pypi then this works with
+Python3.6 as well as 3.7 (since the project Pipfile is not used).
+
+Follow the standard instructions in README (using pipenv or virtualenv)
+
+
+Installing from source
+----------------------
 Pipenv has a hard Python version requirement so to support Python 3.6 use a
 virtual environment:
 
