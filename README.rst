@@ -9,6 +9,9 @@ Google Photos Sync
 
 Introduction
 ------------
+For a very good description and detailed instructions see `Logix's Article at Linux Uprising`_
+
+.. _`Logix's Article at Linux Uprising`: https://www.linuxuprising.com/2019/06/how-to-backup-google-photos-to-your.html
 
 Google Photos Sync downloads your Google Photos to the local file system. It will backup all the photos the
 user uploaded to
