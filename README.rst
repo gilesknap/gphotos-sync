@@ -152,12 +152,33 @@ Appendix
 
 Rescans
 -------
-I have just experienced an issue with duplication of files when doing a rescan (--rescan or --flush-index). It looks like some items have been allocated new remoteIds in the library and this can result in the same file downloading twice. I would guess this has something to do with Google removing the Drive link to Photos. 
+I have just experienced an issue with duplication of files when doing a rescan
+(--rescan or --flush-index). It looks like some items have changed in the
+library and this can result in the same file downloading
+twice. I would guess this has something to do with Google removing the
+Drive link to Photos.
 
-I will update when I have investigated further.
+UPDATE: I now know that this was caused by subtle changes in the metadata.
+It seems Google does not guarantee to deliver exactly the same files each
+time you scan the library (but to be fair, I think they are tuning things for
+the better).
+
+The problem did cause some duplicate named files to be downloaded twice
+overwriting their duplicate peer. Note that no files were lost from the library
+(since gphotos is read-only) and it was possible to repair things by either:
+
+- using the local comparison feature of gphotos-sync against a prior backup
+- or downloading the library again from scratch
+
+In summary, most people will not be affected by the issue I
+had unless they have very old photos with duplicate file names.
+
+My detailed notes on the subject are here: `giles notes`_
+
+..  _`giles notes`: https://docs.google.com/document/d/1hK_GDLUwP7PpD1VmDbDsYLyTfbZGv2C-JCihezYhiLY/edit?usp=sharing
 
 Google GPS Info update
----------------
+----------------------
 Google does not seem to be interested in fxing the issue of stripping location info from the EXIF info of images
 downloaded via their API (see https://issuetracker.google.com/issues/80379228#comment80). So I am investigating a workaround. See the option --get-locations. It uses
 Selenium to scrape the GPS info off of the Google Website (your google creds required I'm afraid) and
