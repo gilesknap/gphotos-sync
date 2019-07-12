@@ -24,13 +24,14 @@ class GoogleAlbumsSync(object):
 
     def __init__(self, api: RestClient, root_folder: Path, db: LocalData,
                  flush: bool, photos_path: Path,
-                 albums_path: Path, use_flat_path=True):
+                 albums_path: Path, use_flat_path=True, use_hardlinks=False):
         """
         Parameters:
             root_folder: path to the root of local file synchronization
             api: object representing the Google REST API
             db: local database for indexing
             :param use_flat_path:
+            :param use_hardlinks:
             :param photos_path:
             :param albums_path:
         """
@@ -42,6 +43,7 @@ class GoogleAlbumsSync(object):
         self._db: LocalData = db
         self._api: RestClient = api
         self._use_flat_path = use_flat_path
+        self._use_hardlinks = use_hardlinks
         self.flush = flush
         self.album = None
 
@@ -223,12 +225,20 @@ class GoogleAlbumsSync(object):
                     link_folder.mkdir(parents=True)
 
                 created_date = Utils.string_to_date(created)
-                link_file.symlink_to(relative_filename)
-                os.utime(str(link_file),
-                         (Utils.safe_timestamp(created_date),
-                          Utils.safe_timestamp(created_date)),
-                         follow_symlinks=False)
-                count += 1
+                if self._use_hardlinks:
+                    if full_file_name.exists():
+                        os.link(full_file_name, link_file)
+                    else:
+                        log.debug('skip hardlink for %s, not downloaded',
+                                  file_name)
+                else:
+                    link_file.symlink_to(relative_filename)
+                if link_file.exists():
+                    os.utime(str(link_file),
+                             (Utils.safe_timestamp(created_date),
+                              Utils.safe_timestamp(created_date)),
+                             follow_symlinks=False)
+                    count += 1
             except FileExistsError:
                 log.error('bad link to %s', full_file_name)
 

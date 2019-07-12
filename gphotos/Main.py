@@ -162,6 +162,11 @@ class GooglePhotosSyncMain:
         action='store_true',
         help="Scrape the Google Photos website for location metadata"
              " and add it to the local files' EXIF metadata")
+    parser.add_argument(
+        "--use-hardlinks",
+        action='store_true',
+        help="Use hardlinks instead of symbolic links in albums and comparison"
+             " folders")
     parser.add_help = True
 
     def setup(self, args: Namespace, db_path: Path):
@@ -201,7 +206,8 @@ class GooglePhotosSyncMain:
         self.google_albums_sync = GoogleAlbumsSync(
             self.google_photos_client, root_folder, self.data_store,
             args.flush_index or args.retry_download or args.rescan,
-            photos_folder, albums_folder, args.use_flat_path)
+            photos_folder, albums_folder, args.use_flat_path,
+            args.use_hardlinks)
         self.location_update = LocationUpdate(root_folder, self.data_store,
                                               args.photos_path)
         if args.compare_folder:
