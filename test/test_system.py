@@ -3,6 +3,7 @@ from pathlib import Path
 from unittest import TestCase
 from mock import patch, Mock
 from requests.exceptions import HTTPError
+from typing import List
 
 from gphotos.BadIds import BadIds
 from gphotos.GooglePhotosDownload import GooglePhotosDownload
@@ -168,6 +169,48 @@ class TestSystem(TestCase):
         db.cur.execute("SELECT COUNT() FROM SyncFiles")
         count = db.cur.fetchone()
         self.assertEqual(10, count[0])
+
+    def test_system_hard_link(self):
+        s = ts.SetupDbAndCredentials()
+        args = ['--start-date', '2016-01-01', '--end-date', '2017-01-01',
+                '--use-hardlinks', '--album', 'Clones']
+        s.test_setup('test_system_hard_link', args=args, trash_db=True,
+                     trash_files=True)
+        s.gp.start(s.parsed_args)
+
+        db = LocalData(s.root)
+
+        # Total of 4 images
+        db.cur.execute("SELECT COUNT() FROM AlbumFiles")
+        count = db.cur.fetchone()
+        self.assertEqual(4, count[0])
+
+        pat = str(albums_root / '*' / '*Clones' / '*')
+        links: List[Path] = sorted(s.root.glob(pat))
+        self.assertEqual(4, len(links))
+        for link in links:
+            self.assertTrue(not link.is_symlink())
+
+        # verify that switching to soft links in the same folder
+        # overwrites all hard links
+        args = ['--start-date', '2016-01-01', '--end-date', '2017-01-01',
+                '--album', 'Clones', '--flush-index']
+        s.test_setup('test_system_hard_link', args=args, trash_db=False,
+                     trash_files=False)
+        s.gp.start(s.parsed_args)
+
+        db = LocalData(s.root)
+
+        # Total of 4 images
+        db.cur.execute("SELECT COUNT() FROM AlbumFiles")
+        count = db.cur.fetchone()
+        self.assertEqual(4, count[0])
+
+        pat = str(albums_root / '*' / '*Clones' / '*')
+        links = sorted(s.root.glob(pat))
+        self.assertEqual(4, len(links))
+        for link in links:
+            self.assertTrue(link.is_symlink())
 
     def test_system_skip_video(self):
         s = ts.SetupDbAndCredentials()
