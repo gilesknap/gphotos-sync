@@ -30,15 +30,18 @@ class TestSystem(TestCase):
         todo investigate above
         """
         s = ts.SetupDbAndCredentials()
-        s.test_setup('test_sys_whole_library', trash_files=True, trash_db=True)
-        s.gp.main([str(s.root)])
+        s.test_setup('test_sys_whole_library', trash_files=True,
+                     trash_db=True)
+        s.gp.main([str(s.root), '--skip-shared-albums'])
 
         db = LocalData(s.root)
 
         # Total of 80 media items
         db.cur.execute("SELECT COUNT() FROM SyncFiles")
         count = db.cur.fetchone()
-        self.assertEqual(85, count[0])
+        # 5 shared files eliminated from 2017 'Shared Test Album'
+        # which contains 5 of my files and 5 shared files
+        self.assertEqual(80, count[0])
         # with 10 videos
         db.cur.execute(
             "SELECT COUNT() FROM SyncFiles where MimeType like 'video%'")
@@ -51,7 +54,7 @@ class TestSystem(TestCase):
 
         # downloaded 10 images in each of the years in the test data
         image_years = [2017, 2016, 2015, 2001, 2000, 1998, 1965]
-        image_count = [15, 10, 10, 10, 10, 10, 10]
+        image_count = [10, 10, 10, 10, 10, 10, 10]
         for year, count in zip(image_years, image_count):
             # looking for .jpg .JPG .png .jfif
             pat = str(photos_root / str(year) / '*' / '*.[JjpP]*')
@@ -111,6 +114,33 @@ class TestSystem(TestCase):
         db.cur.execute("SELECT COUNT() FROM SyncFiles")
         count = db.cur.fetchone()
         self.assertEqual(1, count[0])
+
+    def test_shared_albums(self):
+        """Download favourite images in test library.
+        """
+        s = ts.SetupDbAndCredentials()
+        args = ['--skip-files']
+        s.test_setup('test_shared_albums', args=args,
+                     trash_files=True, trash_db=True)
+        s.gp.start(s.parsed_args)
+
+        db = LocalData(s.root)
+
+        db.cur.execute("SELECT COUNT() FROM AlbumFiles")
+        count = db.cur.fetchone()
+        self.assertEqual(56, count[0])
+
+        s = ts.SetupDbAndCredentials()
+        args = ['--skip-files', '--skip-shared-albums']
+        s.test_setup('test_shared_albums', args=args,
+                     trash_files=True, trash_db=True)
+        s.gp.start(s.parsed_args)
+
+        db = LocalData(s.root)
+
+        db.cur.execute("SELECT COUNT() FROM AlbumFiles")
+        count = db.cur.fetchone()
+        self.assertEqual(50, count[0])
 
     def test_sys_album_add_file(self):
         """tests that the album links get re-created in a new folder with

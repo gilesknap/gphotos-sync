@@ -97,6 +97,10 @@ class GooglePhotosSyncMain:
         action='store_true',
         help="skip video types in sync")
     parser.add_argument(
+        "--skip-shared-albums",
+        action='store_true',
+        help="skip albums that only appearing in 'Sharing'")
+    parser.add_argument(
         "--start-date",
         help="Set the earliest date of files to sync"
              "format YYYY-MM-DD",
@@ -129,8 +133,7 @@ class GooglePhotosSyncMain:
         "--use-flat-path",
         action='store_true',
         help="mandate use of a flat directory structure ('YYYY-MMM') and not "
-             "a nested one ('YYYY/MM') . "
-    )
+             "a nested one ('YYYY/MM') . ")
     parser.add_argument(
         "--new-token",
         action='store_true',
@@ -219,6 +222,7 @@ class GooglePhotosSyncMain:
 
         self.google_photos_idx.start_date = self._start_date
         self.google_photos_idx.end_date = self._end_date
+        self.google_albums_sync.shared_albums = not args.skip_shared_albums
         self.google_photos_down.start_date = self._start_date
         self.google_photos_down.end_date = self._end_date
         self.location_update.start_date = self._start_date
