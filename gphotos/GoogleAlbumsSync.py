@@ -45,7 +45,9 @@ class GoogleAlbumsSync(object):
         self._use_flat_path = use_flat_path
         self._use_hardlinks = use_hardlinks
         self.flush = flush
+        # these properties are set after construction
         self.album = None
+        self.shared_albums = True
 
     @classmethod
     def make_search_parameters(cls, album_id: str,
@@ -111,9 +113,10 @@ class GoogleAlbumsSync(object):
 
     def index_album_media(self):
         index_all_contents = self.album is not None
-        self.index_albums_type(self._api.sharedAlbums.list.execute,
-                               'sharedAlbums', "Shared (titled) Albums",
-                               False, True)
+        if self.shared_albums:
+            self.index_albums_type(self._api.sharedAlbums.list.execute,
+                                   'sharedAlbums', "Shared (titled) Albums",
+                                   False, True)
         self.index_albums_type(self._api.albums.list.execute,
                                'albums', "Albums", True, index_all_contents)
 
