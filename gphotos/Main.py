@@ -99,7 +99,7 @@ class GooglePhotosSyncMain:
     parser.add_argument(
         "--skip-shared-albums",
         action='store_true',
-        help="skip albums that only appearing in 'Sharing'")
+        help="skip albums that only appear in 'Sharing'")
     parser.add_argument(
         "--start-date",
         help="Set the earliest date of files to sync"
@@ -150,7 +150,7 @@ class GooglePhotosSyncMain:
         "--do-delete",
         action='store_true',
         help="""Remove local copies of files that were deleted.
-        Must be used with --flush-db since the deleted items must be removed 
+        Must be used with --flush-index since the deleted items must be removed 
         from the index""")
     parser.add_argument(
         "--skip-files",
