@@ -236,12 +236,18 @@ class GoogleAlbumsSync(object):
                                   file_name)
                 else:
                     link_file.symlink_to(relative_filename)
+
                 if link_file.exists():
-                    os.utime(str(link_file),
-                             (Utils.safe_timestamp(created_date),
-                              Utils.safe_timestamp(created_date)),
-                             follow_symlinks=False)
                     count += 1
+                    # Windows tries to follow symlinks even though we specify
+                    # follow_symlinks=False. So disable setting of link date
+                    # if follow not supported
+                    if os.utime in os.supports_follow_symlinks:
+                        os.utime(str(link_file),
+                                 (Utils.safe_timestamp(created_date),
+                                  Utils.safe_timestamp(created_date)),
+                                 follow_symlinks=False)
+
             except FileExistsError:
                 log.error('bad link to %s', full_file_name)
 
