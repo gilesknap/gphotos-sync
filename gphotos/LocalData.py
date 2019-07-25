@@ -53,7 +53,7 @@ class LocalData:
         self.check_schema_version()
 
     def __enter__(self):
-        pass
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """ Always clean up and close the connection when this object is
