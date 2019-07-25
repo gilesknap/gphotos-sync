@@ -210,7 +210,7 @@ class TestSystem(TestCase):
                      trash_files=True)
         s.gp.start(s.parsed_args)
 
-        db = LocalData(s.root)
+        with LocalData(s.root) as db:
 
         # Total of 4 images
         db.cur.execute("SELECT COUNT() FROM AlbumFiles")
