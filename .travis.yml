@@ -11,6 +11,7 @@ matrix:
         - python3 -m pip install virtualenv
         - virtualenv .venv -p python3
         - source .venv/bin/activate
+        - python -m pip install mock
     - os: windows
       language: sh
       python: "3.7"
