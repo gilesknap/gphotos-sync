@@ -1,7 +1,7 @@
 import datetime
 from pathlib import Path
 from unittest import TestCase
-from mock import patch, Mock
+from unittest.mock import patch, Mock
 from requests.exceptions import HTTPError
 from typing import List
 
@@ -129,6 +129,8 @@ class TestSystem(TestCase):
         db.cur.execute("SELECT COUNT() FROM AlbumFiles")
         count = db.cur.fetchone()
         self.assertEqual(56, count[0])
+
+        db.store()
 
         s = ts.SetupDbAndCredentials()
         args = ['--skip-files', '--skip-shared-albums']
