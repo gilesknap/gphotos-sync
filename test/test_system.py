@@ -1,7 +1,7 @@
 import datetime
 from pathlib import Path
 from unittest import TestCase
-from mock import patch, Mock
+from unittest.mock import patch, Mock
 from requests.exceptions import HTTPError
 from typing import List
 
@@ -124,11 +124,10 @@ class TestSystem(TestCase):
                      trash_files=True, trash_db=True)
         s.gp.start(s.parsed_args)
 
-        db = LocalData(s.root)
-
-        db.cur.execute("SELECT COUNT() FROM AlbumFiles")
-        count = db.cur.fetchone()
-        self.assertEqual(56, count[0])
+        with LocalData(s.root) as db:
+            db.cur.execute("SELECT COUNT() FROM AlbumFiles")
+            count = db.cur.fetchone()
+            self.assertEqual(56, count[0])
 
         s = ts.SetupDbAndCredentials()
         args = ['--skip-files', '--skip-shared-albums']
@@ -136,11 +135,10 @@ class TestSystem(TestCase):
                      trash_files=True, trash_db=True)
         s.gp.start(s.parsed_args)
 
-        db = LocalData(s.root)
-
-        db.cur.execute("SELECT COUNT() FROM AlbumFiles")
-        count = db.cur.fetchone()
-        self.assertEqual(50, count[0])
+        with LocalData(s.root) as db:
+            db.cur.execute("SELECT COUNT() FROM AlbumFiles")
+            count = db.cur.fetchone()
+            self.assertEqual(50, count[0])
 
     def test_sys_album_add_file(self):
         """tests that the album links get re-created in a new folder with
@@ -208,12 +206,11 @@ class TestSystem(TestCase):
                      trash_files=True)
         s.gp.start(s.parsed_args)
 
-        db = LocalData(s.root)
-
-        # Total of 4 images
-        db.cur.execute("SELECT COUNT() FROM AlbumFiles")
-        count = db.cur.fetchone()
-        self.assertEqual(4, count[0])
+        with LocalData(s.root) as db:
+            # Total of 4 images
+            db.cur.execute("SELECT COUNT() FROM AlbumFiles")
+            count = db.cur.fetchone()
+            self.assertEqual(4, count[0])
 
         pat = str(albums_root / '*' / '*Clones' / '*')
         links: List[Path] = sorted(s.root.glob(pat))
@@ -229,18 +226,17 @@ class TestSystem(TestCase):
                      trash_files=False)
         s.gp.start(s.parsed_args)
 
-        db = LocalData(s.root)
+        with LocalData(s.root) as db:
+            # Total of 4 images
+            db.cur.execute("SELECT COUNT() FROM AlbumFiles")
+            count = db.cur.fetchone()
+            self.assertEqual(4, count[0])
 
-        # Total of 4 images
-        db.cur.execute("SELECT COUNT() FROM AlbumFiles")
-        count = db.cur.fetchone()
-        self.assertEqual(4, count[0])
-
-        pat = str(albums_root / '*' / '*Clones' / '*')
-        links = sorted(s.root.glob(pat))
-        self.assertEqual(4, len(links))
-        for link in links:
-            self.assertTrue(link.is_symlink())
+            pat = str(albums_root / '*' / '*Clones' / '*')
+            links = sorted(s.root.glob(pat))
+            self.assertEqual(4, len(links))
+            for link in links:
+                self.assertTrue(link.is_symlink())
 
     def test_system_skip_video(self):
         s = ts.SetupDbAndCredentials()
