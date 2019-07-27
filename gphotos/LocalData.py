@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # coding: utf8
 from pathlib import Path
+from os.path import normcase  # (cannot see how to do this in pathlib)
 import sqlite3 as lite
 from sqlite3.dbapi2 import Connection, Row, Cursor
 from datetime import datetime
@@ -246,10 +247,17 @@ class LocalData:
             # return the existing file entry's duplicate no.
             return result['DuplicateNo'], GooglePhotosRow(result).to_media()
 
-        self.cur.execute(
-            "SELECT MAX(DuplicateNo) FROM SyncFiles "
-            "WHERE Path = ? AND lower(OrigFileName) = ?;",
-            (path, name.lower()))
+        if normcase('A') == normcase('a'):
+            self.cur.execute(
+                "SELECT MAX(DuplicateNo) FROM SyncFiles "
+                "WHERE Path = ? AND lower(OrigFileName) = ?;",
+                (path, name.lower()))
+        else:
+            self.cur.execute(
+                "SELECT MAX(DuplicateNo) FROM SyncFiles "
+                "WHERE Path = ? AND OrigFileName = ?;",
+                (path, name))
+
         results = self.cur.fetchone()
         if results[0] is not None:
             # assign the next available duplicate no.

@@ -11,6 +11,10 @@ import gphotos.Utils as Utils
 from gphotos.LocalData import LocalData
 import test.test_setup as ts
 
+import logging
+
+log = logging.getLogger(__name__)
+
 photos_root = Path('photos')
 albums_root = Path('albums')
 comparison_root = Path('comparison')
@@ -43,6 +47,8 @@ class TestSystem(TestCase):
         # 5 shared BUT - because it has 'show in albums' it will always index
         #
         # and note that un-checking 'show in albums' does not revert this.
+        log.warning('checking for 85 files throughout library'
+                    '(less 6 in shared 2019 folder')
         self.assertEqual(85, count[0])
         # with 10 videos
         db.cur.execute(
@@ -55,17 +61,24 @@ class TestSystem(TestCase):
         self.assertEqual(5, count[0])
 
         # downloaded 10 images in each of the years in the test data
+        # plus 5 shared items in the 2017 shared album
         image_years = [2017, 2016, 2015, 2001, 2000, 1998, 1965]
-        image_count = [10, 10, 10, 10, 10, 10, 10]
+        image_count = [15, 10, 10, 10, 10, 10, 10]
         for year, count in zip(image_years, image_count):
             # looking for .jpg .JPG .png .jfif
             pat = str(photos_root / str(year) / '*' / '*.[JjpP]*')
-            self.assertEqual(count, len(sorted(s.root.glob(pat))))
+            self.assertEqual(
+                count, len(sorted(s.root.glob(pat))),
+                "mismatch on image file count for year{}".format(year)
+            )
 
         # and 10 mp4 for 2017
         pat = str(photos_root / '2017' / '*' / '*.mp4')
         files = sorted(s.root.glob(pat))
-        self.assertEqual(10, len(files))
+        self.assertEqual(
+            10, len(files),
+            "mismatch on mp4 files in 2017"
+        )
 
         # 4 albums the following item counts
         album_items = [10, 10, 4, 16]
@@ -156,7 +169,7 @@ class TestSystem(TestCase):
         # the file that is not yet downloaded
         pat = str(albums_root / '2017' / '0923 Clones' / '*.*')
         files = sorted(s.root.glob(pat))
-        self.assertEqual(3, len(files))
+        self.assertEqual(4, len(files))
 
         # spoof the album to pretend it only got 3 files up to 2017-09-20
         db = LocalData(s.root)
