@@ -23,10 +23,9 @@ class TestSystem(TestCase):
         Check DB for correct entries
         Note, if you select --skip-video then we use the search API instead
         of list
-        This then misses these 3 files:
+        This then misses these 2 files:
             subaru1.jpg|photos/1998/10
             subaru2.jpg|photos/1998/10
-            DSCF0030.JPG|photos/2000/02
         todo investigate above
         """
         s = ts.SetupDbAndCredentials()
@@ -39,9 +38,12 @@ class TestSystem(TestCase):
         # Total of 80 media items
         db.cur.execute("SELECT COUNT() FROM SyncFiles")
         count = db.cur.fetchone()
-        # 5 shared files eliminated from 2017 'Shared Test Album'
-        # which contains 5 of my files and 5 shared files
-        self.assertEqual(80, count[0])
+        # 6 shared files eliminated from 2019 'Noah's transformer lego'
+        # The shared album 2017 'Shared Test Album' has 5 files of mine and
+        # 5 shared BUT - because it has 'show in albums' it will always index
+        #
+        # and note that un-checking 'show in albums' does not revert this.
+        self.assertEqual(85, count[0])
         # with 10 videos
         db.cur.execute(
             "SELECT COUNT() FROM SyncFiles where MimeType like 'video%'")

@@ -248,7 +248,8 @@ class LocalData:
 
         self.cur.execute(
             "SELECT MAX(DuplicateNo) FROM SyncFiles "
-            "WHERE Path = ? AND OrigFileName = ?;", (path, name))
+            "WHERE Path = ? AND lower(OrigFileName) = ?;",
+            (path, name.lower()))
         results = self.cur.fetchone()
         if results[0] is not None:
             # assign the next available duplicate no.
