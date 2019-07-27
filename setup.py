@@ -21,7 +21,7 @@ setup(
     python_requires='>=3.6',
     license='MIT',
     platforms=['Linux', 'Windows', 'Mac'],
-    description='Google Photos backup tool',
+    description='Google Photos and Albums backup tool',
     packages=find_packages(exclude=("tests.*", "tests", "etc.*", "etc")),
     entry_points={
         "console_scripts": ['gphotos-sync = gphotos.Main:main']

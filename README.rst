@@ -192,7 +192,7 @@ Have a try and let me know what you think. Hurry, because Google is removing the
 automation soon! 
 
 
-.. |build_status| image:: https://travis-ci.org/gilesknap/gphotos-sync.svg?style=flat
+.. |build_status| image:: https://travis-ci.org/gilesknap/gphotos-sync.svg?branch=master&style=flat
     :target: https://travis-ci.org/gilesknap/gphotos-sync
     :alt: Build Status
 
