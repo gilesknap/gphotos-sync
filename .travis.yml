@@ -4,8 +4,12 @@ matrix:
     - os: osx
       language: sh
       python: "3.7"
+      cache:
+        directories:
+          - $HOME/Library/Caches/Homebrew
       # Perform the manual steps on osx to install python3 and activate venv
       before_install:
+        - brew cleanup
         - brew update
         - brew upgrade python3
         - python3 -m pip install virtualenv
@@ -15,6 +19,7 @@ matrix:
     - os: windows
       language: sh
       python: "3.7"
+      cache: pip
       before_install:
         - choco install python3
         - export PATH="/c/Python37:/c/Python37/Scripts:$PATH"
