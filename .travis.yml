@@ -1,25 +1,36 @@
 language: python
+cache: pip
 matrix:
   include:
     - os: osx
       language: sh
       python: "3.7"
+      env:
+        - TOXENV=py3
+        - HOMEBREW_NO_INSTALL_CLEANUP=1
+        - HOMEBREW_NO_ANALYTICS=1
+      before_cache:
+        # - brew cleanup
+        - rm -f "$HOME/Library/Caches/pip/log/debug.log"
       cache:
         directories:
-          - $HOME/Library/Caches/Homebrew
-      # Perform the manual steps on osx to install python3 and activate venv
+          # - "$HOME/Library/Caches/Homebrew"
+          - "$HOME/Library/Caches/pip"
+      addons:
+        homebrew:
+          # update: true
+          packages: python3
       before_install:
-        - brew cleanup
-        - brew update
-        - brew upgrade python3
-        - python3 -m pip install virtualenv
-        - virtualenv .venv -p python3
-        - source .venv/bin/activate
-        - python -m pip install mock
+        - python3 -m pip install --upgrade virtualenv
+        - virtualenv -p python3 --system-site-packages "$HOME/venv"
+        - source "$HOME/venv/bin/activate"
+      install: pip install --upgrade mock
     - os: windows
       language: sh
       python: "3.7"
-      cache: pip
+      cache:
+        directories:
+          - $LOCALAPPDATA/pip/Cache
       before_install:
         - choco install python3
         - export PATH="/c/Python37:/c/Python37/Scripts:$PATH"
@@ -41,7 +52,7 @@ install:
 
 # command to run tests
 script:
-  - python -m pytest --cov=gphotos --log-format='%(asctime)s.%(msecs)03d %(filename)-25s %(lineno)4d %(levelname)-8s %(message)s' --log-date-format='%Y-%m-%d %H:%M:%S' --log-level debug
+  - python3 -m pytest --cov=gphotos --log-format='%(asctime)s.%(msecs)03d %(filename)-25s %(lineno)4d %(levelname)-8s %(message)s' --log-date-format='%Y-%m-%d %H:%M:%S' --log-level debug
 
 # submit coverage
 after_script:
