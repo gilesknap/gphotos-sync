@@ -48,6 +48,7 @@ class GoogleAlbumsSync(object):
         # these properties are set after construction
         self.album = None
         self.shared_albums = True
+        self.album_index = True
 
     @classmethod
     def make_search_parameters(cls, album_id: str,
@@ -112,14 +113,14 @@ class GoogleAlbumsSync(object):
         return first_date, last_date
 
     def index_album_media(self):
-        # now index all contents of non-shared albums due to a possible bug
+        # we now index all contents of non-shared albums due to the behaviour
         # reported here https://github.com/gilesknap/gphotos-sync/issues/89
         if self.shared_albums:
             self.index_albums_type(self._api.sharedAlbums.list.execute,
                                    'sharedAlbums', "Shared (titled) Albums",
                                    False, True)
         self.index_albums_type(self._api.albums.list.execute,
-                               'albums', "Albums", True, True)
+                               'albums', "Albums", True, self.album_index)
 
     def index_albums_type(self, api_function: Callable, item_key: str,
                           description: str, allow_null_title: bool,

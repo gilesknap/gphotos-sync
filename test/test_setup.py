@@ -51,7 +51,7 @@ class SetupDbAndCredentials:
         if not self.root.exists():
             self.root.mkdir(parents=True)
 
-        all_args = [str(self.root), '--log-level', 'debug']
+        all_args = [str(self.root), '--log-level', 'warning']
         if args:
             all_args += args
 
@@ -60,7 +60,6 @@ class SetupDbAndCredentials:
 
         self.parsed_args = self.gp.parser.parse_args(all_args)
         self.parsed_args.root_folder = Path(self.parsed_args.root_folder)
-        # self.gp.logging(self.parsed_args, self.root)
         self.gp.setup(self.parsed_args, Path(self.root))
 
     def test_done(self):
