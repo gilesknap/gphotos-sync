@@ -1,4 +1,3 @@
-import datetime
 from pathlib import Path
 from unittest import TestCase
 from unittest.mock import patch, Mock
@@ -10,6 +9,7 @@ from gphotos.GooglePhotosDownload import GooglePhotosDownload
 import gphotos.Utils as Utils
 from gphotos.LocalData import LocalData
 import test.test_setup as ts
+from test.test_account import TestAccount
 
 photos_root = Path('photos')
 albums_root = Path('albums')
@@ -17,88 +17,6 @@ comparison_root = Path('comparison')
 
 
 class TestSystem(TestCase):
-    def test_sys_whole_library(self):
-        """Download all images in test library. Check filesystem for correct
-        files
-        Check DB for correct entries
-        Note, if you select --skip-video then we use the search API instead
-        of list
-        This then misses these 3 files:
-            subaru1.jpg|photos/1998/10
-            subaru2.jpg|photos/1998/10
-            DSCF0030.JPG|photos/2000/02
-        todo investigate above
-        """
-        s = ts.SetupDbAndCredentials()
-        s.test_setup('test_sys_whole_library', trash_files=True,
-                     trash_db=True)
-        s.gp.main([str(s.root), '--skip-shared-albums'])
-
-        db = LocalData(s.root)
-
-        # Total of 80 media items
-        db.cur.execute("SELECT COUNT() FROM SyncFiles")
-        count = db.cur.fetchone()
-        # 5 shared files eliminated from 2017 'Shared Test Album'
-        # which contains 5 of my files and 5 shared files
-        self.assertEqual(80, count[0])
-        # with 10 videos
-        db.cur.execute(
-            "SELECT COUNT() FROM SyncFiles where MimeType like 'video%'")
-        count = db.cur.fetchone()
-        self.assertEqual(10, count[0])
-        # and 4 albums
-        db.cur.execute("SELECT COUNT() FROM Albums;")
-        count = db.cur.fetchone()
-        self.assertEqual(5, count[0])
-
-        # downloaded 10 images in each of the years in the test data
-        image_years = [2017, 2016, 2015, 2001, 2000, 1998, 1965]
-        image_count = [10, 10, 10, 10, 10, 10, 10]
-        for year, count in zip(image_years, image_count):
-            # looking for .jpg .JPG .png .jfif
-            pat = str(photos_root / str(year) / '*' / '*.[JjpP]*')
-            self.assertEqual(count, len(sorted(s.root.glob(pat))))
-
-        # and 10 mp4 for 2017
-        pat = str(photos_root / '2017' / '*' / '*.mp4')
-        files = sorted(s.root.glob(pat))
-        self.assertEqual(10, len(files))
-
-        # 4 albums the following item counts
-        album_items = [10, 10, 4, 16]
-        albums = [r'0101?Album?2001', r'0528?Movies', r'0923?Clones',
-                  r'0926?Album?2016']
-        for idx, a in enumerate(albums):
-            pat = str(albums_root / '*' / a / '*')
-            print('looking for album items at {}'.format(pat))
-            self.assertEqual(album_items[idx], len(sorted(s.root.glob(pat))))
-
-        # check that the most recent scanned file date was recorded
-        d_date = db.get_scan_date()
-        self.assertEqual(d_date.date(), datetime.date(2017, 9, 26))
-
-        # check that re-running does not get any db constraint violations etc.
-        # also test the comparison feature, by comparing the library with its
-        # own gphotos-sync output
-        s.test_setup('test_sys_whole_library',
-                     args=['--compare-folder', str(s.root)])
-        s.gp.start(s.parsed_args)
-
-        # There is one pair of files that are copies of the same image with
-        # same UID. This looks like one pair of duplicates and one extra file
-        # in the comparison folder. (also the gphotos database etc appear
-        # as missing files)
-        pat = str(comparison_root / 'missing_files' / '*')
-        files = sorted(s.root.glob(pat))
-        self.assertEqual(0, len(files))
-        pat = str(comparison_root / 'extra_files' / '*' / '*' / '*' / '*')
-        files = sorted(s.root.glob(pat))
-        self.assertEqual(0, len(files))
-        pat = str(comparison_root / 'duplicates' / '*')
-        files = sorted(s.root.glob(pat))
-        self.assertEqual(0, len(files))
-
     def test_sys_favourites(self):
         """Download favourite images in test library.
         """
@@ -110,7 +28,7 @@ class TestSystem(TestCase):
 
         db = LocalData(s.root)
 
-        # Total of 80 media items
+        # Total of 1 out of media items
         db.cur.execute("SELECT COUNT() FROM SyncFiles")
         count = db.cur.fetchone()
         self.assertEqual(1, count[0])
@@ -124,10 +42,18 @@ class TestSystem(TestCase):
                      trash_files=True, trash_db=True)
         s.gp.start(s.parsed_args)
 
+        t = TestAccount.album_image_count + \
+            TestAccount.album_shared_image_count + \
+            TestAccount.shared_album_image_count + \
+            TestAccount.shared_album_shared_image_count
+
         with LocalData(s.root) as db:
             db.cur.execute("SELECT COUNT() FROM AlbumFiles")
             count = db.cur.fetchone()
-            self.assertEqual(56, count[0])
+            self.assertEqual(
+                t, count[0],
+                'expected {} files in all albums including shared'.format(t)
+            )
 
         s = ts.SetupDbAndCredentials()
         args = ['--skip-files', '--skip-shared-albums']
@@ -135,10 +61,17 @@ class TestSystem(TestCase):
                      trash_files=True, trash_db=True)
         s.gp.start(s.parsed_args)
 
+        # note that unless we use --no-album-index the shared files in the
+        # visible album will show up here
+        t = TestAccount.album_image_count + \
+            TestAccount.album_shared_image_count  # see above
         with LocalData(s.root) as db:
             db.cur.execute("SELECT COUNT() FROM AlbumFiles")
             count = db.cur.fetchone()
-            self.assertEqual(50, count[0])
+            self.assertEqual(
+                t, count[0],
+                'expected {} files in all albums excluding shared'.format(t)
+            )
 
     def test_sys_album_add_file(self):
         """tests that the album links get re-created in a new folder with
@@ -150,11 +83,9 @@ class TestSystem(TestCase):
                      trash_files=True)
         s.gp.start(s.parsed_args)
 
-        # the date will be picked from the album contents which still includes
-        # the file that is not yet downloaded
         pat = str(albums_root / '2017' / '0923 Clones' / '*.*')
         files = sorted(s.root.glob(pat))
-        self.assertEqual(3, len(files))
+        self.assertEqual(4, len(files))
 
         # spoof the album to pretend it only got 3 files up to 2017-09-20
         db = LocalData(s.root)
@@ -306,8 +237,7 @@ class TestSystem(TestCase):
     def test_do_delete(self):
         s = ts.SetupDbAndCredentials()
         args = ['--start-date', '2017-01-01', '--end-date', '2018-01-01',
-                '--skip-video',
-                '--skip-albums', '--do-delete']
+                '--skip-video', '--skip-albums', '--do-delete']
         s.test_setup('test_do_delete', args=args, trash_db=True,
                      trash_files=True)
         s.gp.start(s.parsed_args)
@@ -332,7 +262,8 @@ class TestSystem(TestCase):
 
     def test_system_incremental(self):
         s = ts.SetupDbAndCredentials()
-        args = ['--start-date', '2016-01-01', '--end-date', '2017-01-01',
+        args = ['--start-date', TestAccount.start,
+                '--end-date', TestAccount.end,
                 '--skip-albums', '--index-only']
         s.test_setup('test_system_incremental', args=args, trash_db=True,
                      trash_files=True)
@@ -341,9 +272,12 @@ class TestSystem(TestCase):
         db = LocalData(s.root)
         db.cur.execute("SELECT COUNT() FROM SyncFiles")
         count = db.cur.fetchone()
-        self.assertEqual(10, count[0])
+        self.assertEqual(
+            TestAccount.image_count_2016, count[0],
+            "expected {} items in 2016".format(TestAccount.image_count_2016)
+        )
 
-        # force an update the 'most recently scanned file' record
+        # force an update to the 'most recently scanned file' record
         # (this is normally only set for complete scans and was tested in
         # test_sys_whole_library)
         db.set_scan_date(Utils.string_to_date("2017-01-01"))
@@ -357,9 +291,15 @@ class TestSystem(TestCase):
         # this should add in everything in 2017 (20 files)
         db.cur.execute("SELECT COUNT() FROM SyncFiles")
         count = db.cur.fetchone()
-        self.assertEqual(30, count[0])
+        t = TestAccount.image_count_2016 + \
+            TestAccount.item_count_2017
+        self.assertEqual(
+            t, count[0],
+            "expected file count from 2016 and 2017 to be {}".format(t)
+        )
+
         d_date = db.get_scan_date()
-        self.assertEqual(d_date.date(), datetime.date(2017, 9, 26))
+        self.assertEqual(d_date.date(), TestAccount.latest_date)
 
         s = ts.SetupDbAndCredentials()
         args = ['--skip-albums', '--index-only', '--rescan']
@@ -369,26 +309,44 @@ class TestSystem(TestCase):
         # this should add in everything
         db.cur.execute("SELECT COUNT() FROM SyncFiles")
         count = db.cur.fetchone()
-        self.assertEqual(80, count[0])
+        t = TestAccount.image_count + \
+            TestAccount.video_count
+        self.assertEqual(
+            t, count[0],
+            "expected a total of {} items after full sync".format(t)
+        )
 
     @patch.object(GooglePhotosDownload, 'do_download_file')
     def test_bad_ids(self, do_download_file):
 
         do_download_file.side_effect = HTTPError(Mock(status=500), 'ouch!')
         s = ts.SetupDbAndCredentials()
-        args = ['--start-date', '2016-01-01', '--end-date', '2017-01-01',
-                '--skip-albums']
+        args = ['--start-date', TestAccount.start,
+                '--end-date', TestAccount.end,
+                '--skip-albums'
+                ]
         s.test_setup('test_bad_ids', args=args, trash_db=True,
                      trash_files=True)
         s.gp.start(s.parsed_args)
         # check we tried to download 10 times
-        self.assertEqual(do_download_file.call_count, 10)
+        self.assertEqual(
+            do_download_file.call_count, TestAccount.image_count_2016,
+            "Expected {} downloads".format(TestAccount.image_count_2016)
+        )
 
         # this should have created a Bad IDs file
         bad_ids = BadIds(s.root)
-        self.assertEqual(len(bad_ids.items), 10)
+        self.assertEqual(
+            len(bad_ids.items), TestAccount.image_count_2016,
+            "Expected {} Bad IDs entries".format(TestAccount.image_count_2016)
+        )
+
+        do_download_file.reset_mock()
 
         s.test_setup('test_bad_ids', args=args)
         s.gp.start(s.parsed_args)
         # this should have skipped the bad ids and not tried to download
-        self.assertEqual(do_download_file.call_count, 10)
+        self.assertEqual(
+            do_download_file.call_count, 0,
+            "Expected 0 calls to do_download"
+        )

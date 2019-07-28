@@ -1,11 +1,16 @@
 language: python
+cache: pip
 matrix:
   include:
     - os: osx
       language: sh
       python: "3.7"
+      cache:
+        directories:
+          - $HOME/Library/Caches/Homebrew
       # Perform the manual steps on osx to install python3 and activate venv
       before_install:
+        - brew cleanup
         - brew update
         - brew upgrade python3
         - python3 -m pip install virtualenv

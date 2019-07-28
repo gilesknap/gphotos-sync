@@ -155,7 +155,7 @@ class GooglePhotosSyncMain:
     parser.add_argument(
         "--skip-files",
         action='store_true',
-        help="Dont download files, just refresh the album links(for testing)")
+        help="Dont download files, just refresh the album links (for testing)")
     parser.add_argument(
         "--skip-albums",
         action='store_true',
@@ -170,6 +170,11 @@ class GooglePhotosSyncMain:
         action='store_true',
         help="Use hardlinks instead of symbolic links in albums and comparison"
              " folders")
+    parser.add_argument(
+        "--no-album-index",
+        action='store_true',
+        help="only index the photos library - skip indexing of folder contents "
+             "(for testing)")
     parser.add_help = True
 
     def setup(self, args: Namespace, db_path: Path):
@@ -223,6 +228,7 @@ class GooglePhotosSyncMain:
         self.google_photos_idx.start_date = self._start_date
         self.google_photos_idx.end_date = self._end_date
         self.google_albums_sync.shared_albums = not args.skip_shared_albums
+        self.google_albums_sync.album_index = not args.no_album_index
         self.google_photos_down.start_date = self._start_date
         self.google_photos_down.end_date = self._end_date
         self.location_update.start_date = self._start_date

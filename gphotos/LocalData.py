@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # coding: utf8
 from pathlib import Path
+import platform
+from os.path import normcase  # (cannot see how to do this in pathlib)
 import sqlite3 as lite
 from sqlite3.dbapi2 import Connection, Row, Cursor
 from datetime import datetime
@@ -32,6 +34,11 @@ class LocalData:
         If requested or if the DB schema version is old, recreate the DB
         from scratch.
         """
+        if platform.system() == 'Windows' or platform.system() == 'Darwin':
+            self.case_insensitive = True
+        else:
+            self.case_insensitive = False
+
         clean_db = False
         self.db_file: Path = root_folder / LocalData.DB_FILE_NAME
         if not self.db_file.exists():
@@ -43,7 +50,7 @@ class LocalData:
 
         self.con: Connection = lite.connect(str(self.db_file),
                                             check_same_thread=False)
-        self.con.row_factory: Row = lite.Row
+        self.con.row_factory = lite.Row
         self.cur: Cursor = self.con.cursor()
         # second cursor for iterator functions so they can interleave with
         # others
@@ -246,9 +253,17 @@ class LocalData:
             # return the existing file entry's duplicate no.
             return result['DuplicateNo'], GooglePhotosRow(result).to_media()
 
-        self.cur.execute(
-            "SELECT MAX(DuplicateNo) FROM SyncFiles "
-            "WHERE Path = ? AND OrigFileName = ?;", (path, name))
+        if self.case_insensitive:
+            self.cur.execute(
+                "SELECT MAX(DuplicateNo) FROM SyncFiles "
+                "WHERE Path = ? AND lower(OrigFileName) = ?;",
+                (path, name.lower()))
+        else:
+            self.cur.execute(
+                "SELECT MAX(DuplicateNo) FROM SyncFiles "
+                "WHERE Path = ? AND OrigFileName = ?;",
+                (path, name))
+
         results = self.cur.fetchone()
         if results[0] is not None:
             # assign the next available duplicate no.

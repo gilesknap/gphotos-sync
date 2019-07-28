@@ -13,11 +13,11 @@ scope = [
     'https://www.googleapis.com/auth/photoslibrary.sharing',
 ]
 
-token_file = Path(__file__).absolute().parent \
+token_file = Path(__file__).absolute().parent.parent \
              / 'test_credentials' / '.gphotos.token'
-secrets_file = Path(__file__).absolute().parent \
+secrets_file = Path(__file__).absolute().parent.parent \
                / 'test_credentials' / 'client_secret.json'
-test_data = Path(__file__).absolute().parent / 'test-data'
+test_data = Path(__file__).absolute().parent.parent / 'test-data'
 
 
 class TestUnits(TestCase):
