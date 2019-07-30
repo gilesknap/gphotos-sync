@@ -214,6 +214,7 @@ class GooglePhotosDownload(object):
             response.raise_for_status()
             shutil.copyfileobj(response.raw, temp_file)
             temp_file.close()
+            temp_file = None
             response.close()
             t_path.rename(local_full_path)
             os.utime(str(local_full_path),
@@ -223,6 +224,8 @@ class GooglePhotosDownload(object):
             log.debug("User cancelled download thread")
             raise
         finally:
+            if temp_file:
+                temp_file.close()
             if t_path.exists():
                 t_path.unlink()
 
