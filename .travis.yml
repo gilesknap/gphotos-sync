@@ -2,47 +2,51 @@ language: python
 cache: pip
 matrix:
   include:
-    - os: osx
-      language: sh
-      python: "3.7"
-      cache:
-        directories:
-          - $HOME/Library/Caches/Homebrew
-      # Perform the manual steps on osx to install python3 and activate venv
-      before_install:
-        - brew cleanup
-        - brew update
-        - brew upgrade python3
-        - python3 -m pip install virtualenv
-        - virtualenv .venv -p python3
-        - source .venv/bin/activate
-        - python -m pip install mock
-    - os: windows
-      language: sh
-      python: "3.7"
-      before_install:
-        - choco install python3
-        - export PATH="/c/Python37:/c/Python37/Scripts:$PATH"
-        - python -m pip install --upgrade pip wheel
-        - python -m pip install mock
-    - python: 3.6.7
-      dist: xenial
-      sudo: true
-    - python: 3.7.2
-      dist: xenial
-      sudo: true
-
-
+  - os: osx
+    language: sh
+    python: '3.7'
+    cache:
+      directories:
+      - "$HOME/Library/Caches/Homebrew"
+    before_install:
+    - brew cleanup
+    - brew update
+    - brew upgrade python3
+    - python3 -m pip install virtualenv
+    - virtualenv .venv -p python3
+    - source .venv/bin/activate
+    - python -m pip install mock
+  - os: windows
+    language: sh
+    python: '3.7'
+    before_install:
+    - choco install python3
+    - export PATH="/c/Python37:/c/Python37/Scripts:$PATH"
+    - python -m pip install --upgrade pip wheel
+    - python -m pip install mock
+  - python: 3.6.7
+    dist: xenial
+    sudo: true
+  - python: 3.7.2
+    dist: xenial
+    sudo: true
 install:
-  - pip install .
-  - pip install codecov
-  - pip install pytest
-  - pip install pytest-cov
-
-# command to run tests
+- pip install .
+- pip install codecov
+- pip install pytest
+- pip install pytest-cov
 script:
-  - python -m pytest --cov=gphotos --log-format='%(asctime)s.%(msecs)03d %(filename)-25s %(lineno)4d %(levelname)-8s %(message)s' --log-date-format='%Y-%m-%d %H:%M:%S' --log-level debug
-
-# submit coverage
+- python -m pytest --cov=gphotos --log-format='%(asctime)s.%(msecs)03d %(filename)-25s
+  %(lineno)4d %(levelname)-8s %(message)s' --log-date-format='%Y-%m-%d %H:%M:%S' --log-level
+  debug
 after_script:
- - codecov --token=dbadb6ba-0032-4812-bcc2-67ef7bafdfed
+- codecov --token=dbadb6ba-0032-4812-bcc2-67ef7bafdfed
+
+deploy:
+  provider: pypi
+  user: gilesknap
+  password:
+    secure: scyeqVy+HMOpQ1uTGwhFZRmmGy/IIg0EayrD8EpjJ8RZQpMBv/AkCzBTF8jtSPglggnT7JPD1TSfgOO4INw1NWFvgGVlOEMvhf4HkC49Mmf8m3z5ZIxUehgUfwhtrwUn9mWCNvdmr5IfaMnFsrX63kukYZOlKvbAZ8qAhX6MHYlzGW9NwKq9XLEx0jj10W2rmPB+yiAvhRixGk7Gx53c6BrBO/Acrlw9uMm+zJkyIv77Lzvp3kRRqthwxo9qDikdJgVUtmihinANVTUYGGeTGgMfKaknIlQjHoKuE6qgWZsqIW3lDHXCCSvXrr9+ukfE6+kpw9luqKzk3IzcD5QKxsJfA8OPLDgwdtYCyTZw5mhVajlEZAlVRQR3F6/87OqsFRLYU0iLxQwD4AGHSub9BYW9Momntd/vpEJVx165dpyStrRf9bgd0Gwk7shMlwzY2pqMcoPYEC4ewu8nAQeWH/BQXHD+8D855S1ib38HyWMkgp3m3F4KRO3CZpXDIIFMyWi1G+IrANEBXhxpd7lELBaaqldAAeYUSrD8qd9nJXul9vbYIorbsQRJK7J9rSkXLT8oai1dv1PL5PNidRHYZp+9FGeA68WHdGsLPd85cEf9M2xA5LXw4TEGctAFLOfr96bDtSlqSni94lbUlXVFQuX49Fc2JYwv5R+gFTupMVc=
+  on:
+    tags: true
+  skip_existing: true
