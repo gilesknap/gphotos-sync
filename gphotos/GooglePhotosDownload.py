@@ -62,6 +62,9 @@ class GooglePhotosDownload(object):
         self.pool_future_to_media = {}
         self.bad_ids = BadIds(self._root_folder)
 
+        self.current_umask = os.umask(7)
+        os.umask(self.current_umask)
+
         self._session = requests.Session()
         retries = Retry(total=5,
                         backoff_factor=0.1,
@@ -214,15 +217,19 @@ class GooglePhotosDownload(object):
             response.raise_for_status()
             shutil.copyfileobj(response.raw, temp_file)
             temp_file.close()
+            temp_file = None
             response.close()
             t_path.rename(local_full_path)
             os.utime(str(local_full_path),
                      (Utils.safe_timestamp(media_item.modify_date),
                       Utils.safe_timestamp(media_item.create_date)))
+            os.chmod(str(local_full_path), 0o666 & ~self.current_umask)
         except KeyboardInterrupt:
             log.debug("User cancelled download thread")
             raise
         finally:
+            if temp_file:
+                temp_file.close()
             if t_path.exists():
                 t_path.unlink()
 
