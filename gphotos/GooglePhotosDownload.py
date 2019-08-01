@@ -148,12 +148,16 @@ class GooglePhotosDownload(object):
             if r_json.get('pageToken'):
                 log.error("Ops - Batch size too big, some items dropped!")
 
-            for media_item_json_status in r_json["mediaItemResults"]:
-                # todo look at media_item_json_status["status"] for errors
-                media_item_json = media_item_json_status.get("mediaItem")
+            for i, result in enumerate(r_json["mediaItemResults"]):
+                media_item_json = result.get("mediaItem")
                 if not media_item_json:
                     log.warning('Null response in mediaItems.batchGet %s',
                                 batch.keys())
+                    log.debug(
+                        "Null response in mediaItems.batchGet"
+                        "for item &d in\n\n %s \n\n which is \n%s",
+                        i, r_json, result
+                    )
                 else:
                     media_item = batch.get(media_item_json["id"])
                     self.download_file(media_item, media_item_json)
