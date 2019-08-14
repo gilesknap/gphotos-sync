@@ -11,3 +11,4 @@ docker build . \
 
 docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
 docker push gilesknap/gphotos-sync
+docker push gilesknap/gphotos-sync:"${TRAVIS_TAG}"
