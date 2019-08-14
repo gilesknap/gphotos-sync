@@ -150,30 +150,25 @@ For a description of additional command line parameters type::
   gphotos-sync --help
 
 Running with docker
-------------------
+-------------------
 
 You can run the tool from the container using [prebuilt Docker image](https://hub.docker.com/r/gilesknap/gphotos-sync). The container
 has a 2 mount points:
 - `/storage` - this is where your photos will be stored. You can mount single directory, or
 multiple subdirectories in case you want to backup multiple accounts
-- `/config` - the directory that contains `client_secret.json` file
+- `/config` - the directory that contains `client_secret.json` file::
 
-```
-docker run \
-  -ti \
-  --name gphotos-sync \
-  -v /YOUR_LOCAL/PATH/TO_PHOTOS:/storage \
-  -v /YOUR_LOCAL/PATH/TO_CONFIG:/config \
-  gilesknap/gphotos-sync
-  /storage
-```
+    docker run \
+    -ti \
+    --name gphotos-sync \
+    -v /YOUR_LOCAL/PATH/TO_PHOTOS:/storage \
+    -v /YOUR_LOCAL/PATH/TO_CONFIG:/config \
+    gilesknap/gphotos-sync
+    /storage
 
-To remove the container (for instance if you want to run it on scheduled basis and do a cleanup):
+To remove the container (for instance if you want to run it on scheduled basis and do a cleanup)::
 
-```
-docker rm -f $(docker ps --filter name=gphotos-sync -qa) 2> /dev/null
-```
-
+    docker rm -f $(docker ps --filter name=gphotos-sync -qa) 2> /dev/null
 
 Appendix
 ========

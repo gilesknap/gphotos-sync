@@ -43,8 +43,7 @@ matrix:
       - provider: script
         script: bash ./build-docker.sh
         on:
-          all_branches: true
-#          tags: true
+          tags: true
 install:
 - pip install .
 - pip install codecov
