@@ -151,20 +151,23 @@ For a description of additional command line parameters type::
 
 Running with docker
 -------------------
+You can run the tool from the container using |docker|_. The container has 2 mount points:
 
-You can run the tool from the container using [prebuilt Docker image](https://hub.docker.com/r/gilesknap/gphotos-sync). The container
-has a 2 mount points:
-- `/storage` - this is where your photos will be stored. You can mount single directory, or
-multiple subdirectories in case you want to backup multiple accounts
-- `/config` - the directory that contains `client_secret.json` file::
+.. |docker| replace:: prebuilt Docker image
+.. _docker: https://hub.docker.com/r/gilesknap/gphotos-sync
+
+-  ``/storage`` this is where your photos will be stored. You can mount single directory, or multiple subdirectories in case you want to backup multiple accounts
+-  ``/config`` the directory that contains `client_secret.json` file
+  
+To run ::
 
     docker run \
-    -ti \
-    --name gphotos-sync \
-    -v /YOUR_LOCAL/PATH/TO_PHOTOS:/storage \
-    -v /YOUR_LOCAL/PATH/TO_CONFIG:/config \
-    gilesknap/gphotos-sync
-    /storage
+       -ti \
+       --name gphotos-sync \
+       -v /YOUR_LOCAL/PATH/TO_PHOTOS:/storage \
+       -v /YOUR_LOCAL/PATH/TO_CONFIG:/config \
+       gilesknap/gphotos-sync
+      /storage
 
 To remove the container (for instance if you want to run it on scheduled basis and do a cleanup)::
 
