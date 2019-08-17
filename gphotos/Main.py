@@ -175,6 +175,16 @@ class GooglePhotosSyncMain:
         action='store_true',
         help="only index the photos library - skip indexing of folder contents "
              "(for testing)")
+    parser.add_argument(
+        "--max-retries",
+        help="Set the number of retries on network timeout / failures",
+        default=5)
+    parser.add_argument(
+        "--max-threads",
+        help="Set the number of concurrent threads to use for parallel "
+             "download of media - reduce this number if network load is "
+             "excessive",
+        default=20)
     parser.add_help = True
 
     def setup(self, args: Namespace, db_path: Path):
@@ -201,26 +211,36 @@ class GooglePhotosSyncMain:
         photos_api_url = 'https://photoslibrary.googleapis.com/$discovery' \
                          '/rest?version=v1'
 
-        self.auth = Authorize(scope, credentials_file, secret_file)
+        self.auth = Authorize(
+            scope, credentials_file, secret_file,
+            int(args.max_retries)
+        )
         self.auth.authorize()
 
         self.google_photos_client = RestClient(
-            photos_api_url, self.auth.session)
+            photos_api_url, self.auth.session
+        )
         self.google_photos_idx = GooglePhotosIndex(
             self.google_photos_client, root_folder, self.data_store,
-            args.photos_path, args.use_flat_path)
+            args.photos_path, args.use_flat_path
+        )
         self.google_photos_down = GooglePhotosDownload(
-            self.google_photos_client, root_folder, self.data_store)
+            self.google_photos_client, root_folder, self.data_store,
+            int(args.max_retries), int(args.max_threads)
+        )
         self.google_albums_sync = GoogleAlbumsSync(
             self.google_photos_client, root_folder, self.data_store,
             args.flush_index or args.retry_download or args.rescan,
             photos_folder, albums_folder, args.use_flat_path,
-            args.use_hardlinks)
-        self.location_update = LocationUpdate(root_folder, self.data_store,
-                                              args.photos_path)
+            args.use_hardlinks
+        )
+        self.location_update = LocationUpdate(
+            root_folder, self.data_store, args.photos_path
+        )
         if args.compare_folder:
             self.local_files_scan = LocalFilesScan(
-                root_folder, compare_folder, self.data_store)
+                root_folder, compare_folder, self.data_store
+            )
 
         self._start_date = Utils.string_to_date(args.start_date)
         self._end_date = Utils.string_to_date(args.end_date)

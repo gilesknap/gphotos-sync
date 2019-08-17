@@ -16,7 +16,10 @@ token_uri = "https://www.googleapis.com/oauth2/v4/token"
 
 
 class Authorize:
-    def __init__(self, scope: List[str], token_file: Path, secrets_file: Path):
+    def __init__(
+            self, scope: List[str], token_file: Path,
+            secrets_file: Path, max_retries: int = 5
+    ):
         """ A very simple class to handle Google API authorization flow
         for the requests library. Includes saving the token and automatic
         token refresh.
@@ -29,6 +32,7 @@ class Authorize:
             secrets_file: full path of the client secrets file obtained from
             Google Api Console
         """
+        self.max_retries = max_retries
         self.scope: List[str] = scope
         self.token_file: Path = token_file
         self.session = None
@@ -97,7 +101,7 @@ class Authorize:
 
         # note we want retries on POST as well, need to review this once we
         # start to do methods that write to Google Photos
-        retries = Retry(total=5,
+        retries = Retry(total=self.max_retries,
                         backoff_factor=0.1,
                         status_forcelist=[500, 502, 503, 504],
                         method_whitelist=frozenset(['GET', 'POST']),
