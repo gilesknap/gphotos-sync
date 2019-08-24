@@ -65,9 +65,9 @@ to Google and this project will be updated once they are resolved.
 * There is no way to discover modified date of library media items. Currently ``gphotos-sync`` will refresh your local
   copy with any new photos added since the last scan but will not update any photos that have been modified in Google
   Photos. A feature request has been submitted to Google see https://issuetracker.google.com/issues/122737849.
-* Some types of video will not download using the new API. This mostly is restricted to old formats of video file (in
+* UPDATE: Google has fixed this (so there is some hope for the other issues listed here!) Some types of video will not download using the new API. This mostly is restricted to old formats of video file (in
   my library it is a subset of videos shot before 2010). Google is looking at this problem see
-  https://issuetracker.google.com/issues/116842164
+  https://issuetracker.google.com/issues/116842164.
 * The API strips GPS data from images see https://issuetracker.google.com/issues/80379228.
 * Video download transcodes the videos even if you ask for the original file (=vd parameter) see
   https://issuetracker.google.com/issues/80149160. My experience is that the result is looks similar to the original
