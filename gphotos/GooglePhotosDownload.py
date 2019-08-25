@@ -29,10 +29,13 @@ class GooglePhotosDownload(object):
     """A Class for managing the indexing and download of Google Photos
     """
     PAGE_SIZE: int = 100
-    MAX_THREADS: int = 20
     BATCH_SIZE: int = 40
 
-    def __init__(self, api: RestClient, root_folder: Path, db: LocalData):
+    def __init__(
+            self, api: RestClient, root_folder: Path,
+            db: LocalData, max_retries: int = 5,
+            max_threads: int = 20
+    ):
         """
         Parameters:
             api: object representing the Google REST API
@@ -42,6 +45,7 @@ class GooglePhotosDownload(object):
         self._db: LocalData = db
         self._root_folder: Path = root_folder
         self._api: RestClient = api
+        self.max_threads = max_threads
 
         self.files_downloaded: int = 0
         self.files_download_started: int = 0
@@ -58,7 +62,7 @@ class GooglePhotosDownload(object):
 
         # attributes related to multi-threaded download
         self.download_pool = futures.ThreadPoolExecutor(
-            max_workers=self.MAX_THREADS)
+            max_workers=self.max_threads)
         self.pool_future_to_media = {}
         self.bad_ids = BadIds(self._root_folder)
 
@@ -66,14 +70,14 @@ class GooglePhotosDownload(object):
         os.umask(self.current_umask)
 
         self._session = requests.Session()
-        retries = Retry(total=5,
+        retries = Retry(total=max_retries,
                         backoff_factor=0.1,
                         status_forcelist=[500, 502, 503, 504],
                         method_whitelist=frozenset(['GET', 'POST']),
                         raise_on_status=False)
         self._session.mount(
             'https://', HTTPAdapter(max_retries=retries,
-                                    pool_maxsize=self.MAX_THREADS))
+                                    pool_maxsize=self.max_threads))
 
     def download_photo_media(self):
         """
@@ -183,7 +187,7 @@ class GooglePhotosDownload(object):
         base_url = media_json['baseUrl']
 
         # we dont want a massive queue so wait until at least one thread is free
-        while len(self.pool_future_to_media) >= self.MAX_THREADS:
+        while len(self.pool_future_to_media) >= self.max_threads:
             # check which futures are done, complete the main thread work
             # and remove them from the dictionary
             done_list = []

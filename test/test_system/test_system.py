@@ -21,7 +21,11 @@ class TestSystem(TestCase):
         """Download favourite images in test library.
         """
         s = ts.SetupDbAndCredentials()
-        args = ['--favourites-only', '--skip-albums']
+        args = [
+            '--favourites-only', '--skip-albums',
+            '--max-retries', '6',
+            '--max-threads', '2'
+        ]
         s.test_setup('test_sys_favourites', args=args,
                      trash_files=True, trash_db=True)
         s.gp.start(s.parsed_args)
