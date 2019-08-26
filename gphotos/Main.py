@@ -185,6 +185,11 @@ class GooglePhotosSyncMain:
              "download of media - reduce this number if network load is "
              "excessive",
         default=20)
+    parser.add_argument(
+        "--secret",
+        help="Path to client secret file (by default this is in the "
+             "application config directory)"
+    )
     parser.add_help = True
 
     def setup(self, args: Namespace, db_path: Path):
@@ -200,7 +205,10 @@ class GooglePhotosSyncMain:
         self.data_store = LocalData(db_path, args.flush_index)
 
         credentials_file = db_path / ".gphotos.token"
-        secret_file = Path(app_dirs.user_config_dir) / "client_secret.json"
+        if args.secret:
+            secret_file = Path(args.secret)
+        else:
+            secret_file = Path(app_dirs.user_config_dir) / "client_secret.json"
         if args.new_token and credentials_file.exists():
             credentials_file.unlink()
 
