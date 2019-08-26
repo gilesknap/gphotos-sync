@@ -2,6 +2,8 @@
 # coding: utf8
 import re
 from datetime import datetime
+from tempfile import NamedTemporaryFile
+from os import utime, unlink
 import logging
 
 log = logging.getLogger(__name__)
@@ -38,17 +40,21 @@ def maximum_date() -> datetime:
 def minimum_date() -> datetime:
     global MINIMUM_DATE
     if MINIMUM_DATE is None:
-        # determine the minimum date that is usable on the
-        # current platform (is there a better way to do this?)
-        d = datetime.min.replace(year=1900)
-        try:
-            _ = d.timestamp()
-        except (ValueError, OverflowError, OSError):
-            d = datetime.min.replace(year=1970)
-            try:
-                _ = d.timestamp()
-            except (ValueError, OverflowError, OSError):
-                d = datetime.min.replace(year=1980)  # crikey MS Windows!
+        with NamedTemporaryFile() as t:
+            # determine the minimum date that is usable on the
+            # current platform (is there a better way to do this?)
+            min_dates = (1800, 1900, 1970, 1971, 1980)
+
+            for min_date in min_dates:
+                try:
+                    d = datetime.min.replace(year=min_date)
+                    utime(t.name, (d.timestamp(), d.timestamp()))
+                except (ValueError, OverflowError, OSError) as e:
+                    continue
+                break
+
+        if not d:
+            raise ValueError('cannot set file modification date')
         MINIMUM_DATE = d
     return MINIMUM_DATE
 
