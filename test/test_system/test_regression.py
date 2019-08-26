@@ -1,5 +1,7 @@
 from unittest import TestCase
+from unittest.mock import patch, Mock, PropertyMock
 
+from gphotos.GooglePhotosIndex import GooglePhotosIndex
 from gphotos.LocalData import LocalData
 import test.test_setup as ts
 from test.test_account import TestAccount
@@ -30,4 +32,34 @@ class TestSystem(TestCase):
         self.assertEqual(
             t, count[0],
             "expected {} files with album index off".format(t)
+        )
+
+    @patch.object(GooglePhotosIndex, 'PAGE_SIZE', new_callable=PropertyMock)
+    def test_zero_items_in_response(self, page_size):
+        """
+        for issue https://github.com/gilesknap/gphotos-sync/issues/112
+        """
+        # note this fails with page size below 5 and that might be another API
+        # bug
+        # to emulate issue #112 remove the date range and set page_size = 2
+        # this then does download everything via media_items.list but sometimes
+        # gets zero items with a next_page token (too expensive on quota to
+        # always leave it like this.)
+        page_size.return_value = 6
+
+        s = ts.SetupDbAndCredentials()
+        args = ['--skip-albums', '--index-only',
+                '--start-date', '1965-01-01',
+                '--end-date', '1965-12-31']
+        s.test_setup('test_zero_items_in_response', trash_files=True,
+                     trash_db=True, args=args)
+        s.gp.start(s.parsed_args)
+
+        db = LocalData(s.root)
+
+        db.cur.execute("SELECT COUNT() FROM SyncFiles")
+        count = db.cur.fetchone()
+        self.assertEqual(
+            10, count[0],
+            "expected 10 images 1965"
         )

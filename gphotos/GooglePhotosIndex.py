@@ -146,11 +146,10 @@ class GooglePhotosIndex(object):
                                        favourites=self.favourites)
 
         while items_json:
-            media_json = items_json.get('mediaItems')
-            # cope with empty response
-            if not media_json:
-                break
+            media_json = items_json.get('mediaItems', [])
+            items_count = 0
             for media_item_json in media_json:
+                items_count += 1
                 media_item = GooglePhotosMedia(media_item_json)
                 media_item.set_path_by_date(self._media_folder,
                                             self._use_flat_path)
@@ -181,6 +180,9 @@ class GooglePhotosIndex(object):
                               media_item.relative_path)
                     self.latest_download = max(self.latest_download,
                                                media_item.create_date)
+            log.debug('search_media parsed %d media_items with %d PAGE_SIZE',
+                      items_count, GooglePhotosIndex.PAGE_SIZE)
+
             next_page = items_json.get('nextPageToken')
             if next_page:
                 items_json = self.search_media(page_token=next_page,
