@@ -3,7 +3,7 @@
 import re
 from datetime import datetime
 from tempfile import NamedTemporaryFile
-from os import utime, unlink
+from os import utime, unlink, getcwd
 import logging
 
 log = logging.getLogger(__name__)
@@ -40,7 +40,7 @@ def maximum_date() -> datetime:
 def minimum_date() -> datetime:
     global MINIMUM_DATE
     if MINIMUM_DATE is None:
-        with NamedTemporaryFile() as t:
+        with NamedTemporaryFile(dir=getcwd()) as t:
             # determine the minimum date that is usable on the
             # current platform (is there a better way to do this?)
             min_dates = (1800, 1900, 1970, 1971, 1980)
