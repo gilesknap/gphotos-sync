@@ -270,7 +270,7 @@ class GooglePhotosSyncMain:
         console = logging.StreamHandler()
         console.setLevel(numeric_level)
         # set a format which is simpler for console use
-        formatter = logging.Formatter('%(asctime)s %(message)s',
+        formatter = logging.Formatter('%(asctime)s %(levelname)-8s %(message)s ',
                                       datefmt='%m-%d %H:%M:%S')
         # tell the handler to use this format
         console.setFormatter(formatter)
