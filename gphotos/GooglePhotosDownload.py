@@ -239,8 +239,8 @@ class GooglePhotosDownload(object):
             t_path.rename(local_full_path)
             create_date = Utils.safe_timestamp(media_item.create_date)
             os.utime(str(local_full_path),
-                     (Utils.safe_timestamp(media_item.modify_date),
-                      create_date))
+                     (Utils.safe_timestamp(media_item.modify_date).timestamp(),
+                      create_date.timestamp()))
             if _use_win_32:
                 file_handle = win32file.CreateFile(
                     str(local_full_path),
