@@ -22,6 +22,15 @@ from requests.exceptions import RequestException
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
+try:
+    import win32file
+    import win32con
+
+    _use_win_32 = True
+except ImportError:
+    win32file, win32con = None, None
+    _use_win_32 = False
+
 log = logging.getLogger(__name__)
 
 
@@ -228,9 +237,19 @@ class GooglePhotosDownload(object):
             temp_file = None
             response.close()
             t_path.rename(local_full_path)
+            create_date = Utils.safe_timestamp(media_item.create_date)
             os.utime(str(local_full_path),
                      (Utils.safe_timestamp(media_item.modify_date),
-                      Utils.safe_timestamp(media_item.create_date)))
+                      create_date))
+            if _use_win_32:
+                file_handle = win32file.CreateFile(
+                    str(local_full_path),
+                    win32file.GENERIC_WRITE, 0,
+                    None, win32con.OPEN_EXISTING,
+                    0, None)
+                win32file.SetFileTime(
+                    file_handle, *(create_date,) * 3)
+                file_handle.close()
             os.chmod(str(local_full_path), 0o666 & ~self.current_umask)
         except KeyboardInterrupt:
             log.debug("User cancelled download thread")

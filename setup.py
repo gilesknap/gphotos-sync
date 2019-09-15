@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, os
 
 module_name = "gphotos-sync"
 
@@ -9,8 +9,11 @@ install_reqs = [
     'appdirs',
     'requests_oauthlib',
     'PyYaml',
-    'selenium',
+    'selenium'
 ]
+
+if os.name == 'nt':
+    install_reqs.append('pywin32')
 
 with open("README.rst", "rb") as f:
     long_description = f.read().decode("utf-8")
