@@ -247,8 +247,8 @@ class GoogleAlbumsSync(object):
                     if os.utime in os.supports_follow_symlinks:
                         os.utime(
                             str(link_file),
-                            (Utils.safe_timestamp(created_date.timestamp()),
-                             Utils.safe_timestamp(created_date.timestamp())),
+                            (Utils.safe_timestamp(created_date).timestamp(),
+                             Utils.safe_timestamp(created_date).timestamp()),
                             follow_symlinks=False
                         )
 
