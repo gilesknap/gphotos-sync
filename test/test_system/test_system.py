@@ -3,6 +3,8 @@ from unittest import TestCase
 from unittest.mock import patch, Mock
 from requests.exceptions import HTTPError
 from typing import List
+import os
+from datetime import datetime
 
 from gphotos.BadIds import BadIds
 from gphotos.GooglePhotosDownload import GooglePhotosDownload
@@ -19,6 +21,7 @@ comparison_root = Path('comparison')
 class TestSystem(TestCase):
     def test_sys_favourites(self):
         """Download favourite images in test library.
+           Also Check that dates are set correctly
         """
         s = ts.SetupDbAndCredentials()
         args = [
@@ -36,6 +39,23 @@ class TestSystem(TestCase):
         db.cur.execute("SELECT COUNT() FROM SyncFiles")
         count = db.cur.fetchone()
         self.assertEqual(1, count[0])
+
+        name = s.root / 'photos/2017/09/IMG_2117.JPG'
+        date = datetime.fromtimestamp(os.path.getmtime(str(name)))
+        expected = datetime(2017, 9, 26, 15, 29, 44)
+        self.assertEqual(
+            expected, date.replace(microsecond=0),
+            "Modify date not set correctly"
+        )
+        if os.name == 'nt':
+            date = datetime.fromtimestamp(os.path.getctime(name))
+            expected = datetime(2017, 9, 26, 15, 29, 44)
+            self.assertEqual(
+                expected, date.replace(microsecond=0),
+                "Create date not set correctly"
+            )
+
+
 
     def test_shared_albums(self):
         """Download favourite images in test library.

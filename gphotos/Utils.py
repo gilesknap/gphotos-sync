@@ -21,10 +21,10 @@ def safe_str_time(date_time: datetime, date_format: str) -> str:
     return date_time.strftime(date_format)
 
 
-def safe_timestamp(d: datetime) -> float:
+def safe_timestamp(d: datetime) -> datetime:
     if d < minimum_date():
         d = minimum_date()
-    return d.timestamp()
+    return d
 
 
 def date_to_string(date_t: datetime):
