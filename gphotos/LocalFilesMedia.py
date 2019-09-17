@@ -94,11 +94,11 @@ class LocalFilesMedia(BaseMedia):
             try:
                 # noinspection PyUnresolvedReferences
                 p_date = Utils.string_to_date(self.__exif.datetime_original)
-            except (AttributeError, ValueError):
+            except (AttributeError, ValueError, KeyError):
                 try:
                     # noinspection PyUnresolvedReferences
                     p_date = Utils.string_to_date(self.__exif.datetime)
-                except (AttributeError, ValueError):
+                except (AttributeError, ValueError, KeyError):
                     pass
         if not p_date:
             # just use file date
@@ -125,7 +125,7 @@ class LocalFilesMedia(BaseMedia):
             try:
                 # noinspection PyUnresolvedReferences
                 uid = self.__exif.image_unique_id
-            except AttributeError:
+            except (AttributeError, KeyError):
                 uid = 'no_uid_in_exif'
         return uid
 
@@ -148,7 +148,7 @@ class LocalFilesMedia(BaseMedia):
         try:
             # noinspection PyUnresolvedReferences
             result = self.__exif.image_description
-        except AttributeError:
+        except (AttributeError, KeyError, ValueError):
             result = None
         if result:
             if result in HUAWEI_JUNK:
@@ -183,6 +183,6 @@ class LocalFilesMedia(BaseMedia):
             # noinspection PyUnresolvedReferences
             cam = '{} {}'.format(
                 self.__exif.make, self.__exif.model)
-        except AttributeError:
+        except (AttributeError, KeyError):
             cam = None
         return cam
