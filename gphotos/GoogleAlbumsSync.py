@@ -49,6 +49,7 @@ class GoogleAlbumsSync(object):
         self.album = None
         self.shared_albums = True
         self.album_index = True
+        self.use_start_date = False
 
     @classmethod
     def make_search_parameters(cls, album_id: str,
@@ -133,7 +134,6 @@ class GoogleAlbumsSync(object):
 
         # there are no filters in album listing at present so it always a
         # full rescan - it's quite quick
-
         count = 0
         response = api_function(pageSize=50)
         while response:
@@ -168,16 +168,6 @@ class GoogleAlbumsSync(object):
                         first_date, last_date)
                     self._db.put_row(gar, update=indexed_album)
 
-                    # re-indexing means the local links are out of date: remove
-                    # links in preparation for create_album_content_links
-                    if indexed_album:
-                        old_album_folder = self.album_folder_name(
-                            indexed_album.filename, indexed_album.create_date)
-                        if old_album_folder.exists():
-                            log.debug('removing previous album folder %s',
-                                      old_album_folder)
-                            shutil.rmtree(old_album_folder)
-
             next_page = results.get('nextPageToken')
             if next_page:
                 response = api_function(pageSize=50,
@@ -186,9 +176,15 @@ class GoogleAlbumsSync(object):
                 break
         log.warning('Indexed %d %s', count, description)
 
-    def album_folder_name(self, album_name: str, end_date: datetime) -> Path:
-        year = Utils.safe_str_time(end_date, '%Y')
-        month = Utils.safe_str_time(end_date, '%m%d')
+    def album_folder_name(
+        self, album_name: str, start_date: datetime, end_date: datetime
+    ) -> Path:
+        if self.use_start_date:
+            d = start_date
+        else:
+            d = end_date
+        year = Utils.safe_str_time(d, '%Y')
+        month = Utils.safe_str_time(d, '%m%d')
 
         rel_path = u"{0} {1}".format(month, album_name)
         link_folder: Path = self._links_root / year / rel_path
@@ -199,12 +195,20 @@ class GoogleAlbumsSync(object):
         count = 0
         album_item = 0
         current_rid = ''
-        if self._links_root.exists() and self.flush:
+        
+        # always re-create all album links - it is quite fast and a good way
+        # to ensure consistency
+        # especially now that we have --album-date-by-first-photo
+        if self._links_root.exists():
             log.debug('removing previous album links tree')
             shutil.rmtree(self._links_root)
         re_download = not self._links_root.exists()
 
-        for (path, file_name, album_name, end_date_str, rid, created) in \
+        for (
+                path, file_name, album_name,
+                start_date_str, end_date_str,
+                rid, created
+        ) in \
                 self._db.get_album_files(download_again=re_download):
             if current_rid == rid:
                 album_item += 1
@@ -213,9 +217,12 @@ class GoogleAlbumsSync(object):
                 current_rid = rid
                 album_item = 0
             end_date = Utils.string_to_date(end_date_str)
+            start_date = Utils.string_to_date(start_date_str)
             full_file_name = self._root_folder / path / file_name
 
-            link_folder: Path = self.album_folder_name(album_name, end_date)
+            link_folder: Path = self.album_folder_name(
+                album_name, start_date, end_date
+            )
 
             link_file = link_folder / "{:04d}_{}".format(album_item, file_name)
             # incredibly, pathlib.Path.relative_to cannot handle
