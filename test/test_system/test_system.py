@@ -136,7 +136,27 @@ class TestSystem(TestCase):
         pat = str(albums_root / '2017' / '0920 Clones' / '*.*')
         files = sorted(s.root.glob(pat))
         self.assertEqual(4, len(files))
-        self.assertFalse((albums_root / '2017' / '0923 Clones').is_dir())
+        should_be_gone = s.root / albums_root / '2017' / '0923 Clones'
+        self.assertFalse(should_be_gone.exists())
+
+        # test --album-date-by-first-photo
+
+        # force re-download of the album
+        db.cur.execute("UPDATE Albums SET Downloaded=0 "
+                       "WHERE AlbumName='Clones'")
+        db.store()
+        args = ['--skip-index', '--skip-files',
+                '--album-date-by-first-photo']
+        s.test_setup('test_sys_album_add_file', args=args)
+        s.gp.start(s.parsed_args)
+
+        pat = str(albums_root / '2017' / '0919 Clones' / '*.*')
+        files = sorted(s.root.glob(pat))
+        self.assertEqual(4, len(files))
+
+        should_be_gone = s.root / albums_root.absolute() \
+            / '2017' / '0920 Clones'
+        self.assertFalse(should_be_gone.exists())
 
     def test_system_date_range(self):
         s = ts.SetupDbAndCredentials()

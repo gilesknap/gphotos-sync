@@ -101,6 +101,11 @@ class GooglePhotosSyncMain:
         action='store_true',
         help="skip albums that only appear in 'Sharing'")
     parser.add_argument(
+        "--album-date-by-first-photo",
+        action='store_true',
+        help="Make the album date the same as its earliest "
+             "photo. The default is its last photo")
+    parser.add_argument(
         "--start-date",
         help="Set the earliest date of files to sync"
              "format YYYY-MM-DD",
@@ -257,6 +262,7 @@ class GooglePhotosSyncMain:
         self.google_photos_idx.end_date = self._end_date
         self.google_albums_sync.shared_albums = not args.skip_shared_albums
         self.google_albums_sync.album_index = not args.no_album_index
+        self.google_albums_sync.use_start_date = args.album_date_by_first_photo
         self.google_photos_down.start_date = self._start_date
         self.google_photos_down.end_date = self._end_date
         self.location_update.start_date = self._start_date
