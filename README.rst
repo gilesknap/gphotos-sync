@@ -65,9 +65,13 @@ to Google and this project will be updated once they are resolved.
 * There is no way to discover modified date of library media items. Currently ``gphotos-sync`` will refresh your local
   copy with any new photos added since the last scan but will not update any photos that have been modified in Google
   Photos. A feature request has been submitted to Google see https://issuetracker.google.com/issues/122737849.
-* UPDATE: Google has fixed this (so there is some hope for the other issues listed here!) Some types of video will not download using the new API. This mostly is restricted to old formats of video file (in
+* Some types of video will not       
+  download using the new API. This mostly is restricted to old formats of video file (in
   my library it is a subset of videos shot before 2010). Google is looking at this problem see
   https://issuetracker.google.com/issues/116842164.
+* UPDATE: Google has fixed the above
+* UPDATE to the UPDATE. Although the original bug is fixed, a new similar one is blocking some mp4 files see
+  https://issuetracker.google.com/issues/141255600
 * The API strips GPS data from images see https://issuetracker.google.com/issues/80379228.
 * Video download transcodes the videos even if you ask for the original file (=vd parameter) see
   https://issuetracker.google.com/issues/80149160. My experience is that the result is looks similar to the original
@@ -205,6 +209,8 @@ My detailed notes on the subject are here: `giles notes`_
 
 Google GPS Info update
 ----------------------
+UPDATE: the GPS scraping no longer works. I am investigating a couple of other avenues.
+
 Google does not seem to be interested in fxing the issue of stripping location info from the EXIF info of images
 downloaded via their API (see https://issuetracker.google.com/issues/80379228#comment80). So I am investigating a workaround. See the option --get-locations. It uses
 Selenium to scrape the GPS info off of the Google Website (your google creds required I'm afraid) and
@@ -212,8 +218,7 @@ insert them into the DB of synchronized files. It does not yet update the EXIF o
 is a minor addition and I'll implement if there is interest.
 
 Have a try and let me know what you think. Hurry, because Google is removing the ability to log in using
-automation soon! 
-
+automation soon!
 
 .. |build_status| image:: https://travis-ci.org/gilesknap/gphotos-sync.svg?branch=master&style=flat
     :target: https://travis-ci.org/gilesknap/gphotos-sync
