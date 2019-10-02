@@ -8,7 +8,7 @@ from typing import Dict, List, Union, Any
 from datetime import datetime
 import re
 
-DuplicateSuffix = re.compile(r'(.*)[ ]\(\d+\)(\..*)')
+DuplicateSuffix = re.compile(r"(.*)[ ]\(\d+\)(\..*)")
 
 JSONValue = Union[str, int, float, bool, None, Dict[str, Any], List[Any]]
 JSONType = Union[Dict[str, JSONValue], List[JSONValue]]
@@ -21,9 +21,9 @@ class GooglePhotosMedia(BaseMedia):
         super(GooglePhotosMedia, self).__init__()
         if self.is_video():
             self.__media_meta = None
-            self.__media_meta = media_json.get('mediaMetadata').get('video')
+            self.__media_meta = media_json.get("mediaMetadata").get("video")
         else:
-            self.__media_meta = media_json.get('mediaMetadata').get('photo')
+            self.__media_meta = media_json.get("mediaMetadata").get("photo")
 
     @property
     def uid(self) -> str:
@@ -41,10 +41,9 @@ class GooglePhotosMedia(BaseMedia):
     @property
     def description(self) -> str:
         try:
-            return self.validate_encoding(
-                self.__media_json["description"])
+            return self.validate_encoding(self.__media_json["description"])
         except KeyError:
-            return ''
+            return ""
 
     @property
     def orig_name(self) -> Path:
@@ -53,9 +52,9 @@ class GooglePhotosMedia(BaseMedia):
             matches = DuplicateSuffix.match(name)
             if matches:
                 # append the prefix and the suffix, ditching the ' (n)'
-                name = '{}{}'.format(*matches.groups())
+                name = "{}{}".format(*matches.groups())
         except KeyError:
-            name = ''
+            name = ""
         return Path(self.validate_encoding(name))
 
     @property
@@ -75,17 +74,17 @@ class GooglePhotosMedia(BaseMedia):
 
     @property
     def mime_type(self) -> str:
-        return self.__media_json['mimeType']
+        return self.__media_json["mimeType"]
 
     @property
     def url(self) -> str:
-        return self.__media_json['productUrl']
+        return self.__media_json["productUrl"]
 
     @property
     def camera_model(self):
         camera_model = None
         try:
-            camera_model = self.__media_meta['cameraModel']
+            camera_model = self.__media_meta["cameraModel"]
         except (KeyError, AttributeError):
             pass
         return camera_model

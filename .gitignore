@@ -71,3 +71,7 @@ etc/albumFolders.txt
 .nfs*
 
 venv/
+.pytest_cache
+cov.xml
+thing.py
+vscode_notes.txt

@@ -19,8 +19,7 @@ class BadIds:
 
     def __init__(self, root_folder: Path):
         self.items: Dict[str, dict] = {}
-        self.bad_ids_filename: Path = \
-            root_folder / "gphotos.bad_ids.yaml"
+        self.bad_ids_filename: Path = root_folder / "gphotos.bad_ids.yaml"
         self.bad_ids_found: int = 0
         self.load_ids()
 
@@ -29,23 +28,20 @@ class BadIds:
 
     def load_ids(self):
         try:
-            with self.bad_ids_filename.open('r') as stream:
+            with self.bad_ids_filename.open("r") as stream:
                 self.items = safe_load(stream)
             log.debug("bad_ids file, loaded %d bad ids", len(self.items))
         except (YAMLError, IOError):
             log.debug("no bad_ids file, bad ids list is empty")
 
     def store_ids(self):
-        with self.bad_ids_filename.open('w') as stream:
+        with self.bad_ids_filename.open("w") as stream:
             safe_dump(self.items, stream, default_flow_style=False)
 
     def add_id(self, path: str, gid: str, product_url: str, e: Exception):
-        item = dict(
-            path=str(path),
-            product_url=product_url
-        )
+        item = dict(path=str(path), product_url=product_url)
         self.items[gid] = item
-        log.debug('BAD ID %s for %s', gid, path, exc_info=e)
+        log.debug("BAD ID %s for %s", gid, path, exc_info=e)
 
     def check_id_ok(self, gid: str):
         if gid in self.items:
@@ -56,5 +52,8 @@ class BadIds:
 
     def report(self):
         if self.bad_ids_found > 0:
-            log.error("WARNING: skipped %d files listed in %s",
-                      self.bad_ids_found, self.bad_ids_filename)
+            log.error(
+                "WARNING: skipped %d files listed in %s",
+                self.bad_ids_found,
+                self.bad_ids_filename,
+            )

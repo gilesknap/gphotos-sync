@@ -6,7 +6,7 @@ from typing import TypeVar
 from gphotos.BaseMedia import BaseMedia
 
 # this allows self reference to this class in its factory methods
-D = TypeVar('D', bound='DatabaseMedia')
+D = TypeVar("D", bound="DatabaseMedia")
 
 
 # noinspection PyUnresolvedReferences
@@ -33,21 +33,23 @@ class DatabaseMedia(BaseMedia):
         _downloaded: true if previously downloaded to disk
     """
 
-    def __init__(self,
-                 _id: str = None,
-                 _uid: str = None,
-                 _url: str = None,
-                 _relative_folder: str = None,
-                 _filename: str = None,
-                 _orig_name: str = None,
-                 _duplicate_number: int = None,
-                 _size: int = None,
-                 _mime_type: str = None,
-                 _description: str = None,
-                 _date: datetime = None,
-                 _create_date: datetime = None,
-                 _downloaded: bool = False,
-                 _location: str = None):
+    def __init__(
+        self,
+        _id: str = None,
+        _uid: str = None,
+        _url: str = None,
+        _relative_folder: str = None,
+        _filename: str = None,
+        _orig_name: str = None,
+        _duplicate_number: int = None,
+        _size: int = None,
+        _mime_type: str = None,
+        _description: str = None,
+        _date: datetime = None,
+        _create_date: datetime = None,
+        _downloaded: bool = False,
+        _location: str = None,
+    ):
         super(DatabaseMedia, self).__init__()
         # add all of the arguments as attributes on this object
         self.__dict__.update(locals())

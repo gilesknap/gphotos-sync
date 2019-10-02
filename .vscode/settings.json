@@ -1,0 +1,13 @@
+{
+    "python.testing.unittestEnabled": false,
+    "python.testing.nosetestsEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.pythonPath": "/home/giles/.local/share/virtualenvs/gphotos-sync-23K6u7j6/bin/python",
+    "python.venvPath": "/home/giles/.local/share/virtualenvs/",
+    "markiscodecoverage.searchCriteria": ".coverage",
+    "python.linting.pep8Args": [
+        "--max-line-length",
+        "80",
+        "--ignore=E701"
+    ],
+}

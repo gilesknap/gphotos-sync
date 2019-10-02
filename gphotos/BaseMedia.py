@@ -11,16 +11,17 @@ class BaseMedia(object):
     These provide a standard interface for media items that have been loaded
     from disk / loaded from DB / retrieved from the Google Photos Library
     """
+
     TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
     # regex for illegal characters in file names and database queries
-    fix_linux = re.compile(r'[/]|[\x00-\x1f]|\x7f|\x00')
+    fix_linux = re.compile(r"[/]|[\x00-\x1f]|\x7f|\x00")
     fix_windows = re.compile(r'[<>:"/\\|?*]|[\x00-\x1f]|\x7f|\x00')
-    fix_windows_ending = re.compile('([ .]+$)')
+    fix_windows_ending = re.compile("([ .]+$)")
 
-    def __init__(self, root_path: Path = Path(''), **k_args):
+    def __init__(self, root_path: Path = Path(""), **k_args):
         self._id = None
-        self._relative_folder: Path = Path('')
+        self._relative_folder: Path = Path("")
         self._root_path: Path = root_path
         self._duplicate_number: int = 0
 
@@ -36,11 +37,11 @@ class BaseMedia(object):
         :param (str) s: input string (or unicode string)
         :return: (unicode): sanitized string
         """
-        if os_name == 'nt':
-            s = self.fix_windows.sub('_', s)
+        if os_name == "nt":
+            s = self.fix_windows.sub("_", s)
             s = self.fix_windows_ending.split(s)[0]
         else:
-            s = self.fix_linux.sub('_', s)
+            s = self.fix_linux.sub("_", s)
         return s
 
     def set_path_by_date(self, root: Path, use_flat_path: bool = False):
@@ -52,7 +53,7 @@ class BaseMedia(object):
             self._relative_folder = root / y / m
 
     def is_video(self) -> bool:
-        return self.mime_type.startswith('video')
+        return self.mime_type.startswith("video")
 
     @property
     def duplicate_number(self) -> int:
@@ -81,9 +82,9 @@ class BaseMedia(object):
     def filename(self) -> str:
         if self.duplicate_number > 0:
             file_str = "%(base)s (%(duplicate)d)%(ext)s" % {
-                'base': Path(self.orig_name).stem,
-                'ext': Path(self.orig_name).suffix,
-                'duplicate': self.duplicate_number + 1
+                "base": Path(self.orig_name).stem,
+                "ext": Path(self.orig_name).suffix,
+                "duplicate": self.duplicate_number + 1,
             }
             filename = self.validate_encoding(file_str)
         else:

@@ -11,9 +11,8 @@ class TestSystem(TestCase):
     def test_no_album_index(self):
         """for issue #89 - photos directly uploaded into albums dont 'list'"""
         s = ts.SetupDbAndCredentials()
-        args = ['--no-album-index', '--skip-shared-albums', '--index-only']
-        s.test_setup('test_no_album_index', trash_files=True,
-                     trash_db=True, args=args)
+        args = ["--no-album-index", "--skip-shared-albums", "--index-only"]
+        s.test_setup("test_no_album_index", trash_files=True, trash_db=True, args=args)
         s.gp.start(s.parsed_args)
 
         db = LocalData(s.root)
@@ -30,11 +29,10 @@ class TestSystem(TestCase):
         # if it had done so then we would only get 80 files
         t = TestAccount.image_count + TestAccount.video_count
         self.assertEqual(
-            t, count[0],
-            "expected {} files with album index off".format(t)
+            t, count[0], "expected {} files with album index off".format(t)
         )
 
-    @patch.object(GooglePhotosIndex, 'PAGE_SIZE', new_callable=PropertyMock)
+    @patch.object(GooglePhotosIndex, "PAGE_SIZE", new_callable=PropertyMock)
     def test_zero_items_in_response(self, page_size):
         """
         for issue https://github.com/gilesknap/gphotos-sync/issues/112
@@ -48,18 +46,21 @@ class TestSystem(TestCase):
         page_size.return_value = 6
 
         s = ts.SetupDbAndCredentials()
-        args = ['--skip-albums', '--index-only',
-                '--start-date', '1965-01-01',
-                '--end-date', '1965-12-31']
-        s.test_setup('test_zero_items_in_response', trash_files=True,
-                     trash_db=True, args=args)
+        args = [
+            "--skip-albums",
+            "--index-only",
+            "--start-date",
+            "1965-01-01",
+            "--end-date",
+            "1965-12-31",
+        ]
+        s.test_setup(
+            "test_zero_items_in_response", trash_files=True, trash_db=True, args=args
+        )
         s.gp.start(s.parsed_args)
 
         db = LocalData(s.root)
 
         db.cur.execute("SELECT COUNT() FROM SyncFiles")
         count = db.cur.fetchone()
-        self.assertEqual(
-            10, count[0],
-            "expected 10 images 1965"
-        )
+        self.assertEqual(10, count[0], "expected 10 images 1965")

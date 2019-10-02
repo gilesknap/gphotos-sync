@@ -8,14 +8,17 @@ exif = "*"
 appdirs = "*"
 requests_oauthlib = "*"
 pyyaml = ">=4.2b1"
-selenium = "*"
 gphotos-sync = {path = "."}
-pywin32 = "*"
 
 [dev-packages]
 mock = "*"
-pytest = "*"
-coverage = "*"
+pytest = "==5.0.1"
+black = "*"
+autopep8 = "*"
+pep8 = "*"
 
 [requires]
 python_version = "3.7"
+
+[pipenv]
+allow_prereleases = true
