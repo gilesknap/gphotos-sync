@@ -273,6 +273,7 @@ class GoogleAlbumsSync(object):
                     # follow_symlinks=False. So disable setting of link date
                     # if follow not supported
                     if os.utime in os.supports_follow_symlinks:
+                        # noinspection PyArgumentList
                         os.utime(
                             str(link_file),
                             (

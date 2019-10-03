@@ -23,8 +23,8 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
 try:
-    import win32file
-    import win32con
+    import win32file  # pylint: disable=import-error
+    import win32con  # pylint: disable=import-error
 
     _use_win_32 = True
 except ImportError:

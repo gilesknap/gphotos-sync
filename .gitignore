@@ -75,3 +75,5 @@ venv/
 cov.xml
 thing.py
 vscode_notes.txt
+.vscode
+

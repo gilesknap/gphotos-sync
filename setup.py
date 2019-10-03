@@ -4,7 +4,8 @@ from setuptools import setup, find_packages, os
 
 module_name = "gphotos-sync"
 
-install_reqs = ["exif", "appdirs", "requests_oauthlib", "PyYaml", "selenium"]
+install_reqs = ["exif", "appdirs", "requests_oauthlib", "PyYaml",
+                'selenium']
 
 if os.name == "nt":
     install_reqs.append("pywin32")

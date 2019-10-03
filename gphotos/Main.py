@@ -216,6 +216,7 @@ class GooglePhotosSyncMain:
     )
     parser.add_help = True
 
+    # noinspection DuplicatedCode
     def setup(self, args: Namespace, db_path: Path):
         root_folder = Path(args.root_folder).absolute()
         photos_folder = Path(args.photos_path)

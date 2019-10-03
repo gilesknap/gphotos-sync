@@ -4,8 +4,11 @@ import pickle
 from appdirs import AppDirs
 from pathlib import Path
 from getpass import getpass
+# noinspection PyPackageRequirements
 from selenium import webdriver
+# noinspection PyPackageRequirements
 from selenium.webdriver import ChromeOptions
+# noinspection PyPackageRequirements
 from selenium.common.exceptions import WebDriverException
 from urllib.parse import urlparse, parse_qs
 

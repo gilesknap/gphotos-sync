@@ -2,9 +2,8 @@
 # coding: utf8
 from pathlib import Path
 import platform
-from os.path import normcase  # (cannot see how to do this in pathlib)
 import sqlite3 as lite
-from sqlite3.dbapi2 import Connection, Row, Cursor
+from sqlite3.dbapi2 import Connection, Cursor
 from datetime import datetime
 from typing import Iterator, Type
 

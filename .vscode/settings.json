@@ -8,6 +8,7 @@
     "python.linting.pep8Args": [
         "--max-line-length",
         "80",
-        "--ignore=E701"
+        "--ignore=E701,E501"
     ],
+    "python.linting.enabled": true,
 }

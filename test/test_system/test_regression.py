@@ -1,9 +1,9 @@
 from unittest import TestCase
-from unittest.mock import patch, Mock, PropertyMock
+from unittest.mock import patch, PropertyMock
 
+import test.test_setup as ts
 from gphotos.GooglePhotosIndex import GooglePhotosIndex
 from gphotos.LocalData import LocalData
-import test.test_setup as ts
 from test.test_account import TestAccount
 
 

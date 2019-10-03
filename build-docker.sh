@@ -7,9 +7,9 @@ command -v docker >/dev/null 2>&1 || { echo >&2 "Docker CLI is required."; exit 
 
 docker build . \
     -t gilesknap/gphotos-sync:latest \
-    -t gilesknap/gphotos-sync:${TRAVIS_TAG} \
+    -t gilesknap/gphotos-sync:"${TRAVIS_TAG}" \
     -f ./Dockerfile
 
-docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
+docker login -u "${DOCKER_USERNAME}" -p "${DOCKER_PASSWORD}"
 docker push gilesknap/gphotos-sync
 docker push gilesknap/gphotos-sync:"${TRAVIS_TAG}"
