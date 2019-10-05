@@ -83,7 +83,12 @@ class Method:
             timeout=10,
             params=query_args)
 
-        result.raise_for_status()
+        try:
+            result.raise_for_status()
+        except:
+            log.error('Request failed with status {}: {}'.format(
+                result.status_code, result.content))
+            raise
         return result
 
     def make_path(self, path_args: Dict[str, str]) -> str:
