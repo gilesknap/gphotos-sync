@@ -12,6 +12,7 @@ MAX_PATH_LENGTH = 4096
 MAX_PATH_LENGTH = 255
 
 def symlinks_supported(root_folder: Path) -> bool:
+    log.debug('Checking if  is caseystem support symbolic links...')
     dst = 'test_dst_%s' % random.getrandbits(32)
     src = 'test_src_%s' % random.getrandbits(32)
     dst_file = root_folder / dst
@@ -28,6 +29,7 @@ def symlinks_supported(root_folder: Path) -> bool:
     return True
 
 def is_case_sensitive(root_folder: Path) -> bool:
+    log.debug('Checking if File system is case insensitive...')
     filename = 'TeMp.TeSt'
     case_file = root_folder / filename
     case_file.touch()

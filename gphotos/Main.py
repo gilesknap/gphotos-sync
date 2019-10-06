@@ -177,7 +177,7 @@ class GooglePhotosSyncMain:
         help="only index the photos library - skip indexing of folder contents "
              "(for testing)")
     parser.add_argument(
-        "--case-insensitive_fs",
+        "--case-insensitive-fs",
         action='store_true',
         help="add this flag if your filesystem is case insensitive")
     parser.add_help = True
@@ -236,6 +236,7 @@ class GooglePhotosSyncMain:
         self.google_albums_sync.album_index = not args.no_album_index
         self.google_photos_down.start_date = self._start_date
         self.google_photos_down.end_date = self._end_date
+        self.google_photos_down.case_insensitive_fs = args.case_insensitive_fs
         self.location_update.start_date = self._start_date
         self.location_update.end_date = self._end_date
 
@@ -332,8 +333,10 @@ class GooglePhotosSyncMain:
             args.skip_albums = True
 
         # check if file system is case sensitive
-        if not Checks.is_case_sensitive(root_folder):
-            args.case_insensitive_fs = True
+        if not args.case_insensitive_fs:
+            log.error('checking case sensitive')
+            if not Checks.is_case_sensitive(root_folder):
+                args.case_insensitive_fs = True
 
         return args
 
