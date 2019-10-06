@@ -151,7 +151,7 @@ class GooglePhotosSyncMain:
         "--do-delete",
         action='store_true',
         help="""Remove local copies of files that were deleted.
-        Must be used with --flush-index since the deleted items must be removed 
+        Must be used with --flush-index since the deleted items must be removed
         from the index""")
     parser.add_argument(
         "--skip-files",
@@ -176,6 +176,10 @@ class GooglePhotosSyncMain:
         action='store_true',
         help="only index the photos library - skip indexing of folder contents "
              "(for testing)")
+    parser.add_argument(
+        "--case-insensitive_fs",
+        action='store_true',
+        help="add this flag if your filesystem is case insensitive")
     parser.add_help = True
 
     def setup(self, args: Namespace, db_path: Path):
@@ -326,6 +330,10 @@ class GooglePhotosSyncMain:
         # check if symlinks are supported
         if not Checks.symlinks_supported(root_folder):
             args.skip_albums = True
+
+        # check if file system is case sensitive
+        if not Checks.is_case_sensitive(root_folder):
+            args.case_insensitive_fs = True
 
         return args
 

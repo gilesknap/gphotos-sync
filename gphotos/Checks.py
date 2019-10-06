@@ -27,6 +27,19 @@ def symlinks_supported(root_folder: Path) -> bool:
     dst_file.unlink()
     return True
 
+def is_case_sensitive(root_folder: Path) -> bool:
+    filename = 'TeMp.TeSt'
+    case_file = root_folder / filename
+    case_file.touch()
+    try:
+        case_file.unlink()
+    except FileNotFoundError:
+        log.warning('Case insensitive file system found')
+        case_file = Path(str(case_file).lower())
+        case_file.unlink()
+        return False
+    return True
+
 def get_max_path_length(root_folder: Path) -> int:
     global MAX_PATH_LENGTH
     # found this on: https://stackoverflow.com/questions/32807560/how-do-i-get-in-python-the-maximum-filesystem-path-length-in-unix
@@ -46,3 +59,4 @@ def get_max_filename_length(root_folder: Path) -> int:
         deprint('calling getconf failed - error:', traceback=True)
     log.debug('MAX_FILENAME_LENGTH: %d' % MAX_FILENAME_LENGTH)
     return MAX_FILENAME_LENGTH
+
