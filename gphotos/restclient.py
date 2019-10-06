@@ -1,6 +1,7 @@
 from json import dumps
 from typing import Dict, List, Union, Any
 from requests import Session
+from requests.exceptions import BaseHTTPError
 import logging
 
 JSONValue = Union[str, int, float, bool, None, Dict[str, Any], List[Any]]
@@ -85,7 +86,7 @@ class Method:
 
         try:
             result.raise_for_status()
-        except:
+        except BaseHTTPError:
             log.error('Request failed with status {}: {}'.format(
                 result.status_code, result.content))
             raise
