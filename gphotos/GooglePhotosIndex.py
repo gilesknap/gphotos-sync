@@ -31,7 +31,7 @@ class GooglePhotosIndex(object):
 
         if db:
             self.latest_download = self._db.get_scan_date() or \
-                                   Utils.minimum_date()
+                                   Utils.MINIMUM_DATE
 
         # attributes to be set after init
         # thus in theory one instance could do multiple indexes

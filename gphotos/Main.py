@@ -17,6 +17,7 @@ from gphotos.restclient import RestClient
 from gphotos.LocalFilesScan import LocalFilesScan
 from gphotos.LocationUpdate import LocationUpdate
 from gphotos import Utils
+from gphotos import Checks
 import pkg_resources
 
 __version__ = pkg_resources.require("gphotos-sync")[0].version
@@ -316,6 +317,18 @@ class GooglePhotosSyncMain:
         else:
             self.do_sync(args)
 
+    def fs_checks(self, root_folder: Path, args: dict):
+
+        Utils.minimum_date()
+
+        # check if symlinks are supported
+        if not Checks.symlinks_supported(root_folder):
+            args.skip_albums = True
+            log.error("no symlink")
+        else:
+            log.error("symlink")
+        return args
+
     def main(self, test_args: dict = None):
         start_time = datetime.now()
         args = self.parser.parse_args(test_args)
@@ -325,6 +338,10 @@ class GooglePhotosSyncMain:
         if not root_folder.exists():
             root_folder.mkdir(parents=True, mode=0o700)
         self.logging(args, root_folder)
+
+
+        args = self.fs_checks(root_folder, args)
+
 
         lock_file = db_path / 'gphotos.lock'
         fp = lock_file.open('w')

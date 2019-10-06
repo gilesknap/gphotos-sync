@@ -63,7 +63,7 @@ class GoogleAlbumsSync(object):
     def fetch_album_contents(self, album_id: str,
                              add_media_items: bool) -> (datetime, datetime):
         first_date = Utils.maximum_date()
-        last_date = Utils.minimum_date()
+        last_date = Utils.MINMUM_DATE
         body = self.make_search_parameters(album_id=album_id)
         response = self._api.mediaItems.search.execute(body)
         while response:
