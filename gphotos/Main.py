@@ -324,9 +324,6 @@ class GooglePhotosSyncMain:
         # check if symlinks are supported
         if not Checks.symlinks_supported(root_folder):
             args.skip_albums = True
-            log.error("no symlink")
-        else:
-            log.error("symlink")
         return args
 
     def main(self, test_args: dict = None):
