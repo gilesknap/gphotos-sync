@@ -320,10 +320,13 @@ class GooglePhotosSyncMain:
     def fs_checks(self, root_folder: Path, args: dict):
 
         Utils.minimum_date()
+        Checks.get_max_path_length(root_folder)
+        Checks.get_max_filename_length(root_folder)
 
         # check if symlinks are supported
         if not Checks.symlinks_supported(root_folder):
             args.skip_albums = True
+
         return args
 
     def main(self, test_args: dict = None):
