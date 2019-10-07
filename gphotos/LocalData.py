@@ -100,7 +100,9 @@ class LocalData:
 
         with sql_file.open('r') as f:
             qry = f.read()
-            self.cur.executescript(qry)
+            try:
+                self.cur.executescript(qry)
+            except
         self.store()
         self.cur.execute('INSERT INTO Globals(Id, Version, Albums, Files) '
                          'VALUES(1, ?, 0, 0);',
@@ -322,7 +324,7 @@ class LocalData:
         Albums.EndDate, Albums.RemoteId, SyncFiles.CreateDate FROM AlbumFiles
         INNER JOIN SyncFiles ON AlbumFiles.DriveRec=SyncFiles.RemoteId
         INNER JOIN Albums ON AlbumFiles.AlbumRec=Albums.RemoteId
-        WHERE Albums.RemoteId LIKE ? 
+        WHERE Albums.RemoteId LIKE ?
         {}
         ORDER BY Albums.RemoteId, SyncFiles.CreateDate;""".format(extra_clauses)
 
