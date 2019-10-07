@@ -1,19 +1,20 @@
 #!/usr/bin/env python3
 # coding: utf8
+import logging
+import os.path
 import shutil
 from datetime import datetime
-from typing import Dict, Callable
 from pathlib import Path
-import os.path
+from typing import Dict, Callable
 
+from . import Checks
 from . import Utils
 from .GoogleAlbumMedia import GoogleAlbumMedia
-from .GooglePhotosMedia import GooglePhotosMedia
 from .GoogleAlbumsRow import GoogleAlbumsRow
+from .GooglePhotosMedia import GooglePhotosMedia
 from .GooglePhotosRow import GooglePhotosRow
 from .LocalData import LocalData
 from .restclient import RestClient
-import logging
 
 log = logging.getLogger(__name__)
 
@@ -64,7 +65,7 @@ class GoogleAlbumsSync(object):
     def fetch_album_contents(self, album_id: str,
                              add_media_items: bool) -> (datetime, datetime):
         first_date = Utils.maximum_date()
-        last_date = Utils.minimum_date()
+        last_date = Utils.MINIMUM_DATE
         body = self.make_search_parameters(album_id=album_id)
         response = self._api.mediaItems.search.execute(body)
         while response:
@@ -195,7 +196,7 @@ class GoogleAlbumsSync(object):
         count = 0
         album_item = 0
         current_rid = ''
-        
+
         # always re-create all album links - it is quite fast and a good way
         # to ensure consistency
         # especially now that we have --album-date-by-first-photo
@@ -218,6 +219,19 @@ class GoogleAlbumsSync(object):
                 album_item = 0
             end_date = Utils.string_to_date(end_date_str)
             start_date = Utils.string_to_date(start_date_str)
+
+            if len(str(self._root_folder / path)) > Checks.MAX_PATH_LENGTH:
+                max_path_len = Checks.MAX_PATH_LENGTH - len(
+                    str(self._root_folder)
+                )
+                log.debug('This path needs to be shrunk: %s' %
+                          Path(self._root_folder / path))
+                path = path[:max_path_len]
+                log.debug('Shrunk to: %s' %
+                          Path(self._root_folder / path))
+
+            file_name = file_name[:Checks.MAX_FILENAME_LENGTH]
+
             full_file_name = self._root_folder / path / file_name
 
             link_folder: Path = self.album_folder_name(

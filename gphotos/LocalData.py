@@ -2,7 +2,6 @@
 # coding: utf8
 from pathlib import Path
 import platform
-from os.path import normcase  # (cannot see how to do this in pathlib)
 import sqlite3 as lite
 from sqlite3.dbapi2 import Connection, Row, Cursor
 from datetime import datetime
@@ -323,7 +322,7 @@ class LocalData:
         FROM AlbumFiles
         INNER JOIN SyncFiles ON AlbumFiles.DriveRec=SyncFiles.RemoteId
         INNER JOIN Albums ON AlbumFiles.AlbumRec=Albums.RemoteId
-        WHERE Albums.RemoteId LIKE ? 
+        WHERE Albums.RemoteId LIKE ?
         {}
         ORDER BY Albums.RemoteId, SyncFiles.CreateDate;""".format(extra_clauses)
 

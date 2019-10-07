@@ -2,6 +2,8 @@
 # coding: utf8
 import re
 from datetime import datetime
+from tempfile import NamedTemporaryFile
+from os import utime, unlink, getcwd
 import logging
 
 log = logging.getLogger(__name__)
@@ -16,14 +18,16 @@ MINIMUM_DATE = None
 
 # incredibly windows cannot handle dates below 1980
 def safe_str_time(date_time: datetime, date_format: str) -> str:
-    if date_time < minimum_date():
-        date_time = minimum_date()
+    global MINIMUM_DATE
+    if date_time < MINIMUM_DATE:
+        date_time = MINIMUM_DATE
     return date_time.strftime(date_format)
 
 
-def safe_timestamp(d: datetime) -> datetime:
-    if d < minimum_date():
-        d = minimum_date()
+def safe_timestamp(d: datetime) -> float:
+    global MINIMUM_DATE
+    if d < MINIMUM_DATE:
+        d = MINIMUM_DATE
     return d
 
 
@@ -37,19 +41,23 @@ def maximum_date() -> datetime:
 
 def minimum_date() -> datetime:
     global MINIMUM_DATE
-    if MINIMUM_DATE is None:
+    with NamedTemporaryFile(dir=getcwd()) as t:
         # determine the minimum date that is usable on the
         # current platform (is there a better way to do this?)
-        d = datetime.min.replace(year=1900)
-        try:
-            _ = d.timestamp()
-        except (ValueError, OverflowError, OSError):
-            d = datetime.min.replace(year=1970)
+        min_dates = (1800, 1900, 1970, 1971, 1980)
+
+        for min_date in min_dates:
             try:
-                _ = d.timestamp()
+                d = datetime.min.replace(year=min_date)
+                utime(t.name, (d.timestamp(), d.timestamp()))
             except (ValueError, OverflowError, OSError):
-                d = datetime.min.replace(year=1980)  # crikey MS Windows!
-        MINIMUM_DATE = d
+                continue
+            break
+
+    if not d:
+        raise ValueError('cannot set file modification date')
+    MINIMUM_DATE = d
+    log.debug('MINIMUM_DATE = %s' % MINIMUM_DATE)
     return MINIMUM_DATE
 
 

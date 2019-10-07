@@ -71,3 +71,7 @@ etc/albumFolders.txt
 .nfs*
 
 venv/
+
+# vim temp files
+*~
+*.swp

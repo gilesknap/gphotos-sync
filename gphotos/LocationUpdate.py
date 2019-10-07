@@ -22,7 +22,7 @@ class LocationUpdate:
         self.end_date: datetime = None
         if db:
             self.latest_download = self._db.get_scan_date() or \
-                                   Utils.minimum_date()
+                                   Utils.MINIMUM_DATE
         self.extractor = LocationExtract()
 
     def index_locations(self):

@@ -1,23 +1,25 @@
 # coding: utf8
-from argparse import Namespace, ArgumentParser
 import logging
-import sys
 import os
+import sys
+from argparse import Namespace, ArgumentParser
+from datetime import datetime
 from pathlib import Path
 
-from pkg_resources import DistributionNotFound
-from datetime import datetime
+import pkg_resources
 from appdirs import AppDirs
-from gphotos.GooglePhotosIndex import GooglePhotosIndex
-from gphotos.GooglePhotosDownload import GooglePhotosDownload
+from pkg_resources import DistributionNotFound
+
+from gphotos import Checks
+from gphotos import Utils
 from gphotos.GoogleAlbumsSync import GoogleAlbumsSync
+from gphotos.GooglePhotosDownload import GooglePhotosDownload
+from gphotos.GooglePhotosIndex import GooglePhotosIndex
 from gphotos.LocalData import LocalData
-from gphotos.authorize import Authorize
-from gphotos.restclient import RestClient
 from gphotos.LocalFilesScan import LocalFilesScan
 from gphotos.LocationUpdate import LocationUpdate
-from gphotos import Utils
-import pkg_resources
+from gphotos.authorize import Authorize
+from gphotos.restclient import RestClient
 
 __version__ = pkg_resources.require("gphotos-sync")[0].version
 
@@ -155,7 +157,7 @@ class GooglePhotosSyncMain:
         "--do-delete",
         action='store_true',
         help="""Remove local copies of files that were deleted.
-        Must be used with --flush-index since the deleted items must be removed 
+        Must be used with --flush-index since the deleted items must be removed
         from the index""")
     parser.add_argument(
         "--skip-files",
@@ -180,6 +182,10 @@ class GooglePhotosSyncMain:
         action='store_true',
         help="only index the photos library - skip indexing of folder contents "
              "(for testing)")
+    parser.add_argument(
+        "--case-insensitive-fs",
+        action='store_true',
+        help="add this flag if your filesystem is case insensitive")
     parser.add_argument(
         "--max-retries",
         help="Set the number of retries on network timeout / failures",
@@ -265,6 +271,7 @@ class GooglePhotosSyncMain:
         self.google_albums_sync.use_start_date = args.album_date_by_first_photo
         self.google_photos_down.start_date = self._start_date
         self.google_photos_down.end_date = self._end_date
+        self.google_photos_down.case_insensitive_fs = args.case_insensitive_fs
         self.location_update.start_date = self._start_date
         self.location_update.end_date = self._end_date
 
@@ -304,8 +311,10 @@ class GooglePhotosSyncMain:
         console = logging.StreamHandler()
         console.setLevel(numeric_level)
         # set a format which is simpler for console use
-        formatter = logging.Formatter('%(asctime)s %(message)s',
-                                      datefmt='%m-%d %H:%M:%S')
+        formatter = logging.Formatter(
+            '%(asctime)s %(levelname)-8s %(message)s ',
+            datefmt='%m-%d %H:%M:%S'
+        )
         # tell the handler to use this format
         console.setFormatter(formatter)
         # add the handler to the root logger
@@ -350,6 +359,23 @@ class GooglePhotosSyncMain:
         else:
             self.do_sync(args)
 
+    @staticmethod
+    def fs_checks(root_folder: Path, args: dict):
+        Utils.minimum_date()
+        Checks.get_max_path_length(root_folder)
+        Checks.get_max_filename_length(root_folder)
+
+        # check if symlinks are supported
+        if not Checks.symlinks_supported(root_folder):
+            args.skip_albums = True
+
+        # check if file system is case sensitive
+        if not args.case_insensitive_fs:
+            if not Checks.is_case_sensitive(root_folder):
+                args.case_insensitive_fs = True
+
+        return args
+
     def main(self, test_args: dict = None):
         start_time = datetime.now()
         args = self.parser.parse_args(test_args)
@@ -359,6 +385,8 @@ class GooglePhotosSyncMain:
         if not root_folder.exists():
             root_folder.mkdir(parents=True, mode=0o700)
         self.logging(args, root_folder)
+
+        args = self.fs_checks(root_folder, args)
 
         lock_file = db_path / 'gphotos.lock'
         fp = lock_file.open('w')
