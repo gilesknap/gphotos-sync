@@ -334,7 +334,6 @@ class GooglePhotosSyncMain:
 
         # check if file system is case sensitive
         if not args.case_insensitive_fs:
-            log.error('checking case sensitive')
             if not Checks.is_case_sensitive(root_folder):
                 args.case_insensitive_fs = True
 
