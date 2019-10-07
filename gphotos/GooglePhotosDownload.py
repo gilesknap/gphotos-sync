@@ -68,6 +68,7 @@ class GooglePhotosDownload(object):
         self.retry_download: bool = False
         self.video_timeout: int = 2000
         self.image_timeout: int = 60
+        self.case_insensitive_fs: bool = False
 
         # attributes related to multi-threaded download
         self.download_pool = futures.ThreadPoolExecutor(
@@ -117,10 +118,18 @@ class GooglePhotosDownload(object):
 
                 items = (mi for mi in media_items_block if mi)
                 for media_item in items:
+                    if self.case_insensitive_fs:
+                        relative_folder = str(
+                            media_item.relative_folder
+                        ).lower()
+                        filename = str(media_item.filename).lower()
+                    else:
+                        relative_folder = media_item.relative_folder
+                        filename = media_item.filename
                     local_folder = \
-                        self._root_folder / media_item.relative_folder
+                        self._root_folder / relative_folder
                     local_full_path = \
-                        local_folder / media_item.filename
+                        local_folder / filename
 
                     if local_full_path.exists():
                         self.files_download_skipped += 1
@@ -217,8 +226,15 @@ class GooglePhotosDownload(object):
     def do_download_file(self, base_url: str, media_item: DatabaseMedia):
         """ Runs in a process pool and does a download of a single media item.
         """
-        local_folder = self._root_folder / media_item.relative_folder
-        local_full_path = local_folder / media_item.filename
+        if self.case_insensitive_fs:
+            relative_folder = str(media_item.relative_folder).lower()
+            filename = str(media_item.filename).lower()
+        else:
+            relative_folder = media_item.relative_folder
+            filename = media_item.filename
+        local_folder = self._root_folder / relative_folder
+        local_full_path = local_folder / filename
+
         if media_item.is_video():
             download_url = '{}=dv'.format(base_url)
             timeout = self.video_timeout

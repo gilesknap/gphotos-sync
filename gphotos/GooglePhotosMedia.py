@@ -64,13 +64,13 @@ class GooglePhotosMedia(BaseMedia):
             create_date = self.__media_json["mediaMetadata"].get("creationTime")
             photo_date = Utils.string_to_date(create_date)
         except (KeyError, ValueError):
-            photo_date = Utils.minimum_date()
+            photo_date = Utils.MINIMUM_DATE
 
         return photo_date
 
     @property
     def modify_date(self) -> datetime:
-        date = Utils.minimum_date()
+        date = Utils.MINIMUM_DATE
         return date
 
     @property
