@@ -100,9 +100,7 @@ class LocalData:
 
         with sql_file.open('r') as f:
             qry = f.read()
-            try:
-                self.cur.executescript(qry)
-            except
+            self.cur.executescript(qry)
         self.store()
         self.cur.execute('INSERT INTO Globals(Id, Version, Albums, Files) '
                          'VALUES(1, ?, 0, 0);',
