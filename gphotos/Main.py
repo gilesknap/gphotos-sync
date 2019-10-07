@@ -1,24 +1,25 @@
 # coding: utf8
-from argparse import Namespace, ArgumentParser
 import logging
-import sys
 import os
+import sys
+from argparse import Namespace, ArgumentParser
+from datetime import datetime
 from pathlib import Path
 
-from pkg_resources import DistributionNotFound
-from datetime import datetime
+import pkg_resources
 from appdirs import AppDirs
-from gphotos.GooglePhotosIndex import GooglePhotosIndex
-from gphotos.GooglePhotosDownload import GooglePhotosDownload
+from pkg_resources import DistributionNotFound
+
+from gphotos import Checks
+from gphotos import Utils
 from gphotos.GoogleAlbumsSync import GoogleAlbumsSync
+from gphotos.GooglePhotosDownload import GooglePhotosDownload
+from gphotos.GooglePhotosIndex import GooglePhotosIndex
 from gphotos.LocalData import LocalData
-from gphotos.authorize import Authorize
-from gphotos.restclient import RestClient
 from gphotos.LocalFilesScan import LocalFilesScan
 from gphotos.LocationUpdate import LocationUpdate
-from gphotos import Utils
-from gphotos import Checks
-import pkg_resources
+from gphotos.authorize import Authorize
+from gphotos.restclient import RestClient
 
 __version__ = pkg_resources.require("gphotos-sync")[0].version
 
@@ -276,8 +277,10 @@ class GooglePhotosSyncMain:
         console = logging.StreamHandler()
         console.setLevel(numeric_level)
         # set a format which is simpler for console use
-        formatter = logging.Formatter('%(asctime)s %(levelname)-8s %(message)s ',
-                                      datefmt='%m-%d %H:%M:%S')
+        formatter = logging.Formatter(
+            '%(asctime)s %(levelname)-8s %(message)s ',
+            datefmt='%m-%d %H:%M:%S'
+        )
         # tell the handler to use this format
         console.setFormatter(formatter)
         # add the handler to the root logger
@@ -322,8 +325,8 @@ class GooglePhotosSyncMain:
         else:
             self.do_sync(args)
 
-    def fs_checks(self, root_folder: Path, args: dict):
-
+    @staticmethod
+    def fs_checks(root_folder: Path, args: dict):
         Utils.minimum_date()
         Checks.get_max_path_length(root_folder)
         Checks.get_max_filename_length(root_folder)
@@ -349,9 +352,7 @@ class GooglePhotosSyncMain:
             root_folder.mkdir(parents=True, mode=0o700)
         self.logging(args, root_folder)
 
-
         args = self.fs_checks(root_folder, args)
-
 
         lock_file = db_path / 'gphotos.lock'
         fp = lock_file.open('w')

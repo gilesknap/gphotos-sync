@@ -50,7 +50,7 @@ def minimum_date() -> datetime:
             try:
                 d = datetime.min.replace(year=min_date)
                 utime(t.name, (d.timestamp(), d.timestamp()))
-            except (ValueError, OverflowError, OSError) as e:
+            except (ValueError, OverflowError, OSError):
                 continue
             break
 

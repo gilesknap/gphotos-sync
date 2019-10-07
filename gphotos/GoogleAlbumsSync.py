@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
 # coding: utf8
+import logging
+import os.path
 import shutil
 from datetime import datetime
-from typing import Dict, Callable
 from pathlib import Path
-import os.path
+from typing import Dict, Callable
 
-from . import Utils
 from . import Checks
+from . import Utils
 from .GoogleAlbumMedia import GoogleAlbumMedia
-from .GooglePhotosMedia import GooglePhotosMedia
 from .GoogleAlbumsRow import GoogleAlbumsRow
+from .GooglePhotosMedia import GooglePhotosMedia
 from .GooglePhotosRow import GooglePhotosRow
 from .LocalData import LocalData
 from .restclient import RestClient
-import logging
 
 log = logging.getLogger(__name__)
 
@@ -216,12 +216,14 @@ class GoogleAlbumsSync(object):
             end_date = Utils.string_to_date(end_date_str)
 
             if len(str(self._root_folder / path)) > Checks.MAX_PATH_LENGTH:
-                max_path_len = Checks.MAX_PATH_LENGTH - len(str(self._root_folder))
-                log.debug('This path needs to be shrinked: %s' %
-                        Path(self._root_folder / path))
+                max_path_len = Checks.MAX_PATH_LENGTH - len(
+                    str(self._root_folder)
+                )
+                log.debug('This path needs to be shrunk: %s' %
+                          Path(self._root_folder / path))
                 path = path[:max_path_len]
-                log.debug('Shrined to: %s' %
-                        Path(self._root_folder / path))
+                log.debug('Shrunk to: %s' %
+                          Path(self._root_folder / path))
 
             file_name = file_name[:Checks.MAX_FILENAME_LENGTH]
 
