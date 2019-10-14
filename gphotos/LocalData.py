@@ -26,7 +26,7 @@ log = logging.getLogger(__name__)
 class LocalData:
     DB_FILE_NAME: str = 'gphotos.sqlite'
     BLOCK_SIZE: int = 10000
-    VERSION: float = 5.6
+    VERSION: float = 5.7
 
     def __init__(self, root_folder: Path, flush_index: bool = False):
         """ Initialize a connection to the DB and create some cursors.
@@ -318,13 +318,13 @@ class LocalData:
 
         query = """
         SELECT SyncFiles.Path, SyncFiles.Filename, Albums.AlbumName,
-        Albums.StartDate, Albums.EndDate, Albums.RemoteId, SyncFiles.CreateDate 
+        Albums.StartDate, Albums.EndDate, Albums.RemoteId, SyncFiles.CreateDate
         FROM AlbumFiles
         INNER JOIN SyncFiles ON AlbumFiles.DriveRec=SyncFiles.RemoteId
         INNER JOIN Albums ON AlbumFiles.AlbumRec=Albums.RemoteId
         WHERE Albums.RemoteId LIKE ?
         {}
-        ORDER BY Albums.RemoteId, SyncFiles.CreateDate;""".format(extra_clauses)
+        ORDER BY Albums.RemoteId, AlbumFiles.Position, SyncFiles.CreateDate;""".format(extra_clauses)
 
         self.cur.execute(query, (album_id,))
         results = self.cur.fetchall()
@@ -332,14 +332,14 @@ class LocalData:
         for result in results:
             yield tuple(result)
 
-    def put_album_file(self, album_rec: str, file_rec: str):
+    def put_album_file(self, album_rec: str, file_rec: str, position: int):
         """ Record in the DB a relationship between an album and a media item
         """
         self.cur.execute(
-            "INSERT OR REPLACE INTO AlbumFiles(AlbumRec, DriveRec) "
+            "INSERT OR REPLACE INTO AlbumFiles(AlbumRec, DriveRec, Position) "
             "VALUES(?,"
-            "?) ;",
-            (album_rec, file_rec))
+            "?,?) ;",
+            (album_rec, file_rec, position))
 
     def remove_all_album_files(self):
         # noinspection SqlWithoutWhere
