@@ -110,6 +110,7 @@ create table AlbumFiles
 		primary key,
 	AlbumRec INT,
 	DriveRec INT,
+	Position INT,
 	foreign key (AlbumRec) references Albums (RemoteId)
 			on delete cascade,
 	foreign key (DriveRec) references SyncFiles (Id)
