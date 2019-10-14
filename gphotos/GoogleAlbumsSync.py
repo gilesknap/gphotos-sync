@@ -187,8 +187,11 @@ class GoogleAlbumsSync(object):
         year = Utils.safe_str_time(d, '%Y')
         month = Utils.safe_str_time(d, '%m%d')
 
-        rel_path = u"{0} {1}".format(month, album_name)
-        link_folder: Path = self._links_root / year / rel_path
+        if self._use_flat_path:
+            rel_path = u"{0}-{1} {2}".format(year, month, album_name)
+        else:
+            rel_path = Path(year) / u"{0} {1}".format(month, album_name)
+        link_folder: Path = self._links_root / rel_path
         return link_folder
 
     def create_album_content_links(self):
