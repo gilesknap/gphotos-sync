@@ -139,8 +139,12 @@ class GooglePhotosSyncMain:
     parser.add_argument(
         "--use-flat-path",
         action='store_true',
-        help="mandate use of a flat directory structure ('YYYY-MMM') and not "
+        help="Mandate use of a flat directory structure ('YYYY-MMM') and not "
              "a nested one ('YYYY/MM') . ")
+    parser.add_argument(
+        "--omit-album-date",
+        action='store_true',
+        help="Don't include year and month in album folder names.")
     parser.add_argument(
         "--new-token",
         action='store_true',
@@ -251,7 +255,7 @@ class GooglePhotosSyncMain:
             self.google_photos_client, root_folder, self.data_store,
             args.flush_index or args.retry_download or args.rescan,
             photos_folder, albums_folder, args.use_flat_path,
-            args.use_hardlinks
+            args.omit_album_date, args.use_hardlinks
         )
         self.location_update = LocationUpdate(
             root_folder, self.data_store, args.photos_path
