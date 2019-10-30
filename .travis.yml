@@ -22,7 +22,7 @@ matrix:
     language: sh
     python: '3.7'
     before_install:
-    - choco install python3
+    - choco install python --version 3.7.4
     - export PATH="/c/Python37:/c/Python37/Scripts:$PATH"
     - python -m pip install --upgrade pip wheel
     - python -m pip install mock
