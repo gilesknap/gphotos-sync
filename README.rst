@@ -84,6 +84,8 @@ to Google and this project will be updated once they are resolved.
 
 Install and configure
 ---------------------
+For some help on getting python working on Windows see https://github.com/gilesknap/gphotos-sync/issues/63.
+
 To install the latest published version from PyPi, simply::
 
    pipenv install gphotos-sync
