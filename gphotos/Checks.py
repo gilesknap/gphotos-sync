@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 # coding: utf8
+
+import os
+
 import logging
 import random
 import subprocess
@@ -44,27 +47,33 @@ def is_case_sensitive(root_folder: Path) -> bool:
     return True
 
 
+# noinspection PyBroadException
 def get_max_path_length(root_folder: Path) -> int:
     global MAX_PATH_LENGTH
-    # found this on: https://stackoverflow.com/questions/32807560/how-do-i-get-in-python-the-maximum-filesystem-path-length-in-unix
+    # found this on:
+    # https://stackoverflow.com/questions/32807560/how-do-i-get-in-python-the-maximum-filesystem-path-length-in-unix
     try:
         MAX_PATH_LENGTH = int(subprocess.check_output(
-            ['getconf', 'PATH_MAX', '/'])
+            ['getconf', 'PATH_MAX', str(root_folder)])
         )
-    except (ValueError, subprocess.CalledProcessError, OSError):
-        print('calling getconf failed - error:', traceback=True)
+    except BaseException:
+        # for failures choose a safe size for Windows filesystems
+        MAX_PATH_LENGTH = 248
+        log.warning(f'cant determine max filepath length, defaulting to {MAX_PATH_LENGTH}')
+        raise RuntimeError("This should blow up in Travis")
     log.debug('MAX_PATH_LENGTH: %d' % MAX_PATH_LENGTH)
     return MAX_PATH_LENGTH
 
 
+# noinspection PyBroadException
 def get_max_filename_length(root_folder: Path) -> int:
     global MAX_FILENAME_LENGTH
-    # found this on: https://stackoverflow.com/questions/32807560/how-do-i-get-in-python-the-maximum-filesystem-path-length-in-unix
     try:
-        MAX_FILENAME_LENGTH = int(subprocess.check_output(
-            ['getconf', 'NAME_MAX', '/'])
-        )
-    except (ValueError, subprocess.CalledProcessError, OSError):
-        deprint('calling getconf failed - error:', traceback=True)
+        info = os.statvfs(str(root_folder))
+        MAX_FILENAME_LENGTH = info.f_namemax
+    except BaseException:
+        # for failures choose a safe size for Windows filesystems
+        MAX_FILENAME_LENGTH = 248
+        log.warning(f'cant determine max filename length, defaulting to {MAX_FILENAME_LENGTH}')
     log.debug('MAX_FILENAME_LENGTH: %d' % MAX_FILENAME_LENGTH)
     return MAX_FILENAME_LENGTH
