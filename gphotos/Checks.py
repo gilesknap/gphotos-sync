@@ -42,7 +42,6 @@ def is_case_sensitive(root_folder: Path) -> bool:
     try:
         no_case_file.unlink()
     except FileNotFoundError:
-        case_file = Path(str(case_file).lower())
         case_file.unlink()
         return True
     else:
