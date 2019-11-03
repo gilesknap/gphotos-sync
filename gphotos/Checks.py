@@ -25,7 +25,7 @@ def symlinks_supported(root_folder: Path) -> bool:
         dst_file.symlink_to(src_file)
     except OSError:
         log.error('Symbolic links not supported')
-        log.error('Album are not going to be synced')
+        log.error('Albums are not going to be synced - requires symlinks')
         return False
     src_file.unlink()
     dst_file.unlink()
@@ -34,17 +34,20 @@ def symlinks_supported(root_folder: Path) -> bool:
 
 def is_case_sensitive(root_folder: Path) -> bool:
     log.debug('Checking if File system is case insensitive...')
-    filename = 'TeMp.TeSt'
-    case_file = root_folder / filename
+    filename1 = 'TeMp.TeSt'
+    filename2 = 'TEMP.TEST'
+    case_file = root_folder / filename1
+    no_case_file = root_folder / filename2
     case_file.touch()
     try:
-        case_file.unlink()
+        no_case_file.unlink()
     except FileNotFoundError:
-        log.warning('Case insensitive file system found')
         case_file = Path(str(case_file).lower())
         case_file.unlink()
+        return True
+    else:
+        log.warning('Case insensitive file system found')
         return False
-    return True
 
 
 # noinspection PyBroadException
@@ -60,7 +63,6 @@ def get_max_path_length(root_folder: Path) -> int:
         # for failures choose a safe size for Windows filesystems
         MAX_PATH_LENGTH = 248
         log.warning(f'cant determine max filepath length, defaulting to {MAX_PATH_LENGTH}')
-        raise RuntimeError("This should blow up in Travis")
     log.debug('MAX_PATH_LENGTH: %d' % MAX_PATH_LENGTH)
     return MAX_PATH_LENGTH
 

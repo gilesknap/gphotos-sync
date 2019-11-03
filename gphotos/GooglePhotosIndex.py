@@ -40,6 +40,7 @@ class GooglePhotosIndex(object):
         self.include_video: bool = True
         self.rescan: bool = False
         self.favourites = False
+        self.case_insensitive_fs: bool = False
 
     def check_for_removed_in_folder(self, folder: Path):
         for pth in folder.iterdir():
@@ -150,7 +151,7 @@ class GooglePhotosIndex(object):
             items_count = 0
             for media_item_json in media_json:
                 items_count += 1
-                media_item = GooglePhotosMedia(media_item_json)
+                media_item = GooglePhotosMedia(media_item_json, to_lower=self.case_insensitive_fs)
                 media_item.set_path_by_date(self._media_folder,
                                             self._use_flat_path)
                 (num, row) = self._db.file_duplicate_no(

@@ -70,7 +70,7 @@ etc/albumFolders.txt
 
 .nfs*
 
-venv/
+/*venv*/
 
 # vim temp files
 *~

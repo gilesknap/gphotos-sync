@@ -264,22 +264,25 @@ class GooglePhotosSyncMain:
         self._start_date = Utils.string_to_date(args.start_date)
         self._end_date = Utils.string_to_date(args.end_date)
 
-        self.google_photos_idx.start_date = self._start_date
-        self.google_photos_idx.end_date = self._end_date
         self.google_albums_sync.shared_albums = not args.skip_shared_albums
         self.google_albums_sync.album_index = not args.no_album_index
         self.google_albums_sync.use_start_date = args.album_date_by_first_photo
+        self.google_albums_sync.album = args.album
+
         self.google_photos_down.start_date = self._start_date
         self.google_photos_down.end_date = self._end_date
+        self.google_photos_down.retry_download = args.retry_download
         self.google_photos_down.case_insensitive_fs = args.case_insensitive_fs
+
         self.location_update.start_date = self._start_date
         self.location_update.end_date = self._end_date
 
+        self.google_photos_idx.start_date = self._start_date
+        self.google_photos_idx.end_date = self._end_date
         self.google_photos_idx.include_video = not args.skip_video
         self.google_photos_idx.rescan = args.rescan
         self.google_photos_idx.favourites = args.favourites_only
-        self.google_photos_down.retry_download = args.retry_download
-        self.google_albums_sync.album = args.album
+        self.google_photos_idx.case_insensitive_fs = args.case_insensitive_fs
 
     @classmethod
     def logging(cls, args: Namespace, folder: Path):

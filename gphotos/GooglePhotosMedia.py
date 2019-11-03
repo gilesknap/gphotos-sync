@@ -15,9 +15,10 @@ JSONType = Union[Dict[str, JSONValue], List[JSONValue]]
 
 
 class GooglePhotosMedia(BaseMedia):
-    def __init__(self, media_json: JSONType):
+    def __init__(self, media_json: JSONType, to_lower=False):
         self.__media_json: JSONType = media_json
         self.__uid = None
+        self.__lower = to_lower
         super(GooglePhotosMedia, self).__init__()
         if self.is_video():
             self.__media_meta = None
@@ -56,6 +57,8 @@ class GooglePhotosMedia(BaseMedia):
                 name = '{}{}'.format(*matches.groups())
         except KeyError:
             name = ''
+        if self.__lower:
+            name = name.lower()
         return Path(self.validate_encoding(name))
 
     @property
