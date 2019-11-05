@@ -86,8 +86,12 @@ Install and configure
 ---------------------
 For some help on getting python working on Windows see https://github.com/gilesknap/gphotos-sync/issues/63.
 
+On linux, you can install pipenv using ``pip3 install --user pipenv`` and then make sure that ``~/.local/bin/`` is in your path.
+
 To install the latest published version from PyPi, simply::
 
+   mkdir gphotos-sync
+   cd gphotos-sync
    pipenv install gphotos-sync
 
 Or if you don't want to use pipenv, create a virtual environment and::
