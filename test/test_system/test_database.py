@@ -8,10 +8,12 @@ class DatabaseTest(TestCase):
     def test_new_schema(self):
         """
         check that the database initialization errors if the version of the
-        data store is newer than the code version"""
+        data store is newer than the code version
+        UPDATE: use --fave so that we do download a photo. A previous bug
+        was only picked up when this replaced --skip-files"""
         s = SetupDbAndCredentials()
         # get a single file
-        args = ['--skip-files', '--skip-albums']
+        args = ['--favourites-only', '--skip-albums']
         s.test_setup('new_schema', args=args, trash_files=True)
         s.gp.start(s.parsed_args)
 

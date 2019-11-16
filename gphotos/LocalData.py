@@ -89,6 +89,7 @@ class LocalData:
             self.con = lite.connect(str(self.db_file))
             self.con.row_factory = lite.Row
             self.cur = self.con.cursor()
+            self.cur2 = self.con.cursor()
             self.clean_db()
 
     def clean_db(self):
