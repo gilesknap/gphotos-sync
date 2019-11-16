@@ -51,6 +51,7 @@ class GoogleAlbumsSync(object):
         self.shared_albums = True
         self.album_index = True
         self.use_start_date = False
+        self.favourites = False
 
     @classmethod
     def make_search_parameters(cls, album_id: str,
@@ -134,6 +135,10 @@ class GoogleAlbumsSync(object):
         contents into the db
         """
         log.warning('Indexing {} ...'.format(description))
+
+        # when only looking for favourites do not download album contents
+        if self.favourites:
+            add_media_items = False
 
         # there are no filters in album listing at present so it always a
         # full rescan - it's quite quick

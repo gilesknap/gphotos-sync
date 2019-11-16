@@ -25,7 +25,7 @@ class TestSystem(TestCase):
         """
         s = ts.SetupDbAndCredentials()
         args = [
-            '--favourites-only', '--skip-albums',
+            '--favourites-only',
             '--max-retries', '6',
             '--max-threads', '2'
         ]
