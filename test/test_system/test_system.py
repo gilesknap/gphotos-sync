@@ -19,7 +19,7 @@ comparison_root = Path('comparison')
 
 
 class TestSystem(TestCase):
-    def test_sys_favourites(self):
+    def test_sys_favourites_and_dates(self):
         """Download favourite images in test library.
            Also Check that dates are set correctly
         """
@@ -55,7 +55,25 @@ class TestSystem(TestCase):
                 "Create date not set correctly"
             )
 
+    def test_sys_archived(self):
+        """Download favourite images in test library.
+           Also Check that dates are set correctly
+        """
+        s = ts.SetupDbAndCredentials()
+        args = [
+            '--archived', '--skip-albums',
+            '--start-date', '2019-10-01'
+        ]
+        s.test_setup('test_sys_archived', args=args,
+                     trash_files=True, trash_db=True)
+        s.gp.start(s.parsed_args)
 
+        db = LocalData(s.root)
+
+        # Total of 1 out of media items
+        db.cur.execute("SELECT COUNT() FROM SyncFiles")
+        count = db.cur.fetchone()
+        self.assertEqual(1, count[0])
 
     def test_shared_albums(self):
         """Download favourite images in test library.

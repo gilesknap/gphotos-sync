@@ -201,6 +201,11 @@ class GooglePhotosSyncMain:
         help="Path to client secret file (by default this is in the "
              "application config directory)"
     )
+    parser.add_argument(
+        "--archived",
+        action='store_true',
+        help="Download media items that have been marked as archived"
+    )
     parser.add_help = True
 
     def setup(self, args: Namespace, db_path: Path):
@@ -284,6 +289,7 @@ class GooglePhotosSyncMain:
         self.google_photos_idx.rescan = args.rescan
         self.google_photos_idx.favourites = args.favourites_only
         self.google_photos_idx.case_insensitive_fs = args.case_insensitive_fs
+        self.google_photos_idx.archived = args.archived
 
     @classmethod
     def logging(cls, args: Namespace, folder: Path):
