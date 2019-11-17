@@ -25,13 +25,15 @@ class GoogleAlbumsSync(object):
 
     def __init__(self, api: RestClient, root_folder: Path, db: LocalData,
                  flush: bool, photos_path: Path,
-                 albums_path: Path, use_flat_path=True, use_hardlinks=False):
+                 albums_path: Path, use_flat_path=True, omit_album_date=True,
+                 use_hardlinks=False):
         """
         Parameters:
             root_folder: path to the root of local file synchronization
             api: object representing the Google REST API
             db: local database for indexing
             :param use_flat_path:
+            :param omit_album_date:
             :param use_hardlinks:
             :param photos_path:
             :param albums_path:
@@ -44,6 +46,7 @@ class GoogleAlbumsSync(object):
         self._db: LocalData = db
         self._api: RestClient = api
         self._use_flat_path = use_flat_path
+        self._omit_album_date = omit_album_date
         self._use_hardlinks = use_hardlinks
         self.flush = flush
         # these properties are set after construction
@@ -187,15 +190,21 @@ class GoogleAlbumsSync(object):
     def album_folder_name(
         self, album_name: str, start_date: datetime, end_date: datetime
     ) -> Path:
-        if self.use_start_date:
-            d = start_date
+        if self._omit_album_date:
+            rel_path = album_name
         else:
-            d = end_date
-        year = Utils.safe_str_time(d, '%Y')
-        month = Utils.safe_str_time(d, '%m%d')
+            if self.use_start_date:
+                d = start_date
+            else:
+                d = end_date
+            year = Utils.safe_str_time(d, '%Y')
+            month = Utils.safe_str_time(d, '%m%d')
 
-        rel_path = u"{0} {1}".format(month, album_name)
-        link_folder: Path = self._links_root / year / rel_path
+            if self._use_flat_path:
+                rel_path = u"{0}-{1} {2}".format(year, month, album_name)
+            else:
+                rel_path = Path(year) / u"{0} {1}".format(month, album_name)
+        link_folder: Path = self._links_root / rel_path
         return link_folder
 
     def create_album_content_links(self):
