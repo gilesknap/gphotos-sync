@@ -7,7 +7,6 @@ from gphotos.LocalData import LocalData
 from gphotos.restclient import RestClient
 from gphotos.DatabaseMedia import DatabaseMedia
 from gphotos.GooglePhotosRow import GooglePhotosRow
-from gphotos.BadIds import BadIds
 
 from itertools import zip_longest
 from typing import Iterable, Mapping, Union, List
@@ -74,7 +73,6 @@ class GooglePhotosDownload(object):
         self.download_pool = futures.ThreadPoolExecutor(
             max_workers=self.max_threads)
         self.pool_future_to_media = {}
-        self.bad_ids = BadIds(self._root_folder)
 
         self.current_umask = os.umask(7)
         os.umask(self.current_umask)
@@ -138,7 +136,7 @@ class GooglePhotosDownload(object):
                                   media_item.relative_path)
                         self._db.put_downloaded(media_item.id)
 
-                    elif self.bad_ids.check_id_ok(media_item.id):
+                    else:
                         batch[media_item.id] = media_item
                         if not local_folder.is_dir():
                             local_folder.mkdir(parents=True)
@@ -153,8 +151,6 @@ class GooglePhotosDownload(object):
                 'Downloaded %d Items, Failed %d, Already Downloaded %d',
                 self.files_downloaded, self.files_download_failed,
                 self.files_download_skipped)
-            self.bad_ids.store_ids()
-            self.bad_ids.report()
 
     def download_batch(self, batch: Mapping[str, DatabaseMedia]):
         """ Downloads a batch of media items collected in download_photo_media.
@@ -292,11 +288,7 @@ class GooglePhotosDownload(object):
                 self.files_download_failed += 1
                 log.error('FAILURE %d downloading %s',
                           self.files_download_failed, media_item.relative_path)
-                if isinstance(e, RequestException):
-                    self.bad_ids.add_id(
-                        media_item.relative_path, media_item.id,
-                        media_item.url, e)
-                else:
+                if not isinstance(e, RequestException):
                     raise e
             else:
                 self._db.put_downloaded(media_item.id)
@@ -318,8 +310,6 @@ class GooglePhotosDownload(object):
                 media_item_json = response.json()
                 self.download_file(media_item, media_item_json)
             except RequestException as e:
-                self.bad_ids.add_id(str(media_item.relative_path),
-                                    media_item.id, media_item.url, e)
                 self.files_download_failed += 1
-                log.error('FAILURE %d in get of %s BAD ID',
+                log.error('FAILURE %d in get of %s',
                           self.files_download_failed, media_item.relative_path)
