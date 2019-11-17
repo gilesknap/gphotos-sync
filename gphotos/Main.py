@@ -37,7 +37,6 @@ class GooglePhotosSyncMain:
         self.google_photos_down: GooglePhotosDownload = None
         self.google_albums_sync: GoogleAlbumsSync = None
         self.local_files_scan: LocalFilesScan = None
-        self.location_update: LocationUpdate = None
         self._start_date = None
         self._end_date = None
 
