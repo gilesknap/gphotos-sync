@@ -1,13 +1,9 @@
 from pathlib import Path
 from unittest import TestCase
-from unittest.mock import patch, Mock
-from requests.exceptions import HTTPError
 from typing import List
 import os
 from datetime import datetime
 
-from gphotos.BadIds import BadIds
-from gphotos.GooglePhotosDownload import GooglePhotosDownload
 import gphotos.Utils as Utils
 from gphotos.LocalData import LocalData
 import test.test_setup as ts
@@ -56,8 +52,7 @@ class TestSystem(TestCase):
             )
 
     def test_sys_archived(self):
-        """Download favourite images in test library.
-           Also Check that dates are set correctly
+        """Download archived images in test library.
         """
         s = ts.SetupDbAndCredentials()
         args = [

@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# coding: utf8
 from datetime import datetime
 from typing import Mapping, Any, List, ClassVar, TypeVar, Type
 from gphotos.DatabaseMedia import DatabaseMedia

@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# coding: utf8
-
 import os
 
 import logging
@@ -61,7 +58,8 @@ def get_max_path_length(root_folder: Path) -> int:
     except BaseException:
         # for failures choose a safe size for Windows filesystems
         MAX_PATH_LENGTH = 248
-        log.warning(f'cant determine max filepath length, defaulting to {MAX_PATH_LENGTH}')
+        log.warning(f'cant determine max filepath length, defaulting to '
+                    f'{MAX_PATH_LENGTH}')
     log.debug('MAX_PATH_LENGTH: %d' % MAX_PATH_LENGTH)
     return MAX_PATH_LENGTH
 
