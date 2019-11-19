@@ -43,7 +43,7 @@ class DbRow:
     params: ClassVar[str] = None
     update: ClassVar[str] = None
     dict: ClassVar[dict] = None
-    empty: ClassVar[bool] = False
+    empty: ClassVar[bool] = True
 
     # The first 2 functions are to be overridden by each subclass, they provide
     # conversion to and from BaseMedia derived types

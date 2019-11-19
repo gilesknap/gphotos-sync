@@ -1,6 +1,8 @@
 import os
-
 import pytest
+
+from gphotos.GoogleAlbumMedia import GoogleAlbumMedia
+from gphotos.GoogleAlbumsRow import GoogleAlbumsRow
 from mock import patch, PropertyMock
 from pathlib import Path
 from unittest import TestCase
@@ -23,9 +25,11 @@ comparison_root = Path('comparison')
 
 class TestErrors(TestCase):
     """
-    Tests to cover failure paths to complete test coverage
-    Also used to cover unusual paths such as Windows os, pure virtual classes
-    etc.
+    Tests to cover failure paths to complete test coverage.
+    Also used to cover other unusual paths such as
+      Windows os
+      pure virtual classes
+      etc.
     """
 
     @patch(
@@ -43,11 +47,11 @@ class TestErrors(TestCase):
         ]
 
         bad_file: Path = Path(__file__).absolute().parent.parent / \
-            'test_credentials' / '.no-token-here'
+                         'test_credentials' / '.no-token-here'
         token_file: Path = Path(__file__).absolute().parent.parent / \
-            'test_credentials' / '.gphotos.token'
+                           'test_credentials' / '.gphotos.token'
         secrets_file: Path = Path(__file__).absolute().parent.parent / \
-            'test_credentials' / 'client_secret.json'
+                             'test_credentials' / 'client_secret.json'
         test_data: Path = Path(__file__).absolute().parent.parent / 'test-data'
 
         if bad_file.exists():
@@ -165,4 +169,70 @@ class TestErrors(TestCase):
         with pytest.raises(ValueError):
             x = d.make(bad_column=1)
 
+        if d:
+            assert False, "empty DBRow returns true as Bool"
+
+    def test_google_albums_media(self):
+        m = GoogleAlbumMedia("")
+        g = GoogleAlbumsRow(None)
+        g.from_media(m)
+
+    def download_faves(self, expected=4, no_response=False, trash=True):
+        # Download favourite images only in test library.
+        s = ts.SetupDbAndCredentials()
+        args = [
+            '--album', 'Clones', '--use-flat-path', '--omit-album-date',
+            '--rescan'
+        ]
+        s.test_setup('test_google_albums_sync', args=args,
+                     trash_files=trash, trash_db=trash)
+        s.gp.start(s.parsed_args)
+
+        db = LocalData(s.root)
+        # Total of 1 out of media items
+        db.cur.execute("SELECT COUNT() FROM SyncFiles")
+        count = db.cur.fetchone()
+        self.assertEqual(expected, count[0])
+
+    class DummyResponse:
+        @staticmethod
+        def json():
+            return {}
+
+    @patch(
+        'gphotos.GoogleAlbumsSync.PAGE_SIZE',
+        new_callable=PropertyMock(return_value=1)
+    )
+    @patch(
+        'gphotos.GoogleAlbumsSync.ALBUM_ITEMS',
+        new_callable=PropertyMock(return_value=1)
+    )
+    @patch(
+        'gphotos.Checks.MAX_PATH_LENGTH',
+        new_callable=PropertyMock(return_value=4)
+    )
+    def test_google_albums_sync(self, page_size, album_items, max_path):
+        # next page in responses (set pageSize = 1) fetch_album_contents()
+        # blank response.json (empty album - add to test data?)
+        # also pagesize = 1 in index_albums_type()
+        # self._omit_album_date = True
+        # self._use_flat_path = True
+        # path > Checks.MAX_PATH_LENGTH
+        # skip hardlink on non-downloaded file (line 272)
+        # file exists already line 290
+
+        # check that next_page functionality works
+        # in fetch_album_contents and index_albums_type
+        self.download_faves()
+
+        # test file exists already in create_album_content_links
+        with patch('shutil.rmtree'):
+            self.download_faves(trash=False)
+
+        # check that empty media_json response works
+        with patch(
+                'gphotos.restclient.Method.execute',
+                return_value=self.DummyResponse()
+        ):
+            self.download_faves(expected=0)
 

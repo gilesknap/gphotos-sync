@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# coding: utf8
 import logging
 import os.path
 import shutil
@@ -17,6 +15,9 @@ from .LocalData import LocalData
 from .restclient import RestClient
 
 log = logging.getLogger(__name__)
+
+PAGE_SIZE = 100
+ALBUM_ITEMS = 50
 
 
 class GoogleAlbumsSync(object):
@@ -62,7 +63,7 @@ class GoogleAlbumsSync(object):
         body = {
             'pageToken': page_token,
             'albumId': album_id,
-            'pageSize': 100
+            'pageSize': PAGE_SIZE
         }
         return body
 
@@ -146,7 +147,7 @@ class GoogleAlbumsSync(object):
         # there are no filters in album listing at present so it always a
         # full rescan - it's quite quick
         count = 0
-        response = api_function(pageSize=50)
+        response = api_function(pageSize=ALBUM_ITEMS)
         while response:
             results = response.json()
             for album_json in results.get(item_key, []):
@@ -181,7 +182,7 @@ class GoogleAlbumsSync(object):
 
             next_page = results.get('nextPageToken')
             if next_page:
-                response = api_function(pageSize=50,
+                response = api_function(pageSize=ALBUM_ITEMS,
                                         pageToken=next_page)
             else:
                 break
