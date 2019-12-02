@@ -221,7 +221,7 @@ My detailed notes on the subject are here: `giles notes`_
 
 Google GPS Info update
 ----------------------
-UPDATE: the GPS scraping no longer works. I am investigating a couple of other avenues.
+UPDATE: the GPS scraping no longer works and has been removed. I am investigating a couple of other avenues.
 
 Google does not seem to be interested in fxing the issue of stripping location info from the EXIF info of images
 downloaded via their API (see https://issuetracker.google.com/issues/80379228#comment80). So I am investigating a workaround. See the option --get-locations. It uses

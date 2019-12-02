@@ -17,7 +17,6 @@ from gphotos.GooglePhotosDownload import GooglePhotosDownload
 from gphotos.GooglePhotosIndex import GooglePhotosIndex
 from gphotos.LocalData import LocalData
 from gphotos.LocalFilesScan import LocalFilesScan
-from gphotos.LocationUpdate import LocationUpdate
 from gphotos.authorize import Authorize
 from gphotos.restclient import RestClient
 
@@ -38,7 +37,6 @@ class GooglePhotosSyncMain:
         self.google_photos_down: GooglePhotosDownload = None
         self.google_albums_sync: GoogleAlbumsSync = None
         self.local_files_scan: LocalFilesScan = None
-        self.location_update: LocationUpdate = None
         self._start_date = None
         self._end_date = None
 
@@ -172,11 +170,6 @@ class GooglePhotosSyncMain:
         action='store_true',
         help="Dont download albums (for testing)")
     parser.add_argument(
-        "--get-locations",
-        action='store_true',
-        help="Scrape the Google Photos website for location metadata"
-             " and add it to the local files' EXIF metadata")
-    parser.add_argument(
         "--use-hardlinks",
         action='store_true',
         help="Use hardlinks instead of symbolic links in albums and comparison"
@@ -204,6 +197,11 @@ class GooglePhotosSyncMain:
         "--secret",
         help="Path to client secret file (by default this is in the "
              "application config directory)"
+    )
+    parser.add_argument(
+        "--archived",
+        action='store_true',
+        help="Download media items that have been marked as archived"
     )
     parser.add_help = True
 
@@ -257,9 +255,6 @@ class GooglePhotosSyncMain:
             photos_folder, albums_folder, args.use_flat_path,
             args.omit_album_date, args.use_hardlinks
         )
-        self.location_update = LocationUpdate(
-            root_folder, self.data_store, args.photos_path
-        )
         if args.compare_folder:
             self.local_files_scan = LocalFilesScan(
                 root_folder, compare_folder, self.data_store
@@ -272,14 +267,12 @@ class GooglePhotosSyncMain:
         self.google_albums_sync.album_index = not args.no_album_index
         self.google_albums_sync.use_start_date = args.album_date_by_first_photo
         self.google_albums_sync.album = args.album
+        self.google_albums_sync.favourites = args.favourites_only
 
         self.google_photos_down.start_date = self._start_date
         self.google_photos_down.end_date = self._end_date
         self.google_photos_down.retry_download = args.retry_download
         self.google_photos_down.case_insensitive_fs = args.case_insensitive_fs
-
-        self.location_update.start_date = self._start_date
-        self.location_update.end_date = self._end_date
 
         self.google_photos_idx.start_date = self._start_date
         self.google_photos_idx.end_date = self._end_date
@@ -287,6 +280,7 @@ class GooglePhotosSyncMain:
         self.google_photos_idx.rescan = args.rescan
         self.google_photos_idx.favourites = args.favourites_only
         self.google_photos_idx.case_insensitive_fs = args.case_insensitive_fs
+        self.google_photos_idx.archived = args.archived
 
     @classmethod
     def logging(cls, args: Namespace, folder: Path):
@@ -327,13 +321,6 @@ class GooglePhotosSyncMain:
         # add the handler to the root logger
         logging.getLogger('').addHandler(console)
 
-    def do_location(self, args: Namespace):
-        with self.data_store:
-            if not args.skip_index:
-                self.location_update.index_locations()
-            if not args.index_only:
-                self.location_update.set_locations()
-
     def do_sync(self, args: Namespace):
         new_files = True
         with self.data_store:
@@ -361,10 +348,7 @@ class GooglePhotosSyncMain:
                 self.local_files_scan.find_missing_gphotos()
 
     def start(self, args: Namespace):
-        if args.get_locations:
-            self.do_location(args)
-        else:
-            self.do_sync(args)
+        self.do_sync(args)
 
     @staticmethod
     def fs_checks(root_folder: Path, args: dict):

@@ -1,13 +1,9 @@
 from pathlib import Path
 from unittest import TestCase
-from unittest.mock import patch, Mock
-from requests.exceptions import HTTPError
 from typing import List
 import os
 from datetime import datetime
 
-from gphotos.BadIds import BadIds
-from gphotos.GooglePhotosDownload import GooglePhotosDownload
 import gphotos.Utils as Utils
 from gphotos.LocalData import LocalData
 import test.test_setup as ts
@@ -19,13 +15,13 @@ comparison_root = Path('comparison')
 
 
 class TestSystem(TestCase):
-    def test_sys_favourites(self):
+    def test_sys_favourites_and_dates(self):
         """Download favourite images in test library.
            Also Check that dates are set correctly
         """
         s = ts.SetupDbAndCredentials()
         args = [
-            '--favourites-only', '--skip-albums',
+            '--favourites-only',
             '--max-retries', '6',
             '--max-threads', '2'
         ]
@@ -55,7 +51,24 @@ class TestSystem(TestCase):
                 "Create date not set correctly"
             )
 
+    def test_sys_archived(self):
+        """Download archived images in test library.
+        """
+        s = ts.SetupDbAndCredentials()
+        args = [
+            '--archived', '--skip-albums',
+            '--start-date', '2019-10-01'
+        ]
+        s.test_setup('test_sys_archived', args=args,
+                     trash_files=True, trash_db=True)
+        s.gp.start(s.parsed_args)
 
+        db = LocalData(s.root)
+
+        # Total of 1 out of media items
+        db.cur.execute("SELECT COUNT() FROM SyncFiles")
+        count = db.cur.fetchone()
+        self.assertEqual(1, count[0])
 
     def test_shared_albums(self):
         """Download favourite images in test library.
@@ -358,39 +371,4 @@ class TestSystem(TestCase):
         self.assertEqual(
             t, count[0],
             "expected a total of {} items after full sync".format(t)
-        )
-
-    @patch.object(GooglePhotosDownload, 'do_download_file')
-    def test_bad_ids(self, do_download_file):
-
-        do_download_file.side_effect = HTTPError(Mock(status=500), 'ouch!')
-        s = ts.SetupDbAndCredentials()
-        args = ['--start-date', TestAccount.start,
-                '--end-date', TestAccount.end,
-                '--skip-albums'
-                ]
-        s.test_setup('test_bad_ids', args=args, trash_db=True,
-                     trash_files=True)
-        s.gp.start(s.parsed_args)
-        # check we tried to download 10 times
-        self.assertEqual(
-            do_download_file.call_count, TestAccount.image_count_2016,
-            "Expected {} downloads".format(TestAccount.image_count_2016)
-        )
-
-        # this should have created a Bad IDs file
-        bad_ids = BadIds(s.root)
-        self.assertEqual(
-            len(bad_ids.items), TestAccount.image_count_2016,
-            "Expected {} Bad IDs entries".format(TestAccount.image_count_2016)
-        )
-
-        do_download_file.reset_mock()
-
-        s.test_setup('test_bad_ids', args=args)
-        s.gp.start(s.parsed_args)
-        # this should have skipped the bad ids and not tried to download
-        self.assertEqual(
-            do_download_file.call_count, 0,
-            "Expected 0 calls to do_download"
         )

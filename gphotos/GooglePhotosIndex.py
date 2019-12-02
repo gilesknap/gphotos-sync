@@ -41,6 +41,7 @@ class GooglePhotosIndex(object):
         self.rescan: bool = False
         self.favourites = False
         self.case_insensitive_fs: bool = False
+        self.archived = False
 
     def check_for_removed_in_folder(self, folder: Path):
         for pth in folder.iterdir():
@@ -126,6 +127,7 @@ class GooglePhotosIndex(object):
                     "featureFilter": {
                         "includedFeatures": [feature]
                     },
+                    "includeArchivedMedia": self.archived
                 }
             }
             log.debug('mediaItems.search with body:\n{}'.format(body))

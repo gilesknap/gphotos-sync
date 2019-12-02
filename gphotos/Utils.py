@@ -13,7 +13,7 @@ SHORT_DATE_NORMALIZE = re.compile(r'(\d\d\d\d).(\d\d).(\d\d)')
 PatType = type(DATE_NORMALIZE)
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 DATE_ONLY = "%Y-%m-%d"
-MINIMUM_DATE = None
+MINIMUM_DATE = datetime(year=1900, month=1, day=1)
 
 
 # incredibly windows cannot handle dates below 1980
