@@ -182,7 +182,7 @@ To run ::
        --name gphotos-sync \
        -v /YOUR_LOCAL/PATH/TO_PHOTOS:/storage \
        -v /YOUR_LOCAL/PATH/TO_CONFIG:/config \
-       gilesknap/gphotos-sync
+       gilesknap/gphotos-sync \
       /storage
 
 To remove the container (for instance if you want to run it on scheduled basis and do a cleanup)::
