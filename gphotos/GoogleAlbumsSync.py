@@ -112,8 +112,8 @@ class GoogleAlbumsSync(object):
                     media_item.duplicate_number = num
 
                     log.debug('Adding album media item %s %s %s',
-                            media_item.relative_path, media_item.filename,
-                            media_item.duplicate_number)
+                          media_item.relative_path, media_item.filename,
+                          media_item.duplicate_number)
                     self._db.put_row(
                         GooglePhotosRow.from_media(media_item), False)
 
