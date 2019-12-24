@@ -79,7 +79,12 @@ class GoogleAlbumsSync(object):
             media_json = items_json.get('mediaItems')
             # cope with empty albums
             if not media_json:
-                break
+                if not items_json.get('nextPageToken'):
+                    break
+                else:
+                    media_json = []
+                    log.warning('*** Empty Media JSON with a Next Page Token')
+
             for media_item_json in media_json:
                 position += 1
                 media_item = GooglePhotosMedia(media_item_json)
@@ -107,8 +112,8 @@ class GoogleAlbumsSync(object):
                     media_item.duplicate_number = num
 
                     log.debug('Adding album media item %s %s %s',
-                              media_item.relative_path, media_item.filename,
-                              media_item.duplicate_number)
+                            media_item.relative_path, media_item.filename,
+                            media_item.duplicate_number)
                     self._db.put_row(
                         GooglePhotosRow.from_media(media_item), False)
 
