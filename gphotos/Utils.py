@@ -2,6 +2,7 @@
 # coding: utf8
 import re
 from datetime import datetime
+from pathlib import Path
 from tempfile import NamedTemporaryFile
 from os import utime, unlink, getcwd
 import logging
@@ -39,11 +40,12 @@ def maximum_date() -> datetime:
     return datetime.max
 
 
-def minimum_date() -> datetime:
+def minimum_date(root_folder: Path) -> datetime:
     global MINIMUM_DATE
-    with NamedTemporaryFile(dir=getcwd()) as t:
+
+    with NamedTemporaryFile(dir=str(root_folder)) as t:
         # determine the minimum date that is usable on the
-        # current platform (is there a better way to do this?)
+        # target filesystem (is there a better way to do this?)
         min_dates = (1800, 1900, 1970, 1971, 1980)
 
         for min_date in min_dates:

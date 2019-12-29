@@ -31,19 +31,30 @@ def symlinks_supported(root_folder: Path) -> bool:
 
 def is_case_sensitive(root_folder: Path) -> bool:
     log.debug('Checking if File system is case insensitive...')
-    filename1 = 'TeMp.TeSt'
-    filename2 = 'TEMP.TEST'
-    case_file = root_folder / filename1
-    no_case_file = root_folder / filename2
-    case_file.touch()
+    check_folder = root_folder / '.gphotos_check'
+    check_folder.mkdir()
+    case_file = check_folder / 'Temp.Test'
+    no_case_file = check_folder / 'TEMP.TEST'
     try:
-        no_case_file.unlink()
-    except FileNotFoundError:
+        case_file.touch()
+        no_case_file.touch()
+        files = list(check_folder.glob('*'))
+        if len(files) != 2:
+            raise ValueError("separate case files not seen")
         case_file.unlink()
-        return True
-    else:
+        no_case_file.unlink()
+    except (FileNotFoundError, ValueError):
         log.warning('Case insensitive file system found')
         return False
+    else:
+        log.warning('Case sensitive file system found')
+        return True
+    finally:
+        if case_file.exists():
+            case_file.unlink()
+        if no_case_file.exists():
+            no_case_file.unlink()
+        check_folder.rmdir()
 
 
 # noinspection PyBroadException
@@ -73,6 +84,7 @@ def get_max_filename_length(root_folder: Path) -> int:
     except BaseException:
         # for failures choose a safe size for Windows filesystems
         MAX_FILENAME_LENGTH = 248
-        log.warning(f'cant determine max filename length, defaulting to {MAX_FILENAME_LENGTH}')
+        log.warning(f'cant determine max filename length, '
+                    f'defaulting to {MAX_FILENAME_LENGTH}')
     log.debug('MAX_FILENAME_LENGTH: %d' % MAX_FILENAME_LENGTH)
     return MAX_FILENAME_LENGTH

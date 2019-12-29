@@ -67,6 +67,7 @@ etc/results.txt
 /etc/results_crash.txt
 etc/gphotos_photos_only_backup.sqlite
 etc/albumFolders.txt
+test/test_credentials/.no-token-here
 
 .nfs*
 
