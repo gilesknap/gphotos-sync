@@ -79,7 +79,12 @@ class GoogleAlbumsSync(object):
             media_json = items_json.get('mediaItems')
             # cope with empty albums
             if not media_json:
-                break
+                if not items_json.get('nextPageToken'):
+                    break
+                else:
+                    media_json = []
+                    log.warning('*** Empty Media JSON with a Next Page Token')
+
             for media_item_json in media_json:
                 position += 1
                 media_item = GooglePhotosMedia(media_item_json)
