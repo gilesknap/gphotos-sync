@@ -15,9 +15,7 @@ matrix:
     before_install:
     - pip3 install mock
     script:
-      - python3 -m pytest --log-format='%(asctime)s.%(msecs)03d %(filename)-25s
-      %(lineno)4d %(levelname)-8s %(message)s' --log-date-format='%Y-%m-%d %H:%M:%S' --log-level
-      debug
+    - python3 -m pytest --log-format='%(asctime)s.%(msecs)03d %(filename)-25s %(lineno)4d %(levelname)-8s %(message)s' --log-date-format='%Y-%m-%d %H:%M:%S' --log-level debug
   - os: windows
     language: sh
     python: '3.7'
