@@ -1,23 +1,23 @@
 language: python
+group: travis_latest
+
+dist: xenial
+
 services:
   - docker
 cache: pip
+
 matrix:
   include:
   - os: osx
     language: sh
     python: '3.7'
-    cache:
-      directories:
-      - "$HOME/Library/Caches/Homebrew"
     before_install:
-    - brew cleanup
-    - brew update
-    - brew upgrade python3
-    - python3 -m pip install virtualenv
-    - virtualenv .venv -p python3
-    - source .venv/bin/activate
-    - python -m pip install mock
+    - pip3 install mock
+    script:
+      - python3 -m pytest --log-format='%(asctime)s.%(msecs)03d %(filename)-25s
+      %(lineno)4d %(levelname)-8s %(message)s' --log-date-format='%Y-%m-%d %H:%M:%S' --log-level
+      debug
   - os: windows
     language: sh
     python: '3.7'
@@ -26,12 +26,12 @@ matrix:
     - export PATH="/c/Python37:/c/Python37/Scripts:$PATH"
     - python -m pip install --upgrade pip wheel
     - python -m pip install mock
-  - python: 3.6.7
-    dist: xenial
-    sudo: true
-  - python: 3.7.2
-    dist: xenial
-    sudo: true
+  - os: linux
+    python: '3.6'
+  - os: linux
+    python: '3.7'
+    after_success:
+       - codecov --token=dbadb6ba-0032-4812-bcc2-67ef7bafdfed
     deploy:
       - provider: pypi
         user: gilesknap
@@ -43,14 +43,13 @@ matrix:
         script: bash ./build-docker.sh
         on:
           tags: true
+
 install:
-- pip install .
-- pip install codecov
-- pip install pytest
-- pip install pytest-cov
+- pip3 install .
+- pip3 install codecov
+- pip3 install pytest
+- pip3 install pytest-cov
 script:
 - python -m pytest --cov=gphotos --log-format='%(asctime)s.%(msecs)03d %(filename)-25s
   %(lineno)4d %(levelname)-8s %(message)s' --log-date-format='%Y-%m-%d %H:%M:%S' --log-level
   debug
-after_script:
-- codecov --token=dbadb6ba-0032-4812-bcc2-67ef7bafdfed
