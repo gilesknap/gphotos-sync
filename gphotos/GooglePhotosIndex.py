@@ -152,6 +152,7 @@ class GooglePhotosIndex(object):
             media_json = items_json.get('mediaItems', [])
             items_count = 0
             for media_item_json in media_json:
+                log.debug("item json:\n%s", media_item_json)
                 items_count += 1
                 media_item = GooglePhotosMedia(media_item_json, to_lower=self.case_insensitive_fs)
                 media_item.set_path_by_date(self._media_folder,
