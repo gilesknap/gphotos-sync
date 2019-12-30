@@ -57,6 +57,13 @@ NOTES:
 * If you have shared albums and have clicked 'add to library' on items from others' libraries then you will have two
   copies of those items and they will show as duplicates too.
 
+Troubleshooting
+---------------
+
+- Installing on a slow machine (like old Raspberry Pi) or network may cause timeouts in pipenv. 
+
+  - This can be resolved by setting an environment variable `export PIPENV_TIMEOUT=240`
+
 Known Issues
 ------------
 A few outstanding limitations of the Google API restrict what can be achieved. All these issues have been reported
