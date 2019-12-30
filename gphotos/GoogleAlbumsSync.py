@@ -298,7 +298,7 @@ class GoogleAlbumsSync(object):
                             follow_symlinks=False
                         )
 
-            except FileExistsError:
+            except (FileExistsError, UnicodeEncodeError):
                 log.error('bad link to %s', full_file_name)
 
         log.warning("Created %d new album folder links", count)
