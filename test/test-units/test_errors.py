@@ -6,6 +6,7 @@ from gphotos.GoogleAlbumsRow import GoogleAlbumsRow
 from mock import patch, PropertyMock
 from pathlib import Path
 from unittest import TestCase
+from gphotos.Checks import valid_file_name
 
 import gphotos.authorize as auth
 from gphotos.DbRow import DbRow
@@ -95,10 +96,10 @@ class TestErrors(TestCase):
             x = b.url
 
         with patch(
-                'gphotos.BaseMedia.os_name',
+                'gphotos.Checks.os_name',
                 new_callable=PropertyMock(return_value='nt')
         ):
-            assert b.validate_encoding('hello.txt') == 'hello.txt'
+            assert valid_file_name('hello.txt') == 'hello.txt'
 
         """Download archived images in test library using flat folders (and
         windows file name restrictions)
@@ -133,7 +134,7 @@ class TestErrors(TestCase):
 
         with patch(
                 'gphotos.Checks.Path.unlink',
-                return_value=True
+                side_effect=FileNotFoundError()
         ):
             assert is_case_sensitive(a_path) is False
 
@@ -181,7 +182,7 @@ class TestErrors(TestCase):
         # Download favourite images only in test library.
         s = ts.SetupDbAndCredentials()
         args = [
-            '--album', 'Clones', '--use-flat-path', '--omit-album-date',
+            '--album', 'Clones😀', '--use-flat-path', '--omit-album-date',
             '--rescan'
         ]
         s.test_setup('test_google_albums_sync', args=args,

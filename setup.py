@@ -7,9 +7,16 @@ module_name = "gphotos-sync"
 install_reqs = [
     'exif',
     'appdirs',
+    'urllib3',
+    'requests',
     'requests_oauthlib',
     'PyYaml',
     'selenium'
+]
+
+develop_reqs = [
+    'pytest',
+    'mock',
 ]
 
 if os.name == 'nt':
@@ -31,6 +38,9 @@ setup(
     },
     long_description=long_description,
     install_requires=install_reqs,
+    extras_require={
+        'dev': develop_reqs
+    },
     package_data={'': ['gphotos/sql/gphotos_create.sql', 'LICENSE']},
     include_package_data=True,
     author='Giles Knap',

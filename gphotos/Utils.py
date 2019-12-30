@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # coding: utf8
-import re
 from datetime import datetime
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from os import utime, unlink, getcwd
+import re
+
 import logging
 
 log = logging.getLogger(__name__)
@@ -46,7 +47,10 @@ def minimum_date(root_folder: Path) -> datetime:
     with NamedTemporaryFile(dir=str(root_folder)) as t:
         # determine the minimum date that is usable on the
         # target filesystem (is there a better way to do this?)
-        min_dates = (1800, 1900, 1970, 1971, 1980)
+        # '1971', '1981' here is a bit of a hack - really we need use
+        # UTC correctly throughout this project - but for that to work well
+        # we would need all cameras to be well behaved WRT timezones.
+        min_dates = (1800, 1900, 1970, 1971, 1980, 1981)
 
         for min_date in min_dates:
             try:

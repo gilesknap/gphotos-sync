@@ -24,7 +24,7 @@ class TestAccount:
         r'1001?Shared?Test?Album',
         r'0101?Album?2001',
         r'0528?Movies',
-        r'0923?Clones',
+        r'0923?Clones😀',
         r'0926?Album?2016',
         r'1207?Same?Names'
     ]

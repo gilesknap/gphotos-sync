@@ -13,6 +13,7 @@ from .GooglePhotosMedia import GooglePhotosMedia
 from .GooglePhotosRow import GooglePhotosRow
 from .LocalData import LocalData
 from .restclient import RestClient
+from gphotos.Checks import valid_file_name
 
 log = logging.getLogger(__name__)
 
@@ -196,6 +197,7 @@ class GoogleAlbumsSync(object):
     def album_folder_name(
         self, album_name: str, start_date: datetime, end_date: datetime
     ) -> Path:
+        album_name = valid_file_name(album_name)
         if self._omit_album_date:
             rel_path = album_name
         else:
@@ -210,6 +212,7 @@ class GoogleAlbumsSync(object):
                 rel_path = u"{0}-{1} {2}".format(year, month, album_name)
             else:
                 rel_path = Path(year) / u"{0} {1}".format(month, album_name)
+
         link_folder: Path = self._links_root / rel_path
         return link_folder
 

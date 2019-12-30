@@ -1,7 +1,6 @@
 from pathlib import Path
-from os import name as os_name
-import re
 from datetime import datetime
+from .Checks import valid_file_name
 
 
 class BaseMedia(object):
@@ -10,11 +9,6 @@ class BaseMedia(object):
     from disk / loaded from DB / retrieved from the Google Photos Library
     """
     TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
-
-    # regex for illegal characters in file names and database queries
-    fix_linux = re.compile(r'[/]|[\x00-\x1f]|\x7f|\x00')
-    fix_windows = re.compile(r'[<>:"/\\|?*]|[\x00-\x1f]|\x7f|\x00')
-    fix_windows_ending = re.compile('([ .]+$)')
 
     def __init__(self, root_path: Path = Path(''), **k_args):
         self._id = None
@@ -25,21 +19,6 @@ class BaseMedia(object):
     # Allow boolean check to fail on empty BaseMedia
     def __bool__(self) -> bool:
         return self._id is not None
-
-    def validate_encoding(self, s: str) -> str:
-        """
-        makes sure a string is valid for creating file names and converts to
-        unicode assuming utf8 encoding if necessary
-
-        :param (str) s: input string (or unicode string)
-        :return: (unicode): sanitized string
-        """
-        if os_name == 'nt':
-            s = self.fix_windows.sub('_', s)
-            s = self.fix_windows_ending.split(s)[0]
-        else:
-            s = self.fix_linux.sub('_', s)
-        return s
 
     def set_path_by_date(self, root: Path, use_flat_path: bool = False):
         y = "{:04d}".format(self.create_date.year)
@@ -83,7 +62,7 @@ class BaseMedia(object):
                 'ext': Path(self.orig_name).suffix,
                 'duplicate': self.duplicate_number + 1
             }
-            filename = self.validate_encoding(file_str)
+            filename = valid_file_name(file_str)
         else:
             filename = self.orig_name
         return filename

@@ -355,6 +355,7 @@ class GooglePhotosSyncMain:
         Utils.minimum_date(root_folder)
         Checks.get_max_path_length(root_folder)
         Checks.get_max_filename_length(root_folder)
+        Checks.unicode_filenames(root_folder)
 
         # check if symlinks are supported
         if not Checks.symlinks_supported(root_folder):

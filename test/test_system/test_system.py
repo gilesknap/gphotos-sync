@@ -120,7 +120,7 @@ class TestSystem(TestCase):
                      trash_files=True)
         s.gp.start(s.parsed_args)
 
-        pat = str(albums_root / '2017' / '0923 Clones' / '*.*')
+        pat = str(albums_root / '2017' / '0923 Clones😀' / '*.*')
         files = sorted(s.root.glob(pat))
         self.assertEqual(4, len(files))
 
@@ -128,7 +128,7 @@ class TestSystem(TestCase):
         db = LocalData(s.root)
         db.cur.execute("UPDATE Albums SET EndDate='2017-09-20',"
                        "Size=3 WHERE "
-                       "AlbumName='Clones'")
+                       "AlbumName='Clones😀'")
         db.store()
 
         args = ['--start-date', '2017-09-19', '--end-date', '2017-09-23',
@@ -139,36 +139,36 @@ class TestSystem(TestCase):
         # the rescan will reset the date so set it back
         db = LocalData(s.root)
         db.cur.execute("UPDATE Albums SET EndDate='2017-09-20' "
-                       "WHERE AlbumName='Clones'")
+                       "WHERE AlbumName='Clones😀'")
         db.store()
 
         args = ['--skip-index', '--skip-files']
         s.test_setup('test_sys_album_add_file', args=args)
         s.gp.start(s.parsed_args)
 
-        pat = str(albums_root / '2017' / '0920 Clones' / '*.*')
+        pat = str(albums_root / '2017' / '0920 Clones😀' / '*.*')
         files = sorted(s.root.glob(pat))
         self.assertEqual(4, len(files))
-        should_be_gone = s.root / albums_root / '2017' / '0923 Clones'
+        should_be_gone = s.root / albums_root / '2017' / '0923 Clones😀'
         self.assertFalse(should_be_gone.exists())
 
         # test --album-date-by-first-photo
 
         # force re-download of the album
         db.cur.execute("UPDATE Albums SET Downloaded=0 "
-                       "WHERE AlbumName='Clones'")
+                       "WHERE AlbumName='Clones😀'")
         db.store()
         args = ['--skip-index', '--skip-files',
                 '--album-date-by-first-photo']
         s.test_setup('test_sys_album_add_file', args=args)
         s.gp.start(s.parsed_args)
 
-        pat = str(albums_root / '2017' / '0919 Clones' / '*.*')
+        pat = str(albums_root / '2017' / '0919 Clones😀' / '*.*')
         files = sorted(s.root.glob(pat))
         self.assertEqual(4, len(files))
 
         should_be_gone = s.root / albums_root.absolute() \
-            / '2017' / '0920 Clones'
+            / '2017' / '0920 Clones😀'
         self.assertFalse(should_be_gone.exists())
 
     def test_system_date_range(self):
@@ -189,7 +189,7 @@ class TestSystem(TestCase):
     def test_system_hard_link(self):
         s = ts.SetupDbAndCredentials()
         args = ['--start-date', '2016-01-01', '--end-date', '2017-01-01',
-                '--use-hardlinks', '--album', 'Clones']
+                '--use-hardlinks', '--album', 'Clones😀']
         s.test_setup('test_system_hard_link', args=args, trash_db=True,
                      trash_files=True)
         s.gp.start(s.parsed_args)
@@ -200,7 +200,7 @@ class TestSystem(TestCase):
             count = db.cur.fetchone()
             self.assertEqual(4, count[0])
 
-        pat = str(albums_root / '*' / '*Clones' / '*')
+        pat = str(albums_root / '*' / '*Clones😀' / '*')
         links: List[Path] = sorted(s.root.glob(pat))
         self.assertEqual(4, len(links))
         for link in links:
@@ -209,7 +209,7 @@ class TestSystem(TestCase):
         # verify that switching to soft links in the same folder
         # overwrites all hard links
         args = ['--start-date', '2016-01-01', '--end-date', '2017-01-01',
-                '--album', 'Clones', '--flush-index']
+                '--album', 'Clones😀', '--flush-index']
         s.test_setup('test_system_hard_link', args=args, trash_db=False,
                      trash_files=False)
         s.gp.start(s.parsed_args)
@@ -220,7 +220,7 @@ class TestSystem(TestCase):
             count = db.cur.fetchone()
             self.assertEqual(4, count[0])
 
-            pat = str(albums_root / '*' / '*Clones' / '*')
+            pat = str(albums_root / '*' / '*Clones😀' / '*')
             links = sorted(s.root.glob(pat))
             self.assertEqual(4, len(links))
             for link in links:

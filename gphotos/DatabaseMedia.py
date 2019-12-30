@@ -2,8 +2,10 @@
 # coding: utf8
 from datetime import datetime
 from typing import TypeVar
+from . import Utils
 
 from gphotos.BaseMedia import BaseMedia
+from .Checks import valid_file_name
 
 # this allows self reference to this class in its factory methods
 D = TypeVar('D', bound='DatabaseMedia')
@@ -89,21 +91,21 @@ class DatabaseMedia(BaseMedia):
         """
         The description of the file
         """
-        return self.validate_encoding(self._description)
+        return valid_file_name(self._description)
 
     @property
     def orig_name(self) -> str:
         """
         Original filename before duplicate name handling
         """
-        return self.validate_encoding(self._orig_name)
+        return valid_file_name(self._orig_name)
 
     @property
     def filename(self) -> str:
         """
         filename including a suffix to make it unique if duplicates exist
         """
-        return self.validate_encoding(self._filename)
+        return valid_file_name(self._filename)
 
     @property
     def create_date(self) -> datetime:

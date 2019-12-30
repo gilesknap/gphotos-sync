@@ -8,6 +8,8 @@ from typing import Dict, List, Union, Any
 from datetime import datetime
 import re
 
+from .Checks import valid_file_name
+
 DuplicateSuffix = re.compile(r'(.*)[ ]\(\d+\)(\..*)')
 
 JSONValue = Union[str, int, float, bool, None, Dict[str, Any], List[Any]]
@@ -42,7 +44,7 @@ class GooglePhotosMedia(BaseMedia):
     @property
     def description(self) -> str:
         try:
-            return self.validate_encoding(
+            return valid_file_name(
                 self.__media_json["description"])
         except KeyError:
             return ''
@@ -59,7 +61,7 @@ class GooglePhotosMedia(BaseMedia):
             name = ''
         if self.__lower:
             name = name.lower()
-        return Path(self.validate_encoding(name))
+        return Path(valid_file_name(name))
 
     @property
     def create_date(self) -> datetime:

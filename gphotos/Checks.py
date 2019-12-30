@@ -1,14 +1,24 @@
 import os
 
+import re
 import logging
 import random
+import shutil
 import subprocess
+from os import name as os_name
 from pathlib import Path
 
 log = logging.getLogger(__name__)
 
 MAX_PATH_LENGTH = 4096
 MAX_FILENAME_LENGTH = 255
+UNICODE_FILENAMES = True
+
+# regex for illegal characters in file names and database queries
+fix_linux = re.compile(r'[/]|[\x00-\x1f]|\x7f|\x00')
+fix_windows = re.compile(r'[<>:"/\\|?*]|[\x00-\x1f]|\x7f|\x00')
+fix_windows_ending = re.compile('([ .]+$)')
+fix_unicode = re.compile(r'[^\x00-\x7F]')
 
 
 def symlinks_supported(root_folder: Path) -> bool:
@@ -29,13 +39,30 @@ def symlinks_supported(root_folder: Path) -> bool:
     return True
 
 
+def unicode_filenames(root_folder: Path) -> bool:
+    global UNICODE_FILENAMES
+    log.debug('Checking if File system supports unicode filenames...')
+    testfile = root_folder / u'.unicode_test.\U0001f604'
+    # noinspection PyBroadException
+    try:
+        testfile.touch()
+    except BaseException:
+        log.warning('Filesystem does not support Unicode filenames')
+        UNICODE_FILENAMES = False
+    else:
+        log.warning('Filesystem supports Unicode filenames')
+        UNICODE_FILENAMES = True
+        testfile.unlink()
+    return UNICODE_FILENAMES
+
+
 def is_case_sensitive(root_folder: Path) -> bool:
     log.debug('Checking if File system is case insensitive...')
     check_folder = root_folder / '.gphotos_check'
-    check_folder.mkdir()
     case_file = check_folder / 'Temp.Test'
     no_case_file = check_folder / 'TEMP.TEST'
     try:
+        check_folder.mkdir()
         case_file.touch()
         no_case_file.touch()
         files = list(check_folder.glob('*'))
@@ -50,11 +77,7 @@ def is_case_sensitive(root_folder: Path) -> bool:
         log.warning('Case sensitive file system found')
         return True
     finally:
-        if case_file.exists():
-            case_file.unlink()
-        if no_case_file.exists():
-            no_case_file.unlink()
-        check_folder.rmdir()
+        shutil.rmtree(check_folder)
 
 
 # noinspection PyBroadException
@@ -88,3 +111,22 @@ def get_max_filename_length(root_folder: Path) -> int:
                     f'defaulting to {MAX_FILENAME_LENGTH}')
     log.debug('MAX_FILENAME_LENGTH: %d' % MAX_FILENAME_LENGTH)
     return MAX_FILENAME_LENGTH
+
+
+def valid_file_name(s: str) -> str:
+    """
+    makes sure a string is valid for creating file names
+
+    :param (str) s: input string
+    :return: (str): sanitized string
+    """
+    global UNICODE_FILENAMES
+
+    if os_name == 'nt':
+        s = fix_windows.sub('_', s)
+        s = fix_windows_ending.split(s)[0]
+    else:
+        s = fix_linux.sub('_', s)
+    if not UNICODE_FILENAMES:
+        s = fix_unicode.sub('_', s)
+    return s
