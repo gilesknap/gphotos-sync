@@ -268,6 +268,7 @@ class GooglePhotosSyncMain:
         self.google_albums_sync.use_start_date = args.album_date_by_first_photo
         self.google_albums_sync.album = args.album
         self.google_albums_sync.favourites = args.favourites_only
+        self.google_albums_sync.include_video = not args.skip_video
 
         self.google_photos_down.start_date = self._start_date
         self.google_photos_down.end_date = self._end_date

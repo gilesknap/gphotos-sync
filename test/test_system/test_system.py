@@ -372,3 +372,20 @@ class TestSystem(TestCase):
             t, count[0],
             "expected a total of {} items after full sync".format(t)
         )
+
+    def test_skip_video_on_album(self):
+        """ verify that skip video works when syncing a specific folder
+        """
+        s = ts.SetupDbAndCredentials()
+        args = ['--skip-video', '--album', 'Movies']
+        s.test_setup('test_skip_video_on_album', args=args,
+                     trash_files=True, trash_db=True)
+        s.gp.start(s.parsed_args)
+
+        with LocalData(s.root) as db:
+            db.cur.execute("SELECT COUNT() FROM AlbumFiles")
+            count = db.cur.fetchone()
+            self.assertEqual(
+                0, count[0],
+                'expected 0 video files in album Movies'
+            )

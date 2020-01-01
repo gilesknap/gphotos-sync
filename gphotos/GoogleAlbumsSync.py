@@ -57,6 +57,7 @@ class GoogleAlbumsSync(object):
         self.album_index = True
         self.use_start_date = False
         self.favourites = False
+        self.include_video = None
 
     @classmethod
     def make_search_parameters(cls, album_id: str,
@@ -89,6 +90,12 @@ class GoogleAlbumsSync(object):
             for media_item_json in media_json:
                 position += 1
                 media_item = GooglePhotosMedia(media_item_json)
+
+                if (not self.include_video) and media_item.is_video():
+                    log.debug('---- skipping %s (--skip-video)',
+                              media_item.filename)
+                    continue
+
                 log.debug('----%s', media_item.filename)
                 self._db.put_album_file(album_id, media_item.id, position)
                 last_date = max(media_item.create_date, last_date)
