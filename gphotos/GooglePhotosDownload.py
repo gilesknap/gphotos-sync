@@ -173,7 +173,7 @@ class GooglePhotosDownload(object):
                                 batch.keys())
                     log.debug(
                         "Null response in mediaItems.batchGet"
-                        "for item &d in\n\n %s \n\n which is \n%s",
+                        "for item %d in\n\n %s \n\n which is \n%s",
                         i, str(r_json), str(result)
                     )
                 else:
