@@ -30,12 +30,13 @@ def symlinks_supported(root_folder: Path) -> bool:
     src_file.touch()
     try:
         dst_file.symlink_to(src_file)
+        src_file.unlink()
+        dst_file.unlink()
     except OSError:
+        src_file.unlink()
         log.error('Symbolic links not supported')
         log.error('Albums are not going to be synced - requires symlinks')
         return False
-    src_file.unlink()
-    dst_file.unlink()
     return True
 
 
