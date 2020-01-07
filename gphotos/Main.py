@@ -3,7 +3,6 @@ import logging
 import os
 import sys
 from argparse import Namespace, ArgumentParser
-from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
