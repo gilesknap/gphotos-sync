@@ -4,6 +4,7 @@ from pathlib import Path
 import os
 from gphotos import Utils
 from gphotos.LocalData import LocalData
+from .Settings import Settings
 from gphotos.restclient import RestClient
 from gphotos.DatabaseMedia import DatabaseMedia
 from gphotos.GooglePhotosRow import GooglePhotosRow
@@ -41,33 +42,32 @@ class GooglePhotosDownload(object):
 
     def __init__(
             self, api: RestClient, root_folder: Path,
-            db: LocalData, max_retries: int = 5,
-            max_threads: int = 20
+            db: LocalData, settings: Settings
     ):
         """
         Parameters:
             api: object representing the Google REST API
             root_folder: path to the root of local file synchronization
             db: local database for indexing
+            settings: further arguments
         """
         self._db: LocalData = db
         self._root_folder: Path = root_folder
         self._api: RestClient = api
-        self.max_threads = max_threads
 
         self.files_downloaded: int = 0
         self.files_download_started: int = 0
         self.files_download_skipped: int = 0
         self.files_download_failed: int = 0
 
-        # attributes to be set after init
-        # thus in theory one instance could so multiple indexes
-        self.start_date: datetime = None
-        self.end_date: datetime = None
-        self.retry_download: bool = False
+        self.settings = settings
+        self.max_threads = settings.max_threads
+        self.start_date: datetime = settings.start_date
+        self.end_date: datetime = settings.end_date
+        self.retry_download: bool = settings.retry_download
+        self.case_insensitive_fs: bool = settings.case_insensitive_fs
         self.video_timeout: int = 2000
         self.image_timeout: int = 60
-        self.case_insensitive_fs: bool = False
 
         # attributes related to multi-threaded download
         self.download_pool = futures.ThreadPoolExecutor(
@@ -78,7 +78,7 @@ class GooglePhotosDownload(object):
         os.umask(self.current_umask)
 
         self._session = requests.Session()
-        retries = Retry(total=max_retries,
+        retries = Retry(total=settings.max_retries,
                         backoff_factor=0.1,
                         status_forcelist=[500, 502, 503, 504],
                         method_whitelist=frozenset(['GET', 'POST']),
@@ -295,6 +295,9 @@ class GooglePhotosDownload(object):
                 self.files_downloaded += 1
                 log.debug('COMPLETED %d downloading %s',
                           self.files_downloaded, media_item.relative_path)
+                if self.settings.progress and self.files_downloaded % 10 == 0:
+                    log.warning(
+                        f"Downloaded {self.files_downloaded} items ...\033[F")
             del self.pool_future_to_media[future]
 
     def find_bad_items(self, batch: Mapping[str, DatabaseMedia]):

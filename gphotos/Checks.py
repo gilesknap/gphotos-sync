@@ -48,10 +48,10 @@ def unicode_filenames(root_folder: Path) -> bool:
     try:
         testfile.touch()
     except BaseException:
-        log.warning('Filesystem does not support Unicode filenames')
+        log.info('Filesystem does not support Unicode filenames')
         UNICODE_FILENAMES = False
     else:
-        log.warning('Filesystem supports Unicode filenames')
+        log.info('Filesystem supports Unicode filenames')
         UNICODE_FILENAMES = True
         testfile.unlink()
     return UNICODE_FILENAMES
@@ -72,10 +72,10 @@ def is_case_sensitive(root_folder: Path) -> bool:
         case_file.unlink()
         no_case_file.unlink()
     except (FileNotFoundError, ValueError):
-        log.warning('Case insensitive file system found')
+        log.info('Case insensitive file system found')
         return False
     else:
-        log.warning('Case sensitive file system found')
+        log.info('Case sensitive file system found')
         return True
     finally:
         shutil.rmtree(check_folder)

@@ -3,6 +3,7 @@ import logging
 import os
 import sys
 from argparse import Namespace, ArgumentParser
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
@@ -17,6 +18,7 @@ from gphotos.GooglePhotosDownload import GooglePhotosDownload
 from gphotos.GooglePhotosIndex import GooglePhotosIndex
 from gphotos.LocalData import LocalData
 from gphotos.LocalFilesScan import LocalFilesScan
+from gphotos.Settings import Settings
 from gphotos.authorize import Authorize
 from gphotos.restclient import RestClient
 
@@ -203,12 +205,15 @@ class GooglePhotosSyncMain:
         action='store_true',
         help="Download media items that have been marked as archived"
     )
+    parser.add_argument(
+        "--progress",
+        action='store_true',
+        help="show progress of indexing and downloading in warning log"
+    )
     parser.add_help = True
 
     def setup(self, args: Namespace, db_path: Path):
         root_folder = Path(args.root_folder).absolute()
-        photos_folder = Path(args.photos_path)
-        albums_folder = Path(args.albums_path)
 
         compare_folder = None
         if args.compare_folder:
@@ -238,50 +243,49 @@ class GooglePhotosSyncMain:
         )
         self.auth.authorize()
 
+        settings = Settings(
+            start_date=Utils.string_to_date(args.start_date),
+            end_date=Utils.string_to_date(args.end_date),
+            shared_albums=not args.skip_shared_albums,
+            album_index=not args.no_album_index,
+            use_start_date=args.album_date_by_first_photo,
+            album=args.album,
+            favourites_only=args.favourites_only,
+            retry_download=args.retry_download,
+            case_insensitive_fs=args.case_insensitive_fs,
+            include_video=not args.skip_video,
+            rescan=args.rescan,
+            archived=args.archived,
+            photos_path=Path(args.photos_path),
+            albums_path=Path(args.albums_path),
+            use_flat_path=args.use_flat_path,
+            max_retries=int(args.max_retries),
+            max_threads=int(args.max_threads),
+            omit_album_date=args.omit_album_date,
+            use_hardlinks=args.use_hardlinks,
+            progress=args.progress
+        )
+
         self.google_photos_client = RestClient(
             photos_api_url, self.auth.session
         )
         self.google_photos_idx = GooglePhotosIndex(
             self.google_photos_client, root_folder, self.data_store,
-            args.photos_path, args.use_flat_path
+            settings
         )
         self.google_photos_down = GooglePhotosDownload(
             self.google_photos_client, root_folder, self.data_store,
-            int(args.max_retries), int(args.max_threads)
+            settings
         )
         self.google_albums_sync = GoogleAlbumsSync(
             self.google_photos_client, root_folder, self.data_store,
             args.flush_index or args.retry_download or args.rescan,
-            photos_folder, albums_folder, args.use_flat_path,
-            args.omit_album_date, args.use_hardlinks
+            settings
         )
         if args.compare_folder:
             self.local_files_scan = LocalFilesScan(
                 root_folder, compare_folder, self.data_store
             )
-
-        self._start_date = Utils.string_to_date(args.start_date)
-        self._end_date = Utils.string_to_date(args.end_date)
-
-        self.google_albums_sync.shared_albums = not args.skip_shared_albums
-        self.google_albums_sync.album_index = not args.no_album_index
-        self.google_albums_sync.use_start_date = args.album_date_by_first_photo
-        self.google_albums_sync.album = args.album
-        self.google_albums_sync.favourites = args.favourites_only
-        self.google_albums_sync.include_video = not args.skip_video
-
-        self.google_photos_down.start_date = self._start_date
-        self.google_photos_down.end_date = self._end_date
-        self.google_photos_down.retry_download = args.retry_download
-        self.google_photos_down.case_insensitive_fs = args.case_insensitive_fs
-
-        self.google_photos_idx.start_date = self._start_date
-        self.google_photos_idx.end_date = self._end_date
-        self.google_photos_idx.include_video = not args.skip_video
-        self.google_photos_idx.rescan = args.rescan
-        self.google_photos_idx.favourites = args.favourites_only
-        self.google_photos_idx.case_insensitive_fs = args.case_insensitive_fs
-        self.google_photos_idx.archived = args.archived
 
     @classmethod
     def logging(cls, args: Namespace, folder: Path):

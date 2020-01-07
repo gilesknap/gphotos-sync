@@ -12,6 +12,7 @@ from .GoogleAlbumsRow import GoogleAlbumsRow
 from .GooglePhotosMedia import GooglePhotosMedia
 from .GooglePhotosRow import GooglePhotosRow
 from .LocalData import LocalData
+from .Settings import Settings
 from .restclient import RestClient
 from gphotos.Checks import valid_file_name
 
@@ -26,38 +27,34 @@ class GoogleAlbumsSync(object):
     """
 
     def __init__(self, api: RestClient, root_folder: Path, db: LocalData,
-                 flush: bool, photos_path: Path,
-                 albums_path: Path, use_flat_path=True, omit_album_date=True,
-                 use_hardlinks=False):
+                 flush: bool, settings: Settings):
         """
         Parameters:
             root_folder: path to the root of local file synchronization
             api: object representing the Google REST API
             db: local database for indexing
-            :param use_flat_path:
-            :param omit_album_date:
-            :param use_hardlinks:
-            :param photos_path:
-            :param albums_path:
+            settings: further arguments
         """
+        self._photos_folder = settings.photos_path
+        self._albums_folder = settings.albums_path
+
         self._root_folder: Path = root_folder
-        self._photos_folder = Path(photos_path)
-        self._albums_folder = Path(albums_path)
         self._links_root = self._root_folder / self._albums_folder
         self._photos_root = self._root_folder / self._photos_folder
         self._db: LocalData = db
         self._api: RestClient = api
-        self._use_flat_path = use_flat_path
-        self._omit_album_date = omit_album_date
-        self._use_hardlinks = use_hardlinks
         self.flush = flush
-        # these properties are set after construction
-        self.album = None
-        self.shared_albums = True
-        self.album_index = True
-        self.use_start_date = False
-        self.favourites = False
-        self.include_video = None
+
+        self.settings = settings
+        self.album = settings.album
+        self.shared_albums = settings.shared_albums
+        self.album_index = settings.album_index
+        self.use_start_date = settings.use_start_date
+        self.favourites = settings.favourites_only
+        self.include_video = settings.include_video
+        self._use_flat_path = settings.use_flat_path
+        self._omit_album_date = settings.omit_album_date
+        self._use_hardlinks = settings.use_hardlinks
 
     @classmethod
     def make_search_parameters(cls, album_id: str,
@@ -192,6 +189,9 @@ class GoogleAlbumsSync(object):
                         album.id, album.filename, album.size,
                         first_date, last_date)
                     self._db.put_row(gar, update=indexed_album)
+
+                if self.settings.progress and count % 10 == 0:
+                    log.warning(f"Listed {count} {description} ...\033[F")
 
             next_page = results.get('nextPageToken')
             if next_page:
