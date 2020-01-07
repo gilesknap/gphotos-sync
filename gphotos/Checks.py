@@ -30,12 +30,13 @@ def symlinks_supported(root_folder: Path) -> bool:
     src_file.touch()
     try:
         dst_file.symlink_to(src_file)
-    except OSError:
+        src_file.unlink()
+        dst_file.unlink()
+    except (OSError, FileNotFoundError):
+        src_file.unlink()
         log.error('Symbolic links not supported')
         log.error('Albums are not going to be synced - requires symlinks')
         return False
-    src_file.unlink()
-    dst_file.unlink()
     return True
 
 
@@ -47,10 +48,10 @@ def unicode_filenames(root_folder: Path) -> bool:
     try:
         testfile.touch()
     except BaseException:
-        log.warning('Filesystem does not support Unicode filenames')
+        log.info('Filesystem does not support Unicode filenames')
         UNICODE_FILENAMES = False
     else:
-        log.warning('Filesystem supports Unicode filenames')
+        log.info('Filesystem supports Unicode filenames')
         UNICODE_FILENAMES = True
         testfile.unlink()
     return UNICODE_FILENAMES
@@ -71,10 +72,10 @@ def is_case_sensitive(root_folder: Path) -> bool:
         case_file.unlink()
         no_case_file.unlink()
     except (FileNotFoundError, ValueError):
-        log.warning('Case insensitive file system found')
+        log.info('Case insensitive file system found')
         return False
     else:
-        log.warning('Case sensitive file system found')
+        log.info('Case sensitive file system found')
         return True
     finally:
         shutil.rmtree(check_folder)

@@ -11,7 +11,7 @@ install_reqs = [
     'requests',
     'requests_oauthlib',
     'PyYaml',
-    'selenium'
+    'selenium', 'attr'
 ]
 
 develop_reqs = [

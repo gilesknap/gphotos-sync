@@ -80,17 +80,17 @@ class GooglePhotosMedia(BaseMedia):
 
     @property
     def mime_type(self) -> str:
-        return self.__media_json['mimeType']
+        return self.__media_json.get('mimeType')
 
     @property
     def url(self) -> str:
-        return self.__media_json['productUrl']
+        return self.__media_json.get('productUrl')
 
     @property
     def camera_model(self):
         camera_model = None
         try:
-            camera_model = self.__media_meta['cameraModel']
+            camera_model = self.__media_meta.get('cameraModel')
         except (KeyError, AttributeError):
             pass
         return camera_model
