@@ -32,7 +32,7 @@ def symlinks_supported(root_folder: Path) -> bool:
         dst_file.symlink_to(src_file)
         src_file.unlink()
         dst_file.unlink()
-    except OSError:
+    except (OSError, FileNotFoundError):
         src_file.unlink()
         log.error('Symbolic links not supported')
         log.error('Albums are not going to be synced - requires symlinks')
