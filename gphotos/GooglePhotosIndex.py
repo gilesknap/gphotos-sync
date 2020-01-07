@@ -2,12 +2,14 @@
 # coding: utf8
 from pathlib import Path
 from datetime import datetime
+from time import sleep
 
 from gphotos import Utils
 from gphotos.GooglePhotosMedia import GooglePhotosMedia
 from gphotos.GooglePhotosRow import GooglePhotosRow
 from gphotos.LocalFilesMedia import LocalFilesMedia
 from gphotos.LocalData import LocalData
+from gphotos.Settings import Settings
 from gphotos.restclient import RestClient
 
 import logging
@@ -19,12 +21,10 @@ class GooglePhotosIndex(object):
     PAGE_SIZE = 100
 
     def __init__(self, api: RestClient, root_folder: Path, db: LocalData,
-                 photos_path: Path, use_flat_path: bool = False):
+                 settings: Settings):
         self._api: RestClient = api
         self._root_folder: Path = root_folder
         self._db: LocalData = db
-        self._media_folder: Path = Path(photos_path)
-        self._use_flat_path = use_flat_path
 
         self.files_indexed: int = 0
         self.files_index_skipped: int = 0
@@ -33,15 +33,15 @@ class GooglePhotosIndex(object):
             self.latest_download = self._db.get_scan_date() or \
                                    Utils.MINIMUM_DATE
 
-        # attributes to be set after init
-        # thus in theory one instance could do multiple indexes
-        self.start_date: datetime = None
-        self.end_date: datetime = None
-        self.include_video: bool = True
-        self.rescan: bool = False
-        self.favourites = False
-        self.case_insensitive_fs: bool = False
-        self.archived = False
+        self.start_date: datetime = settings.start_date
+        self.end_date: datetime = settings.end_date
+        self.include_video: bool = settings.include_video
+        self.rescan: bool = settings.rescan
+        self.favourites = settings.favourites_only
+        self.case_insensitive_fs: bool = settings.case_insensitive_fs
+        self.archived: bool = settings.archived
+        self._use_flat_path: bool = settings.use_flat_path
+        self._media_folder: Path = settings.photos_path
 
     def check_for_removed_in_folder(self, folder: Path):
         for pth in folder.iterdir():
@@ -166,7 +166,7 @@ class GooglePhotosIndex(object):
                 # we just learned if there were any duplicates in the db
                 media_item.duplicate_number = num
 
-                if total_listed % 100 == 0:
+                if total_listed % 10 == 0:
                     log.warning(f"Listed {total_listed} items ...\033[F")
                 if not row:
                     self.files_indexed += 1
