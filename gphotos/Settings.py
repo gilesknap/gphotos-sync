@@ -28,3 +28,4 @@ class Settings:
     max_retries: int
     max_threads: int
     case_insensitive_fs: bool
+    progress: bool

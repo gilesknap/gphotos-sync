@@ -33,6 +33,7 @@ class GooglePhotosIndex(object):
             self.latest_download = self._db.get_scan_date() or \
                                    Utils.MINIMUM_DATE
 
+        self.settings = settings
         self.start_date: datetime = settings.start_date
         self.end_date: datetime = settings.end_date
         self.include_video: bool = settings.include_video
@@ -166,7 +167,7 @@ class GooglePhotosIndex(object):
                 # we just learned if there were any duplicates in the db
                 media_item.duplicate_number = num
 
-                if total_listed % 10 == 0:
+                if self.settings.progress and total_listed % 10 == 0:
                     log.warning(f"Listed {total_listed} items ...\033[F")
                 if not row:
                     self.files_indexed += 1

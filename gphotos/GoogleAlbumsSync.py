@@ -45,6 +45,7 @@ class GoogleAlbumsSync(object):
         self._api: RestClient = api
         self.flush = flush
 
+        self.settings = settings
         self.album = settings.album
         self.shared_albums = settings.shared_albums
         self.album_index = settings.album_index
@@ -189,9 +190,8 @@ class GoogleAlbumsSync(object):
                         first_date, last_date)
                     self._db.put_row(gar, update=indexed_album)
 
-                if count % 10 == 0:
+                if self.settings.progress and count % 10 == 0:
                     log.warning(f"Listed {count} {description} ...\033[F")
-
 
             next_page = results.get('nextPageToken')
             if next_page:

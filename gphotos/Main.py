@@ -262,7 +262,8 @@ class GooglePhotosSyncMain:
             max_retries=int(args.max_retries),
             max_threads=int(args.max_threads),
             omit_album_date=args.omit_album_date,
-            use_hardlinks=args.use_hardlinks
+            use_hardlinks=args.use_hardlinks,
+            progress=args.progress
         )
 
         self.google_photos_client = RestClient(

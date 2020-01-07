@@ -25,7 +25,7 @@ class TestSystem(TestCase):
         s = ts.SetupDbAndCredentials()
         s.test_setup('test_sys_whole_library', trash_files=True,
                      trash_db=True)
-        s.gp.main([str(s.root), '--skip-shared-albums'])
+        s.gp.main([str(s.root), '--skip-shared-albums', '--progress'])
 
         db = LocalData(s.root)
 

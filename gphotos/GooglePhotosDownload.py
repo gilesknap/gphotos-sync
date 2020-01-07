@@ -60,6 +60,7 @@ class GooglePhotosDownload(object):
         self.files_download_skipped: int = 0
         self.files_download_failed: int = 0
 
+        self.settings = settings
         self.max_threads = settings.max_threads
         self.start_date: datetime = settings.start_date
         self.end_date: datetime = settings.end_date
@@ -294,7 +295,7 @@ class GooglePhotosDownload(object):
                 self.files_downloaded += 1
                 log.debug('COMPLETED %d downloading %s',
                           self.files_downloaded, media_item.relative_path)
-                if self.files_downloaded % 10 == 0:
+                if self.settings.progress and self.files_downloaded % 10 == 0:
                     log.warning(
                         f"Downloaded {self.files_downloaded} items ...\033[F")
             del self.pool_future_to_media[future]
