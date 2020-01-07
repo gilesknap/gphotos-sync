@@ -193,6 +193,8 @@ class GoogleAlbumsSync(object):
                         first_date, last_date)
                     self._db.put_row(gar, update=indexed_album)
 
+            log.warning(f"Listed {count} {description} ...\033[F")
+
             next_page = results.get('nextPageToken')
             if next_page:
                 response = api_function(pageSize=ALBUM_ITEMS,

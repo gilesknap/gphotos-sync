@@ -168,7 +168,7 @@ class GooglePhotosDownload(object):
 
             for i, result in enumerate(r_json["mediaItemResults"]):
                 media_item_json = result.get("mediaItem")
-                if not media_item_json:
+                if not media_item_json or i == 1:
                     log.warning('Null response in mediaItems.batchGet %s',
                                 batch.keys())
                     log.debug(
@@ -295,6 +295,9 @@ class GooglePhotosDownload(object):
                 self.files_downloaded += 1
                 log.debug('COMPLETED %d downloading %s',
                           self.files_downloaded, media_item.relative_path)
+                if self.files_downloaded % 100 == 0:
+                    log.warning(
+                        f"Downloaded {self.files_downloaded} items ...\033[F")
             del self.pool_future_to_media[future]
 
     def find_bad_items(self, batch: Mapping[str, DatabaseMedia]):

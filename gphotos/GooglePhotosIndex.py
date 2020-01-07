@@ -135,6 +135,7 @@ class GooglePhotosIndex(object):
 
     def index_photos_media(self) -> bool:
         log.warning('Indexing Google Photos Files ...')
+        total_listed = 0
 
         if self.start_date:
             start_date = self.start_date
@@ -153,6 +154,7 @@ class GooglePhotosIndex(object):
             items_count = 0
             for media_item_json in media_json:
                 items_count += 1
+                total_listed += 1
                 media_item = GooglePhotosMedia(
                     media_item_json, to_lower=self.case_insensitive_fs
                 )
@@ -164,6 +166,8 @@ class GooglePhotosIndex(object):
                 # we just learned if there were any duplicates in the db
                 media_item.duplicate_number = num
 
+                if total_listed % 100 == 0:
+                    log.warning(f"Listed {total_listed} items ...\033[F")
                 if not row:
                     self.files_indexed += 1
                     log.info("Indexed %d %s", self.files_indexed,
@@ -203,6 +207,7 @@ class GooglePhotosIndex(object):
         if not self.start_date:
             self._db.set_scan_date(last_date=self.latest_download)
 
+        log.warning(f'indexed {self.files_indexed} items')
         return self.files_indexed > 0
 
     def get_extra_meta(self):
