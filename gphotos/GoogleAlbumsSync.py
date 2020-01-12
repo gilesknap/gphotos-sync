@@ -109,7 +109,7 @@ class GoogleAlbumsSync(object):
                 if add_media_items:
                     media_item.set_path_by_date(self._photos_folder,
                                                 self._use_flat_path)
-                    (num, row) = self._db.file_duplicate_no(
+                    (num, _) = self._db.file_duplicate_no(
                         str(media_item.filename),
                         str(media_item.relative_folder),
                         media_item.id)

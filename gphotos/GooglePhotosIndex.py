@@ -2,7 +2,6 @@
 # coding: utf8
 from pathlib import Path
 from datetime import datetime
-from time import sleep
 
 from gphotos import Utils
 from gphotos.GooglePhotosMedia import GooglePhotosMedia

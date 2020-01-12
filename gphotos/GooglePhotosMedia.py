@@ -19,7 +19,7 @@ JSONType = Union[Dict[str, JSONValue], List[JSONValue]]
 class GooglePhotosMedia(BaseMedia):
     def __init__(self, media_json: JSONType, to_lower=False):
         self.__media_json: JSONType = media_json
-        self.__uid = None
+        self.__uid: str = None
         self.__lower = to_lower
         super(GooglePhotosMedia, self).__init__()
         if self.is_video():

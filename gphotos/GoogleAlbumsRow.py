@@ -13,6 +13,7 @@ G = TypeVar('G', bound='GoogleAlbumsRow')
 
 
 @DbRow.db_row
+# pylint: disable=no-member
 class GoogleAlbumsRow(DbRow):
     """
     generates a class with attributes for each of the columns in the

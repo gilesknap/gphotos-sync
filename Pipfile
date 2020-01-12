@@ -16,7 +16,12 @@ pywin32 = {markers = "platform_system == 'Windows'",version = "*"}
 mock = "*"
 coverage = "*"
 pytest = "==5.0.1"
-black ="*"
+flake8 = "*"
+pylint = "*"
+autopep8 = "*"
 
 [requires]
 python_version = "3.7"
+
+[pipenv]
+allow_prereleases = true

@@ -3,7 +3,7 @@
 from datetime import datetime
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from os import utime, unlink, getcwd
+from os import utime
 import re
 
 import logging

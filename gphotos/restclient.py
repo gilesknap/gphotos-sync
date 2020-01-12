@@ -31,6 +31,7 @@ class RestClient:
     For details of the discovery API see:
         https://developers.google.com/discovery/v1/using
     """
+
     def __init__(self, api_url: str, auth_session: Session):
         """ """
         self.auth_session: Session = auth_session
@@ -45,6 +46,7 @@ class RestClient:
                 setattr(new_collection, m_name, new_method)
 
 
+# pylint: disable=no-member
 class Method:
     """ Represents a method in the REST API. To be called using its execute
     method, the execute method takes a single parameter for body and then
@@ -55,6 +57,7 @@ class Method:
                              '/rest?version=v1', authenticated_session)
         api.albums.list.execute(pageSize=50)
     """
+
     def __init__(self, service: RestClient, **k_args: Dict[str, str]):
         self.path: str = None
         self.httpMethod: str = None
@@ -71,9 +74,11 @@ class Method:
 
     def execute(self, body: str = None, **k_args: Dict[str, str]):
         """ executes the remote REST call for this Method"""
-        path_args = {k: k_args[k] for k in self.path_args if k in k_args}
-        query_args = {k: k_args[k] for k in self.query_args if k in k_args}
-        path = self.service.base_url + self.make_path(path_args)
+        path_args: Dict[str, str] = {k: k_args[k] for k in
+                                     self.path_args if k in k_args}
+        query_args: Dict[str, str] = {k: k_args[k] for k in
+                                      self.query_args if k in k_args}
+        path: str = self.service.base_url + self.make_path(path_args)
         if body:
             body = dumps(body)
 
@@ -114,5 +119,6 @@ class Method:
 class Collection:
     """ Used to represent a collection of methods
     e.g. Google Photos API - mediaItems """
+
     def __init__(self, name: str):
         self.collection_name = name

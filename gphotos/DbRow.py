@@ -13,6 +13,7 @@ DB = TypeVar('DB', bound='DBRow')
 
 
 # noinspection PyUnresolvedReferences
+# pylint: disable=no-member
 class DbRow:
     """
     base class for classes representing a row in the database to allow easy

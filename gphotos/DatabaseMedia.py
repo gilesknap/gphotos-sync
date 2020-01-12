@@ -2,7 +2,6 @@
 # coding: utf8
 from datetime import datetime
 from typing import TypeVar
-from . import Utils
 
 from gphotos.BaseMedia import BaseMedia
 from .Checks import valid_file_name
@@ -12,6 +11,7 @@ D = TypeVar('D', bound='DatabaseMedia')
 
 
 # noinspection PyUnresolvedReferences
+# pylint: disable=no-member
 class DatabaseMedia(BaseMedia):
     """A Class for reading and writing BaseMedia objects to and from
     database tables

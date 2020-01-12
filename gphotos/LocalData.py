@@ -3,7 +3,7 @@
 from pathlib import Path
 import platform
 import sqlite3 as lite
-from sqlite3.dbapi2 import Connection, Row, Cursor
+from sqlite3.dbapi2 import Connection, Cursor
 from datetime import datetime
 from typing import Iterator, Type
 
@@ -325,7 +325,8 @@ class LocalData:
         INNER JOIN Albums ON AlbumFiles.AlbumRec=Albums.RemoteId
         WHERE Albums.RemoteId LIKE ?
         {}
-        ORDER BY Albums.RemoteId, AlbumFiles.Position, SyncFiles.CreateDate;""".format(extra_clauses)
+        ORDER BY Albums.RemoteId, AlbumFiles.Position,
+        SyncFiles.CreateDate;""".format(extra_clauses)
 
         self.cur.execute(query, (album_id,))
         results = self.cur.fetchall()

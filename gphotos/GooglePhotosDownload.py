@@ -312,7 +312,7 @@ class GooglePhotosDownload(object):
                 response = self._api.mediaItems.get.execute(mediaItemId=item_id)
                 media_item_json = response.json()
                 self.download_file(media_item, media_item_json)
-            except RequestException as e:
+            except RequestException:
                 self.files_download_failed += 1
                 log.error('FAILURE %d in get of %s',
                           self.files_download_failed, media_item.relative_path)

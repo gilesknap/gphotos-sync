@@ -76,3 +76,6 @@ test/test_credentials/.no-token-here
 # vim temp files
 *~
 *.swp
+
+
+.pytest_cache
