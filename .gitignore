@@ -79,3 +79,4 @@ test/test_credentials/.no-token-here
 
 
 .pytest_cache
+.history
