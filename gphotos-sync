@@ -6,4 +6,3 @@ from gphotos.Main import GooglePhotosSyncMain
 
 if __name__ == '__main__':
     GooglePhotosSyncMain().main()
-

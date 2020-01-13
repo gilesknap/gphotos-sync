@@ -3,4 +3,3 @@
 
 from .Main import GooglePhotosSyncMain
 GooglePhotosSyncMain().main()
-

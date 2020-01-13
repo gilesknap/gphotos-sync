@@ -1,9 +1,8 @@
 import os
 import shutil
 import stat
-from pathlib import Path
 from unittest import TestCase
-from unittest.mock import patch, Mock, PropertyMock
+from unittest.mock import patch, PropertyMock
 
 from gphotos.GooglePhotosIndex import GooglePhotosIndex
 from gphotos.LocalData import LocalData
@@ -68,8 +67,8 @@ class TestSystem(TestCase):
             "expected 10 images 1965"
         )
 
-    # this test does not work on windows - it does not throw an error so it seems
-    # chmod fails to have an effect
+    # this test does not work on windows - it does not throw an error so it
+    # seems chmod fails to have an effect
     def ___test_folder_not_writeable(self):
         # make sure we get permissions error and not 'database is locked'
         s = ts.SetupDbAndCredentials()

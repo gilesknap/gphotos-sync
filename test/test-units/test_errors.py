@@ -48,11 +48,11 @@ class TestErrors(TestCase):
         ]
 
         bad_file: Path = Path(__file__).absolute().parent.parent / \
-                         'test_credentials' / '.no-token-here'
+            'test_credentials' / '.no-token-here'
         token_file: Path = Path(__file__).absolute().parent.parent / \
-                           'test_credentials' / '.gphotos.token'
+            'test_credentials' / '.gphotos.token'
         secrets_file: Path = Path(__file__).absolute().parent.parent / \
-                             'test_credentials' / 'client_secret.json'
+            'test_credentials' / 'client_secret.json'
         test_data: Path = Path(__file__).absolute().parent.parent / 'test-data'
 
         if bad_file.exists():
@@ -236,4 +236,3 @@ class TestErrors(TestCase):
                 return_value=self.DummyResponse()
         ):
             self.download_faves(expected=0)
-
