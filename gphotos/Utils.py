@@ -10,8 +10,8 @@ import logging
 
 log = logging.getLogger(__name__)
 
-DATE_NORMALIZE = re.compile(r'(\d\d\d\d).(\d\d).(\d\d).(\d\d).(\d\d).(\d\d)')
-SHORT_DATE_NORMALIZE = re.compile(r'(\d\d\d\d).(\d\d).(\d\d)')
+DATE_NORMALIZE = re.compile(r"(\d\d\d\d).(\d\d).(\d\d).(\d\d).(\d\d).(\d\d)")
+SHORT_DATE_NORMALIZE = re.compile(r"(\d\d\d\d).(\d\d).(\d\d)")
 PatType = type(DATE_NORMALIZE)
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 DATE_ONLY = "%Y-%m-%d"
@@ -61,15 +61,15 @@ def minimum_date(root_folder: Path) -> datetime:
             break
 
     if not d:
-        raise ValueError('cannot set file modification date')
+        raise ValueError("cannot set file modification date")
     MINIMUM_DATE = d
-    log.debug('MINIMUM_DATE = %s' % MINIMUM_DATE)
+    log.debug("MINIMUM_DATE = %s" % MINIMUM_DATE)
     return MINIMUM_DATE
 
 
-def date_string_normalize(date_in: str,
-                          pattern_in: PatType,
-                          pattern_out: str) -> datetime:
+def date_string_normalize(
+    date_in: str, pattern_in: PatType, pattern_out: str
+) -> datetime:
     result = None
     matches = pattern_in.match(date_in)
     if matches:
@@ -81,12 +81,12 @@ def date_string_normalize(date_in: str,
 def string_to_date(date_string: str) -> datetime:
     result = None
     if date_string:
-        result = date_string_normalize(date_string, DATE_NORMALIZE,
-                                       '{}-{}-{} {}:{}:{}')
+        result = date_string_normalize(date_string, DATE_NORMALIZE, "{}-{}-{} {}:{}:{}")
         if result is None:
-            result = date_string_normalize(date_string, SHORT_DATE_NORMALIZE,
-                                           '{}-{}-{} 00:00:00')
+            result = date_string_normalize(
+                date_string, SHORT_DATE_NORMALIZE, "{}-{}-{} 00:00:00"
+            )
         if result is None:
-            log.warning('WARNING: time string %s illegal', date_string)
+            log.warning("WARNING: time string %s illegal", date_string)
 
     return result

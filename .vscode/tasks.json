@@ -9,7 +9,7 @@
             "command": "bash",
             "args": [
                 "-c",
-                "pipenv run flake8 --max-line-length=80 --exclude=./.history,./build"
+                "pipenv run flake8 --max-line-length=88 --exclude=./.history,./build"
             ],
             "problemMatcher": {
                 "owner": "python",

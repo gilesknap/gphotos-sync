@@ -17,30 +17,55 @@ JSONType = Union[Dict[str, JSONValue], List[JSONValue]]
 
 # command to extract creation date from video files
 FF_PROBE = [
-    "ffprobe", "-v", "quiet", "-print_format", "json", "-show_entries",
-    "stream=index,codec_type:stream_tags=creation_time:format_"
-    "tags=creation_time"
+    "ffprobe",
+    "-v",
+    "quiet",
+    "-print_format",
+    "json",
+    "-show_entries",
+    "stream=index,codec_type:stream_tags=creation_time:format_" "tags=creation_time",
 ]
 
 # Huawei adds these camera modes to description but Google Photos seems wise to
 # it and does not report this in its description metadata
 # noinspection SpellCheckingInspection
-HUAWEI_JUNK = ['jhdr', 'edf', 'sdr', 'cof', 'nor', 'mde', 'oznor', 'btf',
-               'btfmdn', 'ptfbty', 'mef', 'bsh', 'dav', 'rpt', 'fbt',
-               'burst', 'rhdr', 'fbtmdn', 'ptr', 'rbtoz', 'btr', 'rbsh',
-               'btroz']
+HUAWEI_JUNK = [
+    "jhdr",
+    "edf",
+    "sdr",
+    "cof",
+    "nor",
+    "mde",
+    "oznor",
+    "btf",
+    "btfmdn",
+    "ptfbty",
+    "mef",
+    "bsh",
+    "dav",
+    "rpt",
+    "fbt",
+    "burst",
+    "rhdr",
+    "fbtmdn",
+    "ptr",
+    "rbtoz",
+    "btr",
+    "rbsh",
+    "btroz",
+]
 # regex to check if this (might be) a duplicate with ' (n)' suffix. Note that
 # 'demo (0).jpg' and 'demo (1).jpg' are not in the scheme
 # but 'demo (2).jpg' to 'demo (999).jpg' are
-DUPLICATE_MATCH = re.compile(r'(.*) \(([2-9]|\d{2,3})\)\.(.*)')
+DUPLICATE_MATCH = re.compile(r"(.*) \(([2-9]|\d{2,3})\)\.(.*)")
 
 
 class LocalFilesMedia(BaseMedia):
     def __init__(self, full_path: Path):
         super(LocalFilesMedia, self).__init__()
         (mime, _) = guess_type(str(full_path))
-        self.__mime_type: str = mime or 'application/octet-stream'
-        self.is_video: bool = self.__mime_type.startswith('video')
+        self.__mime_type: str = mime or "application/octet-stream"
+        self.is_video: bool = self.__mime_type.startswith("video")
         self.__full_path: Path = full_path
         self.__original_name: str = full_path.name
         self.__ffprobe_installed = True
@@ -56,7 +81,7 @@ class LocalFilesMedia(BaseMedia):
             # extract the original name and duplicate no.
             # -1 is because the first duplicate is labelled ' (2)'
             self.duplicate_number: int = int(matches[2]) - 1
-            self.__original_name = matches[1] + '.' + matches[3]
+            self.__original_name = matches[1] + "." + matches[3]
 
         if self.is_video:
             self.get_video_meta()
@@ -86,7 +111,8 @@ class LocalFilesMedia(BaseMedia):
         if not self.__createDate:
             # just use file date
             self.__createDate = datetime.utcfromtimestamp(
-                self.__full_path.stat().st_mtime)
+                self.__full_path.stat().st_mtime
+            )
 
     def get_image_date(self):
         p_date = None
@@ -102,14 +128,12 @@ class LocalFilesMedia(BaseMedia):
                     pass
         if not p_date:
             # just use file date
-            p_date = datetime.utcfromtimestamp(
-                self.__full_path.stat().st_mtime)
+            p_date = datetime.utcfromtimestamp(self.__full_path.stat().st_mtime)
         self.__createDate = p_date
 
     def get_exif(self):
         try:
-            with open(str(self.relative_folder / self.filename),
-                      'rb') as image_file:
+            with open(str(self.relative_folder / self.filename), "rb") as image_file:
                 self.__exif = exif.Image(image_file)
             self.got_meta = True
         except (IOError, AssertionError):
@@ -118,15 +142,15 @@ class LocalFilesMedia(BaseMedia):
     @property
     def uid(self) -> str:
         if not self.got_meta:
-            uid = 'none'
+            uid = "none"
         elif self.is_video:
-            uid = 'not_supported'
+            uid = "not_supported"
         else:
             try:
                 # noinspection PyUnresolvedReferences
                 uid = self.__exif.image_unique_id
             except (AttributeError, KeyError):
-                uid = 'no_uid_in_exif'
+                uid = "no_uid_in_exif"
         return uid
 
     # ----- override Properties below -----
@@ -152,9 +176,9 @@ class LocalFilesMedia(BaseMedia):
             result = None
         if result:
             if result in HUAWEI_JUNK:
-                result = ''
+                result = ""
         else:
-            result = ''
+            result = ""
         return result
 
     @property
@@ -181,8 +205,7 @@ class LocalFilesMedia(BaseMedia):
     def camera_model(self):
         try:
             # noinspection PyUnresolvedReferences
-            cam = '{} {}'.format(
-                self.__exif.make, self.__exif.model)
+            cam = "{} {}".format(self.__exif.make, self.__exif.model)
         except (AttributeError, KeyError):
             cam = None
         return cam

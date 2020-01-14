@@ -1,13 +1,13 @@
 # coding: utf8
 
 # noinspection SqlWithoutWhere
-match = \
-    ["""
+match = [
+    """
 -- stage 0 - remove previous matches
 UPDATE LocalFiles
 set RemoteId = NULL  ;
 """,
-     """
+    """
 -- stage 1 - look for unique matches
 UPDATE LocalFiles
 set RemoteId = (SELECT RemoteId
@@ -22,7 +22,7 @@ set RemoteId = (SELECT RemoteId
 WHERE LocalFiles.Uid notnull and LocalFiles.Uid != 'not_supported'
 ;
 """,
-     """
+    """
 -- stage 2 - mop up entries that have no UID (this is a small enough
 -- population that filename + CreateDate is probably unique)
 with pre_match(RemoteId) as
@@ -37,7 +37,7 @@ set RemoteId = (SELECT RemoteId
 WHERE LocalFiles.RemoteId isnull
 ;
 """,
-     """
+    """
 -- stage 3 FINAL - mop up on filename only
 with pre_match(RemoteId) as
    (SELECT RemoteId from LocalFiles where RemoteId notnull)
@@ -49,7 +49,8 @@ set RemoteId = (SELECT RemoteId
 )
 WHERE LocalFiles.RemoteId isnull
 ;
-"""]
+""",
+]
 
 missing_files = """select * from LocalFiles where RemoteId isnull;"""
 

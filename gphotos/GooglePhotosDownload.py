@@ -37,12 +37,12 @@ log = logging.getLogger(__name__)
 class GooglePhotosDownload(object):
     """A Class for managing the indexing and download of Google Photos
     """
+
     PAGE_SIZE: int = 100
     BATCH_SIZE: int = 40
 
     def __init__(
-            self, api: RestClient, root_folder: Path,
-            db: LocalData, settings: Settings
+        self, api: RestClient, root_folder: Path, db: LocalData, settings: Settings
     ):
         """
         Parameters:
@@ -70,22 +70,23 @@ class GooglePhotosDownload(object):
         self.image_timeout: int = 60
 
         # attributes related to multi-threaded download
-        self.download_pool = futures.ThreadPoolExecutor(
-            max_workers=self.max_threads)
+        self.download_pool = futures.ThreadPoolExecutor(max_workers=self.max_threads)
         self.pool_future_to_media = {}
 
         self.current_umask = os.umask(7)
         os.umask(self.current_umask)
 
         self._session = requests.Session()
-        retries = Retry(total=settings.max_retries,
-                        backoff_factor=0.1,
-                        status_forcelist=[500, 502, 503, 504],
-                        method_whitelist=frozenset(['GET', 'POST']),
-                        raise_on_status=False)
+        retries = Retry(
+            total=settings.max_retries,
+            backoff_factor=0.1,
+            status_forcelist=[500, 502, 503, 504],
+            method_whitelist=frozenset(["GET", "POST"]),
+            raise_on_status=False,
+        )
         self._session.mount(
-            'https://', HTTPAdapter(max_retries=retries,
-                                    pool_maxsize=self.max_threads))
+            "https://", HTTPAdapter(max_retries=retries, pool_maxsize=self.max_threads)
+        )
 
     def download_photo_media(self):
         """
@@ -95,45 +96,44 @@ class GooglePhotosDownload(object):
         """
 
         def grouper(
-                iterable: Iterable[DatabaseMedia]) \
-                -> Iterable[Iterable[DatabaseMedia]]:
+            iterable: Iterable[DatabaseMedia],
+        ) -> Iterable[Iterable[DatabaseMedia]]:
             """Collect data into chunks size BATCH_SIZE"""
-            return zip_longest(*[iter(iterable)] * self.BATCH_SIZE,
-                               fillvalue=None)
+            return zip_longest(*[iter(iterable)] * self.BATCH_SIZE, fillvalue=None)
 
         if not self.retry_download:
             self.files_download_skipped = self._db.downloaded_count()
 
-        log.warning('Downloading Photos ...')
+        log.warning("Downloading Photos ...")
         try:
             for media_items_block in grouper(
-                    self._db.get_rows_by_search(
-                        GooglePhotosRow,
-                        start_date=self.start_date,
-                        end_date=self.end_date,
-                        skip_downloaded=not self.retry_download)):
+                self._db.get_rows_by_search(
+                    GooglePhotosRow,
+                    start_date=self.start_date,
+                    end_date=self.end_date,
+                    skip_downloaded=not self.retry_download,
+                )
+            ):
                 batch = {}
 
                 items = (mi for mi in media_items_block if mi)
                 for media_item in items:
                     if self.case_insensitive_fs:
-                        relative_folder = str(
-                            media_item.relative_folder
-                        ).lower()
+                        relative_folder = str(media_item.relative_folder).lower()
                         filename = str(media_item.filename).lower()
                     else:
                         relative_folder = media_item.relative_folder
                         filename = media_item.filename
-                    local_folder = \
-                        self._root_folder / relative_folder
-                    local_full_path = \
-                        local_folder / filename
+                    local_folder = self._root_folder / relative_folder
+                    local_full_path = local_folder / filename
 
                     if local_full_path.exists():
                         self.files_download_skipped += 1
-                        log.debug('SKIPPED download (file exists) %d %s',
-                                  self.files_download_skipped,
-                                  media_item.relative_path)
+                        log.debug(
+                            "SKIPPED download (file exists) %d %s",
+                            self.files_download_skipped,
+                            media_item.relative_path,
+                        )
                         self._db.put_downloaded(media_item.id)
 
                     else:
@@ -148,9 +148,11 @@ class GooglePhotosDownload(object):
             futures_left = list(self.pool_future_to_media.keys())
             self.do_download_complete(futures_left)
             log.warning(
-                'Downloaded %d Items, Failed %d, Already Downloaded %d',
-                self.files_downloaded, self.files_download_failed,
-                self.files_download_skipped)
+                "Downloaded %d Items, Failed %d, Already Downloaded %d",
+                self.files_downloaded,
+                self.files_download_failed,
+                self.files_download_skipped,
+            )
 
     def download_batch(self, batch: Mapping[str, DatabaseMedia]):
         """ Downloads a batch of media items collected in download_photo_media.
@@ -160,32 +162,32 @@ class GooglePhotosDownload(object):
         mediaItems.batchGet.
         """
         try:
-            response = self._api.mediaItems.batchGet.execute(
-                mediaItemIds=batch.keys())
+            response = self._api.mediaItems.batchGet.execute(mediaItemIds=batch.keys())
             r_json = response.json()
-            if r_json.get('pageToken'):
+            if r_json.get("pageToken"):
                 log.error("Ops - Batch size too big, some items dropped!")
 
             for i, result in enumerate(r_json["mediaItemResults"]):
                 media_item_json = result.get("mediaItem")
                 if not media_item_json:
-                    log.warning('Null response in mediaItems.batchGet %s',
-                                batch.keys())
+                    log.warning("Null response in mediaItems.batchGet %s", batch.keys())
                     log.debug(
                         "Null response in mediaItems.batchGet"
                         "for item %d in\n\n %s \n\n which is \n%s",
-                        i, str(r_json), str(result)
+                        i,
+                        str(r_json),
+                        str(result),
                     )
                 else:
                     media_item = batch.get(media_item_json["id"])
                     self.download_file(media_item, media_item_json)
 
         except KeyboardInterrupt:
-            log.warning('Cancelling download threads ...')
+            log.warning("Cancelling download threads ...")
             for f in self.pool_future_to_media:
                 f.cancel()
             futures.wait(self.pool_future_to_media)
-            log.warning('Cancelled download threads')
+            log.warning("Cancelled download threads")
             raise
         except RequestException:
             self.find_bad_items(batch)
@@ -198,7 +200,7 @@ class GooglePhotosDownload(object):
         do_download_complete to remove the Future from the dictionary and
         complete processing of the media item.
         """
-        base_url = media_json['baseUrl']
+        base_url = media_json["baseUrl"]
 
         # we dont want a massive queue so wait until at least one thread is free
         while len(self.pool_future_to_media) >= self.max_threads:
@@ -213,10 +215,10 @@ class GooglePhotosDownload(object):
 
         # start a new background download
         self.files_download_started += 1
-        log.info('downloading %d %s', self.files_download_started,
-                 media_item.relative_path)
-        future = self.download_pool.submit(self.do_download_file,
-                                           base_url, media_item)
+        log.info(
+            "downloading %d %s", self.files_download_started, media_item.relative_path
+        )
+        future = self.download_pool.submit(self.do_download_file, base_url, media_item)
         self.pool_future_to_media[future] = media_item
 
     def do_download_file(self, base_url: str, media_item: DatabaseMedia):
@@ -232,17 +234,16 @@ class GooglePhotosDownload(object):
         local_full_path = local_folder / filename
 
         if media_item.is_video():
-            download_url = '{}=dv'.format(base_url)
+            download_url = "{}=dv".format(base_url)
             timeout = self.video_timeout
         else:
-            download_url = '{}=d'.format(base_url)
+            download_url = "{}=d".format(base_url)
             timeout = self.image_timeout
         temp_file = tempfile.NamedTemporaryFile(dir=local_folder, delete=False)
         t_path = Path(temp_file.name)
 
         try:
-            response = self._session.get(download_url, stream=True,
-                                         timeout=timeout)
+            response = self._session.get(download_url, stream=True, timeout=timeout)
             response.raise_for_status()
             shutil.copyfileobj(response.raw, temp_file)
             temp_file.close()
@@ -250,17 +251,24 @@ class GooglePhotosDownload(object):
             response.close()
             t_path.rename(local_full_path)
             create_date = Utils.safe_timestamp(media_item.create_date)
-            os.utime(str(local_full_path),
-                     (Utils.safe_timestamp(media_item.modify_date).timestamp(),
-                      create_date.timestamp()))
+            os.utime(
+                str(local_full_path),
+                (
+                    Utils.safe_timestamp(media_item.modify_date).timestamp(),
+                    create_date.timestamp(),
+                ),
+            )
             if _use_win_32:
                 file_handle = win32file.CreateFile(
                     str(local_full_path),
-                    win32file.GENERIC_WRITE, 0,
-                    None, win32con.OPEN_EXISTING,
-                    0, None)
-                win32file.SetFileTime(
-                    file_handle, *(create_date,) * 3)
+                    win32file.GENERIC_WRITE,
+                    0,
+                    None,
+                    win32con.OPEN_EXISTING,
+                    0,
+                    None,
+                )
+                win32file.SetFileTime(file_handle, *(create_date,) * 3)
                 file_handle.close()
             os.chmod(str(local_full_path), 0o666 & ~self.current_umask)
         except KeyboardInterrupt:
@@ -272,32 +280,40 @@ class GooglePhotosDownload(object):
             if t_path.exists():
                 t_path.unlink()
 
-    def do_download_complete(self,
-                             futures_list: Union[
-                                 Mapping[futures.Future, DatabaseMedia],
-                                 List[futures.Future]]):
+    def do_download_complete(
+        self,
+        futures_list: Union[
+            Mapping[futures.Future, DatabaseMedia], List[futures.Future]
+        ],
+    ):
         """ runs in the main thread and completes processing of a media
         item once (multi threaded) do_download has completed
         """
         for future in futures_list:
             media_item = self.pool_future_to_media.get(future)
-            timeout = self.video_timeout if media_item.is_video() else \
-                self.image_timeout
+            timeout = (
+                self.video_timeout if media_item.is_video() else self.image_timeout
+            )
             e = future.exception(timeout=timeout)
             if e:
                 self.files_download_failed += 1
-                log.error('FAILURE %d downloading %s',
-                          self.files_download_failed, media_item.relative_path)
+                log.error(
+                    "FAILURE %d downloading %s",
+                    self.files_download_failed,
+                    media_item.relative_path,
+                )
                 if not isinstance(e, RequestException):
                     raise e
             else:
                 self._db.put_downloaded(media_item.id)
                 self.files_downloaded += 1
-                log.debug('COMPLETED %d downloading %s',
-                          self.files_downloaded, media_item.relative_path)
+                log.debug(
+                    "COMPLETED %d downloading %s",
+                    self.files_downloaded,
+                    media_item.relative_path,
+                )
                 if self.settings.progress and self.files_downloaded % 10 == 0:
-                    log.warning(
-                        f"Downloaded {self.files_downloaded} items ...\033[F")
+                    log.warning(f"Downloaded {self.files_downloaded} items ...\033[F")
             del self.pool_future_to_media[future]
 
     def find_bad_items(self, batch: Mapping[str, DatabaseMedia]):
@@ -307,12 +323,14 @@ class GooglePhotosDownload(object):
         """
         for item_id, media_item in batch.items():
             try:
-                log.debug('BAD ID Retry on %s (%s)', item_id,
-                          media_item.relative_path)
+                log.debug("BAD ID Retry on %s (%s)", item_id, media_item.relative_path)
                 response = self._api.mediaItems.get.execute(mediaItemId=item_id)
                 media_item_json = response.json()
                 self.download_file(media_item, media_item_json)
             except RequestException:
                 self.files_download_failed += 1
-                log.error('FAILURE %d in get of %s',
-                          self.files_download_failed, media_item.relative_path)
+                log.error(
+                    "FAILURE %d in get of %s",
+                    self.files_download_failed,
+                    media_item.relative_path,
+                )

@@ -1,3 +1,9 @@
 {
-    "python.pythonPath": "/home/giles/.local/share/virtualenvs/gphotos-sync-23K6u7j6/bin/python"
+    "python.pythonPath": "/home/giles/.local/share/virtualenvs/gphotos-sync-23K6u7j6/bin/python",
+    "python.testing.pytestArgs": [
+        "test"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.nosetestsEnabled": false,
+    "python.testing.pytestEnabled": true
 }

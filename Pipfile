@@ -17,8 +17,7 @@ mock = "*"
 coverage = "*"
 pytest = "==5.0.1"
 flake8 = "*"
-pylint = "*"
-autopep8 = "*"
+black = "*"
 
 [requires]
 python_version = "3.7"
