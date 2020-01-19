@@ -197,6 +197,7 @@ To remove the container (for instance if you want to run it on scheduled basis a
     docker rm -f $(docker ps --filter name=gphotos-sync -qa) 2> /dev/null
     
 To run then remove the container::
+
     docker run \
       --rm \
       -it \
