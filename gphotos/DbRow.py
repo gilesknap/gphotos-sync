@@ -9,10 +9,11 @@ import logging
 log = logging.getLogger(__name__)
 
 # this allows self reference to this class in its factory methods
-DB = TypeVar('DB', bound='DBRow')
+DB = TypeVar("DB", bound="DBRow")
 
 
 # noinspection PyUnresolvedReferences
+# pylint: disable=no-member
 class DbRow:
     """
     base class for classes representing a row in the database to allow easy
@@ -33,6 +34,7 @@ class DbRow:
         The remaining attributes are on a per subclass basis and are
         generated from row_def by the db_row decorator
     """
+
     # The first 3 class attributes are overridden by each subclass
     table: str = None
     cols_def: ClassVar[Mapping[str, Type]] = None
@@ -67,8 +69,7 @@ class DbRow:
         new_row_class = cls(None)
         for key, value in k_args.items():
             if not hasattr(new_row_class, key):
-                raise ValueError("{0} does not have column {1}".format(
-                    cls, key))
+                raise ValueError("{0} does not have column {1}".format(cls, key))
             setattr(new_row_class, key, value)
         new_row_class.empty = False
         return new_row_class
@@ -82,11 +83,13 @@ class DbRow:
         :param (DbRow) row_class: the class to decorate
         :return (DbRow): the decorated class
         """
-        row_class.columns = ','.join(row_class.cols_def.keys())
-        row_class.params = ':' + ',:'.join(row_class.cols_def.keys())
-        row_class.update = ','.join('{0}=:{0}'.format(col) for
-                                    col in row_class.cols_def.keys() if
-                                    col not in row_class.no_update)
+        row_class.columns = ",".join(row_class.cols_def.keys())
+        row_class.params = ":" + ",:".join(row_class.cols_def.keys())
+        row_class.update = ",".join(
+            "{0}=:{0}".format(col)
+            for col in row_class.cols_def.keys()
+            if col not in row_class.no_update
+        )
 
         # The constructor for the generated class, takes an instance of
         # database result row and generates a DbRow derived object

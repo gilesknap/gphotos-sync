@@ -2,16 +2,16 @@
 # coding: utf8
 from datetime import datetime
 from typing import TypeVar
-from . import Utils
 
 from gphotos.BaseMedia import BaseMedia
 from .Checks import valid_file_name
 
 # this allows self reference to this class in its factory methods
-D = TypeVar('D', bound='DatabaseMedia')
+D = TypeVar("D", bound="DatabaseMedia")
 
 
 # noinspection PyUnresolvedReferences
+# pylint: disable=no-member
 class DatabaseMedia(BaseMedia):
     """A Class for reading and writing BaseMedia objects to and from
     database tables
@@ -35,21 +35,23 @@ class DatabaseMedia(BaseMedia):
         _downloaded: true if previously downloaded to disk
     """
 
-    def __init__(self,
-                 _id: str = None,
-                 _uid: str = None,
-                 _url: str = None,
-                 _relative_folder: str = None,
-                 _filename: str = None,
-                 _orig_name: str = None,
-                 _duplicate_number: int = None,
-                 _size: int = None,
-                 _mime_type: str = None,
-                 _description: str = None,
-                 _date: datetime = None,
-                 _create_date: datetime = None,
-                 _downloaded: bool = False,
-                 _location: str = None):
+    def __init__(
+        self,
+        _id: str = None,
+        _uid: str = None,
+        _url: str = None,
+        _relative_folder: str = None,
+        _filename: str = None,
+        _orig_name: str = None,
+        _duplicate_number: int = None,
+        _size: int = None,
+        _mime_type: str = None,
+        _description: str = None,
+        _date: datetime = None,
+        _create_date: datetime = None,
+        _downloaded: bool = False,
+        _location: str = None,
+    ):
         super(DatabaseMedia, self).__init__()
         # add all of the arguments as attributes on this object
         self.__dict__.update(locals())
