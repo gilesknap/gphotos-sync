@@ -1,9 +1,15 @@
 {
     "python.pythonPath": "/home/giles/.local/share/virtualenvs/gphotos-sync-23K6u7j6/bin/python",
     "python.testing.pytestArgs": [
+        "--cov=gphotos",
+        "--cov-report=term",
         "test"
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.nosetestsEnabled": false,
-    "python.testing.pytestEnabled": true
+    "python.testing.pytestEnabled": true,
+    "coverage-gutters.xmlname": "coverage.xml",
+    "coverage-gutters.manualCoverageFilePaths": [
+        "/home/giles/github/gphotos-sync"
+    ]
 }
