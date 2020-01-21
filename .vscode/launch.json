@@ -1,0 +1,36 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Test gPhotos trace",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/gphotos-sync",
+            "args": [
+                "/tmp/test-gphotos",
+                "--secret",
+                "/home/giles/github//gphotos-sync/test/test_credentials/client_secret.json",
+                "--log-level",
+                "trace"
+            ],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Test gPhotos debug",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/gphotos-sync",
+            "args": [
+                "/tmp/test-gphotos",
+                "--secret",
+                "/home/giles/github//gphotos-sync/test/test_credentials/client_secret.json",
+                "--log-level",
+                "debug"
+            ],
+            "console": "integratedTerminal"
+        }
+    ]
+}

@@ -84,9 +84,17 @@ class Method:
         if body:
             body = dumps(body)
 
+        log.trace(
+            "\nREQUEST: %s to %s params=%s\n%s",
+            self.httpMethod,
+            path,
+            query_args,
+            body,
+        )
         result = self.service.auth_session.request(
             self.httpMethod, data=body, url=path, timeout=10, params=query_args
         )
+        log.trace("\nRESPONSE: %s\n%s", result.status_code, str(result.content))
 
         try:
             result.raise_for_status()
@@ -106,7 +114,7 @@ class Method:
         Returns:
             The URL with inserted parameters
         """
-        result = self.path
+        result = str(self.path)
         path_params = []
         for key, value in path_args.items():
             path_param = "{{+{}}}".format(key)

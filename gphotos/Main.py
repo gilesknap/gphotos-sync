@@ -20,6 +20,7 @@ from gphotos.LocalFilesScan import LocalFilesScan
 from gphotos.Settings import Settings
 from gphotos.authorize import Authorize
 from gphotos.restclient import RestClient
+from gphotos.Logging import setup_logging
 
 __version__ = pkg_resources.require("gphotos-sync")[0].version
 
@@ -63,6 +64,12 @@ class GooglePhotosSyncMain:
         action="store",
         help="only synchronize the contents of a single album."
         'use quotes e.g. "album name" for album names with spaces',
+    )
+    parser.add_argument(
+        "--log-level",
+        help="Set log level. Options: critical, error, warning, info, debug, trace. "
+        "trace logs all Google API calls to a file with suffix .trace",
+        default="warning",
     )
     parser.add_argument(
         "--logfile",
@@ -124,11 +131,6 @@ class GooglePhotosSyncMain:
         "--end-date",
         help="Set the latest date of files to sync" "format YYYY-MM-DD",
         default=None,
-    )
-    parser.add_argument(
-        "--log-level",
-        help="Set log level. Options: critical, error, warning, info, debug",
-        default="warning",
     )
     parser.add_argument(
         "--db-path",
@@ -304,45 +306,6 @@ class GooglePhotosSyncMain:
                 root_folder, compare_folder, self.data_store
             )
 
-    @classmethod
-    def logging(cls, args: Namespace, folder: Path):
-        # if we are debugging requests library is too noisy
-        logging.getLogger("requests").setLevel(logging.WARNING)
-        logging.getLogger("requests_oauthlib").setLevel(logging.WARNING)
-        logging.getLogger("urllib3").setLevel(logging.WARNING)
-
-        numeric_level = getattr(logging, args.log_level.upper(), None)
-        if not isinstance(numeric_level, int):
-            raise ValueError("Invalid log level: %s" % args.log_level)
-
-        if args.logfile:
-            log_file = folder / args.logfile
-            if log_file.is_dir():
-                log_file = log_file / "gphotos{}.log".format(
-                    datetime.now().strftime("%y%m%d_%H%M%S")
-                )
-        else:
-            log_file = folder / "gphotos.log"
-        logging.basicConfig(
-            level=logging.DEBUG,
-            format="%(asctime)s %(name)-12s %(levelname)-8s " "%(message)s",
-            datefmt="%m-%d %H:%M:%S",
-            filename=log_file,
-            filemode="w",
-        )
-        # define a Handler which writes INFO messages or higher to the
-        # sys.stderr
-        console = logging.StreamHandler()
-        console.setLevel(numeric_level)
-        # set a format which is simpler for console use
-        formatter = logging.Formatter(
-            "%(asctime)s %(levelname)-8s %(message)s ", datefmt="%m-%d %H:%M:%S"
-        )
-        # tell the handler to use this format
-        console.setFormatter(formatter)
-        # add the handler to the root logger
-        logging.getLogger("").addHandler(console)
-
     def do_sync(self, args: Namespace):
         new_files = True
         with self.data_store:
@@ -403,7 +366,8 @@ class GooglePhotosSyncMain:
         db_path = Path(args.db_path) if args.db_path else root_folder
         if not root_folder.exists():
             root_folder.mkdir(parents=True, mode=0o700)
-        self.logging(args, root_folder)
+
+        setup_logging(args.log_level, args.logfile, root_folder)
 
         args = self.fs_checks(root_folder, args)
 

@@ -19,6 +19,7 @@ coverage = "*"
 pytest = "==5.0.1"
 flake8 = "*"
 black = "*"
+rope = "*"
 
 [requires]
 python_version = "3.7"
