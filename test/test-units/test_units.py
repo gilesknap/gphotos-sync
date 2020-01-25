@@ -3,6 +3,7 @@ from datetime import datetime
 from pathlib import Path
 from unittest import TestCase
 from unittest.mock import patch
+from os import name as os_name
 
 import gphotos.authorize as auth
 from gphotos.Checks import checkFilesystem, valid_file_name
@@ -107,3 +108,10 @@ class TestUnits(TestCase):
         self.assertEqual(filename, "hello.😀")
         filename = valid_file_name("hello./")
         self.assertEqual(filename, "hello._")
+
+    def test_os_filesystem(self):
+        fs, linux = checkFilesystem(test_data)
+        if os_name == "nt":
+            self.assertFalse(linux)
+        else:
+            self.assertTrue(linux)

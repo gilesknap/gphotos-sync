@@ -42,7 +42,7 @@ def checkFilesystem(mypath):
         )
         log.info(f"Target filesystem {mypath} is {FILESYSTEM_TYPE}")
 
-    return FILESYSTEM_TYPE
+    return FILESYSTEM_TYPE, FILESYSTEM_IS_LINUX
 
 
 def symlinks_supported(root_folder: Path) -> bool:
