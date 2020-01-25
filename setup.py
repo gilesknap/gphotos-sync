@@ -5,45 +5,42 @@ from setuptools import setup, find_packages, os
 module_name = "gphotos-sync"
 
 install_reqs = [
-    'exif',
-    'appdirs',
-    'urllib3',
-    'requests',
-    'requests_oauthlib',
-    'PyYaml',
-    'selenium', 'attr'
+    "exif",
+    "appdirs",
+    "urllib3",
+    "requests",
+    "requests_oauthlib",
+    "PyYaml",
+    "selenium",
+    "attr",
 ]
 
 develop_reqs = [
-    'pytest',
-    'mock',
+    "pytest",
+    "mock",
 ]
 
-if os.name == 'nt':
-    install_reqs.append('pywin32')
+if os.name == "nt":
+    install_reqs.append("pywin32")
 
 with open("README.rst", "rb") as f:
     long_description = f.read().decode("utf-8")
 
 setup(
     name=module_name,
-    version='2.10.4',
-    python_requires='>=3.6',
-    license='MIT',
-    platforms=['Linux', 'Windows', 'Mac'],
-    description='Google Photos and Albums backup tool',
+    version="2.10.4",
+    python_requires=">=3.6",
+    license="MIT",
+    platforms=["Linux", "Windows", "Mac"],
+    description="Google Photos and Albums backup tool",
     packages=find_packages(exclude=("tests.*", "tests", "etc.*", "etc")),
-    entry_points={
-        "console_scripts": ['gphotos-sync = gphotos.Main:main']
-    },
+    entry_points={"console_scripts": ["gphotos-sync = gphotos.Main:main"]},
     long_description=long_description,
     install_requires=install_reqs,
-    extras_require={
-        'dev': develop_reqs
-    },
-    package_data={'': ['gphotos/sql/gphotos_create.sql', 'LICENSE']},
+    extras_require={"dev": develop_reqs},
+    package_data={"": ["gphotos/sql/gphotos_create.sql", "LICENSE"]},
     include_package_data=True,
-    author='Giles Knap',
-    author_email='gilesknap@gmail.com',
-    url='https://github.com/gilesknap/gphotos-sync'
+    author="Giles Knap",
+    author_email="gilesknap@gmail.com",
+    url="https://github.com/gilesknap/gphotos-sync",
 )
