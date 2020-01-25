@@ -195,6 +195,18 @@ To run ::
 To remove the container (for instance if you want to run it on scheduled basis and do a cleanup)::
 
     docker rm -f $(docker ps --filter name=gphotos-sync -qa) 2> /dev/null
+    
+To run then remove the container::
+
+    docker run \
+      --rm \
+      -it \
+      --name gphotos-sync \
+      -v /YOUR_LOCAL/PATH/TO_PHOTOS:/storage \
+      -v /YOUR_LOCAL/PATH/TO_CONFIG/client_id.json:/config/client_secret.json:ro \
+      gilesknap/gphotos-sync \
+      --log-level INFO \
+      /storage
 
 Appendix
 ========
