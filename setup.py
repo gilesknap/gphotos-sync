@@ -5,14 +5,12 @@ from setuptools import setup, find_packages, os
 module_name = "gphotos-sync"
 
 install_reqs = [
+    "attrs",
     "exif",
     "appdirs",
-    "urllib3",
-    "requests",
     "requests_oauthlib",
-    "PyYaml",
-    "selenium",
-    "attr",
+    "pyyaml>=4.2b1",
+    "psutil",
 ]
 
 develop_reqs = [

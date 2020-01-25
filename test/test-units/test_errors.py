@@ -96,11 +96,6 @@ class TestErrors(TestCase):
             x = b.url
             print(x)  # for pylint
 
-        with patch(
-            "gphotos.Checks.os_name", new_callable=PropertyMock(return_value="nt")
-        ):
-            assert valid_file_name("hello.txt") == "hello.txt"
-
         """Download archived images in test library using flat folders (and
         windows file name restrictions)
         """
