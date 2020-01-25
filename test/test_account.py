@@ -21,12 +21,12 @@ class TestAccount:
     # shared test album has 'show in albums' so does appear in our albums list
     # 5 of its files are ours and 5 shared by the real giles knap
     album_names = [
-        r'1001?Shared?Test?Album',
-        r'0101?Album?2001',
-        r'0528?Movies',
-        r'0923?Clones😀',
-        r'0926?Album?2016',
-        r'1207?Same?Names'
+        r"1001?Shared?Test?Album",
+        r"0101?Album?2001",
+        r"0528?Movies",
+        r"0923?Clones😀",
+        r"0926?Album?2016",
+        r"1207?Same?Names",
     ]
     album_years = [2019, 2001, 2017, 2017, 2016, 2014]
     album_images = [5, 10, 10, 4, 16, 10]
@@ -35,9 +35,7 @@ class TestAccount:
     album_image_count = sum(album_images)
     album_shared_image_count = sum(album_shared_images)
 
-    shared_album_names = [
-        r'0220?Noah?s?transformer?lego'
-    ]
+    shared_album_names = [r"0220?Noah?s?transformer?lego"]
     shared_album_images = [0]
     shared_album_shared_images = [6]
     shared_album_count = len(shared_album_names)
@@ -45,7 +43,7 @@ class TestAccount:
     shared_album_shared_image_count = sum(shared_album_shared_images)
 
     # subset of items from 2016-01-01 to 2017-01-01 for quicker tests
-    start = '2016-01-01'
-    end = '2017-01-01'
+    start = "2016-01-01"
+    end = "2017-01-01"
     image_count_2016 = 10
     item_count_2017 = 20

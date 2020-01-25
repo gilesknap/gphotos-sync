@@ -22,22 +22,22 @@ class TestRequests(TestCase):
 
         session = Session()
         start = datetime.now()
-        result = session.get('https://httpbin.org/status/500',
-                             timeout=timeout)
+        result = session.get("https://httpbin.org/status/500", timeout=timeout)
         self.assertEqual(result.status_code, 500)
         elapsed = datetime.now() - start
 
-        retry = Retry(total=retries,
-                      backoff_factor=0.1,
-                      status_forcelist=[500, 502, 503, 504],
-                      method_whitelist=frozenset(['GET', 'POST']),
-                      raise_on_status=False)
+        retry = Retry(
+            total=retries,
+            backoff_factor=0.1,
+            status_forcelist=[500, 502, 503, 504],
+            method_whitelist=frozenset(["GET", "POST"]),
+            raise_on_status=False,
+        )
 
-        session.mount('https://', HTTPAdapter(max_retries=retry))
+        session.mount("https://", HTTPAdapter(max_retries=retry))
 
         start = datetime.now()
-        result = session.get('https://httpbin.org/status/500',
-                             timeout=timeout)
+        result = session.get("https://httpbin.org/status/500", timeout=timeout)
         elapsed2 = datetime.now() - start
         self.assertEqual(result.status_code, 500)
         self.assertGreater(elapsed2, elapsed * (retries - 1))
@@ -48,18 +48,19 @@ class TestRequests(TestCase):
         retry_error = False
 
         session = Session()
-        retry = Retry(total=retries,
-                      backoff_factor=0.1,
-                      status_forcelist=[500, 502, 503, 504],
-                      method_whitelist=frozenset(['GET', 'POST']),
-                      raise_on_status=False)
+        retry = Retry(
+            total=retries,
+            backoff_factor=0.1,
+            status_forcelist=[500, 502, 503, 504],
+            method_whitelist=frozenset(["GET", "POST"]),
+            raise_on_status=False,
+        )
 
-        session.mount('https://', HTTPAdapter(max_retries=retry))
+        session.mount("https://", HTTPAdapter(max_retries=retry))
 
         start = datetime.now()
         try:
-            _ = session.get('https://httpbin.org/delay/5',
-                            timeout=timeout)
+            _ = session.get("https://httpbin.org/delay/5", timeout=timeout)
         except exceptions.ConnectionError as e:
             retry_error = True
             print(e)

@@ -1,8 +1,6 @@
 {
     "python.pythonPath": "/home/giles/.local/share/virtualenvs/gphotos-sync-23K6u7j6/bin/python",
     "python.testing.pytestArgs": [
-        "--cov=gphotos",
-        "--cov-report=term",
         "test"
     ],
     "python.testing.unittestEnabled": false,
@@ -11,5 +9,8 @@
     "coverage-gutters.xmlname": "coverage.xml",
     "coverage-gutters.manualCoverageFilePaths": [
         "/home/giles/github/gphotos-sync"
-    ]
+    ],
+    "python.linting.flake8Enabled": true,
+    "python.linting.pylintEnabled": false,
+    "python.linting.enabled": true
 }

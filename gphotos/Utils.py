@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# coding: utf8
 from datetime import datetime
 from pathlib import Path
 from tempfile import NamedTemporaryFile
