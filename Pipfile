@@ -12,6 +12,7 @@ pyyaml = ">=4.2b1"
 gphotos-sync = {path = "."}
 pywin32 = {markers = "platform_system == 'Windows'",version = "*"}
 pytest-cov = "*"
+psutil = "*"
 
 [dev-packages]
 mock = "*"

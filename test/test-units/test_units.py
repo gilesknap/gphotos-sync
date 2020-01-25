@@ -5,10 +5,9 @@ from unittest import TestCase
 from unittest.mock import patch
 
 import gphotos.authorize as auth
-from gphotos.Checks import valid_file_name
+from gphotos.Checks import checkFilesystem, valid_file_name
 from gphotos.GoogleAlbumMedia import GoogleAlbumMedia
 from gphotos.LocalFilesMedia import LocalFilesMedia
-from mock.mock import PropertyMock
 from requests import exceptions as exc
 
 scope = [
@@ -95,8 +94,9 @@ class TestUnits(TestCase):
         self.assertEqual("none (2)", g.filename)
 
     def test_bad_filenames(self):
-        with patch("gphotos.Checks.UNICODE_FILENAMES", False):
-            with patch("gphotos.Checks.os_name", "nt"):
+        checkFilesystem(test_data)
+        with patch("gphotos.Checks.FILESYSTEM_IS_LINUX", False):
+            with patch("gphotos.Checks.UNICODE_FILENAMES", False):
                 filename = valid_file_name("hello.😀")
                 self.assertEqual(filename, "hello._")
 
