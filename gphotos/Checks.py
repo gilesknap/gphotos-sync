@@ -6,14 +6,12 @@ import random
 import shutil
 import subprocess
 from pathlib import Path
-from psutil import disk_partitions
 
 log = logging.getLogger(__name__)
 
 MAX_PATH_LENGTH: int = 4096
 MAX_FILENAME_LENGTH: int = 255
-UNICODE_FILENAMES: bool = True
-FILESYSTEM_TYPE: str = None
+UNICODE_FILENAMES: bool = None
 FILESYSTEM_IS_LINUX: bool = None
 
 # regex for illegal characters in file names and database queries
@@ -23,26 +21,26 @@ fix_windows_ending = re.compile("([ .]+$)")
 fix_unicode = re.compile(r"[^\x00-\x7F]")
 
 
-def checkFilesystem(mypath):
-    global FILESYSTEM_TYPE, FILESYSTEM_IS_LINUX
+def checkLinuxFilesystem(root_folder: Path) -> bool:
+    global FILESYSTEM_IS_LINUX
 
-    if not FILESYSTEM_TYPE:
-        FILESYSTEM_TYPE = ""
-        for part in disk_partitions():
-            if part.mountpoint == "/":
-                FILESYSTEM_TYPE = part.fstype
-                continue
+    if not FILESYSTEM_IS_LINUX:
+        # assume if you cannot write a filename ending with . that this is a
+        # windows style file system (ntfs or fat)
+        check_file = root_folder / ".check_dot."
+        try:
+            check_file.touch()
+            if not check_file.exists():
+                raise FileNotFoundError
+            check_file.unlink()
+        except BaseException:
+            log.info("Windows style filesystem found")
+            FILESYSTEM_IS_LINUX = False
+        else:
+            log.info("Linux style filesystem found")
+            FILESYSTEM_IS_LINUX = True
 
-            if str(mypath).startswith(part.mountpoint):
-                FILESYSTEM_TYPE = part.fstype
-                break
-        FILESYSTEM_TYPE = FILESYSTEM_TYPE.lower()
-        FILESYSTEM_IS_LINUX = not (
-            "fat" in FILESYSTEM_TYPE or "ntfs" in FILESYSTEM_TYPE
-        )
-        log.info(f"Target filesystem {mypath} is {FILESYSTEM_TYPE}")
-
-    return FILESYSTEM_TYPE, FILESYSTEM_IS_LINUX
+    return FILESYSTEM_IS_LINUX
 
 
 def symlinks_supported(root_folder: Path) -> bool:

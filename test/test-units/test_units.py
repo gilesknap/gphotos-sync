@@ -6,7 +6,7 @@ from unittest.mock import patch
 from os import name as os_name
 
 import gphotos.authorize as auth
-from gphotos.Checks import checkFilesystem, valid_file_name
+from gphotos.Checks import checkLinuxFilesystem, valid_file_name
 from gphotos.GoogleAlbumMedia import GoogleAlbumMedia
 from gphotos.LocalFilesMedia import LocalFilesMedia
 from requests import exceptions as exc
@@ -95,7 +95,7 @@ class TestUnits(TestCase):
         self.assertEqual("none (2)", g.filename)
 
     def test_bad_filenames(self):
-        checkFilesystem(test_data)
+        checkLinuxFilesystem(test_data)
         with patch("gphotos.Checks.FILESYSTEM_IS_LINUX", False):
             with patch("gphotos.Checks.UNICODE_FILENAMES", False):
                 filename = valid_file_name("hello.😀")
@@ -110,7 +110,7 @@ class TestUnits(TestCase):
         self.assertEqual(filename, "hello._")
 
     def test_os_filesystem(self):
-        fs, linux = checkFilesystem(test_data)
+        linux = checkLinuxFilesystem(test_data)
         if os_name == "nt":
             self.assertFalse(linux)
         else:

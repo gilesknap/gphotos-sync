@@ -343,7 +343,7 @@ class GooglePhotosSyncMain:
     @staticmethod
     def fs_checks(root_folder: Path, args: dict):
         Utils.minimum_date(root_folder)
-        Checks.checkFilesystem(root_folder)
+        Checks.checkLinuxFilesystem(root_folder)
         Checks.get_max_path_length(root_folder)
         Checks.get_max_filename_length(root_folder)
         Checks.unicode_filenames(root_folder)

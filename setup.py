@@ -4,14 +4,7 @@ from setuptools import setup, find_packages, os
 
 module_name = "gphotos-sync"
 
-install_reqs = [
-    "attrs",
-    "exif",
-    "appdirs",
-    "requests_oauthlib",
-    "pyyaml>=4.2b1",
-    "psutil",
-]
+install_reqs = ["attrs", "exif", "appdirs", "requests_oauthlib", "pyyaml>=4.2b1"]
 
 develop_reqs = [
     "pytest",
