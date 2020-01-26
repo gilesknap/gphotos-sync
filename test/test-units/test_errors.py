@@ -1,25 +1,25 @@
 import os
-import pytest
-
-from gphotos.GoogleAlbumMedia import GoogleAlbumMedia
-from gphotos.GoogleAlbumsRow import GoogleAlbumsRow
-from mock import patch, PropertyMock
+import test.test_setup as ts
 from pathlib import Path
 from unittest import TestCase
-from gphotos.Checks import valid_file_name
 
 import gphotos.authorize as auth
-from gphotos.DbRow import DbRow
-from gphotos.DatabaseMedia import DatabaseMedia
+import pytest
 from gphotos.BaseMedia import BaseMedia
-import test.test_setup as ts
-from gphotos.LocalData import LocalData
 from gphotos.Checks import (
-    symlinks_supported,
-    is_case_sensitive,
-    get_max_path_length,
+    checkLinuxFilesystem,
     get_max_filename_length,
+    get_max_path_length,
+    is_case_sensitive,
+    symlinks_supported,
+    unicode_filenames,
 )
+from gphotos.DatabaseMedia import DatabaseMedia
+from gphotos.DbRow import DbRow
+from gphotos.GoogleAlbumMedia import GoogleAlbumMedia
+from gphotos.GoogleAlbumsRow import GoogleAlbumsRow
+from gphotos.LocalData import LocalData
+from mock import PropertyMock, patch
 
 photos_root = Path("photos")
 albums_root = Path("albums")
@@ -123,11 +123,20 @@ class TestErrors(TestCase):
 
     def test_checks(self):
         a_path = Path("/tmp")
+        assert checkLinuxFilesystem(a_path)
+
+        with patch("gphotos.Checks.Path.exists", return_value=False):
+            with patch("gphotos.Checks.FILESYSTEM_IS_LINUX", None):
+                assert not checkLinuxFilesystem(a_path)
+
         with patch("gphotos.Checks.Path.symlink_to", side_effect=FileNotFoundError()):
             assert symlinks_supported(a_path) is False
 
         with patch("gphotos.Checks.Path.unlink", side_effect=FileNotFoundError()):
             assert is_case_sensitive(a_path) is False
+
+        with patch("gphotos.Checks.Path.glob", return_value=["a"]):
+            assert not is_case_sensitive(a_path)
 
         with patch(
             "gphotos.Checks.subprocess.check_output", side_effect=BaseException()
@@ -137,6 +146,9 @@ class TestErrors(TestCase):
         if os.name != "nt":
             with patch("gphotos.Checks.os.statvfs", side_effect=BaseException()):
                 assert get_max_filename_length(a_path) == 248
+
+        with patch("gphotos.Checks.Path.touch", side_effect=BaseException()):
+            assert not unicode_filenames(a_path)
 
     def test_database_media(self):
         d = DatabaseMedia()

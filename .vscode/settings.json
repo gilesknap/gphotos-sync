@@ -1,16 +1,19 @@
 {
-    "python.pythonPath": "/home/giles/.local/share/virtualenvs/gphotos-sync-23K6u7j6/bin/python",
-    "python.testing.pytestArgs": [
-        "test"
-    ],
-    "python.testing.unittestEnabled": false,
-    "python.testing.nosetestsEnabled": false,
-    "python.testing.pytestEnabled": true,
-    "coverage-gutters.xmlname": "coverage.xml",
-    "coverage-gutters.manualCoverageFilePaths": [
-        "/home/giles/github/gphotos-sync"
-    ],
-    "python.linting.flake8Enabled": true,
-    "python.linting.pylintEnabled": false,
-    "python.linting.enabled": true
+  "python.pythonPath": "/home/giles/.local/share/virtualenvs/gphotos-sync-23K6u7j6/bin/python",
+  "python.testing.pytestArgs": [
+    "test",
+    "--cov=gphotos",
+    "--cov-report=xml",
+    "--no-cov"
+  ],
+  "python.testing.unittestEnabled": false,
+  "python.testing.nosetestsEnabled": false,
+  "python.testing.pytestEnabled": true,
+  "coverage-gutters.xmlname": "coverage.xml",
+  "coverage-gutters.manualCoverageFilePaths": [
+    "/home/giles/github/gphotos-sync"
+  ],
+  "python.linting.flake8Enabled": true,
+  "python.linting.pylintEnabled": false,
+  "python.linting.enabled": true
 }
