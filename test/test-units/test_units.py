@@ -110,8 +110,10 @@ class TestUnits(TestCase):
         self.assertEqual(filename, "hello._")
 
     def test_os_filesystem(self):
-        linux = checkLinuxFilesystem(test_data)
         if os_name == "nt":
+            # assume there is a c:\ on the test machine (which is likely)
+            linux = checkLinuxFilesystem(Path('c:/'))
             self.assertFalse(linux)
         else:
+            linux = checkLinuxFilesystem(test_data)
             self.assertTrue(linux)
