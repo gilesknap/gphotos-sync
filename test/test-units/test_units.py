@@ -3,13 +3,16 @@ from datetime import datetime
 from pathlib import Path
 from unittest import TestCase
 from unittest.mock import patch
-from os import name as os_name
+import pytest
+from os import environ, name as os_name
 
 import gphotos.authorize as auth
 from gphotos.Checks import checkLinuxFilesystem, valid_file_name
 from gphotos.GoogleAlbumMedia import GoogleAlbumMedia
 from gphotos.LocalFilesMedia import LocalFilesMedia
 from requests import exceptions as exc
+
+is_travis = 'TRAVIS' in environ
 
 scope = [
     "https://www.googleapis.com/auth/photoslibrary.readonly",
@@ -110,6 +113,8 @@ class TestUnits(TestCase):
         self.assertEqual(filename, "hello._")
 
     def test_os_filesystem(self):
+        if is_travis:
+            pytest.skip("skipping windows filesystem test since travis has no NTFS", allow_module_level=True)
         if os_name == "nt":
             # assume there is a c:\ on the test machine (which is likely)
             linux = checkLinuxFilesystem(Path('c:/'))
