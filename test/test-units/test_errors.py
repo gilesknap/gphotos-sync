@@ -125,7 +125,7 @@ class TestErrors(TestCase):
         a_path = Path("/tmp")
         assert checkLinuxFilesystem(a_path)
 
-        with patch("gphotos.Checks.Path.exists", return_value=False):
+        with patch("gphotos.Checks.os.name", "nt"):
             with patch("gphotos.Checks.FILESYSTEM_IS_LINUX", None):
                 assert not checkLinuxFilesystem(a_path)
 

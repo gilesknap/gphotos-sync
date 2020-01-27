@@ -11,6 +11,7 @@ requests_oauthlib = "*"
 pyyaml = ">=4.2b1"
 gphotos-sync = {path = "."}
 pywin32 = {markers = "platform_system == 'Windows'",version = "*"}
+psutil = "*"
 
 [dev-packages]
 mock = "*"

@@ -12,7 +12,7 @@ from gphotos.GoogleAlbumMedia import GoogleAlbumMedia
 from gphotos.LocalFilesMedia import LocalFilesMedia
 from requests import exceptions as exc
 
-is_travis = 'TRAVIS' in environ
+is_travis = "TRAVIS" in environ
 
 scope = [
     "https://www.googleapis.com/auth/photoslibrary.readonly",
@@ -113,11 +113,14 @@ class TestUnits(TestCase):
         self.assertEqual(filename, "hello._")
 
     def test_os_filesystem(self):
-        if is_travis:
-            pytest.skip("skipping windows filesystem test since travis has no NTFS", allow_module_level=True)
+        # if is_travis:
+        #     pytest.skip(
+        #         "skipping windows filesystem test since travis has no NTFS",
+        #         allow_module_level=True,
+        #     )
         if os_name == "nt":
             # assume there is a c:\ on the test machine (which is likely)
-            linux = checkLinuxFilesystem(Path('c:/'))
+            linux = checkLinuxFilesystem(Path("c:/"))
             self.assertFalse(linux)
         else:
             linux = checkLinuxFilesystem(test_data)
