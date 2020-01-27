@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 from pathlib import Path
 from unittest import TestCase
-from unittest.mock import patch
+from unittest.mock import patch, PropertyMock
 import pytest
 from os import environ, name as os_name
 
@@ -99,18 +99,25 @@ class TestUnits(TestCase):
 
     def test_bad_filenames(self):
         checkLinuxFilesystem(test_data)
-        with patch("gphotos.Checks.FILESYSTEM_IS_LINUX", False):
-            with patch("gphotos.Checks.UNICODE_FILENAMES", False):
-                filename = valid_file_name("hello.😀")
-                self.assertEqual(filename, "hello._")
-
-                filename = valid_file_name("hello..")
-                self.assertEqual(filename, "hello")
 
         filename = valid_file_name("hello.😀")
         self.assertEqual(filename, "hello.😀")
         filename = valid_file_name("hello./")
         self.assertEqual(filename, "hello._")
+
+        with patch(
+            "gphotos.Checks.FILESYSTEM_IS_LINUX",
+            new_callable=PropertyMock(return_value=False),
+        ):
+            with patch(
+                "gphotos.Checks.UNICODE_FILENAMES",
+                new_callable=PropertyMock(return_value=False),
+            ):
+                filename = valid_file_name("hello.😀")
+                self.assertEqual(filename, "hello._")
+
+                filename = valid_file_name("hello..")
+                self.assertEqual(filename, "hello")
 
     def test_os_filesystem(self):
         # if is_travis:
