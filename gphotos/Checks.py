@@ -35,7 +35,7 @@ def checkLinuxFilesystem(mypath):
                 FILESYSTEM_TYPE = part.fstype
                 continue
 
-            if str(mypath).startswith(part.mountpoint):
+            if str(mypath).lower().startswith(part.mountpoint.lower()):
                 FILESYSTEM_TYPE = part.fstype
                 break
         FILESYSTEM_TYPE = FILESYSTEM_TYPE.lower()

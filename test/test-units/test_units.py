@@ -120,7 +120,7 @@ class TestUnits(TestCase):
         #     )
         if os_name == "nt":
             # assume there is a c:\ on the test machine (which is likely)
-            linux = checkLinuxFilesystem(Path("c:/"))
+            linux = checkLinuxFilesystem(Path("C:\\"))
             self.assertFalse(linux)
         else:
             linux = checkLinuxFilesystem(test_data)
