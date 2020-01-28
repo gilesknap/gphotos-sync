@@ -6,6 +6,8 @@ import re
 
 import logging
 
+# Todo tisy this into a class (combine with checks?)
+
 log = logging.getLogger(__name__)
 
 DATE_NORMALIZE = re.compile(r"(\d\d\d\d).(\d\d).(\d\d).(\d\d).(\d\d).(\d\d)")

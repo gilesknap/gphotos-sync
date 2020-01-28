@@ -1,6 +1,6 @@
 from pathlib import Path
 from datetime import datetime
-from .Checks import valid_file_name
+from .Checks import get_check
 
 
 class BaseMedia(object):
@@ -63,7 +63,7 @@ class BaseMedia(object):
                 "ext": Path(self.orig_name).suffix,
                 "duplicate": self.duplicate_number + 1,
             }
-            filename = valid_file_name(file_str)
+            filename = get_check().valid_file_name(file_str)
         else:
             filename = self.orig_name
         return filename

@@ -1,16 +1,17 @@
 import json
 from datetime import datetime
+from os import environ
+from os import name as os_name
 from pathlib import Path
 from unittest import TestCase
-from unittest.mock import patch, PropertyMock
-import pytest
-from os import environ, name as os_name
 
 import gphotos.authorize as auth
-from gphotos.Checks import checkLinuxFilesystem, valid_file_name
+from gphotos.Checks import do_check, get_check
 from gphotos.GoogleAlbumMedia import GoogleAlbumMedia
 from gphotos.LocalFilesMedia import LocalFilesMedia
 from requests import exceptions as exc
+
+import pytest
 
 is_travis = "TRAVIS" in environ
 
@@ -81,6 +82,7 @@ class TestUnits(TestCase):
         self.assertEqual(lfm.description, "")
 
     def test_empty_media(self):
+        do_check(test_data)
         g = GoogleAlbumMedia(json.loads('{"emptyJson":"0"}'))
         self.assertEqual(0, g.size)
         self.assertEqual("none", g.mime_type)
@@ -98,37 +100,33 @@ class TestUnits(TestCase):
         self.assertEqual("none (2)", g.filename)
 
     def test_bad_filenames(self):
-        checkLinuxFilesystem(test_data)
+        folder = do_check(test_data)
 
-        filename = valid_file_name("hello.😀")
+        filename = folder.valid_file_name("hello.😀")
         self.assertEqual(filename, "hello.😀")
-        filename = valid_file_name("hello./")
+        filename = folder.valid_file_name("hello./")
         self.assertEqual(filename, "hello._")
 
-        with patch(
-            "gphotos.Checks.FILESYSTEM_IS_LINUX",
-            new_callable=PropertyMock(return_value=False),
-        ):
-            with patch(
-                "gphotos.Checks.UNICODE_FILENAMES",
-                new_callable=PropertyMock(return_value=False),
-            ):
-                filename = valid_file_name("hello.😀")
-                self.assertEqual(filename, "hello._")
+        # patch the checks
+        folder.is_linux = False
+        folder.is_unicode = False
 
-                filename = valid_file_name("hello..")
-                self.assertEqual(filename, "hello")
+        filename = folder.valid_file_name("hello.😀")
+        self.assertEqual(filename, "hello._")
+
+        filename = folder.valid_file_name("hello..")
+        self.assertEqual(filename, "hello")
 
     def test_os_filesystem(self):
-        # if is_travis:
-        #     pytest.skip(
-        #         "skipping windows filesystem test since travis has no NTFS",
-        #         allow_module_level=True,
-        #     )
+        if is_travis:
+            pytest.skip(
+                "skipping windows filesystem test since travis has no NTFS",
+                allow_module_level=True,
+            )
         if os_name == "nt":
             # assume there is a c:\ on the test machine (which is likely)
-            linux = checkLinuxFilesystem(Path("C:\\"))
-            self.assertFalse(linux)
+            do_check(Path("C:\\"))
+            self.assertFalse(get_check().is_linux)
         else:
-            linux = checkLinuxFilesystem(test_data)
-            self.assertTrue(linux)
+            do_check(test_data)
+            self.assertTrue(get_check().is_linux)

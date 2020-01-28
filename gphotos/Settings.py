@@ -2,6 +2,11 @@ from datetime import datetime
 from pathlib import Path
 from attr import dataclass
 
+"""
+Defines a dataclass for passing all configuration information between
+the worker classes
+"""
+
 
 @dataclass
 class Settings:

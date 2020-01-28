@@ -2,6 +2,7 @@
   "python.pythonPath": "/home/giles/.local/share/virtualenvs/gphotos-sync-23K6u7j6/bin/python",
   "python.testing.pytestArgs": [
     "test",
+    "--log-cli-level=debug",
     "--cov=gphotos",
     "--cov-report=xml",
     "--no-cov"

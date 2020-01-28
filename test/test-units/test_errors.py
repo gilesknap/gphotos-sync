@@ -6,14 +6,7 @@ from unittest import TestCase
 import gphotos.authorize as auth
 import pytest
 from gphotos.BaseMedia import BaseMedia
-from gphotos.Checks import (
-    checkLinuxFilesystem,
-    get_max_filename_length,
-    get_max_path_length,
-    is_case_sensitive,
-    symlinks_supported,
-    unicode_filenames,
-)
+from gphotos.Checks import do_check
 from gphotos.DatabaseMedia import DatabaseMedia
 from gphotos.DbRow import DbRow
 from gphotos.GoogleAlbumMedia import GoogleAlbumMedia
@@ -123,32 +116,29 @@ class TestErrors(TestCase):
 
     def test_checks(self):
         a_path = Path("/tmp")
-        assert checkLinuxFilesystem(a_path)
-
-        with patch("gphotos.Checks.os.name", "nt"):
-            with patch("gphotos.Checks.FILESYSTEM_IS_LINUX", None):
-                assert not checkLinuxFilesystem(a_path)
+        c = do_check(a_path)
+        assert c.is_linux
 
         with patch("gphotos.Checks.Path.symlink_to", side_effect=FileNotFoundError()):
-            assert symlinks_supported(a_path) is False
+            assert not c._symlinks_supported()
 
         with patch("gphotos.Checks.Path.unlink", side_effect=FileNotFoundError()):
-            assert is_case_sensitive(a_path) is False
+            assert not c._check_case_sensitive()
 
         with patch("gphotos.Checks.Path.glob", return_value=["a"]):
-            assert not is_case_sensitive(a_path)
+            assert not c._check_case_sensitive()
 
         with patch(
             "gphotos.Checks.subprocess.check_output", side_effect=BaseException()
         ):
-            assert get_max_path_length(a_path) == 248
+            assert c._get_max_path_length() == 248
 
         if os.name != "nt":
             with patch("gphotos.Checks.os.statvfs", side_effect=BaseException()):
-                assert get_max_filename_length(a_path) == 248
+                assert c._get_max_filename_length() == 248
 
         with patch("gphotos.Checks.Path.touch", side_effect=BaseException()):
-            assert not unicode_filenames(a_path)
+            assert not c._unicode_filenames()
 
     def test_database_media(self):
         d = DatabaseMedia()
@@ -211,8 +201,7 @@ class TestErrors(TestCase):
         "gphotos.GoogleAlbumsSync.ALBUM_ITEMS",
         new_callable=PropertyMock(return_value=1),
     )
-    @patch("gphotos.Checks.MAX_PATH_LENGTH", new_callable=PropertyMock(return_value=4))
-    def test_google_albums_sync(self, page_size, album_items, max_path):
+    def test_google_albums_sync(self, page_size, album_items):
         # next page in responses (set pageSize = 1) fetch_album_contents()
         # blank response.json (empty album - add to test data?)
         # also pagesize = 1 in index_albums_type()

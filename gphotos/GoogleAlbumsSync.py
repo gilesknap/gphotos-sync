@@ -5,7 +5,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Callable
 
-from . import Checks
 from . import Utils
 from .GoogleAlbumMedia import GoogleAlbumMedia
 from .GoogleAlbumsRow import GoogleAlbumsRow
@@ -14,7 +13,7 @@ from .GooglePhotosRow import GooglePhotosRow
 from .LocalData import LocalData
 from .Settings import Settings
 from .restclient import RestClient
-from gphotos.Checks import valid_file_name
+from gphotos.Checks import get_check
 
 log = logging.getLogger(__name__)
 
@@ -224,7 +223,7 @@ class GoogleAlbumsSync(object):
     def album_folder_name(
         self, album_name: str, start_date: datetime, end_date: datetime
     ) -> Path:
-        album_name = valid_file_name(album_name)
+        album_name = get_check().valid_file_name(album_name)
         if self._omit_album_date:
             rel_path = album_name
         else:
@@ -275,15 +274,15 @@ class GoogleAlbumsSync(object):
             end_date = Utils.string_to_date(end_date_str)
             start_date = Utils.string_to_date(start_date_str)
 
-            if len(str(self._root_folder / path)) > Checks.MAX_PATH_LENGTH:
-                max_path_len = Checks.MAX_PATH_LENGTH - len(str(self._root_folder))
+            if len(str(self._root_folder / path)) > get_check().max_path:
+                max_path_len = get_check().max_path - len(str(self._root_folder))
                 log.debug(
                     "This path needs to be shrunk: %s" % Path(self._root_folder / path)
                 )
                 path = path[:max_path_len]
                 log.debug("Shrunk to: %s" % Path(self._root_folder / path))
 
-            file_name = file_name[: Checks.MAX_FILENAME_LENGTH]
+            file_name = file_name[: get_check().max_filename]
 
             full_file_name = self._root_folder / path / file_name
 

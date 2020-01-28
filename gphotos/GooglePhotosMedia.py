@@ -8,7 +8,7 @@ from typing import Dict, List, Union, Any
 from datetime import datetime
 import re
 
-from .Checks import valid_file_name
+from gphotos.Checks import get_check
 
 DuplicateSuffix = re.compile(r"(.*)[ ]\(\d+\)(\..*)")
 
@@ -44,7 +44,7 @@ class GooglePhotosMedia(BaseMedia):
     @property
     def description(self) -> str:
         try:
-            return valid_file_name(self.__media_json["description"])
+            return get_check().valid_file_name(self.__media_json["description"])
         except KeyError:
             return ""
 
@@ -60,7 +60,7 @@ class GooglePhotosMedia(BaseMedia):
             name = ""
         if self.__lower:
             name = name.lower()
-        return Path(valid_file_name(name))
+        return Path(get_check().valid_file_name(name))
 
     @property
     def create_date(self) -> datetime:

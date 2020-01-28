@@ -3,6 +3,7 @@ from pathlib import Path
 from appdirs import AppDirs
 
 from gphotos import Main
+from gphotos.Checks import do_check
 from gphotos.Main import GooglePhotosSyncMain
 
 import logging
@@ -52,6 +53,7 @@ class SetupDbAndCredentials:
         if not self.root.exists():
             self.root.mkdir(parents=True)
 
+        do_check(self.root)
         all_args = [str(self.root), "--log-level", "warning"]
         if args:
             all_args += args

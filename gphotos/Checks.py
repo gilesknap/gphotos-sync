@@ -1,8 +1,7 @@
-import os
-
-import re
 import logging
+import os
 import random
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -10,152 +9,164 @@ from psutil import disk_partitions
 
 log = logging.getLogger(__name__)
 
-MAX_PATH_LENGTH: int = 4096
-MAX_FILENAME_LENGTH: int = 255
-UNICODE_FILENAMES: bool = True
-FILESYSTEM_TYPE: str = None
-FILESYSTEM_IS_LINUX: bool = None
 
-# regex for illegal characters in file names and database queries
-fix_linux = re.compile(r"[/]|[\x00-\x1f]|\x7f|\x00")
-fix_windows = re.compile(r'[<>:"/\\|?*]|[\x00-\x1f]|\x7f|\x00')
-fix_windows_ending = re.compile("([ .]+$)")
-fix_unicode = re.compile(r"[^\x00-\x7F]")
+class Checks:
+    # regex for illegal characters in file names and database queries
+    fix_linux = re.compile(r"[/]|[\x00-\x1f]|\x7f|\x00")
+    fix_windows = re.compile(r'[<>:"/\\|?*]|[\x00-\x1f]|\x7f|\x00')
+    fix_windows_ending = re.compile("([ .]+$)")
+    fix_unicode = re.compile(r"[^\x00-\x7F]")
 
-windows_fs = ["fat", "ntfs", "9p"]
+    windows_fs = ["fat", "ntfs", "9p"]
+    WINDOWS_MAX_PATH = 248
 
+    def __init__(self, root_path: Path):
+        self.root_path: Path = root_path
+        self._root_str: str = str(root_path).lower()
+        self.is_linux: bool = self._check_linux_filesystem()
+        self.is_symlink: bool = self._symlinks_supported()
+        self.is_unicode: bool = self._unicode_filenames()
+        self.is_case_sensitive: bool = self._check_case_sensitive()
+        self.max_path: int = self._get_max_path_length()
+        self.max_filename: int = self._get_max_filename_length()
 
-def checkLinuxFilesystem(mypath):
-    global FILESYSTEM_TYPE, FILESYSTEM_IS_LINUX
-
-    if not FILESYSTEM_TYPE:
-        FILESYSTEM_TYPE = ""
+    def _check_linux_filesystem(self) -> bool:
+        filesystem_type = ""
         for part in disk_partitions():
             if part.mountpoint == "/":
-                FILESYSTEM_TYPE = part.fstype
+                filesystem_type = part.fstype
                 continue
 
-            if str(mypath).lower().startswith(part.mountpoint.lower()):
-                FILESYSTEM_TYPE = part.fstype
+            if self._root_str.startswith(part.mountpoint.lower()):
+                filesystem_type = part.fstype
                 break
-        FILESYSTEM_TYPE = FILESYSTEM_TYPE.lower()
-        FILESYSTEM_IS_LINUX = not any(fs in FILESYSTEM_TYPE for fs in windows_fs)
-        log.info(f"Target filesystem {mypath} is {FILESYSTEM_TYPE}")
+        filesystem_type = filesystem_type.lower()
+        is_linux = not any(fs in filesystem_type for fs in self.windows_fs)
+        log.info(f"Target filesystem {self._root_str} is {filesystem_type}")
 
-    return FILESYSTEM_IS_LINUX
+        return is_linux
 
-
-def symlinks_supported(root_folder: Path) -> bool:
-    log.debug("Checking if is filesystem supports symbolic links...")
-    dst = "test_dst_%s" % random.getrandbits(32)
-    src = "test_src_%s" % random.getrandbits(32)
-    dst_file = root_folder / dst
-    src_file = root_folder / src
-    src_file.touch()
-    try:
-        dst_file.symlink_to(src_file)
-        src_file.unlink()
-        dst_file.unlink()
-    except (OSError, FileNotFoundError):
-        src_file.unlink()
-        log.error("Symbolic links not supported")
-        log.error("Albums are not going to be synced - requires symlinks")
-        return False
-    return True
-
-
-def unicode_filenames(root_folder: Path) -> bool:
-    global UNICODE_FILENAMES
-    log.debug("Checking if File system supports unicode filenames...")
-    testfile = root_folder / ".unicode_test.\U0001f604"
-    # noinspection PyBroadException
-    try:
-        testfile.touch()
-    except BaseException:
-        log.info("Filesystem does not support Unicode filenames")
-        UNICODE_FILENAMES = False
-    else:
-        log.info("Filesystem supports Unicode filenames")
-        UNICODE_FILENAMES = True
-        testfile.unlink()
-    return UNICODE_FILENAMES
-
-
-def is_case_sensitive(root_folder: Path) -> bool:
-    log.debug("Checking if File system is case insensitive...")
-
-    check_folder = root_folder / ".gphotos_check"
-    case_file = check_folder / "Temp.Test"
-    no_case_file = check_folder / "TEMP.TEST"
-    try:
-        check_folder.mkdir()
-        case_file.touch()
-        no_case_file.touch()
-        files = list(check_folder.glob("*"))
-        if len(files) != 2:
-            raise ValueError("separate case files not seen")
-        case_file.unlink()
-        no_case_file.unlink()
-    except (FileNotFoundError, ValueError):
-        log.info("Case insensitive file system found")
-        return False
-    else:
-        log.info("Case sensitive file system found")
+    def _symlinks_supported(self) -> bool:
+        log.debug("Checking if is filesystem supports symbolic links...")
+        dst = "test_dst_%s" % random.getrandbits(32)
+        src = "test_src_%s" % random.getrandbits(32)
+        dst_file = self.root_path / dst
+        src_file = self.root_path / src
+        src_file.touch()
+        try:
+            dst_file.symlink_to(src_file)
+            src_file.unlink()
+            dst_file.unlink()
+        except (OSError, FileNotFoundError):
+            src_file.unlink()
+            log.error("Symbolic links not supported")
+            log.error("Albums are not going to be synced - requires symlinks")
+            return False
         return True
-    finally:
-        shutil.rmtree(check_folder)
+
+    def _unicode_filenames(self) -> bool:
+        log.debug("Checking if File system supports unicode filenames...")
+        testfile = self.root_path / ".unicode_test.\U0001f604"
+
+        is_unicode = False
+        try:
+            testfile.touch()
+        except BaseException:
+            log.info("Filesystem does not support Unicode filenames")
+        else:
+            log.info("Filesystem supports Unicode filenames")
+            is_unicode = True
+            testfile.unlink()
+        return is_unicode
+
+    def _check_case_sensitive(self) -> bool:
+        log.debug("Checking if File system is case insensitive...")
+
+        check_folder = self.root_path / ".gphotos_check"
+        case_file = check_folder / "Temp.Test"
+        no_case_file = check_folder / "TEMP.TEST"
+
+        is_sensitive = False
+        try:
+            check_folder.mkdir()
+            case_file.touch()
+            no_case_file.touch()
+            files = list(check_folder.glob("*"))
+            if len(files) != 2:
+                raise ValueError("separate case files not seen")
+            case_file.unlink()
+            no_case_file.unlink()
+        except (FileNotFoundError, ValueError):
+            log.info("Case insensitive file system found")
+        else:
+            log.info("Case sensitive file system found")
+            is_sensitive = True
+        finally:
+            shutil.rmtree(check_folder)
+        return is_sensitive
+
+    def _get_max_path_length(self) -> int:
+        # safe windows length
+        max_length = self.WINDOWS_MAX_PATH
+
+        # found this on:
+        # https://stackoverflow.com/questions/32807560/how-do-i-get-in-python-the-maximum-filesystem-path-length-in-unix
+        try:
+            max_length = int(
+                subprocess.check_output(["getconf", "PATH_MAX", str(self.root_path)])
+            )
+        except BaseException:
+            # for failures choose a safe size for Windows filesystems
+            log.info(
+                f"cant determine max filepath length, defaulting to " f"{max_length}"
+            )
+        log.info("Max Path Length: %d" % max_length)
+        return max_length
+
+    def _get_max_filename_length(self) -> int:
+        # safe windows length
+        max_filename = self.WINDOWS_MAX_PATH
+        try:
+            info = os.statvfs(str(self.root_path))
+            max_filename = info.f_namemax
+        except BaseException:
+            # for failures choose a safe size for Windows filesystems
+            max_filename = 248
+            log.info(
+                f"cant determine max filename length, " f"defaulting to {max_filename}"
+            )
+        log.info("Max filename length: %d" % max_filename)
+        return max_filename
+
+    def valid_file_name(self, s: str) -> str:
+        """
+        makes sure a string is valid for creating file names
+
+        :param (str) s: input string
+        :return: (str): sanitized string
+        """
+
+        if self.is_linux:
+            s = self.fix_linux.sub("_", s)
+        else:
+            s = self.fix_windows.sub("_", s)
+            s = self.fix_windows_ending.split(s)[0]
+
+        if not self.is_unicode:
+            s = self.fix_unicode.sub("_", s)
+        return s
 
 
-# noinspection PyBroadException
-def get_max_path_length(root_folder: Path) -> int:
-    global MAX_PATH_LENGTH
-    # found this on:
-    # https://stackoverflow.com/questions/32807560/how-do-i-get-in-python-the-maximum-filesystem-path-length-in-unix
-    try:
-        MAX_PATH_LENGTH = int(
-            subprocess.check_output(["getconf", "PATH_MAX", str(root_folder)])
-        )
-    except BaseException:
-        # for failures choose a safe size for Windows filesystems
-        MAX_PATH_LENGTH = 248
-        log.warning(
-            f"cant determine max filepath length, defaulting to " f"{MAX_PATH_LENGTH}"
-        )
-    log.debug("MAX_PATH_LENGTH: %d" % MAX_PATH_LENGTH)
-    return MAX_PATH_LENGTH
+# a global for holding the current root folder check results
+root_folder: Checks = None
 
 
-# noinspection PyBroadException
-def get_max_filename_length(root_folder: Path) -> int:
-    global MAX_FILENAME_LENGTH
-    try:
-        info = os.statvfs(str(root_folder))
-        MAX_FILENAME_LENGTH = info.f_namemax
-    except BaseException:
-        # for failures choose a safe size for Windows filesystems
-        MAX_FILENAME_LENGTH = 248
-        log.warning(
-            f"cant determine max filename length, "
-            f"defaulting to {MAX_FILENAME_LENGTH}"
-        )
-    log.debug("MAX_FILENAME_LENGTH: %d" % MAX_FILENAME_LENGTH)
-    return MAX_FILENAME_LENGTH
+# ugly global stuff to avoid passing Checks object everywhere
+def do_check(root: Path):
+    global root_folder
+    root_folder = Checks(root)
+    return root_folder
 
 
-def valid_file_name(s: str) -> str:
-    """
-    makes sure a string is valid for creating file names
-
-    :param (str) s: input string
-    :return: (str): sanitized string
-    """
-    global UNICODE_FILENAMES, FILESYSTEM_IS_LINUX
-    if FILESYSTEM_IS_LINUX:
-        s = fix_linux.sub("_", s)
-    else:
-        s = fix_windows.sub("_", s)
-        s = fix_windows_ending.split(s)[0]
-
-    if not UNICODE_FILENAMES:
-        s = fix_unicode.sub("_", s)
-    return s
+def get_check():
+    return root_folder

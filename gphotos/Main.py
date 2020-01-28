@@ -2,25 +2,24 @@
 import logging
 import os
 import sys
-from argparse import Namespace, ArgumentParser
+from argparse import ArgumentParser, Namespace
 from datetime import datetime
 from pathlib import Path
 
 import pkg_resources
 from appdirs import AppDirs
-from pkg_resources import DistributionNotFound
-
-from gphotos import Checks
 from gphotos import Utils
+from gphotos.authorize import Authorize
+from gphotos.Checks import do_check, get_check
 from gphotos.GoogleAlbumsSync import GoogleAlbumsSync
 from gphotos.GooglePhotosDownload import GooglePhotosDownload
 from gphotos.GooglePhotosIndex import GooglePhotosIndex
 from gphotos.LocalData import LocalData
 from gphotos.LocalFilesScan import LocalFilesScan
-from gphotos.Settings import Settings
-from gphotos.authorize import Authorize
-from gphotos.restclient import RestClient
 from gphotos.Logging import setup_logging
+from gphotos.restclient import RestClient
+from gphotos.Settings import Settings
+from pkg_resources import DistributionNotFound
 
 __version__ = pkg_resources.require("gphotos-sync")[0].version
 
@@ -343,18 +342,16 @@ class GooglePhotosSyncMain:
     @staticmethod
     def fs_checks(root_folder: Path, args: dict):
         Utils.minimum_date(root_folder)
-        Checks.checkLinuxFilesystem(root_folder)
-        Checks.get_max_path_length(root_folder)
-        Checks.get_max_filename_length(root_folder)
-        Checks.unicode_filenames(root_folder)
+        # store the root folder filesystem checks globally for all to inspect
+        do_check(root_folder)
 
         # check if symlinks are supported
-        if not Checks.symlinks_supported(root_folder):
+        if not get_check().is_symlink:
             args.skip_albums = True
 
         # check if file system is case sensitive
         if not args.case_insensitive_fs:
-            if not Checks.is_case_sensitive(root_folder):
+            if not get_check().is_case_sensitive:
                 args.case_insensitive_fs = True
 
         return args
