@@ -102,6 +102,8 @@ class TestUnits(TestCase):
     def test_bad_filenames(self):
         folder = do_check(test_data)
 
+        filename = folder.valid_file_name("hello.   ")
+        self.assertEqual(filename, "hello.")
         filename = folder.valid_file_name("hello.😀")
         self.assertEqual(filename, "hello.😀")
         filename = folder.valid_file_name("hello./")
@@ -111,9 +113,10 @@ class TestUnits(TestCase):
         folder.is_linux = False
         folder.is_unicode = False
 
+        filename = folder.valid_file_name("hello.   ")
+        self.assertEqual(filename, "hello")
         filename = folder.valid_file_name("hello.😀")
         self.assertEqual(filename, "hello._")
-
         filename = folder.valid_file_name("hello..")
         self.assertEqual(filename, "hello")
 

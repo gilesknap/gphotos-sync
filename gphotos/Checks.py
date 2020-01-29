@@ -4,7 +4,9 @@ import random
 import re
 import shutil
 import subprocess
+from os.path import sep
 from pathlib import Path
+
 from psutil import disk_partitions
 
 log = logging.getLogger(__name__)
@@ -15,6 +17,7 @@ class Checks:
     fix_linux = re.compile(r"[/]|[\x00-\x1f]|\x7f|\x00")
     fix_windows = re.compile(r'[<>:"/\\|?*]|[\x00-\x1f]|\x7f|\x00')
     fix_windows_ending = re.compile("([ .]+$)")
+    fix_whitespace_ending = re.compile("([ \t]+$)")
     fix_unicode = re.compile(r"[^\x00-\x7F]")
 
     windows_fs = ["fat", "ntfs", "9p"]
@@ -57,7 +60,7 @@ class Checks:
             dst_file.symlink_to(src_file)
             src_file.unlink()
             dst_file.unlink()
-        except (OSError, FileNotFoundError):
+        except BaseException:
             src_file.unlink()
             log.error("Symbolic links not supported")
             log.error("Albums are not going to be synced - requires symlinks")
@@ -145,6 +148,7 @@ class Checks:
         :param (str) s: input string
         :return: (str): sanitized string
         """
+        s = self.fix_whitespace_ending.sub("", s)
 
         if self.is_linux:
             s = self.fix_linux.sub("_", s)
@@ -154,6 +158,7 @@ class Checks:
 
         if not self.is_unicode:
             s = self.fix_unicode.sub("_", s)
+
         return s
 
 
