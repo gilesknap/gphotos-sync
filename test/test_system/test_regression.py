@@ -1,6 +1,7 @@
 import os
 import shutil
 import stat
+import logging
 from unittest import TestCase
 from unittest.mock import patch, PropertyMock
 
@@ -8,6 +9,8 @@ from gphotos.GooglePhotosIndex import GooglePhotosIndex
 from gphotos.LocalData import LocalData
 import test.test_setup as ts
 from test.test_account import TestAccount
+
+log = logging.getLogger(__name__)
 
 
 class TestSystem(TestCase):
@@ -67,6 +70,13 @@ class TestSystem(TestCase):
         db.cur.execute("SELECT COUNT() FROM SyncFiles")
         count = db.cur.fetchone()
         self.assertEqual(10, count[0], "expected 10 images 1965")
+
+    def test_nntu_filename(self):
+        # check for https://github.com/gilesknap/gphotos-sync/issues/189
+        s = "3. lễ ký kết thi đua '65 ngày đêm, xung kích, sáng tạo, quyết thắng' .jpg"
+        log.debug("unicode filename %s", s)
+        s2 = "bad unicode character for nntu is %s", "\u1ec5"
+        log.debug("%s", s2)
 
     # this test does not work on windows - it does not throw an error so it
     # seems chmod fails to have an effect
