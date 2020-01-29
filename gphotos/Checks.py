@@ -57,11 +57,13 @@ class Checks:
         src_file = self.root_path / src
         src_file.touch()
         try:
+            log.debug("attempting to symlink %s to %s", src_file, dst_file)
             dst_file.symlink_to(src_file)
-            src_file.unlink()
             dst_file.unlink()
-        except BaseException:
             src_file.unlink()
+        except BaseException:
+            if src_file.exists():
+                src_file.unlink()
             log.error("Symbolic links not supported")
             log.error("Albums are not going to be synced - requires symlinks")
             return False
