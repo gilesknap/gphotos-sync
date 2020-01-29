@@ -103,7 +103,11 @@ class TestUnits(TestCase):
         folder = do_check(test_data)
 
         filename = folder.valid_file_name("hello.   ")
-        self.assertEqual(filename, "hello.")
+
+        if os_name == "nt":
+            self.assertEqual(filename, "hello")
+        else:
+            self.assertEqual(filename, "hello.")
         filename = folder.valid_file_name("hello.😀")
         self.assertEqual(filename, "hello.😀")
         filename = folder.valid_file_name("hello./")
@@ -114,6 +118,7 @@ class TestUnits(TestCase):
         folder.is_unicode = False
 
         filename = folder.valid_file_name("hello.   ")
+
         self.assertEqual(filename, "hello")
         filename = folder.valid_file_name("hello.😀")
         self.assertEqual(filename, "hello._")
