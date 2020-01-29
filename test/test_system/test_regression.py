@@ -73,10 +73,10 @@ class TestSystem(TestCase):
 
     def test_nntu_filename(self):
         # check for https://github.com/gilesknap/gphotos-sync/issues/189
+        s2 = "\u1ec5"
+        log.debug("bad unicode character for nntu is %s", s2)
         s = "3. lễ ký kết thi đua '65 ngày đêm, xung kích, sáng tạo, quyết thắng' .jpg"
         log.debug("unicode filename %s", s)
-        s2 = "bad unicode character for nntu is %s", "\u1ec5"
-        log.debug("%s", s2)
 
     # this test does not work on windows - it does not throw an error so it
     # seems chmod fails to have an effect
