@@ -6,7 +6,6 @@ from argparse import ArgumentParser, Namespace
 from datetime import datetime
 from pathlib import Path
 
-import pkg_resources
 from appdirs import AppDirs
 from gphotos import Utils
 from gphotos.authorize import Authorize
@@ -19,11 +18,7 @@ from gphotos.LocalFilesScan import LocalFilesScan
 from gphotos.Logging import setup_logging
 from gphotos.restclient import RestClient
 from gphotos.Settings import Settings
-from pkg_resources import DistributionNotFound
-
-
-# todo add toms versioneer clone
-__version__ = "2.11.beta-2"
+from gphotos._version_git import __version__
 
 if os.name != "nt":
     import fcntl
@@ -51,8 +46,6 @@ class GooglePhotosSyncMain:
         )
     except TypeError:
         version_string = "(version not available)"
-    except DistributionNotFound:
-        version_string = "(version not available under unit tests)"
 
     parser = ArgumentParser(
         epilog=version_string, description="Google Photos download tool"

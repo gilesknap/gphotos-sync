@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 
+import sys
 from setuptools import setup, find_packages, os
+
+# Place the directory containing _version_git on the path
+for path, _, filenames in os.walk(os.path.dirname(os.path.abspath(__file__))):
+    if "_version_git.py" in filenames:
+        sys.path.append(path)
+        break
+from gphotos._version_git import get_cmdclass, __version__  # noqa E402
 
 module_name = "gphotos-sync"
 
@@ -14,8 +22,13 @@ install_reqs = [
 ]
 
 develop_reqs = [
-    "pytest",
+    "pytest>=5.0.1",
     "mock",
+    "coverage",
+    "pytest",
+    "flake8",
+    "black",
+    "rope",
 ]
 
 if os.name == "nt":
@@ -26,7 +39,8 @@ with open("README.rst", "rb") as f:
 
 setup(
     name=module_name,
-    version="2.11.beta-2",
+    cmdclass=get_cmdclass(),
+    version=__version__,
     python_requires=">=3.6",
     license="MIT",
     platforms=["Linux", "Windows", "Mac"],
