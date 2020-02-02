@@ -21,7 +21,9 @@ from gphotos.restclient import RestClient
 from gphotos.Settings import Settings
 from pkg_resources import DistributionNotFound
 
-__version__ = pkg_resources.require("gphotos-sync")[0].version
+
+# todo add toms versioneer clone
+__version__ = "2.11.beta-2"
 
 if os.name != "nt":
     import fcntl
