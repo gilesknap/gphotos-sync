@@ -4,7 +4,6 @@ import random
 import re
 import shutil
 import subprocess
-from os.path import sep
 from pathlib import Path
 
 from psutil import disk_partitions
@@ -20,6 +19,7 @@ class Checks:
     fix_whitespace_ending = re.compile("([ \t]+$)")
     fix_unicode = re.compile(r"[^\x00-\x7F]")
 
+    # these filesystem types will have NTFS style filename restrictions
     windows_fs = ["fat", "ntfs", "9p"]
     WINDOWS_MAX_PATH = 248
 
