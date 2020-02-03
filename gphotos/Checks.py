@@ -35,7 +35,7 @@ class Checks:
 
     def _check_linux_filesystem(self) -> bool:
         filesystem_type = ""
-        for part in disk_partitions():
+        for part in disk_partitions(True):
             if part.mountpoint == "/":
                 filesystem_type = part.fstype
                 continue

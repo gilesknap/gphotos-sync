@@ -45,7 +45,7 @@ setup(
     license="MIT",
     platforms=["Linux", "Windows", "Mac"],
     description="Google Photos and Albums backup tool",
-    packages=find_packages(exclude=("tests.*", "tests", "etc.*", "etc")),
+    packages=find_packages(),
     entry_points={"console_scripts": ["gphotos-sync = gphotos.Main:main"]},
     long_description=long_description,
     install_requires=install_reqs,
