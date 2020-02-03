@@ -8,7 +8,8 @@ for path, _, filenames in os.walk(os.path.dirname(os.path.abspath(__file__))):
     if "_version_git.py" in filenames:
         sys.path.append(path)
         break
-from gphotos._version_git import get_cmdclass, __version__  # noqa E402
+
+from _version_git import get_cmdclass, __version__  # noqa E402
 
 module_name = "gphotos-sync"
 
