@@ -11,6 +11,8 @@ for path, _, filenames in os.walk(os.path.dirname(os.path.abspath(__file__))):
 
 from _version_git import get_cmdclass, __version__  # noqa E402
 
+print(f"installing version {__version__}")
+
 module_name = "gphotos-sync"
 
 install_reqs = [
@@ -38,6 +40,8 @@ if os.name == "nt":
 with open("README.rst", "rb") as f:
     long_description = f.read().decode("utf-8")
 
+packages = [x for x in find_packages() if x.startswith("gphotos")]
+
 setup(
     name=module_name,
     cmdclass=get_cmdclass(),
@@ -46,7 +50,7 @@ setup(
     license="MIT",
     platforms=["Linux", "Windows", "Mac"],
     description="Google Photos and Albums backup tool",
-    packages=find_packages(),
+    packages=packages,
     entry_points={"console_scripts": ["gphotos-sync = gphotos.Main:main"]},
     long_description=long_description,
     install_requires=install_reqs,

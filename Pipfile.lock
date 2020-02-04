@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "445e0352ffa2e066e4f999e3d0b75cc9b5c7dba11e2e596b6d658ab7a85740e3"
+            "sha256": "d590231ff88fb7addd3fb31476e414582506d2023b04482f5e291311122ab7d9"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -239,6 +239,9 @@
             ],
             "index": "pypi",
             "version": "==3.7.9"
+        },
+        "gphotos-sync": {
+            "path": "."
         },
         "importlib-metadata": {
             "hashes": [
