@@ -20,7 +20,18 @@ from gphotos.restclient import RestClient
 from gphotos.Settings import Settings
 from gphotos._version_git import __version__
 
-if os.name != "nt":
+if os.name == "nt":
+    import subprocess
+    orig_Popen = subprocess.Popen
+
+    def Popen_patch(*args, **kargs):
+        startupinfo = subprocess.STARTUPINFO()
+        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        kargs["startupinfo"] = startupinfo
+        return orig_Popen(*args, **kargs)
+
+    subprocess.Popen = Popen_patch
+else:
     import fcntl
 
 APP_NAME = "gphotos-sync"
