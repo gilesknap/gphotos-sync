@@ -18,18 +18,18 @@ from gphotos.LocalFilesScan import LocalFilesScan
 from gphotos.Logging import setup_logging
 from gphotos.restclient import RestClient
 from gphotos.Settings import Settings
-from gphotos._version_git import __version__
+from gphotos import __version__
 
 if os.name == "nt":
     import subprocess
     orig_Popen = subprocess.Popen
 
-    def Popen_patch(*args, **kargs):
-        startupinfo = subprocess.STARTUPINFO()
-        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        kargs["startupinfo"] = startupinfo
-        return orig_Popen(*args, **kargs)
-
+    class Popen_patch(subprocess.Popen):
+        def __init__(self, *args, **kargs):
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            kargs["startupinfo"] = startupinfo
+            super().__init__(*args, **kargs)
     subprocess.Popen = Popen_patch
 else:
     import fcntl
