@@ -37,6 +37,7 @@ matrix:
           secure: scyeqVy+HMOpQ1uTGwhFZRmmGy/IIg0EayrD8EpjJ8RZQpMBv/AkCzBTF8jtSPglggnT7JPD1TSfgOO4INw1NWFvgGVlOEMvhf4HkC49Mmf8m3z5ZIxUehgUfwhtrwUn9mWCNvdmr5IfaMnFsrX63kukYZOlKvbAZ8qAhX6MHYlzGW9NwKq9XLEx0jj10W2rmPB+yiAvhRixGk7Gx53c6BrBO/Acrlw9uMm+zJkyIv77Lzvp3kRRqthwxo9qDikdJgVUtmihinANVTUYGGeTGgMfKaknIlQjHoKuE6qgWZsqIW3lDHXCCSvXrr9+ukfE6+kpw9luqKzk3IzcD5QKxsJfA8OPLDgwdtYCyTZw5mhVajlEZAlVRQR3F6/87OqsFRLYU0iLxQwD4AGHSub9BYW9Momntd/vpEJVx165dpyStrRf9bgd0Gwk7shMlwzY2pqMcoPYEC4ewu8nAQeWH/BQXHD+8D855S1ib38HyWMkgp3m3F4KRO3CZpXDIIFMyWi1G+IrANEBXhxpd7lELBaaqldAAeYUSrD8qd9nJXul9vbYIorbsQRJK7J9rSkXLT8oai1dv1PL5PNidRHYZp+9FGeA68WHdGsLPd85cEf9M2xA5LXw4TEGctAFLOfr96bDtSlqSni94lbUlXVFQuX49Fc2JYwv5R+gFTupMVc=
         on:
           tags: true
+        distributions: "sdist bdist_wheel"
       - provider: script
         script: bash ./build-docker.sh
         on:
