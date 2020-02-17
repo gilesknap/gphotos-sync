@@ -183,11 +183,11 @@ class TestErrors(TestCase):
         )
         s.gp.start(s.parsed_args)
 
-        db = LocalData(s.root)
-        # Total of 1 out of media items
-        db.cur.execute("SELECT COUNT() FROM SyncFiles")
-        count = db.cur.fetchone()
-        self.assertEqual(expected, count[0])
+        with LocalData(s.root) as db:
+            # Total of 1 out of media items
+            db.cur.execute("SELECT COUNT() FROM SyncFiles")
+            count = db.cur.fetchone()
+            self.assertEqual(expected, count[0])
 
     class DummyResponse:
         @staticmethod
