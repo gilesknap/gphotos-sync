@@ -22,6 +22,7 @@ from gphotos import __version__
 
 if os.name == "nt":
     import subprocess
+
     orig_Popen = subprocess.Popen
 
     class Popen_patch(subprocess.Popen):
@@ -30,6 +31,7 @@ if os.name == "nt":
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             kargs["startupinfo"] = startupinfo
             super().__init__(*args, **kargs)
+
     subprocess.Popen = Popen_patch
 else:
     import fcntl
@@ -312,29 +314,38 @@ class GooglePhotosSyncMain:
             )
 
     def do_sync(self, args: Namespace):
-        new_files = True
+        files_downloaded = 0
         with self.data_store:
             if not args.skip_index:
                 if not args.skip_files and not args.album:
-                    new_files = self.google_photos_idx.index_photos_media()
-            # if there are no new files and no arguments that specify specific
-            # scan requirements, then we have done all we need to do
+                    self.google_photos_idx.index_photos_media()
+
+            if not args.index_only:
+                if not args.skip_files:
+                    files_downloaded = self.google_photos_down.download_photo_media()
+
             if (
-                new_files
-                or args.rescan
-                or args.retry_download
-                or args.start_date
-                or args.album
-            ):
-                if not args.skip_albums and not args.skip_index:
-                    self.google_albums_sync.index_album_media()
+                not args.skip_albums
+                and not args.skip_index
+                and (files_downloaded > 0 or args.skip_files or args.rescan)
+            ) or args.album is not None:
+                self.google_albums_sync.index_album_media()
+                # run download again to pick up files indexed in albums only
                 if not args.index_only:
                     if not args.skip_files:
-                        self.google_photos_down.download_photo_media()
-                    if not args.skip_albums:
-                        self.google_albums_sync.create_album_content_links()
-                    if args.do_delete:
-                        self.google_photos_idx.check_for_removed()
+                        files_downloaded = (
+                            self.google_photos_down.download_photo_media()
+                        )
+
+            if not args.index_only:
+                if (
+                    not args.skip_albums
+                    and (files_downloaded > 0 or args.skip_files or args.rescan)
+                    or args.album is not None
+                ):
+                    self.google_albums_sync.create_album_content_links()
+                if args.do_delete:
+                    self.google_photos_idx.check_for_removed()
 
             if args.compare_folder:
                 if not args.skip_index:
@@ -372,6 +383,7 @@ class GooglePhotosSyncMain:
             root_folder.mkdir(parents=True, mode=0o700)
 
         setup_logging(args.log_level, args.logfile, root_folder)
+        log.warning(f"gphotos-sync {__version__} {start_time}")
 
         args = self.fs_checks(root_folder, args)
 
