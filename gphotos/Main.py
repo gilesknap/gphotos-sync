@@ -6,7 +6,6 @@ from argparse import ArgumentParser, Namespace
 from datetime import datetime
 from pathlib import Path
 
-import pkg_resources
 from appdirs import AppDirs
 from gphotos import Utils
 from gphotos.authorize import Authorize
@@ -19,13 +18,22 @@ from gphotos.LocalFilesScan import LocalFilesScan
 from gphotos.Logging import setup_logging
 from gphotos.restclient import RestClient
 from gphotos.Settings import Settings
-from pkg_resources import DistributionNotFound
+from gphotos import __version__
 
+if os.name == "nt":
+    import subprocess
 
-# todo add toms versioneer clone
-__version__ = "2.11.beta-2"
+    orig_Popen = subprocess.Popen
 
-if os.name != "nt":
+    class Popen_patch(subprocess.Popen):
+        def __init__(self, *args, **kargs):
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            kargs["startupinfo"] = startupinfo
+            super().__init__(*args, **kargs)
+
+    subprocess.Popen = Popen_patch
+else:
     import fcntl
 
 APP_NAME = "gphotos-sync"
@@ -51,8 +59,6 @@ class GooglePhotosSyncMain:
         )
     except TypeError:
         version_string = "(version not available)"
-    except DistributionNotFound:
-        version_string = "(version not available under unit tests)"
 
     parser = ArgumentParser(
         epilog=version_string, description="Google Photos download tool"
@@ -232,6 +238,18 @@ class GooglePhotosSyncMain:
         action="store_true",
         help="show progress of indexing and downloading in warning log",
     )
+    parser.add_argument(
+        "--max-filename",
+        help="Set the maxiumum filename length for target filesystem."
+        "This overrides the automatic detection.",
+        default=0,
+    )
+    parser.add_argument(
+        "--ntfs",
+        action="store_true",
+        help="Declare that the target filesystem is ntfs (or ntfs like)."
+        "This overrides the automatic detection.",
+    )
     parser.add_help = True
 
     def setup(self, args: Namespace, db_path: Path):
@@ -308,29 +326,38 @@ class GooglePhotosSyncMain:
             )
 
     def do_sync(self, args: Namespace):
-        new_files = True
+        files_downloaded = 0
         with self.data_store:
             if not args.skip_index:
                 if not args.skip_files and not args.album:
-                    new_files = self.google_photos_idx.index_photos_media()
-            # if there are no new files and no arguments that specify specific
-            # scan requirements, then we have done all we need to do
+                    self.google_photos_idx.index_photos_media()
+
+            if not args.index_only:
+                if not args.skip_files:
+                    files_downloaded = self.google_photos_down.download_photo_media()
+
             if (
-                new_files
-                or args.rescan
-                or args.retry_download
-                or args.start_date
-                or args.album
-            ):
-                if not args.skip_albums and not args.skip_index:
-                    self.google_albums_sync.index_album_media()
+                not args.skip_albums
+                and not args.skip_index
+                and (files_downloaded > 0 or args.skip_files or args.rescan)
+            ) or args.album is not None:
+                self.google_albums_sync.index_album_media()
+                # run download again to pick up files indexed in albums only
                 if not args.index_only:
                     if not args.skip_files:
-                        self.google_photos_down.download_photo_media()
-                    if not args.skip_albums:
-                        self.google_albums_sync.create_album_content_links()
-                    if args.do_delete:
-                        self.google_photos_idx.check_for_removed()
+                        files_downloaded = (
+                            self.google_photos_down.download_photo_media()
+                        )
+
+            if not args.index_only:
+                if (
+                    not args.skip_albums
+                    and (files_downloaded > 0 or args.skip_files or args.rescan)
+                    or args.album is not None
+                ):
+                    self.google_albums_sync.create_album_content_links()
+                if args.do_delete:
+                    self.google_photos_idx.check_for_removed()
 
             if args.compare_folder:
                 if not args.skip_index:
@@ -345,7 +372,7 @@ class GooglePhotosSyncMain:
     def fs_checks(root_folder: Path, args: dict):
         Utils.minimum_date(root_folder)
         # store the root folder filesystem checks globally for all to inspect
-        do_check(root_folder)
+        do_check(root_folder, int(args.max_filename), bool(args.ntfs))
 
         # check if symlinks are supported
         if not get_check().is_symlink:
@@ -368,6 +395,7 @@ class GooglePhotosSyncMain:
             root_folder.mkdir(parents=True, mode=0o700)
 
         setup_logging(args.log_level, args.logfile, root_folder)
+        log.warning(f"gphotos-sync {__version__} {start_time}")
 
         args = self.fs_checks(root_folder, args)
 

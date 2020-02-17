@@ -1,6 +1,17 @@
 #!/usr/bin/env python3
 
+import sys
 from setuptools import setup, find_packages, os
+
+# Place the directory containing _version_git on the path
+for path, _, filenames in os.walk(os.path.dirname(os.path.abspath(__file__))):
+    if "_version_git.py" in filenames:
+        sys.path.append(path)
+        break
+
+from _version_git import get_cmdclass, __version__  # noqa E402
+
+print(f"installing version {__version__}")
 
 module_name = "gphotos-sync"
 
@@ -14,8 +25,13 @@ install_reqs = [
 ]
 
 develop_reqs = [
-    "pytest",
+    "pytest>=5.0.1",
     "mock",
+    "coverage",
+    "pytest",
+    "flake8",
+    "black",
+    "rope",
 ]
 
 if os.name == "nt":
@@ -24,14 +40,17 @@ if os.name == "nt":
 with open("README.rst", "rb") as f:
     long_description = f.read().decode("utf-8")
 
+packages = [x for x in find_packages() if x.startswith("gphotos")]
+
 setup(
     name=module_name,
-    version="2.11.beta-2",
+    cmdclass=get_cmdclass(),
+    version=__version__,
     python_requires=">=3.6",
     license="MIT",
     platforms=["Linux", "Windows", "Mac"],
     description="Google Photos and Albums backup tool",
-    packages=find_packages(exclude=("tests.*", "tests", "etc.*", "etc")),
+    packages=packages,
     entry_points={"console_scripts": ["gphotos-sync = gphotos.Main:main"]},
     long_description=long_description,
     install_requires=install_reqs,

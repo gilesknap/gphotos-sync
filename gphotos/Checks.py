@@ -4,7 +4,6 @@ import random
 import re
 import shutil
 import subprocess
-from os.path import sep
 from pathlib import Path
 
 from psutil import disk_partitions
@@ -20,22 +19,29 @@ class Checks:
     fix_whitespace_ending = re.compile("([ \t]+$)")
     fix_unicode = re.compile(r"[^\x00-\x7F]")
 
+    # these filesystem types will have NTFS style filename restrictions
     windows_fs = ["fat", "ntfs", "9p"]
     WINDOWS_MAX_PATH = 248
 
-    def __init__(self, root_path: Path):
+    def __init__(self, root_path: Path, max_filename, ntfs):
         self.root_path: Path = root_path
         self._root_str: str = str(root_path).lower()
-        self.is_linux: bool = self._check_linux_filesystem()
+        if ntfs:
+            self.is_linux: bool = False
+        else:
+            self.is_linux: bool = self._check_linux_filesystem()
         self.is_symlink: bool = self._symlinks_supported()
         self.is_unicode: bool = self._unicode_filenames()
         self.is_case_sensitive: bool = self._check_case_sensitive()
         self.max_path: int = self._get_max_path_length()
-        self.max_filename: int = self._get_max_filename_length()
+        if max_filename > 0:
+            self.max_filename: int = max_filename
+        else:
+            self.max_filename: int = self._get_max_filename_length()
 
     def _check_linux_filesystem(self) -> bool:
         filesystem_type = ""
-        for part in disk_partitions():
+        for part in disk_partitions(True):
             if part.mountpoint == "/":
                 filesystem_type = part.fstype
                 continue
@@ -169,9 +175,9 @@ root_folder: Checks = None
 
 
 # ugly global stuff to avoid passing Checks object everywhere
-def do_check(root: Path):
+def do_check(root: Path, max_filename=0, ntfs=None):
     global root_folder
-    root_folder = Checks(root)
+    root_folder = Checks(root, max_filename, ntfs)
     return root_folder
 
 

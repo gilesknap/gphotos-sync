@@ -153,6 +153,7 @@ class GooglePhotosDownload(object):
                 self.files_download_failed,
                 self.files_download_skipped,
             )
+        return self.files_downloaded
 
     def download_batch(self, batch: Mapping[str, DatabaseMedia]):
         """ Downloads a batch of media items collected in download_photo_media.
