@@ -238,6 +238,18 @@ class GooglePhotosSyncMain:
         action="store_true",
         help="show progress of indexing and downloading in warning log",
     )
+    parser.add_argument(
+        "--max-filename",
+        help="Set the maxiumum filename length for target filesystem."
+        "This overrides the automatic detection.",
+        default=0,
+    )
+    parser.add_argument(
+        "--ntfs",
+        action="store_true",
+        help="Declare that the target filesystem is ntfs (or ntfs like)."
+        "This overrides the automatic detection.",
+    )
     parser.add_help = True
 
     def setup(self, args: Namespace, db_path: Path):
@@ -360,7 +372,7 @@ class GooglePhotosSyncMain:
     def fs_checks(root_folder: Path, args: dict):
         Utils.minimum_date(root_folder)
         # store the root folder filesystem checks globally for all to inspect
-        do_check(root_folder)
+        do_check(root_folder, int(args.max_filename), bool(args.ntfs))
 
         # check if symlinks are supported
         if not get_check().is_symlink:
