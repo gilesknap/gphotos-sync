@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "d590231ff88fb7addd3fb31476e414582506d2023b04482f5e291311122ab7d9"
+            "sha256": "445e0352ffa2e066e4f999e3d0b75cc9b5c7dba11e2e596b6d658ab7a85740e3"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -240,9 +240,6 @@
             "index": "pypi",
             "version": "==3.7.9"
         },
-        "gphotos-sync": {
-            "path": "."
-        },
         "importlib-metadata": {
             "hashes": [
                 "sha256:06f5b3a99029c7134207dd882428a66992a9de2bef7c2b699b5641f9886c3302",
@@ -260,11 +257,11 @@
         },
         "mock": {
             "hashes": [
-                "sha256:39d6bbbe86dfc7ef7fa21a1b34b67991f46548e7486af5799b79de0ab98c119e",
-                "sha256:b1bc607824a30bb4c3315a833d7817c1f01e0658c85710236d537e699b853493"
+                "sha256:2a572b715f09dd2f0a583d8aeb5bb67d7ed7a8fd31d193cf1227a99c16a67bc3",
+                "sha256:5e48d216809f6f393987ed56920305d8f3c647e6ed35407c1ff2ecb88a9e1151"
             ],
             "index": "pypi",
-            "version": "==4.0.0b1"
+            "version": "==4.0.1"
         },
         "more-itertools": {
             "hashes": [
@@ -422,10 +419,10 @@
         },
         "zipp": {
             "hashes": [
-                "sha256:ccc94ed0909b58ffe34430ea5451f07bc0c76467d7081619a454bf5c98b89e28",
-                "sha256:feae2f18633c32fc71f2de629bfb3bd3c9325cd4419642b1f1da42ee488d9b98"
+                "sha256:5c56e330306215cd3553342cfafc73dda2c60792384117893f3a83f8a1209f50",
+                "sha256:d65287feb793213ffe11c0f31b81602be31448f38aeb8ffc2eb286c4f6f6657e"
             ],
-            "version": "==2.1.0"
+            "version": "==2.2.0"
         }
     }
 }

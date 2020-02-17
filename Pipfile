@@ -11,7 +11,6 @@ requests_oauthlib = "*"
 pyyaml = ">=4.2b1"
 pywin32 = {markers = "platform_system == 'Windows'",version = "*"}
 psutil = "*"
-gphotos-sync = {path = "."}
 
 [dev-packages]
 pytest = ">=5.0.1"
@@ -21,7 +20,6 @@ pytest-cov = "*"
 flake8 = "*"
 black = "*"
 rope = "*"
-gphotos-sync = {path = "."}
 
 [requires]
 python_version = "3.7"
