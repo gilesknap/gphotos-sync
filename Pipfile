@@ -20,6 +20,7 @@ pytest-cov = "*"
 flake8 = "*"
 black = "*"
 rope = "*"
+mypy = "*"
 
 [requires]
 python_version = "3.7"

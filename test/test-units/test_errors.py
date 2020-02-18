@@ -18,6 +18,10 @@ photos_root = Path("photos")
 albums_root = Path("albums")
 comparison_root = Path("comparison")
 
+# todo I'm using assert here and hence do not really need to use TestCae clasee
+# I should probably switch to using a consistent approach as per new Diamond
+# guidelines which is pytest only with no unittest classes (throughout all test files)
+
 
 class TestErrors(TestCase):
     """
@@ -62,6 +66,9 @@ class TestErrors(TestCase):
         assert a.token == "dummy_token_string"
 
     def test_base_media(self):
+        """Download archived images in test library using flat folders (and
+        windows file name restrictions)
+        """
         b = BaseMedia()
 
         with pytest.raises(NotImplementedError):
@@ -89,9 +96,6 @@ class TestErrors(TestCase):
             x = b.url
             print(x)  # for pylint
 
-        """Download archived images in test library using flat folders (and
-        windows file name restrictions)
-        """
         s = ts.SetupDbAndCredentials()
         args = [
             "--archived",
@@ -114,7 +118,8 @@ class TestErrors(TestCase):
         files = sorted(s.root.glob(pat))
         self.assertEqual(1, len(files))
 
-    def test_checks(self):
+    @staticmethod
+    def test_checks():
         a_path = Path("/tmp")
         c = do_check(a_path)
         assert c.is_linux
@@ -140,13 +145,15 @@ class TestErrors(TestCase):
         with patch("gphotos.Checks.Path.touch", side_effect=BaseException()):
             assert not c._unicode_filenames()
 
-    def test_database_media(self):
+    @staticmethod
+    def test_database_media():
         d = DatabaseMedia()
 
         assert d.url is None
         assert d.location is None
 
-    def test_db_row(self):
+    @staticmethod
+    def test_db_row():
         d = DbRow(None)
         b = BaseMedia()
 
@@ -163,7 +170,8 @@ class TestErrors(TestCase):
         if d:
             assert False, "empty DBRow returns true as Bool"
 
-    def test_google_albums_media(self):
+    @staticmethod
+    def test_google_albums_media():
         m = GoogleAlbumMedia("")
         g = GoogleAlbumsRow(None)
         g.from_media(m)
