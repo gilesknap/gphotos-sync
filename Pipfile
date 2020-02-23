@@ -11,6 +11,7 @@ requests_oauthlib = "*"
 pyyaml = ">=4.2b1"
 pywin32 = {markers = "platform_system == 'Windows'",version = "*"}
 psutil = "*"
+versiongit = "*"
 
 [dev-packages]
 pytest = ">=5.0.1"
