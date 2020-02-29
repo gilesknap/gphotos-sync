@@ -77,12 +77,16 @@ class GooglePhotosDownload(object):
         os.umask(self.current_umask)
 
         self._session = requests.Session()
+        # define the retry behaviour for each connection. Note that
+        # respect_retry_after_header=True means that status codes [413, 429, 503]
+        # will backoff for the recommended period defined in the retry after header
         retries = Retry(
             total=settings.max_retries,
-            backoff_factor=0.1,
-            status_forcelist=[500, 502, 503, 504],
+            backoff_factor=5,
+            status_forcelist=[500, 502, 503, 504, 509],
             method_whitelist=frozenset(["GET", "POST"]),
             raise_on_status=False,
+            respect_retry_after_header=True,
         )
         self._session.mount(
             "https://", HTTPAdapter(max_retries=retries, pool_maxsize=self.max_threads)
