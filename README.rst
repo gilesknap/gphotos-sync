@@ -97,6 +97,8 @@ to Google and this project will be updated once they are resolved.
 
 Install and configure
 ---------------------
+For an easy option which does not require the install of Python and Pipenv you can use the Snap Store version, see https://ubuntu.com/blog/safely-backup-google-photos.
+
 For some help on getting python working on Windows see https://github.com/gilesknap/gphotos-sync/issues/63.
 
 On linux, you can install pipenv using ``pip3 install --user pipenv`` and then make sure that ``~/.local/bin/`` is in your path.
