@@ -312,15 +312,18 @@ class GoogleAlbumsSync(object):
                     # Windows tries to follow symlinks even though we specify
                     # follow_symlinks=False. So disable setting of link date
                     # if follow not supported
-                    if os.utime in os.supports_follow_symlinks:
-                        os.utime(
-                            str(link_file),
-                            (
-                                Utils.safe_timestamp(created_date).timestamp(),
-                                Utils.safe_timestamp(created_date).timestamp(),
-                            ),
-                            follow_symlinks=False,
-                        )
+                    try:
+                        if os.utime in os.supports_follow_symlinks:
+                            os.utime(
+                                str(link_file),
+                                (
+                                    Utils.safe_timestamp(created_date).timestamp(),
+                                    Utils.safe_timestamp(created_date).timestamp(),
+                                ),
+                                follow_symlinks=False,
+                            )
+                    except PermissionError:
+                        log.warning("cant set date on {link_file}")
 
             except (FileExistsError, UnicodeEncodeError):
                 log.error("bad link to %s", full_file_name)
