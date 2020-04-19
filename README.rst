@@ -57,15 +57,19 @@ NOTES:
 * If you have shared albums and have clicked 'add to library' on items from others' libraries then you will have two
   copies of those items and they will show as duplicates too.
 
-Troubleshooting
----------------
+Known Issues
+------------
 
 - Installing on a slow machine (like old Raspberry Pi) or network may cause timeouts in pipenv. 
 
   - This can be resolved by setting an environment variable `export PIPENV_TIMEOUT=240`
+  
+- Some mounted filesystems including NFS and AFP do not support file locks and database access will fail on them.
 
-Known Issues
-------------
+  - To fix, use the paramter --db-path to sepcify a location for your DB on the local disk. This will perform better anyway.
+
+Known Issues with Google API
+----------------------------
 A few outstanding limitations of the Google API restrict what can be achieved. All these issues have been reported
 to Google and this project will be updated once they are resolved.
 
