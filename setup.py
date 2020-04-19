@@ -9,9 +9,7 @@ for path, _, filenames in os.walk(os.path.dirname(os.path.abspath(__file__))):
         sys.path.append(path)
         break
 
-from _version_git import get_cmdclass, __version__  # noqa E402
-
-print(f"installing version {__version__}")
+from _version_git import __version__, get_cmdclass  # noqa
 
 module_name = "gphotos-sync"
 

@@ -2,7 +2,6 @@ import logging
 import platform
 import sqlite3 as lite
 from datetime import datetime
-from os import unlink
 from pathlib import Path
 from sqlite3.dbapi2 import Connection, Cursor
 from typing import Iterator, Type

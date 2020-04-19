@@ -108,13 +108,14 @@ class Authorize:
             )
             self.save_token(self.token)
 
-        # note we want retries on POST as well, need to review this once we
-        # start to do methods that write to Google Photos
+        # set up the retry bevaiour for the authorized session
         retries = Retry(
             total=self.max_retries,
-            backoff_factor=0.1,
+            backoff_factor=0.2,
             status_forcelist=[500, 502, 503, 504],
             method_whitelist=frozenset(["GET", "POST"]),
             raise_on_status=False,
+            respect_retry_after_header=True,
         )
+        # apply the retry behaviour to our session by repalcing the default HTTPAdapter
         self.session.mount("https://", HTTPAdapter(max_retries=retries))

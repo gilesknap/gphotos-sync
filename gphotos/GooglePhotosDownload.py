@@ -77,12 +77,16 @@ class GooglePhotosDownload(object):
         os.umask(self.current_umask)
 
         self._session = requests.Session()
+        # define the retry behaviour for each connection. Note that
+        # respect_retry_after_header=True means that status codes [413, 429, 503]
+        # will backoff for the recommended period defined in the retry after header
         retries = Retry(
             total=settings.max_retries,
-            backoff_factor=0.1,
-            status_forcelist=[500, 502, 503, 504],
+            backoff_factor=5,
+            status_forcelist=[500, 502, 503, 504, 509],
             method_whitelist=frozenset(["GET", "POST"]),
             raise_on_status=False,
+            respect_retry_after_header=True,
         )
         self._session.mount(
             "https://", HTTPAdapter(max_retries=retries, pool_maxsize=self.max_threads)
@@ -190,8 +194,6 @@ class GooglePhotosDownload(object):
             futures.wait(self.pool_future_to_media)
             log.warning("Cancelled download threads")
             raise
-        except RequestException:
-            self.find_bad_items(batch)
 
     def download_file(self, media_item: DatabaseMedia, media_json: dict):
         """ farms a single media download off to the thread pool.
@@ -299,10 +301,15 @@ class GooglePhotosDownload(object):
             if e:
                 self.files_download_failed += 1
                 log.error(
-                    "FAILURE %d downloading %s",
+                    "FAILURE %d downloading %s - %s",
                     self.files_download_failed,
                     media_item.relative_path,
+                    e,
                 )
+                # treat API errors as possibly transient. Report them above in
+                # log.error but do not raise them. Other exceptions will raise
+                # up to the root handler and abort. Note that all retry logic is
+                # already handled in urllib3
                 if not isinstance(e, RequestException):
                     raise e
             else:
@@ -316,22 +323,3 @@ class GooglePhotosDownload(object):
                 if self.settings.progress and self.files_downloaded % 10 == 0:
                     log.warning(f"Downloaded {self.files_downloaded} items ...\033[F")
             del self.pool_future_to_media[future]
-
-    def find_bad_items(self, batch: Mapping[str, DatabaseMedia]):
-        """
-        a batch get failed. Now do all of its contents as individual
-        gets so we can work out which ID(s) cause the failure
-        """
-        for item_id, media_item in batch.items():
-            try:
-                log.debug("BAD ID Retry on %s (%s)", item_id, media_item.relative_path)
-                response = self._api.mediaItems.get.execute(mediaItemId=item_id)
-                media_item_json = response.json()
-                self.download_file(media_item, media_item_json)
-            except RequestException:
-                self.files_download_failed += 1
-                log.error(
-                    "FAILURE %d in get of %s",
-                    self.files_download_failed,
-                    media_item.relative_path,
-                )
