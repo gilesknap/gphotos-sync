@@ -133,14 +133,7 @@ authorized to use the 'Photos Library API'. It is not provided in the distributi
 is given a (large) limited number of free API calls to Google Services. If this distribution shared the client id,
 all users would share this resource limit. This is a little fiddly but only needs to be done once.
 
-To do this:
-
-- Create a project on `Google Developer Console`_, following the `Creating a project procedure`_,
-
-- Authorize it to use the 'Photos Library API', following the `Activating and deactivating APIs procedure`_,
-
-- Create a Client ID by following the `setting up oauth 2.0 procedure`_ with application type set to **Other**
-
+- Create a client id using these instructions `Oauth2 for gphotos-sync`_
 - Once the client ID is created, download it as ``client_secret.json`` and save it under the application
   configuration directory:
 
@@ -157,6 +150,7 @@ will run under. See `Enabling SymLinks on Windows`_.
 .. _`Activating and Deactivating APIs procedure`: https://cloud.google.com/apis/docs/enable-disable-apis
 .. _`setting up oauth 2.0 procedure`: https://support.google.com/cloud/answer/6158849?hl=en
 .. _`Enabling SymLinks on Windows`: https://community.perforce.com/s/article/3472
+.. _`Oauth2 for gphotos-sync`: https://docs.google.com/document/d/1ck1679H8ifmZ_4eVbDeD_-jezIcZ-j6MlaNaeQiz7y0/edit?usp=sharing
 
 
 How to use it
