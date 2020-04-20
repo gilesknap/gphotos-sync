@@ -306,12 +306,10 @@ class GooglePhotosDownload(object):
                     media_item.relative_path,
                     e,
                 )
-                # treat API errors as possibly transient. Report them above in
-                # log.error but do not raise them. Other exceptions will raise
-                # up to the root handler and abort. Note that all retry logic is
-                # already handled in urllib3
-                if not isinstance(e, RequestException):
-                    raise e
+                # do not raise any errors in invididual downloads
+                # carry on and try to download the rest
+                # NOTE: this may cause errors to spew out when
+                # there is some fatal issue, like network disconnected
             else:
                 self._db.put_downloaded(media_item.id)
                 self.files_downloaded += 1

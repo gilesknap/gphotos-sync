@@ -1,5 +1,5 @@
 {
-  "python.pythonPath": "/home/giles/.local/share/virtualenvs/gphotos-sync-23K6u7j6/bin/python",
+  "python.pythonPath": "/home/giles/.local/share/virtualenvs/gphotos-sync-L5maUoMz/bin/python",
   "python.testing.pytestArgs": [
     "test",
     "--log-cli-level=debug",
