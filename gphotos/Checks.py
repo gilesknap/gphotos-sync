@@ -107,7 +107,7 @@ class Checks:
                 raise ValueError("separate case files not seen")
             case_file.unlink()
             no_case_file.unlink()
-        except (FileNotFoundError, ValueError):
+        except (FileExistsError, FileNotFoundError, ValueError):
             log.info("Case insensitive file system found")
         else:
             log.info("Case sensitive file system found")
