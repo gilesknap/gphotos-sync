@@ -299,13 +299,13 @@ class GoogleAlbumsSync(object):
                     link_folder.mkdir(parents=True)
 
                 created_date = Utils.string_to_date(created)
-                if self._use_hardlinks:
-                    if full_file_name.exists():
-                        os.link(full_file_name, link_file)
+                if full_file_name.exists():
+                    if self._use_hardlinks:
+                            os.link(full_file_name, link_file)
                     else:
-                        log.debug("skip hardlink for %s, not downloaded", file_name)
+                        link_file.symlink_to(relative_filename)
                 else:
-                    link_file.symlink_to(relative_filename)
+                    log.debug("skip link for %s, not downloaded", file_name)
 
                 if link_file.exists():
                     count += 1
