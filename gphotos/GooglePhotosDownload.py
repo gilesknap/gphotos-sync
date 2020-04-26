@@ -24,8 +24,8 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
 try:
-    import win32file
-    import win32con
+    import win32file  # noqa
+    import win32con  # noqa
 
     _use_win_32 = True
 except ImportError:

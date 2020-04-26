@@ -4,19 +4,20 @@ from datetime import date
 
 
 class TestAccount:
-    latest_date = date(2017, 9, 26)
+    latest_date = date(2020, 4, 26)
 
-    image_years = [2019, 2017, 2016, 2015, 2014, 2001, 2000, 1998, 1965]
+    image_years = [2020, 2019, 2017, 2016, 2015, 2014, 2001, 2000, 1998, 1965]
     # 10 images in each of the years in the test data
     # plus 5 shared items in the 2017 shared album
-    images_per_year = [0, 10, 10, 10, 10, 10, 10, 10, 10]
-    shared_images_per_year = [0, 5, 0, 0, 0, 0, 0, 0, 0]
-    shared_album_images_per_year = [6, 0, 0, 0, 0, 0, 0, 0, 0]
-    videos_per_year = [0, 10, 0, 0, 0, 0, 0, 0, 0, 0]
+    images_per_year = [1, 0, 10, 10, 10, 10, 10, 10, 10, 10]
+    shared_images_per_year = [0, 0, 5, 0, 0, 0, 0, 0, 0, 0]
+    shared_album_images_per_year = [0, 6, 0, 0, 0, 0, 0, 0, 0, 0]
+    videos_per_year = [0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0]
 
     image_count = sum(images_per_year)
     shared_image_count = sum(shared_images_per_year)
     video_count = sum(videos_per_year)
+    total_count = image_count + video_count
 
     # shared test album has 'show in albums' so does appear in our albums list
     # 5 of its files are ours and 5 shared by the real giles knap
@@ -27,10 +28,11 @@ class TestAccount:
         r"0923?Clones😀",
         r"0926?Album?2016",
         r"1207?Same?Names",
+        r"0426?Name,with,Comma",
     ]
-    album_years = [2019, 2001, 2017, 2017, 2016, 2014]
-    album_images = [5, 10, 10, 4, 16, 10]
-    album_shared_images = [5, 0, 0, 0, 0, 0]
+    album_years = [2019, 2001, 2017, 2017, 2016, 2014, 2020]
+    album_images = [5, 10, 10, 4, 16, 10, 1]
+    album_shared_images = [5, 0, 0, 0, 0, 0, 0]
     album_count = len(album_names)
     album_image_count = sum(album_images)
     album_shared_image_count = sum(album_shared_images)

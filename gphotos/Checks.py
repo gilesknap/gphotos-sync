@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 class Checks:
     # regex for illegal characters in file names and database queries
     fix_linux = re.compile(r"[/]|[\x00-\x1f]|\x7f|\x00")
-    fix_windows = re.compile(r'[<>:"/\\|?*]|[\x00-\x1f]|\x7f|\x00')
+    fix_windows = re.compile(r'[,<>:"/\\|?*]|[\x00-\x1f]|\x7f|\x00')
     fix_windows_ending = re.compile("([ .]+$)")
     fix_whitespace_ending = re.compile("([ \t]+$)")
     fix_unicode = re.compile(r"[^\x00-\x7F]")

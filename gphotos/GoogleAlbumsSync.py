@@ -301,7 +301,7 @@ class GoogleAlbumsSync(object):
                 created_date = Utils.string_to_date(created)
                 if full_file_name.exists():
                     if self._use_hardlinks:
-                            os.link(full_file_name, link_file)
+                        os.link(full_file_name, link_file)
                     else:
                         link_file.symlink_to(relative_filename)
                 else:
@@ -323,7 +323,7 @@ class GoogleAlbumsSync(object):
                                 follow_symlinks=False,
                             )
                     except PermissionError:
-                        log.warning("cant set date on {link_file}")
+                        log.debug(f"cant set date on {link_file}")
 
             except (FileExistsError, UnicodeEncodeError):
                 log.error("bad link to %s", full_file_name)
