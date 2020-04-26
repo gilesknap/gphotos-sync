@@ -64,7 +64,7 @@ Known Issues
 
   - This can be resolved by setting an environment variable `export PIPENV_TIMEOUT=240`
   
-- Some mounted filesystems including NFS and AFP do not support file locks and database access will fail on them.
+- Some mounted filesystems including NFS, CIFS and AFP do not support file locks and database access will fail on them.
 
   - To fix, use the paramter --db-path to sepcify a location for your DB on the local disk. This will perform better anyway.
 
