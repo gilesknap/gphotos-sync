@@ -32,6 +32,7 @@ class TestRequests(TestCase):
             status_forcelist=[500, 502, 503, 504],
             method_whitelist=frozenset(["GET", "POST"]),
             raise_on_status=False,
+            respect_retry_after_header=True,
         )
 
         session.mount("https://", HTTPAdapter(max_retries=retry))
@@ -54,6 +55,7 @@ class TestRequests(TestCase):
             status_forcelist=[500, 502, 503, 504],
             method_whitelist=frozenset(["GET", "POST"]),
             raise_on_status=False,
+            respect_retry_after_header=True,
         )
 
         session.mount("https://", HTTPAdapter(max_retries=retry))
