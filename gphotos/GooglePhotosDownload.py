@@ -8,6 +8,7 @@ from .Settings import Settings
 from gphotos.restclient import RestClient
 from gphotos.DatabaseMedia import DatabaseMedia
 from gphotos.GooglePhotosRow import GooglePhotosRow
+from gphotos.BadIds import BadIds
 
 from itertools import zip_longest
 from typing import Iterable, Mapping, Union, List
@@ -72,6 +73,7 @@ class GooglePhotosDownload(object):
         # attributes related to multi-threaded download
         self.download_pool = futures.ThreadPoolExecutor(max_workers=self.max_threads)
         self.pool_future_to_media = {}
+        self.bad_ids = BadIds(self._root_folder)
 
         self.current_umask = os.umask(7)
         os.umask(self.current_umask)
@@ -140,7 +142,7 @@ class GooglePhotosDownload(object):
                         )
                         self._db.put_downloaded(media_item.id)
 
-                    else:
+                    elif self.bad_ids.check_id_ok(media_item.id):
                         batch[media_item.id] = media_item
                         if not local_folder.is_dir():
                             local_folder.mkdir(parents=True)
@@ -157,6 +159,8 @@ class GooglePhotosDownload(object):
                 self.files_download_failed,
                 self.files_download_skipped,
             )
+            self.bad_ids.store_ids()
+            self.bad_ids.report()
         return self.files_downloaded
 
     def download_batch(self, batch: Mapping[str, DatabaseMedia]):
@@ -186,6 +190,8 @@ class GooglePhotosDownload(object):
                 else:
                     media_item = batch.get(media_item_json["id"])
                     self.download_file(media_item, media_item_json)
+        except RequestException:
+            self.find_bad_items(batch)
 
         except KeyboardInterrupt:
             log.warning("Cancelling download threads ...")
@@ -306,10 +312,19 @@ class GooglePhotosDownload(object):
                     media_item.relative_path,
                     e,
                 )
-                # do not raise any errors in invididual downloads
-                # carry on and try to download the rest
-                # NOTE: this may cause errors to spew out when
-                # there is some fatal issue, like network disconnected
+                # treat API errors as possibly transient. Report them above in
+                # log.error but do not raise them. Other exceptions will raise
+                # up to the root handler and abort. Note that all retry logic is
+                # already handled in urllib3
+
+                # Items that cause API errors go in a BadIds file which must
+                # be deleted to retry these items.
+                if isinstance(e, RequestException):
+                    self.bad_ids.add_id(
+                        media_item.relative_path, media_item.id, media_item.url, e
+                    )
+                else:
+                    raise e
             else:
                 self._db.put_downloaded(media_item.id)
                 self.files_downloaded += 1
@@ -321,3 +336,25 @@ class GooglePhotosDownload(object):
                 if self.settings.progress and self.files_downloaded % 10 == 0:
                     log.warning(f"Downloaded {self.files_downloaded} items ...\033[F")
             del self.pool_future_to_media[future]
+
+    def find_bad_items(self, batch: Mapping[str, DatabaseMedia]):
+        """
+        a batch get failed. Now do all of its contents as individual
+        gets so we can work out which ID(s) cause the failure
+        """
+        for item_id, media_item in batch.items():
+            try:
+                log.debug("BAD ID Retry on %s (%s)", item_id, media_item.relative_path)
+                response = self._api.mediaItems.get.execute(mediaItemId=item_id)
+                media_item_json = response.json()
+                self.download_file(media_item, media_item_json)
+            except RequestException as e:
+                self.bad_ids.add_id(
+                    str(media_item.relative_path), media_item.id, media_item.url, e
+                )
+                self.files_download_failed += 1
+                log.error(
+                    "FAILURE %d in get of %s BAD ID",
+                    self.files_download_failed,
+                    media_item.relative_path,
+                )

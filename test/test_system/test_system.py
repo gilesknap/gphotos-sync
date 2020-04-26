@@ -1,9 +1,13 @@
 from pathlib import Path
 from unittest import TestCase
+from unittest.mock import patch, Mock
+from requests.exceptions import HTTPError
 from typing import List
 import os
 from datetime import datetime
 
+from gphotos.BadIds import BadIds
+from gphotos.GooglePhotosDownload import GooglePhotosDownload
 import gphotos.Utils as Utils
 from gphotos.LocalData import LocalData
 import test.test_setup as ts
@@ -437,3 +441,41 @@ class TestSystem(TestCase):
             db.cur.execute("SELECT COUNT() FROM AlbumFiles")
             count = db.cur.fetchone()
             self.assertEqual(0, count[0], "expected 0 video files in album Movies")
+
+    @patch.object(GooglePhotosDownload, "do_download_file")
+    def test_bad_ids(self, do_download_file):
+
+        do_download_file.side_effect = HTTPError(Mock(status=500), "ouch!")
+        s = ts.SetupDbAndCredentials()
+        args = [
+            "--start-date",
+            TestAccount.start,
+            "--end-date",
+            TestAccount.end,
+            "--skip-albums",
+        ]
+        s.test_setup("test_bad_ids", args=args, trash_db=True, trash_files=True)
+        s.gp.start(s.parsed_args)
+        # check we tried to download 10 times
+        self.assertEqual(
+            do_download_file.call_count,
+            TestAccount.image_count_2016,
+            "Expected {} downloads".format(TestAccount.image_count_2016),
+        )
+
+        # this should have created a Bad IDs file
+        bad_ids = BadIds(s.root)
+        self.assertEqual(
+            len(bad_ids.items),
+            TestAccount.image_count_2016,
+            "Expected {} Bad IDs entries".format(TestAccount.image_count_2016),
+        )
+
+        do_download_file.reset_mock()
+
+        s.test_setup("test_bad_ids", args=args)
+        s.gp.start(s.parsed_args)
+        # this should have skipped the bad ids and not tried to download
+        self.assertEqual(
+            do_download_file.call_count, 0, "Expected 0 calls to do_download"
+        )
