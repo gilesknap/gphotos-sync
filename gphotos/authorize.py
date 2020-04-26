@@ -111,7 +111,7 @@ class Authorize:
         # set up the retry bevaiour for the authorized session
         retries = Retry(
             total=self.max_retries,
-            backoff_factor=1,
+            backoff_factor=0.5,
             status_forcelist=[500, 502, 503, 504],
             method_whitelist=frozenset(["GET", "POST"]),
             raise_on_status=False,
