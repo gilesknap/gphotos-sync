@@ -28,7 +28,7 @@ class TestAccount:
         r"0923?Clones😀",
         r"0926?Album?2016",
         r"1207?Same?Names",
-        r"0426?Name,with,Comma",
+        r"0426?Name?with?Comma",
     ]
     album_years = [2019, 2001, 2017, 2017, 2016, 2014, 2020]
     album_images = [5, 10, 10, 4, 16, 10, 1]
