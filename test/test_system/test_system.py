@@ -1,3 +1,4 @@
+from datetime import date
 from pathlib import Path
 from unittest import TestCase
 from unittest.mock import patch, Mock
@@ -412,7 +413,7 @@ class TestSystem(TestCase):
         )
 
         d_date = db.get_scan_date()
-        self.assertEqual(d_date.date(), TestAccount.latest_date)
+        self.assertEqual(d_date.date(), date(2017, 9, 26))
 
         s = ts.SetupDbAndCredentials()
         args = ["--skip-albums", "--index-only", "--rescan"]
