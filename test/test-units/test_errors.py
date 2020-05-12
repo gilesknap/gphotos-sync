@@ -98,10 +98,9 @@ class TestErrors(TestCase):
 
         s = ts.SetupDbAndCredentials()
         args = [
-            "--archived",
             "--skip-albums",
             "--start-date",
-            "2019-10-01",
+            "2020-01-01",
             "--use-flat-path",
         ]
         s.test_setup("test_base_media", args=args, trash_files=True, trash_db=True)
@@ -114,7 +113,7 @@ class TestErrors(TestCase):
         count = db.cur.fetchone()
         self.assertEqual(1, count[0])
 
-        pat = str(photos_root / "2019-11" / "*.*")
+        pat = str(photos_root / "2020-04" / "*.*")
         files = sorted(s.root.glob(pat))
         self.assertEqual(1, len(files))
 

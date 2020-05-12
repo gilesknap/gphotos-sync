@@ -37,11 +37,12 @@ class TestUnits(TestCase):
 
         start = datetime.now()
 
-        result = a.session.get("https://httpbin.org/status/500", timeout=10)
+        result = a.session.get("https://httpbin.org/status/500", timeout=30)
         self.assertEqual(result.status_code, 500)
         elapsed = datetime.now() - start
         # timeout should not affect the 5 retries
-        self.assertLess(elapsed.seconds, 10)
+        # but backoff_factor=0.5 should
+        self.assertLess(elapsed.seconds, 30)
 
     def test_download_timeout(self):
         a = auth.Authorize(scope, token_file, secrets_file)

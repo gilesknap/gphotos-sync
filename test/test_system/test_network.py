@@ -3,6 +3,7 @@ from unittest import TestCase
 from unittest.mock import patch, Mock
 from requests.exceptions import HTTPError
 from requests import Session
+from test.test_account import TestAccount
 
 from gphotos.LocalData import LocalData
 import test.test_setup as ts
@@ -36,7 +37,7 @@ class TestNetwork(TestCase):
 
         db.cur.execute("SELECT COUNT() FROM SyncFiles")
         count = db.cur.fetchone()
-        self.assertEqual(90, count[0])
+        self.assertEqual(TestAccount.total_count, count[0])
 
         pat = str(photos_root / "*" / "*" / "*")
         self.assertEqual(
