@@ -49,3 +49,4 @@ class TestAccount:
     end = "2017-01-01"
     image_count_2016 = 10
     item_count_2017 = 20
+    item_count_2020 = 1

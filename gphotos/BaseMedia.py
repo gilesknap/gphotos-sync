@@ -30,6 +30,9 @@ class BaseMedia(object):
             self._relative_folder = root / y / m
 
     def is_video(self) -> bool:
+        # guard against no mimetype issue #231
+        if not self.mime_type:
+            return False
         return self.mime_type.startswith("video")
 
     @property
