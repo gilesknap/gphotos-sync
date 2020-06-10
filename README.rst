@@ -18,6 +18,8 @@ user uploaded to
 Google Photos, but also the album information and additional Google Photos 'Creations' (animations, panoramas,
 movies, effects and collages).
 
+It is only for Google Photos download / backup purposes. It cannot upload photos to Google Photos.
+
 This project uses the new Google Photos API see https://developers.google.com/photos/.
 
 After doing a full sync you will have 2 directories off of the specified root:
