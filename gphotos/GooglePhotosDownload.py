@@ -153,8 +153,11 @@ class GooglePhotosDownload(object):
                         # skip files with filenames too long for this OS.
                         # probably thrown by local_full_path.exists().
                         errname = type(err).__name__
-                        if errname == 'OSError' and err.errno == errno.ENAMETOOLONG:
-                            log.warning("SKIPPED file because name is too long for this OS %s", local_full_path);
+                        if errname == "OSError" and err.errno == errno.ENAMETOOLONG:
+                            log.warning(
+                                "SKIPPED file because name is too long for this OS %s",
+                                local_full_path,
+                            )
                             self.files_download_failed += 1
                         else:
                             # re-raise other errors
