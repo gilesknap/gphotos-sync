@@ -22,6 +22,7 @@ import requests
 from requests.exceptions import RequestException
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
+import errno
 
 try:
     import win32file  # noqa
@@ -133,19 +134,34 @@ class GooglePhotosDownload(object):
                     local_folder = self._root_folder / relative_folder
                     local_full_path = local_folder / filename
 
-                    if local_full_path.exists():
-                        self.files_download_skipped += 1
-                        log.debug(
-                            "SKIPPED download (file exists) %d %s",
-                            self.files_download_skipped,
-                            media_item.relative_path,
-                        )
-                        self._db.put_downloaded(media_item.id)
+                    try:
+                        if local_full_path.exists():
+                            self.files_download_skipped += 1
+                            log.debug(
+                                "SKIPPED download (file exists) %d %s",
+                                self.files_download_skipped,
+                                media_item.relative_path,
+                            )
+                            self._db.put_downloaded(media_item.id)
 
-                    elif self.bad_ids.check_id_ok(media_item.id):
-                        batch[media_item.id] = media_item
-                        if not local_folder.is_dir():
-                            local_folder.mkdir(parents=True)
+                        elif self.bad_ids.check_id_ok(media_item.id):
+                            batch[media_item.id] = media_item
+                            if not local_folder.is_dir():
+                                local_folder.mkdir(parents=True)
+
+                    except Exception as err:
+                        # skip files with filenames too long for this OS.
+                        # probably thrown by local_full_path.exists().
+                        errname = type(err).__name__
+                        if errname == "OSError" and err.errno == errno.ENAMETOOLONG:
+                            log.warning(
+                                "SKIPPED file because name is too long for this OS %s",
+                                local_full_path,
+                            )
+                            self.files_download_failed += 1
+                        else:
+                            # re-raise other errors
+                            raise
 
                 if len(batch) > 0:
                     self.download_batch(batch)
