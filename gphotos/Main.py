@@ -66,11 +66,20 @@ class GooglePhotosSyncMain:
     parser.add_argument(
         "root_folder", help="root of the local folders to download into"
     )
-    parser.add_argument(
+    album_group = parser.add_mutually_exclusive_group()
+    album_group.add_argument(
         "--album",
         action="store",
-        help="only synchronize the contents of a single album."
+        help="only synchronize the contents of a single album. "
         'use quotes e.g. "album name" for album names with spaces',
+    )
+    album_group.add_argument(
+        "--album-regex",
+        action="store",
+        metavar='REGEX',
+        help="""only synchronize albums that match regular expression.
+        regex is case insensitive and unanchored. e.g. to select two albums: 
+        "^(a full album name|another full name)$" """
     )
     parser.add_argument(
         "--log-level",
@@ -81,8 +90,8 @@ class GooglePhotosSyncMain:
     parser.add_argument(
         "--logfile",
         action="store",
-        help="full path to debug level logfile, default: <root>/gphotos.log."
-        "If a directory is specified then a unique filename will be"
+        help="full path to debug level logfile, default: <root>/gphotos.log. "
+        "If a directory is specified then a unique filename will be "
         "generated.",
     )
     parser.add_argument(
@@ -290,6 +299,7 @@ class GooglePhotosSyncMain:
             album_index=not args.no_album_index,
             use_start_date=args.album_date_by_first_photo,
             album=args.album,
+            album_regex=args.album_regex,
             favourites_only=args.favourites_only,
             retry_download=args.retry_download,
             case_insensitive_fs=args.case_insensitive_fs,
@@ -329,7 +339,7 @@ class GooglePhotosSyncMain:
         files_downloaded = 0
         with self.data_store:
             if not args.skip_index:
-                if not args.skip_files and not args.album:
+                if not args.skip_files and not args.album and not args.album_regex:
                     self.google_photos_idx.index_photos_media()
 
             if not args.index_only:
@@ -340,7 +350,7 @@ class GooglePhotosSyncMain:
                 not args.skip_albums
                 and not args.skip_index
                 and (files_downloaded > 0 or args.skip_files or args.rescan)
-            ) or args.album is not None:
+            ) or (args.album is not None or args.album_regex is not None):
                 self.google_albums_sync.index_album_media()
                 # run download again to pick up files indexed in albums only
                 if not args.index_only:
@@ -353,7 +363,7 @@ class GooglePhotosSyncMain:
                 if (
                     not args.skip_albums
                     and (files_downloaded > 0 or args.skip_files or args.rescan)
-                    or args.album is not None
+                    or (args.album is not None or args.album_regex is not None)
                 ):
                     self.google_albums_sync.create_album_content_links()
                 if args.do_delete:

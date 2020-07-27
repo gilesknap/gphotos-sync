@@ -1,5 +1,6 @@
 import logging
 import os.path
+import re
 import shutil
 from datetime import datetime
 from pathlib import Path
@@ -52,6 +53,7 @@ class GoogleAlbumsSync(object):
 
         self.settings = settings
         self.album = settings.album
+        self.album_regex = settings.album_regex
         self.shared_albums = settings.shared_albums
         self.album_index = settings.album_index
         self.use_start_date = settings.use_start_date
@@ -187,6 +189,15 @@ class GoogleAlbumsSync(object):
                 if self.album and self.album != album.orig_name:
                     log.debug(
                         "Skipping Album: %s, photos: %d " "(does not match --album)",
+                        album.filename,
+                        album.size,
+                    )
+                elif self.album_regex and not re.search(
+                    self.album_regex, album.orig_name, re.I
+                ):
+                    log.debug(
+                        "Skipping Album: %s, photos: %d " 
+                        "(does not match --album-regex)",
                         album.filename,
                         album.size,
                     )

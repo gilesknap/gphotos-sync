@@ -21,6 +21,7 @@ class Settings:
     album_index: bool
     omit_album_date: bool
     album: str
+    album_regex: str
     shared_albums: bool
 
     favourites_only: bool
