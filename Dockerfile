@@ -9,4 +9,4 @@ VOLUME /storage
 
 RUN pip install gphotos-sync
 
-ENTRYPOINT [ "gphotos-sync" ]
+ENTRYPOINT [ "gphotos-sync /storage" ]
