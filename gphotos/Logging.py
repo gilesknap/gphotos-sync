@@ -60,11 +60,11 @@ def setup_logging(log_level: str, log_filename: Path, folder: Path):
     trace_file = log_file.with_suffix(".trace")
 
     # define handler for the trace file
-    log_handler = logging.FileHandler(log_file, mode="w")
+    log_handler = logging.FileHandler(log_file, mode="w", encoding="utf-8")
     log_handler.setLevel(logging.DEBUG)
 
     # define handler for the trace file
-    trace_handler = logging.FileHandler(trace_file, mode="w")
+    trace_handler = logging.FileHandler(trace_file, mode="w", encoding="utf-8")
     trace_handler.setLevel(TRACE_API_NUM)
     trace_handler.addFilter(MaxLevelFilter(logging.DEBUG, True))
 
