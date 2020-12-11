@@ -35,3 +35,5 @@ class Settings:
     max_threads: int
     case_insensitive_fs: bool
     progress: bool
+
+    ntfs_override: bool

@@ -314,6 +314,7 @@ class GooglePhotosSyncMain:
             omit_album_date=args.omit_album_date,
             use_hardlinks=args.use_hardlinks,
             progress=args.progress,
+            ntfs_override=args.ntfs
         )
 
         self.google_photos_client = RestClient(photos_api_url, self.auth.session)
@@ -385,8 +386,10 @@ class GooglePhotosSyncMain:
         do_check(root_folder, int(args.max_filename), bool(args.ntfs))
 
         # check if symlinks are supported
-        if not get_check().is_symlink:
-            args.skip_albums = True
+        # NTFS supports symlinks, but is_symlink() fails
+        if not args.ntfs:
+            if not get_check().is_symlink:
+                args.skip_albums = True
 
         # check if file system is case sensitive
         if not args.case_insensitive_fs:
