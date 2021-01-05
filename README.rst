@@ -214,7 +214,7 @@ To run then remove the container::
 Scheduling a Regular Backup
 ---------------------------
 On linux you can add gphotos-sync to your cron schedule easily. See https://crontab.guru/
-for tips on how to confiugre regular execution of a command. You will need a script that
+for tips on how to configure regular execution of a command. You will need a script that
 looks something like this::
 
     #!/bin/bash
