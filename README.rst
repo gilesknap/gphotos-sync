@@ -76,8 +76,7 @@ A few outstanding limitations of the Google API restrict what can be achieved. A
 to Google and this project will be updated once they are resolved.
 
 - There is no way to discover modified date of library media items. Currently ``gphotos-sync`` will refresh your local
-  copy with any new photos added since the last scan but will not update any photos that have been modified in Google
-  a. Photos. A feature request has been submitted to Google.
+  copy with any new photos added since the last scan but will not update any photos that have been modified in Google Photos.
 
   - https://issuetracker.google.com/issues/122737849.
 
@@ -86,7 +85,7 @@ to Google and this project will be updated once they are resolved.
   - https://issuetracker.google.com/issues/116842164.
   - https://issuetracker.google.com/issues/141255600
 
-- The API strips GPS data from images.
+- GOOGLE WON'T FIX. The API strips GPS data from images.
 
   - https://issuetracker.google.com/issues/80379228.
 
