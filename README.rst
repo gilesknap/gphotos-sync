@@ -62,10 +62,10 @@ NOTES:
 Known Issues
 ------------
 
-- Installing on a slow machine (like old Raspberry Pi) or network may cause timeouts in pipenv. 
+- Installing on a slow machine (like old Raspberry Pi) or network may cause timeouts in pipenv.
 
   - This can be resolved by setting an environment variable `export PIPENV_TIMEOUT=240`
-  
+
 - Some mounted filesystems including NFS, CIFS and AFP do not support file locks and database access will fail on them.
 
   - To fix, use the parameter --db-path to specify a location for your DB on the local disk. This will perform better anyway.
@@ -78,24 +78,24 @@ to Google and this project will be updated once they are resolved.
 - There is no way to discover modified date of library media items. Currently ``gphotos-sync`` will refresh your local
   copy with any new photos added since the last scan but will not update any photos that have been modified in Google
   a. Photos. A feature request has been submitted to Google.
-  
+
   - https://issuetracker.google.com/issues/122737849.
-  
-- FIXED BY GOOGLE. Some types of video will not download using the new API. 
+
+- FIXED BY GOOGLE. Some types of video will not download using the new API.
 
   - https://issuetracker.google.com/issues/116842164.
   - https://issuetracker.google.com/issues/141255600
-  
+
 - The API strips GPS data from images.
 
   - https://issuetracker.google.com/issues/80379228.
-  
+
 - Video download transcodes the videos even if you ask for the original file (=vd parameter).
   My experience is that the result is looks similar to the original
   but the compression is more clearly visible. It is a smaller file with approximately 60% bitrate (same resolution).
-  
+
   - https://issuetracker.google.com/issues/80149160
-  
+
 - Burst shots are not supported. You will only see the first file of a burst shot.
 
   - https://issuetracker.google.com/issues/124656564
@@ -145,7 +145,7 @@ all users would share this resource limit. This is a little fiddly but only need
 
 Also note that for Windows you will need to enable symbolic links permission for the account that gphoto-sync
 will run under. See `Enabling SymLinks on Windows`_.
- 
+
 
 .. _`Google Developer Console`: https://developers.google.com/console/
 .. _`Creating a project procedure`: https://cloud.google.com/resource-manager/docs/creating-managing-projects
@@ -166,7 +166,7 @@ Once the script is configured, you are now ready to use it using the simple foll
 Or, if you used virtualenv and pip instead of pipenv, activate the virtualenv and::
 
   gphotos-sync TARGET_DIRECTORY
-  
+
 The first time, it will give you a link to an authorization page in order to authorize the client to access your
 Google Photos.
 
@@ -183,7 +183,7 @@ You can run the tool from the container using |docker|_. The container has 2 mou
 
 -  ``/storage`` this is where your photos will be stored. You can mount single directory, or multiple subdirectories in case you want to backup multiple accounts
 -  ``/config`` the directory that contains `client_secret.json` file
-  
+
 To run ::
 
     docker run \
@@ -197,7 +197,7 @@ To run ::
 To remove the container (for instance if you want to run it on scheduled basis and do a cleanup)::
 
     docker rm -f $(docker ps --filter name=gphotos-sync -qa) 2> /dev/null
-    
+
 To run then remove the container::
 
     docker run \
@@ -210,8 +210,20 @@ To run then remove the container::
       --log-level INFO \
       /storage
 
-Appendix
-========
+
+Scheduling a Regular Backup
+---------------------------
+On linux you can add gphotos-sync to your cron schedule easily. See https://crontab.guru/
+for tips on how to confiugre regular execution of a command. You will need a script that
+looks something like this::
+
+    #!/bin/bash
+
+    cd /mnt/bigdisk/GilesPhotos/gphotos-code
+    /home/giles/.local/bin/pipenv run ./gphotos-sync  /mnt/bigdisk/GilesPhotos/ $@ >> /home/giles/logs/gphotos.log --logfile /tmp 2>&1
+
+Note that I give a full path to the local install of pipenv since cron will not load
+your profile and hence PATH.
 
 Rescans
 -------
@@ -240,18 +252,7 @@ My detailed notes on the subject are here: `giles notes`_
 
 ..  _`giles notes`: https://docs.google.com/document/d/1hK_GDLUwP7PpD1VmDbDsYLyTfbZGv2C-JCihezYhiLY/edit?usp=sharing
 
-Google GPS Info update
-----------------------
-UPDATE: the GPS scraping no longer works and has been removed. I am investigating a couple of other avenues.
 
-Google does not seem to be interested in fxing the issue of stripping location info from the EXIF info of images
-downloaded via their API (see https://issuetracker.google.com/issues/80379228#comment80). So I am investigating a workaround. See the option --get-locations. It uses
-Selenium to scrape the GPS info off of the Google Website (your google creds required I'm afraid) and
-insert them into the DB of synchronized files. It does not yet update the EXIF on the local files but this
-is a minor addition and I'll implement if there is interest.
-
-Have a try and let me know what you think. Hurry, because Google is removing the ability to log in using
-automation soon!
 
 .. |build_status| image:: https://travis-ci.org/gilesknap/gphotos-sync.svg?branch=master&style=flat
     :target: https://travis-ci.org/gilesknap/gphotos-sync
