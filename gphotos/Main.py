@@ -78,7 +78,7 @@ class GooglePhotosSyncMain:
         action="store",
         metavar='REGEX',
         help="""only synchronize albums that match regular expression.
-        regex is case insensitive and unanchored. e.g. to select two albums: 
+        regex is case insensitive and unanchored. e.g. to select two albums:
         "^(a full album name|another full name)$" """
     )
     parser.add_argument(
@@ -432,10 +432,10 @@ class GooglePhotosSyncMain:
             except KeyboardInterrupt:
                 log.error("User cancelled download")
                 log.debug("Traceback", exc_info=True)
+                exit(1)
             except BaseException:
                 log.error("\nProcess failed.", exc_info=True)
-            finally:
-                log.warning("Done.")
+                exit(1)
 
         elapsed_time = datetime.now() - start_time
         log.info("Elapsed time = %s", elapsed_time)
