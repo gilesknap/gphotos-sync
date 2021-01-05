@@ -17,5 +17,6 @@
   "python.linting.flake8Enabled": true,
   "python.linting.pylintEnabled": false,
   "python.linting.enabled": true,
-  "python.formatting.provider": "black"
+"python.formatting.provider": "black",
+"restructuredtext.confPath": "${workspaceFolder}/docs"
 }
