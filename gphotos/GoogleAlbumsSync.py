@@ -62,6 +62,7 @@ class GoogleAlbumsSync(object):
         self._use_flat_path = settings.use_flat_path
         self._omit_album_date = settings.omit_album_date
         self._use_hardlinks = settings.use_hardlinks
+        self._ntfs_override = settings.ntfs_override
 
     @classmethod
     def make_search_parameters(cls, album_id: str, page_token: str = None) -> Dict:
@@ -313,6 +314,8 @@ class GoogleAlbumsSync(object):
                 if full_file_name.exists():
                     if self._use_hardlinks:
                         os.link(full_file_name, link_file)
+                    elif self._ntfs_override:
+                        os.symlink(relative_filename, link_file)
                     else:
                         link_file.symlink_to(relative_filename)
                 else:
