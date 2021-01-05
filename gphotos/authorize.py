@@ -97,10 +97,10 @@ class Authorize:
             authorization_url, _ = self.session.authorization_url(
                 authorization_base_url, access_type="offline", prompt="select_account"
             )
-            print("Please go here and authorize,", authorization_url)
+            print(f"Please go here and authorize, {authorization_url}\n", )
 
             # Get the authorization verifier code from the callback url
-            response_code = input("Paste the response token here:")
+            response_code = input("Paste the response token here:\n")
 
             # Fetch the access token
             self.token = self.session.fetch_token(
