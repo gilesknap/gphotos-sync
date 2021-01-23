@@ -301,6 +301,7 @@ class GoogleAlbumsSync(object):
             link_folder: Path = self.album_folder_name(album_name, start_date, end_date)
 
             link_file = link_folder / "{:04d}_{}".format(album_item, file_name)
+            link_file = link_file[:get_check().max_filename]
             # incredibly, pathlib.Path.relative_to cannot handle
             # '../' in a relative path !!! reverting to os.path
             relative_filename = os.path.relpath(full_file_name, str(link_folder))
