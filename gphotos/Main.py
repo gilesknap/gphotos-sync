@@ -436,6 +436,8 @@ class GooglePhotosSyncMain:
             except BaseException:
                 log.error("\nProcess failed.", exc_info=True)
                 exit(1)
+            finally:
+                log.warning("Done.")
 
         elapsed_time = datetime.now() - start_time
         log.info("Elapsed time = %s", elapsed_time)

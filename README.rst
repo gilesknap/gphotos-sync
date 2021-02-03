@@ -134,7 +134,8 @@ authorized to use the 'Photos Library API'. It is not provided in the distributi
 is given a (large) limited number of free API calls to Google Services. If this distribution shared the client id,
 all users would share this resource limit. This is a little fiddly but only needs to be done once.
 
-- Create a client id using these instructions `Oauth2 for gphotos-sync`_
+- For the most up to date notes on creating a client id see `bullybrooks.com`_.
+- My previous notes on creating a client id are here `Oauth2 for gphotos-sync`_
 - Once the client ID is created, download it as ``client_secret.json`` and save it under the application
   configuration directory:
 
@@ -175,6 +176,8 @@ For a description of additional command line parameters type::
 
 Running with docker
 -------------------
+For some detailed notes on using docker see `bullybrooks.com`_.
+
 You can run the tool from the container using |docker|_. The container has 2 mount points:
 
 .. |docker| replace:: prebuilt Docker image
@@ -251,7 +254,7 @@ My detailed notes on the subject are here: `giles notes`_
 
 ..  _`giles notes`: https://docs.google.com/document/d/1hK_GDLUwP7PpD1VmDbDsYLyTfbZGv2C-JCihezYhiLY/edit?usp=sharing
 
-
+.. _`bullybrooks.com`: https://bullyrooks.com/index.php/2021/02/02/backing-up-google-photos-to-your-synology-nas/
 
 .. |build_status| image:: https://travis-ci.org/gilesknap/gphotos-sync.svg?branch=master&style=flat
     :target: https://travis-ci.org/gilesknap/gphotos-sync
