@@ -341,7 +341,9 @@ class GoogleAlbumsSync(object):
                     except PermissionError:
                         log.debug(f"cant set date on {link_file}")
 
-            except (FileExistsError, UnicodeEncodeError) as err:
-                log.error("bad link to %s: %s", full_file_name, err)
+            except FileExistsError as err:
+                log.info("duplicate link to %s: %s", full_file_name, err)
+            except UnicodeEncodeError as err:
+                log.error("unicode error linking %s: %s", full_file_name, err)
 
         log.warning("Created %d new album folder links", count)
