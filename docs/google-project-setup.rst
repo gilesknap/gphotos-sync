@@ -54,7 +54,8 @@ Configure OAuth Consent
 #. App Registration - OAuth consent screen:
 
    #. Set your **App Name**. For example, "Photos Sync". Note that this does
-      **not** have to be the same as the project name.
+      **not** have to be the same as the project name. Do not include "Google"
+      in the name or this will fail.
    #. Enter your email address as the **User support email**.
    #. Enter your email address as the **Developer contact information**.
    #. Add other fields as desired (they can be left blank).
