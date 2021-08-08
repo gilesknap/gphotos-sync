@@ -98,7 +98,7 @@ to Google and this project will be updated once they are resolved.
 
   - https://issuetracker.google.com/issues/80149160
 
-- Photo download compresses the videos even if you ask for the original file (=d parameter).
+- Photo download compresses the photos even if you ask for the original file (=d parameter).
   This is similar to the above issue, except in my experience is is nearly impossible to notice a loss in quality. It
   is a file compressed to approximately 60% of the original size (same resolution).
 
