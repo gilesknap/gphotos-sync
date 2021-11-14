@@ -37,3 +37,6 @@ class Settings:
     progress: bool
 
     ntfs_override: bool
+
+    month_format: str
+    path_format: str
