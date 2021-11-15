@@ -20,6 +20,7 @@ class Settings:
     albums_path: Path
     album_index: bool
     omit_album_date: bool
+    album_invert: bool
     album: str
     album_regex: str
     shared_albums: bool

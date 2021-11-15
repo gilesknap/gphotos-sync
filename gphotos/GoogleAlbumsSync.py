@@ -61,6 +61,7 @@ class GoogleAlbumsSync(object):
         self.include_video = settings.include_video
         self._use_flat_path = settings.use_flat_path
         self._omit_album_date = settings.omit_album_date
+        self._album_invert = settings.album_invert
         self._use_hardlinks = settings.use_hardlinks
         self._ntfs_override = settings.ntfs_override
 
@@ -276,7 +277,7 @@ class GoogleAlbumsSync(object):
             end_date_str,
             rid,
             created,
-        ) in self._db.get_album_files(download_again=re_download):
+        ) in self._db.get_album_files(album_invert=self._album_invert, download_again=re_download):
             if current_rid == rid:
                 album_item += 1
             else:

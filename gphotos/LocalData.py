@@ -321,13 +321,14 @@ class LocalData:
         )
 
     def get_album_files(
-        self, album_id: str = "%", download_again: bool = False
+        self, album_id: str = "%", album_invert: bool = False, download_again: bool = False
     ) -> (str, str, str, str, str, str):
         """ Join the Albums, SyncFiles and AlbumFiles tables to get a list
         of the files in an album or all albums.
         Parameters
             album_id: the Google Photos unique id for an album or None for all
             albums
+            album_invert: inverses the sorting direction of the returned files
         Returns:
             A tuple containing:
                 Path, Filename, AlbumName, Album end date
@@ -343,9 +344,10 @@ class LocalData:
         INNER JOIN Albums ON AlbumFiles.AlbumRec=Albums.RemoteId
         WHERE Albums.RemoteId LIKE ?
         {}
-        ORDER BY Albums.RemoteId, AlbumFiles.Position,
+        ORDER BY Albums.RemoteId, AlbumFiles.Position {},
         SyncFiles.CreateDate;""".format(
-            extra_clauses
+            extra_clauses,
+            "DESC" if album_invert else "ASC"
         )
 
         self.cur.execute(query, (album_id,))
