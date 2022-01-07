@@ -1,0 +1,112 @@
+name: Code CI
+
+on:
+  push:
+    branches:
+      # Restricting to these branches and tags stops duplicate jobs on internal
+      # PRs but stops CI running on internal branches without a PR. Delete the
+      # next 5 lines to restore the original behaviour
+      - master
+      - main
+    tags:
+      - "*"
+  pull_request:
+  schedule:
+    # Run every Monday at 8am to check latest versions of dependencies
+    - cron: '0 8 * * MON'
+
+jobs:
+  lint:
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Run black, flake8, mypy
+        uses: dls-controls/pipenv-run-action@v1
+        with:
+          pipenv-run: lint
+
+  wheel:
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Create Sdist and Wheel
+        # Set SOURCE_DATE_EPOCH from git commit for reproducible build
+        # https://reproducible-builds.org/
+        # Set group writable and umask to do the same to match inside DLS
+        run: |
+          chmod -R g+w .
+          umask 0002
+          SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct) pipx run build --sdist --wheel
+
+      - name: Test cli works from the installed wheel
+        # Can remove the repository reference after https://github.com/pypa/pipx/pull/733
+        run: pipx run --spec dist/*.whl ${GITHUB_REPOSITORY##*/} --version
+
+      - name: Upload Wheel and Sdist as artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: dist
+          path: dist/*
+
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-latest"]  # can add windows-latest, macos-latest
+        python: ["3.7", "3.8", "3.9"]
+        pipenv: ["skip-lock"]
+
+        include:
+          # Add an extra Python3.7 runner to use the lockfile
+          - os: "ubuntu-latest"
+            python: "3.7"
+            pipenv: "deploy"
+
+    runs-on: ${{ matrix.os }}
+    env:
+      # https://github.com/pytest-dev/pytest/issues/2042
+      PY_IGNORE_IMPORTMISMATCH: "1"
+
+    steps:
+      - name: Setup repo and test
+        uses: dls-controls/pipenv-run-action@v1
+        with:
+          python-version: ${{ matrix.python }}
+          pipenv-install: --dev --${{ matrix.pipenv }}
+          allow-editable-installs: ${{ matrix.pipenv == 'deploy' }}
+          pipenv-run: tests
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          name: ${{ matrix.python }}/${{ matrix.os }}/${{ matrix.pipenv }}
+          files: cov.xml
+
+  release:
+    needs: [lint, wheel, test]
+    runs-on: ubuntu-latest
+    # upload to PyPI and make a release on every tag
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: dist
+          path: dist
+
+      - name: Github Release
+        # We pin to the SHA, not the tag, for security reasons.
+        # https://docs.github.com/en/actions/learn-github-actions/security-hardening-for-github-actions#using-third-party-actions
+        uses: softprops/action-gh-release@1e07f4398721186383de40550babbdf2b84acfc5  # v0.1.14
+        with:
+          files: dist/*
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to PyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.pypi_token }}
+        run: pipx run twine upload dist/*

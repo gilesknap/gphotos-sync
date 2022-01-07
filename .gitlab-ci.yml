@@ -1,0 +1,4 @@
+include:
+  - project: 'controls/reports/ci_templates'
+    ref: master
+    file: 'python3/dls_py3_template.yml'

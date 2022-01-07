@@ -1,0 +1,31 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.3.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-yaml
+      - id: check-merge-conflict
+
+  - repo: local
+    hooks:
+      - id: black
+        name: Run black
+        stages: [commit]
+        language: system
+        entry: pipenv run black --check --diff
+        types: [python]
+
+      - id: flake8
+        name: Run flake8
+        stages: [commit]
+        language: system
+        entry: pipenv run flake8
+        types: [python]
+        exclude: setup.py
+
+      - id: mypy
+        name: Run mypy
+        stages: [commit]
+        language: system
+        entry: pipenv run mypy src tests
+        pass_filenames: false
