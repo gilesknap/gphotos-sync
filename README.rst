@@ -7,6 +7,10 @@
 Google Photos Sync
 ==================
 
+GPS News !
+----------
+For a neat workaround to the GPS info stripping see this project  https://github.com/DennyWeinberg/manager-for-google-photos
+
 Introduction
 ------------
 For a very good description and detailed instructions see `Logix's Article at Linux Uprising`_
@@ -91,6 +95,7 @@ to Google and this project will be updated once they are resolved.
 - GOOGLE WON'T FIX. The API strips GPS data from images.
 
   - https://issuetracker.google.com/issues/80379228.
+  - UPDATE: see https://github.com/DennyWeinberg/manager-for-google-photos for a workaround to this issue.
 
 - Video download transcodes the videos even if you ask for the original file (=vd parameter).
   My experience is that the result is looks similar to the original
