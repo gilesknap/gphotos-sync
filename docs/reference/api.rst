@@ -1,24 +1,14 @@
 API
 ===
 
-.. automodule:: dls_python3_skeleton
+.. automodule:: python3_pip_skeleton
 
-    ``dls_python3_skeleton``
+    ``python3_pip_skeleton``
     -----------------------------------
 
-This is the internal API reference for dls_python3_skeleton
+This is the internal API reference for python3_pip_skeleton
 
-You can mix verbose text with docstring and signature extraction by
-using ``autoclass`` and ``autofunction`` directives instead of
-``automodule`` below.
-
-.. data:: dls_python3_skeleton.__version__
+.. data:: python3_pip_skeleton.__version__
     :type: str
 
-    Version number as calculated by https://github.com/dls-controls/versiongit
-
-.. automodule:: dls_python3_skeleton.hello
-    :members:
-
-    ``dls_python3_skeleton.hello``
-    -----------------------------------------
+    Version number as calculated by https://github.com/pypa/setuptools_scm

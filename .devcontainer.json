@@ -1,0 +1,39 @@
+// For format details, see https://aka.ms/devcontainer.json
+{
+    "name": "Python 3 Developer Container",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "target": "build",
+        "context": ".",
+        "args": {}
+    },
+    "remoteEnv": {
+        "DISPLAY": "${localEnv:DISPLAY}"
+    },
+    // Set *default* container specific settings.json values on container create.
+    "settings": {
+        "python.defaultInterpreterPath": "/venv/bin/python",
+        "python.linting.enabled": true
+    },
+    // Add the IDs of extensions you want installed when the container is created.
+    "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance"
+    ],
+    // Make sure the files we are mapping into the container exist on the host
+    "initializeCommand": "bash -c 'for i in $HOME/.inputrc; do [ -f $i ] || touch $i; done'",
+    "runArgs": [
+        "--net=host",
+        "-v=${localEnv:HOME}/.ssh:/root/.ssh",
+        "-v=${localEnv:HOME}/.inputrc:/root/.inputrc"
+    ],
+    "mounts": [
+        // map in home directory - not strictly necessary but useful
+        "source=${localEnv:HOME},target=${localEnv:HOME},type=bind,consistency=cached"
+    ],
+    // make the workspace folder the same inside and outside of the container
+    "workspaceMount": "source=${localWorkspaceFolder},target=${localWorkspaceFolder},type=bind",
+    "workspaceFolder": "${localWorkspaceFolder}",
+    // After the container is created, install the python project in editable form
+    "postCreateCommand": "pip install $([ -f requirements_dev.txt ] && echo -r requirements_dev.txt ) -e .[dev]"
+}

@@ -1,5 +1,4 @@
 {
-    "editor.defaultFormatter": "ms-python.python",
     "python.linting.pylintEnabled": false,
     "python.linting.flake8Enabled": true,
     "python.linting.mypyEnabled": true,

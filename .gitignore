@@ -8,6 +8,7 @@ __pycache__/
 # Distribution / packaging
 .Python
 env/
+.venv
 build/
 develop-eggs/
 dist/
@@ -22,6 +23,7 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+**/_version.py
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -58,8 +60,8 @@ docs/_build/
 # PyBuilder
 target/
 
-# DLS build dir and virtual environment
-/prefix/
-/venv/
-/lightweight-venv/
-/installed.files
+# likely venv names
+.venv*
+venv*
+
+

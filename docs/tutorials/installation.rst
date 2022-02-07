@@ -1,20 +1,10 @@
 Installation
 ============
 
-.. note::
-
-    For installation inside DLS, please see the internal documentation on
-    ``dls-python3`` and ``pipenv``. Although these instructions will work
-    inside DLS, they are intended for external use.
-
-    If you want to contribute to the library itself, please follow
-    the `../reference/contributing` instructions.
-
-
 Check your version of python
 ----------------------------
 
-You will need python 3.7 or later. You can check your version of python by
+You will need python 3.8 or later. You can check your version of python by
 typing into a terminal::
 
     python3 --version
@@ -35,14 +25,21 @@ Installing the library
 
 You can now use ``pip`` to install the library::
 
-    python3 -m pip install dls_python3_skeleton
+    python3 -m pip install python3-pip-skeleton
 
 If you require a feature that is not currently released you can also install
 from github::
 
-    python3 -m pip install git+git://github.com/dls-controls/dls-python3-skeleton.git
+    python3 -m pip install git+https://github.com/epics-containers/python3-pip-skeleton.git
 
 The library should now be installed and the commandline interface on your path.
 You can check the version that has been installed by typing::
 
-    dls-python3-skeleton --version
+    python3-pip-skeleton --version
+
+Running in a container
+----------------------
+
+To pull the container from github container registry and run::
+    
+    docker run ghcr.io/epics-containers/python3-pip-skeleton:main --version

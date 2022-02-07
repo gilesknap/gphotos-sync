@@ -5,8 +5,8 @@
     "tasks": [
         {
             "type": "shell",
-            "label": "Tests with coverage",
-            "command": "pipenv run tests",
+            "label": "Tests, lint and docs",
+            "command": "tox -p",
             "options": {
                 "cwd": "${workspaceRoot}"
             },

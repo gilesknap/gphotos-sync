@@ -10,7 +10,9 @@
             "request": "launch",
             "justMyCode": false,
             "program": "${file}",
-            "purpose": ["debug-test"],
+            "purpose": [
+                "debug-test"
+            ],
             "console": "integratedTerminal",
             "env": {
                 // The default config in setup.cfg's "[tool:pytest]" adds coverage.
