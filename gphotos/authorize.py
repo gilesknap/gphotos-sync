@@ -88,7 +88,7 @@ class Authorize:
             )
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
-                self.secrets_file, 
+                self.secrets_file,
                 scopes=self.scope
             )
             flow.run_local_server()
