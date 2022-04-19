@@ -100,7 +100,8 @@ class Authorize:
                 "access_token" : flow.credentials.token,
                 "refresh_token": flow.credentials.refresh_token,
                 "token_type" : "Bearer",
-                "scope" : flow.credentials.scopes
+                "scope" : flow.credentials.scopes,
+                "expires_at": flow.credentials.expiry.timestamp()
             }
 
             self.save_token(oauth2_token)
