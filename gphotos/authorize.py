@@ -3,6 +3,7 @@ from requests_oauthlib import OAuth2Session
 from pathlib import Path
 from urllib3.util.retry import Retry
 from typing import List, Optional
+from google_auth_oauthlib.flow import InstalledAppFlow
 
 from json import load, dump, JSONDecodeError
 import logging
@@ -40,6 +41,8 @@ class Authorize:
         self.token_file: Path = token_file
         self.session = None
         self.token = None
+        self.secrets_file = secrets_file
+
         try:
             with secrets_file.open("r") as stream:
                 all_json = load(stream)
@@ -84,29 +87,29 @@ class Authorize:
                 token_updater=self.save_token,
             )
         else:
-            self.session = OAuth2Session(
-                self.client_id,
-                scope=self.scope,
-                redirect_uri=self.redirect_uri,
-                auto_refresh_url=self.token_uri,
-                auto_refresh_kwargs=self.extra,
-                token_updater=self.save_token,
+            flow = InstalledAppFlow.from_client_secrets_file(
+                self.secrets_file,
+                scopes=self.scope,
+                redirect_uri='urn:ietf:wg:oauth:2.0:oob'
             )
+            
+            auth_url, _ = flow.authorization_url(prompt='consent')
+            print('Please go to this URL: {}'.format(auth_url))
+            code = input('Enter the authorization code: ')
+            flow.fetch_token(code=code)
 
-            # Redirect user to Google for authorization
-            authorization_url, _ = self.session.authorization_url(
-                authorization_base_url, access_type="offline", prompt="select_account"
-            )
-            print(f"Please go here and authorize, {authorization_url}\n",)
+            self.session = flow.authorized_session()
 
-            # Get the authorization verifier code from the callback url
-            response_code = input("Paste the response token here:\n")
+            # Mapping for backward compatibility
+            oauth2_token = {
+                "access_token" : flow.credentials.token,
+                "refresh_token": flow.credentials.refresh_token,
+                "token_type" : "Bearer",
+                "scope" : flow.credentials.scopes,
+                "expires_at": flow.credentials.expiry.timestamp()
+            }
 
-            # Fetch the access token
-            self.token = self.session.fetch_token(
-                self.token_uri, client_secret=self.client_secret, code=response_code
-            )
-            self.save_token(self.token)
+            self.save_token(oauth2_token)
 
         # set up the retry bevaiour for the authorized session
         retries = Retry(

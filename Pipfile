@@ -12,6 +12,7 @@ pyyaml = ">=4.2b1"
 pywin32 = {markers = "platform_system == 'Windows'",version = "*"}
 psutil = "*"
 versiongit = "*"
+google-auth-oauthlib = "*"
 
 [dev-packages]
 pytest = ">=5.0.1"
