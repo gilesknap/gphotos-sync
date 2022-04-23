@@ -177,6 +177,12 @@ class GooglePhotosSyncMain:
         action="store_true",
         help="Don't include year and month in album folder names.",
     )
+    parser.add_argument(
+        "--album-invert",
+        action="store_true",
+        help="Inverts the sorting direction of files within an album. "
+        "Default sorting is descending from newest to olders. This causes it to be the other way around.",
+    )
     parser.add_argument("--new-token", action="store_true", help="Request new token")
     parser.add_argument(
         "--index-only",
@@ -332,6 +338,7 @@ class GooglePhotosSyncMain:
             max_retries=int(args.max_retries),
             max_threads=int(args.max_threads),
             omit_album_date=args.omit_album_date,
+            album_invert=args.album_invert,
             use_hardlinks=args.use_hardlinks,
             progress=args.progress,
             ntfs_override=args.ntfs,
