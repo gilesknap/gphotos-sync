@@ -76,10 +76,10 @@ class GooglePhotosSyncMain:
     album_group.add_argument(
         "--album-regex",
         action="store",
-        metavar='REGEX',
+        metavar="REGEX",
         help="""only synchronize albums that match regular expression.
         regex is case insensitive and unanchored. e.g. to select two albums:
-        "^(a full album name|another full name)$" """
+        "^(a full album name|another full name)$" """,
     )
     parser.add_argument(
         "--log-level",
@@ -259,6 +259,26 @@ class GooglePhotosSyncMain:
         help="Declare that the target filesystem is ntfs (or ntfs like)."
         "This overrides the automatic detection.",
     )
+    parser.add_argument(
+        "--month-format",
+        action="store",
+        metavar="FMT",
+        help="Configure the month/day formatting for the album folder/file "
+        "path (default: %m%d).",
+        default="%m%d",
+    )
+    parser.add_argument(
+        "--path-format",
+        action="store",
+        metavar="FMT",
+        help="Configure the formatting for the album folder/file path. The "
+        "formatting can include up to 2 positionals arguments; `month` and "
+        "`album_name`. The default value is `{0} {1}`."
+        "When used with --use-flat-path option, it can include up to 3 "
+        "positionals arguments; `year`, `month` and `album_name`. In this case "
+        "the default value is `{0}-{1} {2}`",
+        default=None,
+    )
     parser.add_help = True
 
     def setup(self, args: Namespace, db_path: Path):
@@ -314,7 +334,9 @@ class GooglePhotosSyncMain:
             omit_album_date=args.omit_album_date,
             use_hardlinks=args.use_hardlinks,
             progress=args.progress,
-            ntfs_override=args.ntfs
+            ntfs_override=args.ntfs,
+            month_format=args.month_format,
+            path_format=args.path_format,
         )
 
         self.google_photos_client = RestClient(photos_api_url, self.auth.session)
