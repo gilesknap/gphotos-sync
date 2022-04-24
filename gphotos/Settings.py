@@ -20,6 +20,7 @@ class Settings:
     albums_path: Path
     album_index: bool
     omit_album_date: bool
+    album_invert: bool
     album: str
     album_regex: str
     shared_albums: bool
@@ -37,3 +38,6 @@ class Settings:
     progress: bool
 
     ntfs_override: bool
+
+    month_format: str
+    path_format: str

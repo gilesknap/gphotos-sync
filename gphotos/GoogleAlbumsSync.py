@@ -61,8 +61,11 @@ class GoogleAlbumsSync(object):
         self.include_video = settings.include_video
         self._use_flat_path = settings.use_flat_path
         self._omit_album_date = settings.omit_album_date
+        self._album_invert = settings.album_invert
         self._use_hardlinks = settings.use_hardlinks
         self._ntfs_override = settings.ntfs_override
+        self.month_format = settings.month_format
+        self.path_format = settings.path_format
 
     @classmethod
     def make_search_parameters(cls, album_id: str, page_token: str = None) -> Dict:
@@ -197,7 +200,7 @@ class GoogleAlbumsSync(object):
                     self.album_regex, album.orig_name, re.I
                 ):
                     log.debug(
-                        "Skipping Album: %s, photos: %d " 
+                        "Skipping Album: %s, photos: %d "
                         "(does not match --album-regex)",
                         album.filename,
                         album.size,
@@ -244,12 +247,14 @@ class GoogleAlbumsSync(object):
             else:
                 d = end_date
             year = Utils.safe_str_time(d, "%Y")
-            month = Utils.safe_str_time(d, "%m%d")
+            month = Utils.safe_str_time(d, self.month_format or "%m%d")
 
             if self._use_flat_path:
-                rel_path = "{0}-{1} {2}".format(year, month, album_name)
+                fmt = self.path_format or "{0}-{1} {2}"
+                rel_path = fmt.format(year, month, album_name)
             else:
-                rel_path = Path(year) / "{0} {1}".format(month, album_name)
+                fmt = self.path_format or "{0} {1}"
+                rel_path = Path(year) / fmt.format(month, album_name)
 
         link_folder: Path = self._links_root / rel_path
         return link_folder
@@ -276,7 +281,7 @@ class GoogleAlbumsSync(object):
             end_date_str,
             rid,
             created,
-        ) in self._db.get_album_files(download_again=re_download):
+        ) in self._db.get_album_files(album_invert=self._album_invert, download_again=re_download):
             if current_rid == rid:
                 album_item += 1
             else:
@@ -301,7 +306,7 @@ class GoogleAlbumsSync(object):
             link_folder: Path = self.album_folder_name(album_name, start_date, end_date)
 
             link_filename = "{:04d}_{}".format(album_item, file_name)
-            link_filename = link_filename[:get_check().max_filename]
+            link_filename = link_filename[: get_check().max_filename]
             link_file = link_folder / link_filename
             # incredibly, pathlib.Path.relative_to cannot handle
             # '../' in a relative path !!! reverting to os.path
