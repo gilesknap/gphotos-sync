@@ -89,14 +89,9 @@ class Authorize:
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
                 self.secrets_file,
-                scopes=self.scope,
-                redirect_uri='urn:ietf:wg:oauth:2.0:oob'
+                scopes=self.scope
             )
-            
-            auth_url, _ = flow.authorization_url(prompt='consent')
-            print('Please go to this URL: {}'.format(auth_url))
-            code = input('Enter the authorization code: ')
-            flow.fetch_token(code=code)
+            flow.run_local_server(open_browser=False)
 
             self.session = flow.authorized_session()
 
