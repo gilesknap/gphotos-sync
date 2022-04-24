@@ -20,6 +20,7 @@ install_reqs = [
     "requests_oauthlib",
     "pyyaml>=4.2b1",
     "psutil",
+    "google-auth-oauthlib"
 ]
 
 develop_reqs = [
