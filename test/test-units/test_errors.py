@@ -32,11 +32,9 @@ class TestErrors(TestCase):
       etc.
     """
 
-    @patch(
-        "gphotos.authorize.OAuth2Session.fetch_token", return_value="dummy_token_string"
-    )
-    @patch("gphotos.authorize.input", return_value="dummy_response_string")
-    def test_authorize(self, fetch_patched, input_patched):
+    @patch("gphotos.authorize.InstalledAppFlow.run_local_server", return_value="dummy_response_string")
+    @patch("gphotos.authorize.InstalledAppFlow.authorized_session", return_value="dummy_seaaion")
+    def test_authorize(self, local_server, authorized_session):
         scope = [
             "https://www.googleapis.com/auth/photoslibrary.readonly",
             "https://www.googleapis.com/auth/photoslibrary.sharing",
@@ -61,9 +59,6 @@ class TestErrors(TestCase):
         a = auth.Authorize(scope, bad_file, secrets_file)
         res = a.load_token()
         assert res is None
-
-        a.authorize()
-        assert a.token == "dummy_token_string"
 
     def test_base_media(self):
         """Download archived images in test library using flat folders (and

@@ -91,7 +91,7 @@ class Authorize:
                 self.secrets_file,
                 scopes=self.scope
             )
-            flow.run_local_server()
+            flow.run_local_server(open_browser=False)
 
             self.session = flow.authorized_session()
 
