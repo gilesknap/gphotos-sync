@@ -1,18 +1,15 @@
 {
-  "python.pythonPath": "/home/giles/.local/share/virtualenvs/gphotos-sync-L5maUoMz/bin/python",
-  "python.testing.pytestArgs": [
-    "test"
-],
-  "python.testing.unittestEnabled": false,
-  "python.testing.nosetestsEnabled": false,
-  "python.testing.pytestEnabled": true,
-  "coverage-gutters.xmlname": "coverage.xml",
-  "coverage-gutters.manualCoverageFilePaths": [
-    "/home/giles/github/gphotos-sync"
-  ],
-  "python.linting.flake8Enabled": true,
-  "python.linting.pylintEnabled": false,
-  "python.linting.enabled": true,
-"python.formatting.provider": "black",
-"restructuredtext.confPath": "${workspaceFolder}/docs"
+    "python.linting.pylintEnabled": false,
+    "python.linting.flake8Enabled": true,
+    "python.linting.mypyEnabled": true,
+    "python.linting.enabled": true,
+    "python.testing.pytestArgs": [],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.formatting.provider": "black",
+    "python.languageServer": "Pylance",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": true
+    }
 }

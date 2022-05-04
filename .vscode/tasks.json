@@ -1,60 +1,16 @@
+// See https://go.microsoft.com/fwlink/?LinkId=733558
+// for the documentation about the tasks.json format
 {
-    // See https://go.microsoft.com/fwlink/?LinkId=733558
-    // for the documentation about the tasks.json format
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "flake8 whole project",
             "type": "shell",
-            "command": "bash",
-            "args": [
-                "-c",
-                "pipenv run flake8 --max-line-length=88 --exclude=./.history,./build"
-            ],
-            "problemMatcher": {
-                "owner": "python",
-                "fileLocation": [
-                    "relative",
-                    "${workspaceFolder}"
-                ],
-                "pattern": {
-                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(F|E|W)(\\d+)\\s+(.*)$",
-                    "file": 1,
-                    "line": 2,
-                    "column": 3,
-                    "severity": 4,
-                    "message": 6
-                }
-            }
-        },
-        {
-            "label": "pytest with coverage",
-            "type": "shell",
-            "command": "bash",
-            "args": [
-                "-c",
-                "pipenv run pytest test --cov-report=xml --cov=gphotos && pipenv run coverage report"
-            ],
-            // this is a python problem matcher and does not work with pytest output
-            // at present (because pytest adds E... to start of error lines)
-            "problemMatcher": {
-                "owner": "python",
-                "fileLocation": "autoDetect",
-                "pattern": [
-                    {
-                        "regexp": "^.*File \\\"([^\\\"]|.*)\\\", line (\\d+).*",
-                        "file": 1,
-                        "line": 2
-                    },
-                    {
-                        "regexp": "^.*raise.*$"
-                    },
-                    {
-                        "regexp": "^\\s*(.*)\\s*$",
-                        "message": 1
-                    }
-                ]
-            }
+            "label": "Tests with coverage",
+            "command": "pipenv run tests",
+            "options": {
+                "cwd": "${workspaceRoot}"
+            },
+            "problemMatcher": [],
         }
     ]
 }

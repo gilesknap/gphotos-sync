@@ -1,28 +1,17 @@
 [[source]]
-url = "https://pypi.python.org/simple"
-verify_ssl = true
 name = "pypi"
-
-[packages]
-attrs = "*"
-exif = "*"
-appdirs = "*"
-requests_oauthlib = "*"
-pyyaml = ">=4.2b1"
-pywin32 = {markers = "platform_system == 'Windows'",version = "*"}
-psutil = "*"
-versiongit = "*"
-google-auth-oauthlib = "*"
+url = "https://pypi.org/simple"
+verify_ssl = true
 
 [dev-packages]
-pytest = ">=5.0.1"
-mock = "*"
-coverage = "*"
-pytest-cov = "*"
-flake8 = "*"
-black = "*"
-rope = "*"
-mypy = "*"
+gphotos-sync = {editable = true, extras = ["dev"], path = "."}
 
-[pipenv]
-allow_prereleases = true
+[packages]
+gphotos-sync = {editable = true, path = "."}
+
+[scripts]
+lint = "pre-commit run --all-files --show-diff-on-failure --color=always -v"
+tests = "pytest"
+docs = "sphinx-build -EWT --keep-going docs build/html"
+# Delete any files that git ignore hides from us
+gitclean = "git clean -fdX"

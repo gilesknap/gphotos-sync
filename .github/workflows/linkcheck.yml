@@ -1,0 +1,16 @@
+name: Link Check
+
+on:
+  schedule:
+    # Run every Monday at 8am to check URL links still resolve
+    - cron: "0 8 * * MON"
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Build docs
+        uses: dls-controls/pipenv-run-action@v1
+        with:
+          pipenv-run: docs -b linkcheck

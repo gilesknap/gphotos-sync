@@ -1,0 +1,46 @@
+name: Docs CI
+
+on:
+  push:
+    branches:
+      # Add more branches here to publish docs from other branches
+      - master
+      - main
+    tags:
+      - "*"
+  pull_request:
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Avoid git conflicts when tag and branch pushed at same time
+        if: startsWith(github.ref, 'refs/tags')
+        run: sleep 60
+
+      - name: Install Packages
+        # Can delete this if you don't use graphviz in your docs
+        run: sudo apt-get install graphviz
+
+      - name: Build docs
+        uses: dls-controls/pipenv-run-action@v1
+        with:
+          pipenv-run: docs
+
+      - name: Move to versioned directory
+        # e.g. master or 0.1.2
+        run: mv build/html ".github/pages/${GITHUB_REF##*/}"
+
+      - name: Write versions.txt
+        run: pipenv run sphinx_rtd_theme_github_versions .github/pages
+
+      - name: Publish Docs to gh-pages
+        if: github.event_name == 'push'
+        # We pin to the SHA, not the tag, for security reasons.
+        # https://docs.github.com/en/actions/learn-github-actions/security-hardening-for-github-actions#using-third-party-actions
+        uses: peaceiris/actions-gh-pages@068dc23d9710f1ba62e86896f84735d869951305 # v3.8.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .github/pages
+          keep_files: true
