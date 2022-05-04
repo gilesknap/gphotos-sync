@@ -26,7 +26,7 @@ class LocalData:
     VERSION: float = 5.7
 
     def __init__(self, root_folder: Path, flush_index: bool = False):
-        """ Initialize a connection to the DB and create some cursors.
+        """Initialize a connection to the DB and create some cursors.
         If requested or if the DB schema version is old, recreate the DB
         from scratch.
         """
@@ -63,8 +63,8 @@ class LocalData:
         self.db_file.rename(backup)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        """ Always clean up and close the connection when this object is
-        destroyed. """
+        """Always clean up and close the connection when this object is
+        destroyed."""
         if self.con:
             self.store()
             self.con.close()
@@ -95,8 +95,8 @@ class LocalData:
             self.clean_db()
 
     def clean_db(self):
-        """ Execute the DB creation script, erasing old data and bringing
-        the schema up to date if necessary """
+        """Execute the DB creation script, erasing old data and bringing
+        the schema up to date if necessary"""
         sql_file = Path(__file__).absolute().parent
         sql_file = sql_file / "sql" / "gphotos_create.sql"
 
@@ -321,9 +321,12 @@ class LocalData:
         )
 
     def get_album_files(
-        self, album_id: str = "%", album_invert: bool = False, download_again: bool = False
+        self,
+        album_id: str = "%",
+        album_invert: bool = False,
+        download_again: bool = False,
     ) -> (str, str, str, str, str, str):
-        """ Join the Albums, SyncFiles and AlbumFiles tables to get a list
+        """Join the Albums, SyncFiles and AlbumFiles tables to get a list
         of the files in an album or all albums.
         Parameters
             album_id: the Google Photos unique id for an album or None for all
@@ -346,8 +349,7 @@ class LocalData:
         {}
         ORDER BY Albums.RemoteId, AlbumFiles.Position {},
         SyncFiles.CreateDate;""".format(
-            extra_clauses,
-            "DESC" if album_invert else "ASC"
+            extra_clauses, "DESC" if album_invert else "ASC"
         )
 
         self.cur.execute(query, (album_id,))
@@ -357,8 +359,7 @@ class LocalData:
             yield tuple(result)
 
     def put_album_file(self, album_rec: str, file_rec: str, position: int):
-        """ Record in the DB a relationship between an album and a media item
-        """
+        """Record in the DB a relationship between an album and a media item"""
         self.cur.execute(
             "INSERT OR REPLACE INTO AlbumFiles(AlbumRec, DriveRec, Position) "
             "VALUES(?,"

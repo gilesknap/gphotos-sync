@@ -23,8 +23,7 @@ ALBUM_ITEMS = 50
 
 
 class GoogleAlbumsSync(object):
-    """A Class for managing the indexing and download Google of Albums
-    """
+    """A Class for managing the indexing and download Google of Albums"""
 
     def __init__(
         self,
@@ -281,7 +280,9 @@ class GoogleAlbumsSync(object):
             end_date_str,
             rid,
             created,
-        ) in self._db.get_album_files(album_invert=self._album_invert, download_again=re_download):
+        ) in self._db.get_album_files(
+            album_invert=self._album_invert, download_again=re_download
+        ):
             if current_rid == rid:
                 album_item += 1
             else:

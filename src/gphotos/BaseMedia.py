@@ -1,5 +1,6 @@
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+
 from .Checks import get_check
 
 
@@ -29,6 +30,7 @@ class BaseMedia(object):
         else:
             self._relative_folder = root / y / m
 
+    @property
     def is_video(self) -> bool:
         # guard against no mimetype issue #231
         if not self.mime_type:

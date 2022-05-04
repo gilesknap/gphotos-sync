@@ -7,7 +7,7 @@ log = logging.getLogger(__name__)
 
 
 class BadIds:
-    """ keeps a list of media items with ID in a YAML file. The YAML file
+    """keeps a list of media items with ID in a YAML file. The YAML file
     allows a user to easily investigate their list of media items that have
     failed to download
 

@@ -42,7 +42,7 @@ class SetupDbAndCredentials:
         self.root = None
 
     def test_setup(self, test_name, args=None, trash_db=False, trash_files=False):
-        self.root = Path(u"/tmp/gpTests/{}".format(test_name))
+        self.root = Path("/tmp/gpTests/{}".format(test_name))
 
         self.db_file = self.root / "gphotos.sqlite"
         if trash_files:

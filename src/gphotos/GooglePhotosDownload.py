@@ -37,8 +37,7 @@ log = logging.getLogger(__name__)
 
 
 class GooglePhotosDownload(object):
-    """A Class for managing the indexing and download of Google Photos
-    """
+    """A Class for managing the indexing and download of Google Photos"""
 
     PAGE_SIZE: int = 100
     BATCH_SIZE: int = 40
@@ -87,7 +86,7 @@ class GooglePhotosDownload(object):
             total=settings.max_retries,
             backoff_factor=5,
             status_forcelist=[500, 502, 503, 504, 509],
-            method_whitelist=frozenset(["GET", "POST"]),
+            allowed_methods=frozenset(["GET", "POST"]),
             raise_on_status=False,
             respect_retry_after_header=True,
         )
@@ -180,7 +179,7 @@ class GooglePhotosDownload(object):
         return self.files_downloaded
 
     def download_batch(self, batch: Mapping[str, DatabaseMedia]):
-        """ Downloads a batch of media items collected in download_photo_media.
+        """Downloads a batch of media items collected in download_photo_media.
 
         A fresh 'base_url' is required since they have limited lifespan and
         these are obtained by a single call to the service function
@@ -218,7 +217,7 @@ class GooglePhotosDownload(object):
             raise
 
     def download_file(self, media_item: DatabaseMedia, media_json: dict):
-        """ farms a single media download off to the thread pool.
+        """farms a single media download off to the thread pool.
 
         Uses a dictionary of Futures -> mediaItem to track downloads that are
         currently scheduled/running. When a Future is done it calls
@@ -247,8 +246,7 @@ class GooglePhotosDownload(object):
         self.pool_future_to_media[future] = media_item
 
     def do_download_file(self, base_url: str, media_item: DatabaseMedia):
-        """ Runs in a process pool and does a download of a single media item.
-        """
+        """Runs in a process pool and does a download of a single media item."""
         if self.case_insensitive_fs:
             relative_folder = str(media_item.relative_folder).lower()
             filename = str(media_item.filename).lower()
@@ -311,7 +309,7 @@ class GooglePhotosDownload(object):
             Mapping[futures.Future, DatabaseMedia], List[futures.Future]
         ],
     ):
-        """ runs in the main thread and completes processing of a media
+        """runs in the main thread and completes processing of a media
         item once (multi threaded) do_download has completed
         """
         for future in futures_list:

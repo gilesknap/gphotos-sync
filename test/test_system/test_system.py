@@ -22,7 +22,7 @@ comparison_root = Path("comparison")
 class TestSystem(TestCase):
     def test_sys_favourites_and_dates(self):
         """Download favourite images in test library.
-           Also Check that dates are set correctly
+        Also Check that dates are set correctly
         """
         s = ts.SetupDbAndCredentials()
         args = ["--favourites-only", "--max-retries", "6", "--max-threads", "2"]
@@ -51,8 +51,7 @@ class TestSystem(TestCase):
 
     def ____test_sys_archived(self):
         # TODO archinging not working
-        """Download archived images in test library.
-        """
+        """Download archived images in test library."""
         s = ts.SetupDbAndCredentials()
         args = ["--archived", "--skip-albums", "--start-date", "2017-01-01"]
         s.test_setup("test_sys_archived", args=args, trash_files=True, trash_db=True)
@@ -66,8 +65,7 @@ class TestSystem(TestCase):
         self.assertEqual(1, count[0])
 
     def test_shared_albums(self):
-        """Download favourite images in test library.
-        """
+        """Download favourite images in test library."""
         s = ts.SetupDbAndCredentials()
         args = ["--skip-files"]
         s.test_setup("test_shared_albums", args=args, trash_files=True, trash_db=True)
@@ -111,7 +109,7 @@ class TestSystem(TestCase):
     def test_sys_album_add_file(self):
         """tests that the album links get re-created in a new folder with
         a new last-date prefix when a recent photo is added to an album,
-         also that the old folder is removed """
+         also that the old folder is removed"""
         s = ts.SetupDbAndCredentials()
         args = ["--start-date", "2017-09-19", "--end-date", "2017-09-20"]
         s.test_setup(
@@ -434,8 +432,7 @@ class TestSystem(TestCase):
         )
 
     def test_skip_video_on_album(self):
-        """ verify that skip video works when syncing a specific folder
-        """
+        """verify that skip video works when syncing a specific folder"""
         s = ts.SetupDbAndCredentials()
         args = ["--skip-video", "--album", "Movies"]
         s.test_setup(

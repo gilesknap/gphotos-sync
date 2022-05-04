@@ -27,7 +27,7 @@ def dynamic_attrs(cls):
 
 @dynamic_attrs
 class RestClient:
-    """ To create a callable client to a REST API, instantiate this class.
+    """To create a callable client to a REST API, instantiate this class.
     For details of the discovery API see:
         https://developers.google.com/discovery/v1/using
     """
@@ -73,7 +73,7 @@ class Method:
                     self.query_args.append(key)
 
     def execute(self, body: str = None, **k_args: Dict[str, str]):
-        """ executes the remote REST call for this Method"""
+        """executes the remote REST call for this Method"""
         path_args: Dict[str, str] = {
             k: k_args[k] for k in self.path_args if k in k_args
         }
@@ -108,7 +108,7 @@ class Method:
         return result
 
     def make_path(self, path_args: Dict[str, str]) -> str:
-        """ Extracts the arguments from path_args and inserts them into
+        """Extracts the arguments from path_args and inserts them into
         the URL template defined in self.path
 
         Returns:
@@ -127,8 +127,8 @@ class Method:
 
 
 class Collection:
-    """ Used to represent a collection of methods
-    e.g. Google Photos API - mediaItems """
+    """Used to represent a collection of methods
+    e.g. Google Photos API - mediaItems"""
 
     def __init__(self, name: str):
         self.collection_name = name

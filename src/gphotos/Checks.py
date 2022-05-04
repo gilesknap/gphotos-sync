@@ -5,6 +5,7 @@ import re
 import shutil
 import subprocess
 from pathlib import Path
+from typing import Optional
 
 from psutil import disk_partitions
 
@@ -29,7 +30,7 @@ class Checks:
         if ntfs:
             self.is_linux: bool = False
         else:
-            self.is_linux: bool = self._check_linux_filesystem()
+            self.is_linux = self._check_linux_filesystem()
         self.is_symlink: bool = self._symlinks_supported()
         self.is_unicode: bool = self._unicode_filenames()
         self.is_case_sensitive: bool = self._check_case_sensitive()
@@ -37,7 +38,7 @@ class Checks:
         if max_filename > 0:
             self.max_filename: int = max_filename
         else:
-            self.max_filename: int = self._get_max_filename_length()
+            self.max_filename = self._get_max_filename_length()
 
     def _check_linux_filesystem(self) -> bool:
         filesystem_type = ""
@@ -171,7 +172,7 @@ class Checks:
 
 
 # a global for holding the current root folder check results
-root_folder: Checks = None
+root_folder: Optional[Checks] = None
 
 
 # ugly global stuff to avoid passing Checks object everywhere

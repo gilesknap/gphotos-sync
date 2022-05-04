@@ -24,7 +24,7 @@ class Authorize:
         secrets_file: Path,
         max_retries: int = 5,
     ):
-        """ A very simple class to handle Google API authorization flow
+        """A very simple class to handle Google API authorization flow
         for the requests library. Includes saving the token and automatic
         token refresh.
 
@@ -74,8 +74,7 @@ class Authorize:
         self.token_file.chmod(0o600)
 
     def authorize(self):
-        """ Initiates OAuth2 authentication and authorization flow
-        """
+        """Initiates OAuth2 authentication and authorization flow"""
         token = self.load_token()
 
         if token:
@@ -88,8 +87,7 @@ class Authorize:
             )
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
-                self.secrets_file,
-                scopes=self.scope
+                self.secrets_file, scopes=self.scope
             )
             flow.run_local_server(open_browser=False)
 
@@ -97,11 +95,11 @@ class Authorize:
 
             # Mapping for backward compatibility
             oauth2_token = {
-                "access_token" : flow.credentials.token,
+                "access_token": flow.credentials.token,
                 "refresh_token": flow.credentials.refresh_token,
-                "token_type" : "Bearer",
-                "scope" : flow.credentials.scopes,
-                "expires_at": flow.credentials.expiry.timestamp()
+                "token_type": "Bearer",
+                "scope": flow.credentials.scopes,
+                "expires_at": flow.credentials.expiry.timestamp(),
             }
 
             self.save_token(oauth2_token)
@@ -111,7 +109,7 @@ class Authorize:
             total=self.max_retries,
             backoff_factor=0.5,
             status_forcelist=[500, 502, 503, 504],
-            method_whitelist=frozenset(["GET", "POST"]),
+            allowed_methods=frozenset(["GET", "POST"]),
             raise_on_status=False,
             respect_retry_after_header=True,
         )

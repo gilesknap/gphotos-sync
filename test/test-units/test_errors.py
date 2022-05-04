@@ -32,20 +32,30 @@ class TestErrors(TestCase):
       etc.
     """
 
-    @patch("gphotos.authorize.InstalledAppFlow.run_local_server", return_value="dummy_response_string")
-    @patch("gphotos.authorize.InstalledAppFlow.authorized_session", return_value="dummy_seaaion")
+    @patch(
+        "gphotos.authorize.InstalledAppFlow.run_local_server",
+        return_value="dummy_response_string",
+    )
+    @patch(
+        "gphotos.authorize.InstalledAppFlow.authorized_session",
+        return_value="dummy_seaaion",
+    )
     def test_authorize(self, local_server, authorized_session):
         scope = [
             "https://www.googleapis.com/auth/photoslibrary.readonly",
             "https://www.googleapis.com/auth/photoslibrary.sharing",
         ]
 
-        bad_file: Path = Path(
-            __file__
-        ).absolute().parent.parent / "test_credentials" / ".no-token-here"
-        secrets_file: Path = Path(
-            __file__
-        ).absolute().parent.parent / "test_credentials" / "client_secret.json"
+        bad_file: Path = (
+            Path(__file__).absolute().parent.parent
+            / "test_credentials"
+            / ".no-token-here"
+        )
+        secrets_file: Path = (
+            Path(__file__).absolute().parent.parent
+            / "test_credentials"
+            / "client_secret.json"
+        )
         # test_data: Path = Path(__file__).absolute().parent.parent / 'test-data'
         # token_file: Path = Path(__file__).absolute().parent.parent / \
         #     'test_credentials' / '.gphotos.token'

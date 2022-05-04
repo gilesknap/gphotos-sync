@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
 # coding: utf8
 
-from pathlib import Path
+import re
+from datetime import datetime
 from json import loads
-from subprocess import run, CalledProcessError, PIPE
+from mimetypes import guess_type
+from pathlib import Path
+from subprocess import PIPE, CalledProcessError, run
+from typing import Any, Dict, List, Optional, Union
+
+import exif
+
 from . import Utils
 from .BaseMedia import BaseMedia
-from typing import Dict, List, Union, Any, Optional
-from datetime import datetime
-from mimetypes import guess_type
-import exif
-import re
 
 JSONValue = Union[str, int, float, bool, None, Dict[str, Any], List[Any]]
 JSONType = Union[Dict[str, JSONValue], List[JSONValue]]
@@ -69,7 +71,7 @@ class LocalFilesMedia(BaseMedia):
         self.__full_path: Path = full_path
         self.__original_name: str = full_path.name
         self.__ffprobe_installed = True
-        self.__createDate: datetime = None
+        self.__createDate: Optional[datetime] = None
 
         self.got_meta: bool = False
         self.__exif_0: dict = {}

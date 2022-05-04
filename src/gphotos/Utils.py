@@ -1,10 +1,10 @@
+import logging
+import re
 from datetime import datetime
+from os import utime
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from os import utime
-import re
-
-import logging
+from typing import Optional
 
 # Todo tisy this into a class (combine with checks?)
 
@@ -30,7 +30,7 @@ def safe_timestamp(d: datetime) -> float:
     global MINIMUM_DATE
     if d < MINIMUM_DATE:
         d = MINIMUM_DATE
-    return d
+    return d.timestamp()
 
 
 def date_to_string(date_t: datetime):
@@ -68,17 +68,17 @@ def minimum_date(root_folder: Path) -> datetime:
 
 
 def date_string_normalize(
-    date_in: str, pattern_in: PatType, pattern_out: str
-) -> datetime:
+    date_in: str, pattern_in: PatType, pattern_out: str  # type: ignore
+) -> Optional[datetime]:
     result = None
-    matches = pattern_in.match(date_in)
+    matches = pattern_in.match(date_in)  # type: ignore
     if matches:
         normalized = pattern_out.format(*matches.groups())
         result = datetime.strptime(normalized, DATE_FORMAT)
     return result
 
 
-def string_to_date(date_string: str) -> datetime:
+def string_to_date(date_string: str) -> Optional[datetime]:
     result = None
     if date_string:
         result = date_string_normalize(date_string, DATE_NORMALIZE, "{}-{}-{} {}:{}:{}")

@@ -59,7 +59,7 @@ class GooglePhotosIndex(object):
                     log.warning("%s deleted", pth)
 
     def check_for_removed(self):
-        """ Removes local files that are no longer represented in the Photos
+        """Removes local files that are no longer represented in the Photos
         Library - presumably because they were deleted.
 
         note for partial scans using date filters this is still OK because

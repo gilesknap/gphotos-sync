@@ -1,7 +1,8 @@
-import sys
 import logging
+import sys
 from datetime import datetime
 from pathlib import Path
+from typing import Any, Optional
 
 # add a trace level for logging all API calls to Google
 # this will be filtered into a separate file
@@ -42,7 +43,7 @@ def setup_logging(log_level: str, log_filename: Path, folder: Path):
     # determine the numeric log level from the string argument
     if log_level.upper() == TRACE_API.upper():
         # todo - i would expect addLevelName to do this for us?
-        numeric_level = TRACE_API_NUM
+        numeric_level: Optional[Any] = TRACE_API_NUM
     else:
         numeric_level = getattr(logging, log_level.upper(), None)
     if not isinstance(numeric_level, int):
