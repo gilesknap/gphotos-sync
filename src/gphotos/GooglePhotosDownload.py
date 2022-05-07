@@ -1,32 +1,34 @@
+import concurrent.futures as futures
+import errno
+import logging
+import os
+import shutil
+import tempfile
+from datetime import datetime
+from itertools import zip_longest
+
 #!/usr/bin/env python3
 # coding: utf8
 from pathlib import Path
-import os
-from gphotos import Utils
-from gphotos.LocalData import LocalData
-from .Settings import Settings
-from gphotos.restclient import RestClient
-from gphotos.DatabaseMedia import DatabaseMedia
-from gphotos.GooglePhotosRow import GooglePhotosRow
-from gphotos.BadIds import BadIds
-
-from itertools import zip_longest
-from typing import Iterable, Mapping, Union, List
-from datetime import datetime
-import logging
-import shutil
-import tempfile
-import concurrent.futures as futures
+from typing import Iterable, List, Mapping, Union
 
 import requests
-from requests.exceptions import RequestException
 from requests.adapters import HTTPAdapter
+from requests.exceptions import RequestException
 from urllib3.util.retry import Retry
-import errno
+
+from gphotos import Utils
+from gphotos.BadIds import BadIds
+from gphotos.DatabaseMedia import DatabaseMedia
+from gphotos.GooglePhotosRow import GooglePhotosRow
+from gphotos.LocalData import LocalData
+from gphotos.restclient import RestClient
+
+from .Settings import Settings
 
 try:
-    import win32file  # noqa
     import win32con  # noqa
+    import win32file  # noqa
 
     _use_win_32 = True
 except ImportError:
@@ -93,6 +95,9 @@ class GooglePhotosDownload(object):
         self._session.mount(
             "https://", HTTPAdapter(max_retries=retries, pool_maxsize=self.max_threads)
         )
+
+    def close(self):
+        self._session.close()
 
     def download_photo_media(self):
         """
@@ -256,7 +261,7 @@ class GooglePhotosDownload(object):
         local_folder = self._root_folder / relative_folder
         local_full_path = local_folder / filename
 
-        if media_item.is_video():
+        if media_item.is_video:
             download_url = "{}=dv".format(base_url)
             timeout = self.video_timeout
         else:
@@ -314,9 +319,7 @@ class GooglePhotosDownload(object):
         """
         for future in futures_list:
             media_item = self.pool_future_to_media.get(future)
-            timeout = (
-                self.video_timeout if media_item.is_video() else self.image_timeout
-            )
+            timeout = self.video_timeout if media_item.is_video else self.image_timeout
             e = future.exception(timeout=timeout)
             if e:
                 self.files_download_failed += 1

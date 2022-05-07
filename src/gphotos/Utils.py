@@ -3,6 +3,7 @@ import re
 from datetime import datetime
 from os import utime
 from pathlib import Path
+from sqlite3 import Timestamp
 from tempfile import NamedTemporaryFile
 from typing import Optional
 
@@ -26,11 +27,11 @@ def safe_str_time(date_time: datetime, date_format: str) -> str:
     return date_time.strftime(date_format)
 
 
-def safe_timestamp(d: datetime) -> float:
+def safe_timestamp(d: datetime) -> Timestamp:
     global MINIMUM_DATE
     if d < MINIMUM_DATE:
         d = MINIMUM_DATE
-    return d.timestamp()
+    return d
 
 
 def date_to_string(date_t: datetime):

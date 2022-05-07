@@ -4,7 +4,9 @@ import re
 import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Callable
+from typing import Callable, Dict
+
+from gphotos.Checks import get_check
 
 from . import Utils
 from .GoogleAlbumMedia import GoogleAlbumMedia
@@ -12,9 +14,8 @@ from .GoogleAlbumsRow import GoogleAlbumsRow
 from .GooglePhotosMedia import GooglePhotosMedia
 from .GooglePhotosRow import GooglePhotosRow
 from .LocalData import LocalData
-from .Settings import Settings
 from .restclient import RestClient
-from gphotos.Checks import get_check
+from .Settings import Settings
 
 log = logging.getLogger(__name__)
 
@@ -94,7 +95,7 @@ class GoogleAlbumsSync(object):
                 position += 1
                 media_item = GooglePhotosMedia(media_item_json)
 
-                if (not self.include_video) and media_item.is_video():
+                if (not self.include_video) and media_item.is_video:
                     log.debug("---- skipping %s (--skip-video)", media_item.filename)
                     continue
 

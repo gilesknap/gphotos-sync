@@ -67,7 +67,6 @@ class LocalFilesMedia(BaseMedia):
         super(LocalFilesMedia, self).__init__()
         (mime, _) = guess_type(str(full_path))
         self.__mime_type: str = mime or "application/octet-stream"
-        self.is_video: bool = self.__mime_type.startswith("video")
         self.__full_path: Path = full_path
         self.__original_name: str = full_path.name
         self.__ffprobe_installed = True
@@ -172,9 +171,8 @@ class LocalFilesMedia(BaseMedia):
     @property
     def description(self) -> str:
         try:
-            # noinspection PyUnresolvedReferences
-            result = self.__exif.image_description
-        except (AttributeError, KeyError, ValueError):
+            result = self.__exif.image_description  # type: ignore
+        except (AttributeError, KeyError, ValueError, RuntimeWarning):
             result = None
         if result:
             if result in HUAWEI_JUNK:

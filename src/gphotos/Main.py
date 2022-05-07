@@ -7,7 +7,8 @@ from datetime import datetime
 from pathlib import Path
 
 from appdirs import AppDirs
-from gphotos import Utils
+
+from gphotos import Utils, __version__
 from gphotos.authorize import Authorize
 from gphotos.Checks import do_check, get_check
 from gphotos.GoogleAlbumsSync import GoogleAlbumsSync
@@ -18,7 +19,6 @@ from gphotos.LocalFilesScan import LocalFilesScan
 from gphotos.Logging import setup_logging
 from gphotos.restclient import RestClient
 from gphotos.Settings import Settings
-from gphotos import __version__
 
 if os.name == "nt":
     import subprocess

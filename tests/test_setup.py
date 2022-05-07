@@ -1,12 +1,12 @@
+import logging
 import shutil
 from pathlib import Path
+
 from appdirs import AppDirs
 
 from gphotos import Main
 from gphotos.Checks import do_check
 from gphotos.Main import GooglePhotosSyncMain
-
-import logging
 
 # if we are debugging requests library is too noisy
 logging.getLogger("requests").setLevel(logging.WARNING)
@@ -40,6 +40,12 @@ class SetupDbAndCredentials:
         self.parsed_args = None
         self.db_file = None
         self.root = None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type=None, exc_value=None, traceback=None):
+        self.gp.google_photos_down.close()
 
     def test_setup(self, test_name, args=None, trash_db=False, trash_files=False):
         self.root = Path("/tmp/gpTests/{}".format(test_name))

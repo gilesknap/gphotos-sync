@@ -4,15 +4,15 @@ from os import environ
 from os import name as os_name
 from pathlib import Path
 from unittest import TestCase
-import test.test_setup as ts
+
+import pytest
+from requests import exceptions as exc
 
 import gphotos.authorize as auth
+import tests.test_setup as ts
 from gphotos.Checks import do_check, get_check
 from gphotos.GoogleAlbumMedia import GoogleAlbumMedia
 from gphotos.LocalFilesMedia import LocalFilesMedia
-from requests import exceptions as exc
-
-import pytest
 
 is_travis = "TRAVIS" in environ
 
@@ -142,18 +142,20 @@ class TestUnits(TestCase):
             self.assertTrue(get_check().is_linux)
 
     def test_fs_overrides(self):
-        s = ts.SetupDbAndCredentials()
-        args = ["--ntfs", "--max-filename", "30"]
-        s.test_setup("test_fs_overrides", args=args, trash_db=True, trash_files=True)
-        s.gp.fs_checks(s.root, s.parsed_args)
-        self.assertFalse(get_check().is_linux)
-        self.assertEquals(get_check().max_filename, 30)
-
-        if os_name != "nt":
-            args = []
+        with ts.SetupDbAndCredentials() as s:
+            args = ["--ntfs", "--max-filename", "30"]
             s.test_setup(
                 "test_fs_overrides", args=args, trash_db=True, trash_files=True
             )
             s.gp.fs_checks(s.root, s.parsed_args)
-            self.assertTrue(get_check().is_linux)
-            self.assertEquals(get_check().max_filename, 255)
+            self.assertFalse(get_check().is_linux)
+            self.assertEquals(get_check().max_filename, 30)
+
+            if os_name != "nt":
+                args = []
+                s.test_setup(
+                    "test_fs_overrides", args=args, trash_db=True, trash_files=True
+                )
+                s.gp.fs_checks(s.root, s.parsed_args)
+                self.assertTrue(get_check().is_linux)
+                self.assertEquals(get_check().max_filename, 255)

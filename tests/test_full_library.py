@@ -2,8 +2,8 @@ from pathlib import Path
 from unittest import TestCase
 
 from gphotos.LocalData import LocalData
-import test.test_setup as ts
-from test.test_account import TestAccount
+import tests.test_setup as ts
+from tests.test_account import TestAccount
 
 photos_root = Path("photos")
 albums_root = Path("albums")

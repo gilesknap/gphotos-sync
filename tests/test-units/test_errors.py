@@ -1,5 +1,5 @@
 import os
-import test.test_setup as ts
+import tests.test_setup as ts
 from pathlib import Path
 from unittest import TestCase
 
@@ -101,26 +101,26 @@ class TestErrors(TestCase):
             x = b.url
             print(x)  # for pylint
 
-        s = ts.SetupDbAndCredentials()
-        args = [
-            "--skip-albums",
-            "--start-date",
-            "2020-01-01",
-            "--use-flat-path",
-        ]
-        s.test_setup("test_base_media", args=args, trash_files=True, trash_db=True)
-        s.gp.start(s.parsed_args)
+        with ts.SetupDbAndCredentials() as s:
+            args = [
+                "--skip-albums",
+                "--start-date",
+                "2020-01-01",
+                "--use-flat-path",
+            ]
+            s.test_setup("test_base_media", args=args, trash_files=True, trash_db=True)
+            s.gp.start(s.parsed_args)
 
-        db = LocalData(s.root)
+            db = LocalData(s.root)
 
-        # Total of 1 out of media items
-        db.cur.execute("SELECT COUNT() FROM SyncFiles")
-        count = db.cur.fetchone()
-        self.assertEqual(1, count[0])
+            # Total of 1 out of media items
+            db.cur.execute("SELECT COUNT() FROM SyncFiles")
+            count = db.cur.fetchone()
+            self.assertEqual(1, count[0])
 
-        pat = str(photos_root / "2020-04" / "*.*")
-        files = sorted(s.root.glob(pat))
-        self.assertEqual(1, len(files))
+            pat = str(photos_root / "2020-04" / "*.*")
+            files = sorted(s.root.glob(pat))
+            self.assertEqual(1, len(files))
 
     @staticmethod
     def test_checks():
@@ -182,18 +182,18 @@ class TestErrors(TestCase):
 
     def download_faves(self, expected=4, no_response=False, trash=True):
         # Download favourite images only in test library.
-        s = ts.SetupDbAndCredentials()
-        args = [
-            "--album",
-            "Clones😀",
-            "--use-flat-path",
-            "--omit-album-date",
-            "--rescan",
-        ]
-        s.test_setup(
-            "test_google_albums_sync", args=args, trash_files=trash, trash_db=trash
-        )
-        s.gp.start(s.parsed_args)
+        with ts.SetupDbAndCredentials() as s:
+            args = [
+                "--album",
+                "Clones😀",
+                "--use-flat-path",
+                "--omit-album-date",
+                "--rescan",
+            ]
+            s.test_setup(
+                "test_google_albums_sync", args=args, trash_files=trash, trash_db=trash
+            )
+            s.gp.start(s.parsed_args)
 
         with LocalData(s.root) as db:
             # Total of 1 out of media items

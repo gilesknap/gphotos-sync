@@ -1,9 +1,10 @@
+import logging
+from datetime import datetime
+from unittest import TestCase
+
 from requests import Session, exceptions
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
-from unittest import TestCase
-from datetime import datetime
-import logging
 
 log = logging.getLogger(__name__)
 
@@ -42,6 +43,7 @@ class TestRequests(TestCase):
         elapsed2 = datetime.now() - start
         self.assertEqual(result.status_code, 500)
         self.assertGreater(elapsed2, elapsed * (retries - 1))
+        session.close()
 
     def test_retries_timeout(self):
         retries = 3

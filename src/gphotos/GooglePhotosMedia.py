@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 # coding: utf8
 
-from pathlib import Path
-from . import Utils
-from .BaseMedia import BaseMedia
-from typing import Dict, List, Union, Any
-from datetime import datetime
 import re
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Union
 
 from gphotos.Checks import get_check
+
+from . import Utils
+from .BaseMedia import BaseMedia
 
 DuplicateSuffix = re.compile(r"(.*)[ ]\(\d+\)(\..*)")
 
@@ -22,7 +23,7 @@ class GooglePhotosMedia(BaseMedia):
         self.__uid: str = None
         self.__lower = to_lower
         super(GooglePhotosMedia, self).__init__()
-        if self.is_video():
+        if self.is_video:
             self.__media_meta = None
             self.__media_meta = media_json.get("mediaMetadata").get("video")
         else:
