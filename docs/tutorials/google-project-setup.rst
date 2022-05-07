@@ -1,5 +1,10 @@
-Setting Up your Google Cloud Project
-====================================
+.. _Client ID:
+
+Creating an OAuth Client ID
+===========================
+
+TODO: this needs much improvement including screenshots and updating for 
+the latest workflow.
 
 Overview
 --------

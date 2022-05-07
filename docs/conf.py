@@ -36,13 +36,13 @@ extensions = [
 
 # If true, Sphinx will warn about all references where the target cannot
 # be found.
-nitpicky = True
+nitpicky = False
 
 # A list of (type, target) tuples (by default empty) that should be ignored when
 # generating warnings in "nitpicky mode". Note that type should include the
 # domain name if present. Example entries would be ('py:func', 'int') or
 # ('envvar', 'LD_LIBRARY_PATH').
-nitpick_ignore = [("py:func", "int")]
+nitpick_ignore = [("py:func", "int", "py:class")]
 
 # Both the class’ and the __init__ method’s docstring are concatenated and
 # inserted into the main body of the autoclass directive
@@ -116,5 +116,5 @@ html_show_copyright = False
 html_css_files = ["theme_overrides.css"]
 
 # Logo
-html_logo = "images/dls-logo.svg"
-html_favicon = "images/dls-favicon.ico"
+html_logo = "images/logo.png"
+html_favicon = "images/logo.png"

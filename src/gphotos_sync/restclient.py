@@ -1,8 +1,9 @@
+import logging
 from json import dumps
-from typing import Dict, List, Union, Any
+from typing import Any, Dict, List, Union
+
 from requests import Session
 from requests.exceptions import BaseHTTPError
-import logging
 
 JSONValue = Union[str, int, float, bool, None, Dict[str, Any], List[Any]]
 JSONType = Union[Dict[str, JSONValue], List[JSONValue]]
@@ -27,13 +28,16 @@ def dynamic_attrs(cls):
 
 @dynamic_attrs
 class RestClient:
-    """To create a callable client to a REST API, instantiate this class.
+    """
+    To create a callable client to a REST API, instantiate this class.
     For details of the discovery API see:
         https://developers.google.com/discovery/v1/using
     """
 
     def __init__(self, api_url: str, auth_session: Session):
-        """ """
+        """
+        Create a rest API object tree from an api description
+        """
         self.auth_session: Session = auth_session
         service_document = self.auth_session.get(api_url).json()
         self.json: JSONType = service_document

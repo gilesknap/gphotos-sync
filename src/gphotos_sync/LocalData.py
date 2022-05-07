@@ -21,6 +21,11 @@ log = logging.getLogger(__name__)
 
 
 class LocalData:
+    """
+    A Class for managing the local database that records the state of
+    the Google Photos Library
+    """
+
     DB_FILE_NAME: str = "gphotos.sqlite"
     BLOCK_SIZE: int = 10000
     VERSION: float = 5.7

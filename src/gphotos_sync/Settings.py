@@ -1,5 +1,6 @@
 from datetime import datetime
 from pathlib import Path
+
 from attr import dataclass
 
 """
@@ -10,6 +11,10 @@ the worker classes
 
 @dataclass
 class Settings:
+    """
+    A Class to hold command line settings
+    """
+
     start_date: datetime
     end_date: datetime
     use_start_date: bool

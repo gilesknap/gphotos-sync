@@ -1,7 +1,8 @@
+Extra Notes
+===========
 
-
-GPS News !
-----------
+GPS News
+--------
 For a neat workaround to the GPS info stripping see this project  https://github.com/DennyWeinberg/manager-for-google-photos
 
 Introduction
@@ -30,83 +31,21 @@ After doing a full sync you will have 2 directories off of the specified root:
   the files are symlinks to content in the photos folder. The folder names  will be
   'albums/YYYY/MM Original Album Name'.
 
-In addition there will be further folders when using the --compare-folder option.  The option is used to make a
-comparison of the contents of your library with a local folder such as a previous backup. The comparison does not require
-that the files are arranged in the same folders, it uses meta-data in the files such as create date and
-exif UID to match pairs of items. The additional folders after a comparison will be:
-
-* **comparison** a new folder off of the specified root containing the following:
-
-* **missing_files** - contains symlinks to the files in the comparison folder that were not found in the Google
-  Photos Library. The folder structure is the same as that in the comparison folder. These are the
-  files that you would upload to Google Photos via the Web interface to restore from backup.
-
-* **extra_files** - contains symlinks into to the files in photos folder which appear in the Library but not in the
-  comparison folder. The folder structure is the same as the photos folder.
-
-* **duplicates** - contains symlinks to any duplicate files found in the comparison folder. This is a flat structure
-  and the symlink filenames have a numeric prefix to make them unique and group the duplicates together.
-
-NOTES:
-
-* the comparison code uses an external tool 'ffprobe'. It will run without it but will not be able to
-  extract metadata from video files and revert to relying on Google Photos meta data and file modified date (this is
-  a much less reliable way to match video files, but the results should be OK if the backup folder
-  was originally created using gphotos-sync).
-* If you have shared albums and have clicked 'add to library' on items from others' libraries then you will have two
-  copies of those items and they will show as duplicates too.
 
 Known Issues
 ------------
 
 - Installing on a slow machine (like old Raspberry Pi) or network may cause timeouts in pipenv.
 
-  - This can be resolved by setting an environment variable `export PIPENV_TIMEOUT=240`
+  - This can be resolved by setting an environment variable ``export PIPENV_TIMEOUT=240``
 
 - Some mounted filesystems including NFS, CIFS and AFP do not support file locks and database access will fail on them.
 
   - To fix, use the parameter --db-path to specify a location for your DB on the local disk. This will perform better anyway.
 
-Known Issues with Google API
-----------------------------
-A few outstanding limitations of the Google API restrict what can be achieved. All these issues have been reported
-to Google and this project will be updated once they are resolved.
-
-- There is no way to discover modified date of library media items. Currently ``gphotos-sync`` will refresh your local
-  copy with any new photos added since the last scan but will not update any photos that have been modified in Google Photos.
-
-  - https://issuetracker.google.com/issues/122737849.
-
-- FIXED BY GOOGLE. Some types of video will not download using the new API.
-
-  - https://issuetracker.google.com/issues/116842164.
-  - https://issuetracker.google.com/issues/141255600
-
-- GOOGLE WON'T FIX. The API strips GPS data from images.
-
-  - https://issuetracker.google.com/issues/80379228.
-  - UPDATE: see https://github.com/DennyWeinberg/manager-for-google-photos for a workaround to this issue.
-
-- Video download transcodes the videos even if you ask for the original file (=vd parameter).
-  My experience is that the result is looks similar to the original
-  but the compression is more clearly visible. It is a smaller file with approximately 60% bitrate (same resolution).
-
-  - https://issuetracker.google.com/issues/80149160
-
-- Photo download compresses the photos even if you ask for the original file (=d parameter).
-  This is similar to the above issue, except in my experience is is nearly impossible to notice a loss in quality. It
-  is a file compressed to approximately 60% of the original size (same resolution).
-
-  - https://issuetracker.google.com/issues/112096115
-
-- Burst shots are not supported. You will only see the first file of a burst shot.
-
-  - https://issuetracker.google.com/issues/124656564
-
 
 Install and configure
 ---------------------
-For an easy option which does not require the install of Python and Pipenv you can use the Snap Store version, see https://ubuntu.com/blog/safely-backup-google-photos.
 
 For some help on getting python working on Windows see https://github.com/gilesknap/gphotos-sync/issues/63 or use WSL2 (available since 20H2) + docker with wsl2 integration + Switch to linux containers.
 
@@ -188,7 +127,7 @@ You can run the tool from the container using |docker|_. The container has 2 mou
 .. _docker: https://hub.docker.com/r/gilesknap/gphotos-sync
 
 -  ``/storage`` this is where your photos will be stored. You can mount single directory, or multiple subdirectories in case you want to backup multiple accounts
--  ``/config`` the directory that contains `client_secret.json` file
+-  ``/config`` the directory that contains ``client_secret.json`` file
 
 To run ::
 

@@ -6,7 +6,7 @@ API
     ``gphotos_sync``
     -----------------------------------
 
-This is the internal API reference for gphotos_sync
+This is the internal code reference for gphotos_sync
 
 You can mix verbose text with docstring and signature extraction by
 using ``autoclass`` and ``autofunction`` directives instead of
@@ -17,8 +17,42 @@ using ``autoclass`` and ``autofunction`` directives instead of
 
     Version number as calculated by https://github.com/dls-controls/versiongit
 
-.. automodule:: gphotos_sync.hello
+.. automodule:: gphotos_sync.Main
     :members:
 
-    ``gphotos_sync.hello``
+    ``gphotos_sync.Main``
+    -----------------------------------------
+.. automodule:: gphotos_sync.BaseMedia
+    :members:
+
+    ``gphotos_sync.BaseMedia``
+    -----------------------------------------
+.. automodule:: gphotos_sync.DatabaseMedia
+    :members:
+
+    ``gphotos_sync.DatabaseMedia``
+    -----------------------------------------
+.. automodule:: gphotos_sync.GooglePhotosMedia
+    :members:
+
+    ``gphotos_sync.GooglePhotosMedia``
+    -----------------------------------------
+.. automodule:: gphotos_sync.GoogleAlbumMedia
+    :members:
+
+    ``gphotos_sync.GoogleAlbumMedia``
+.. automodule:: gphotos_sync.LocalFilesMedia
+    :members:
+
+    ``gphotos_sync.LocalFilesMedia``
+    -----------------------------------------
+.. automodule:: gphotos_sync.GooglePhotosDownload
+    :members:
+
+    ``gphotos_sync.GooglePhotosDownload``
+    -----------------------------------------
+.. automodule:: gphotos_sync.GooglePhotosIndex
+    :members:
+
+    ``gphotos_sync.GooglePhotosIndex``
     -----------------------------------------

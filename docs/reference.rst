@@ -9,7 +9,9 @@ Practical step-by-step guides for the more experienced user.
     :caption: Reference
 
     reference/contributing
-    Releases <https://github.com/dls-controls/gphotos-sync/releases>
+    reference/comparison
+    reference/api
+    Releases <https://github.com/gilesknap/gphotos-sync/releases>
     Index <genindex.html#http://>
 
 ..

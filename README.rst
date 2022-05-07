@@ -3,40 +3,36 @@ Google Photos Sync (gphotos-sync)
 
 |code_ci| |docs_ci| |coverage| |pypi_version| |license|
 
-Google Photos Sync downloads your Google Photos to the local file system. 
-It will backup all the photos the user uploaded to Google Photos, but also the 
-album information and additional Google Photos 'Creations'  including 
-animations, panoramas, movies, effects and collages.
+Google Photos Sync is a backup tool for your Google Photos cloud storage.
+
+It downloads all photos and videos the user has uploaded to Google Photos.
+It also organizes the media in the local file system using 
+album information. Additional Google Photos 'Creations' such as 
+animations, panoramas, movies, effects and collages are also backed up.
 
 ============== ==============================================================
 PyPI           ``pip install gphotos-sync``
-Source code    https://github.com/dls-controls/gphotos-sync
+Source code    https://github.com/gilesknap/gphotos-sync
 Documentation  https://dls-controls.github.io/gphotos-sync
-Releases       https://github.com/dls-controls/gphotos-sync/releases
+Releases       https://github.com/gilesknap/gphotos-sync/releases
 ============== ==============================================================
 
 Quick Start
 ===========
 
-To use Google Photos Sync you must first create your own application token.
-
-TODO: 
-
-- link to token docs
-- How to install and run with pip.
-- How to run with docker
+To get started see the tutorial here. 
 
 
-.. |code_ci| image:: https://github.com/dls-controls/gphotos-sync/workflows/Code%20CI/badge.svg?branch=master
-    :target: https://github.com/dls-controls/gphotos-sync/actions?query=workflow%3A%22Code+CI%22
+.. |code_ci| image:: https://github.com/gilesknap/gphotos-sync/workflows/Code%20CI/badge.svg?branch=master
+    :target: https://github.com/gilesknap/gphotos-sync/actions?query=workflow%3A%22Code+CI%22
     :alt: Code CI
 
-.. |docs_ci| image:: https://github.com/dls-controls/gphotos-sync/workflows/Docs%20CI/badge.svg?branch=master
-    :target: https://github.com/dls-controls/gphotos-sync/actions?query=workflow%3A%22Docs+CI%22
+.. |docs_ci| image:: https://github.com/gilesknap/gphotos-sync/workflows/Docs%20CI/badge.svg?branch=master
+    :target: https://github.com/gilesknap/gphotos-sync/actions?query=workflow%3A%22Docs+CI%22
     :alt: Docs CI
 
-.. |coverage| image:: https://codecov.io/gh/dls-controls/gphotos-sync/branch/master/graph/badge.svg
-    :target: https://codecov.io/gh/dls-controls/gphotos-sync
+.. |coverage| image:: https://codecov.io/gh/gilesknap/gphotos-sync/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/gilesknap/gphotos-sync
     :alt: Test Coverage
 
 .. |pypi_version| image:: https://img.shields.io/pypi/v/gphotos-sync.svg

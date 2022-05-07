@@ -1,15 +1,14 @@
-Installation
-============
+Initial Setup
+=============
 
-.. note::
+Before you run gphotos_sync for the first time you will need to create
+your own OAuth client ID. This is a once only operation and the instructions
+are here: `Client ID`
 
-    For installation inside DLS, please see the internal documentation on
-    ``dls-python3`` and ``pipenv``. Although these instructions will work
-    inside DLS, they are intended for external use.
+Local Installation
+==================
 
-    If you want to contribute to the library itself, please follow
-    the `../reference/contributing` instructions.
-
+To install on your workstation (linux Mac or Windows) follow this section.
 
 Check your version of python
 ----------------------------
@@ -33,16 +32,21 @@ installation will not interfere with any existing Python software::
 Installing the library
 ----------------------
 
-You can now use ``pip`` to install the library::
+You can now use ``pip`` to install the application::
 
     python3 -m pip install gphotos-sync
 
 If you require a feature that is not currently released you can also install
 from github::
 
-    python3 -m pip install git+git://github.com/dls-controls/gphotos-sync.git
+    python3 -m pip install git+git://github.com/gilesknap/gphotos-sync.git
 
 The library should now be installed and the commandline interface on your path.
 You can check the version that has been installed by typing::
 
     gphotos-sync --version
+
+Execute using docker
+====================
+
+TODO: add info here for the ghcr.io image
