@@ -3,7 +3,7 @@ from pathlib import Path
 from unittest import TestCase
 
 import tests.test_setup as ts
-from gphotos.LocalData import LocalData
+from gphotos_sync.LocalData import LocalData
 from tests.test_account import TestAccount
 
 photos_root = Path("photos")

@@ -8,7 +8,6 @@ Practical step-by-step guides for the more experienced user.
 .. toctree::
     :caption: Reference
 
-    reference/api
     reference/contributing
     Releases <https://github.com/dls-controls/gphotos-sync/releases>
     Index <genindex.html#http://>

@@ -6,7 +6,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Union
 
-from gphotos.Checks import get_check
+from gphotos_sync.Checks import get_check
 
 from . import Utils
 from .BaseMedia import BaseMedia

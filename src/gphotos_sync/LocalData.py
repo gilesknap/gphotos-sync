@@ -9,13 +9,13 @@ from typing import Iterator, Type
 # todo this module could be tidied quite a bit
 #  too much application logic at this level in some cases
 #  also the generic functions seem a bit ugly and could do with rework
-import gphotos.Queries as Queries
-from gphotos import Utils
-from gphotos.DatabaseMedia import DatabaseMedia
-from gphotos.DbRow import DbRow
-from gphotos.GoogleAlbumsRow import GoogleAlbumsRow
-from gphotos.GooglePhotosRow import GooglePhotosRow
-from gphotos.LocalFilesRow import LocalFilesRow
+import gphotos_sync.Queries as Queries
+from gphotos_sync import Utils
+from gphotos_sync.DatabaseMedia import DatabaseMedia
+from gphotos_sync.DbRow import DbRow
+from gphotos_sync.GoogleAlbumsRow import GoogleAlbumsRow
+from gphotos_sync.GooglePhotosRow import GooglePhotosRow
+from gphotos_sync.LocalFilesRow import LocalFilesRow
 
 log = logging.getLogger(__name__)
 

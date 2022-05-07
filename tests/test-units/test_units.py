@@ -8,11 +8,11 @@ from unittest import TestCase
 import pytest
 from requests import exceptions as exc
 
-import gphotos.authorize as auth
+import gphotos_sync.authorize as auth
 import tests.test_setup as ts
-from gphotos.Checks import do_check, get_check
-from gphotos.GoogleAlbumMedia import GoogleAlbumMedia
-from gphotos.LocalFilesMedia import LocalFilesMedia
+from gphotos_sync.Checks import do_check, get_check
+from gphotos_sync.GoogleAlbumMedia import GoogleAlbumMedia
+from gphotos_sync.LocalFilesMedia import LocalFilesMedia
 
 is_travis = "TRAVIS" in environ
 

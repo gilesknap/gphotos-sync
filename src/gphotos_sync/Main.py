@@ -8,17 +8,17 @@ from pathlib import Path
 
 from appdirs import AppDirs
 
-from gphotos import Utils, __version__
-from gphotos.authorize import Authorize
-from gphotos.Checks import do_check, get_check
-from gphotos.GoogleAlbumsSync import GoogleAlbumsSync
-from gphotos.GooglePhotosDownload import GooglePhotosDownload
-from gphotos.GooglePhotosIndex import GooglePhotosIndex
-from gphotos.LocalData import LocalData
-from gphotos.LocalFilesScan import LocalFilesScan
-from gphotos.Logging import setup_logging
-from gphotos.restclient import RestClient
-from gphotos.Settings import Settings
+from gphotos_sync import Utils, __version__
+from gphotos_sync.authorize import Authorize
+from gphotos_sync.Checks import do_check, get_check
+from gphotos_sync.GoogleAlbumsSync import GoogleAlbumsSync
+from gphotos_sync.GooglePhotosDownload import GooglePhotosDownload
+from gphotos_sync.GooglePhotosIndex import GooglePhotosIndex
+from gphotos_sync.LocalData import LocalData
+from gphotos_sync.LocalFilesScan import LocalFilesScan
+from gphotos_sync.Logging import setup_logging
+from gphotos_sync.restclient import RestClient
+from gphotos_sync.Settings import Settings
 
 if os.name == "nt":
     import subprocess

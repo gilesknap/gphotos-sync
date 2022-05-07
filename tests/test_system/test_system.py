@@ -7,11 +7,11 @@ from unittest.mock import Mock, patch
 
 from requests.exceptions import HTTPError
 
-import gphotos.Utils as Utils
+import gphotos_sync.Utils as Utils
 import tests.test_setup as ts
-from gphotos.BadIds import BadIds
-from gphotos.GooglePhotosDownload import GooglePhotosDownload
-from gphotos.LocalData import LocalData
+from gphotos_sync.BadIds import BadIds
+from gphotos_sync.GooglePhotosDownload import GooglePhotosDownload
+from gphotos_sync.LocalData import LocalData
 from tests.test_account import TestAccount
 
 photos_root = Path("photos")

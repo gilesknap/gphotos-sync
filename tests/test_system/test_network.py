@@ -7,7 +7,7 @@ from requests import Session
 from requests.exceptions import HTTPError
 
 import tests.test_setup as ts
-from gphotos.LocalData import LocalData
+from gphotos_sync.LocalData import LocalData
 from tests.test_account import TestAccount
 
 photos_root = Path("photos")

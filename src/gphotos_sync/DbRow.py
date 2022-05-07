@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Mapping, Any, List, ClassVar, TypeVar, Type
-from gphotos.DatabaseMedia import DatabaseMedia
-from gphotos.BaseMedia import BaseMedia
+from gphotos_sync.DatabaseMedia import DatabaseMedia
+from gphotos_sync.BaseMedia import BaseMedia
 
 from . import Utils
 import logging

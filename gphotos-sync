@@ -2,7 +2,7 @@
 # coding: utf8
 
 
-from gphotos.Main import GooglePhotosSyncMain
+from gphotos_sync.Main import GooglePhotosSyncMain
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     GooglePhotosSyncMain().main()

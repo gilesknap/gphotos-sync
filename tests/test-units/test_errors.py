@@ -5,15 +5,15 @@ from unittest import TestCase
 import pytest
 from mock import PropertyMock, patch
 
-import gphotos.authorize as auth
+import gphotos_sync.authorize as auth
 import tests.test_setup as ts
-from gphotos.BaseMedia import BaseMedia
-from gphotos.Checks import do_check
-from gphotos.DatabaseMedia import DatabaseMedia
-from gphotos.DbRow import DbRow
-from gphotos.GoogleAlbumMedia import GoogleAlbumMedia
-from gphotos.GoogleAlbumsRow import GoogleAlbumsRow
-from gphotos.LocalData import LocalData
+from gphotos_sync.BaseMedia import BaseMedia
+from gphotos_sync.Checks import do_check
+from gphotos_sync.DatabaseMedia import DatabaseMedia
+from gphotos_sync.DbRow import DbRow
+from gphotos_sync.GoogleAlbumMedia import GoogleAlbumMedia
+from gphotos_sync.GoogleAlbumsRow import GoogleAlbumsRow
+from gphotos_sync.LocalData import LocalData
 
 photos_root = Path("photos")
 albums_root = Path("albums")

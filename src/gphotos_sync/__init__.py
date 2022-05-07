@@ -1,4 +1,3 @@
-from . import hello
 from ._version_git import __version__
 
 # __all__ defines the public API for the package.

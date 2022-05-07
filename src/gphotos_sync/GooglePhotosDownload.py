@@ -17,12 +17,12 @@ from requests.adapters import HTTPAdapter
 from requests.exceptions import RequestException
 from urllib3.util.retry import Retry
 
-from gphotos import Utils
-from gphotos.BadIds import BadIds
-from gphotos.DatabaseMedia import DatabaseMedia
-from gphotos.GooglePhotosRow import GooglePhotosRow
-from gphotos.LocalData import LocalData
-from gphotos.restclient import RestClient
+from gphotos_sync import Utils
+from gphotos_sync.BadIds import BadIds
+from gphotos_sync.DatabaseMedia import DatabaseMedia
+from gphotos_sync.GooglePhotosRow import GooglePhotosRow
+from gphotos_sync.LocalData import LocalData
+from gphotos_sync.restclient import RestClient
 
 from .Settings import Settings
 

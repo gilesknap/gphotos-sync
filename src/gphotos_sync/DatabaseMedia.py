@@ -3,8 +3,8 @@
 from datetime import datetime
 from typing import TypeVar
 
-from gphotos.BaseMedia import BaseMedia
-from gphotos.Checks import get_check
+from gphotos_sync.BaseMedia import BaseMedia
+from gphotos_sync.Checks import get_check
 
 # this allows self reference to this class in its factory methods
 D = TypeVar("D", bound="DatabaseMedia")

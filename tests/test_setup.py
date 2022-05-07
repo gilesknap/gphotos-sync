@@ -4,9 +4,9 @@ from pathlib import Path
 
 from appdirs import AppDirs
 
-from gphotos import Main
-from gphotos.Checks import do_check
-from gphotos.Main import GooglePhotosSyncMain
+from gphotos_sync import Main
+from gphotos_sync.Checks import do_check
+from gphotos_sync.Main import GooglePhotosSyncMain
 
 # if we are debugging requests library is too noisy
 logging.getLogger("requests").setLevel(logging.WARNING)

@@ -3,13 +3,13 @@
 from pathlib import Path
 from datetime import datetime
 
-from gphotos import Utils
-from gphotos.GooglePhotosMedia import GooglePhotosMedia
-from gphotos.GooglePhotosRow import GooglePhotosRow
-from gphotos.LocalFilesMedia import LocalFilesMedia
-from gphotos.LocalData import LocalData
-from gphotos.Settings import Settings
-from gphotos.restclient import RestClient
+from gphotos_sync import Utils
+from gphotos_sync.GooglePhotosMedia import GooglePhotosMedia
+from gphotos_sync.GooglePhotosRow import GooglePhotosRow
+from gphotos_sync.LocalFilesMedia import LocalFilesMedia
+from gphotos_sync.LocalData import LocalData
+from gphotos_sync.Settings import Settings
+from gphotos_sync.restclient import RestClient
 
 import logging
 

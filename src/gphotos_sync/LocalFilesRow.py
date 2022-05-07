@@ -3,10 +3,10 @@
 from typing import TypeVar
 from pathlib import Path
 from datetime import datetime
-from gphotos.DbRow import DbRow
-from gphotos.BaseMedia import BaseMedia
-from gphotos.DatabaseMedia import DatabaseMedia
-from gphotos.LocalFilesMedia import LocalFilesMedia
+from gphotos_sync.DbRow import DbRow
+from gphotos_sync.BaseMedia import BaseMedia
+from gphotos_sync.DatabaseMedia import DatabaseMedia
+from gphotos_sync.LocalFilesMedia import LocalFilesMedia
 import logging
 
 log = logging.getLogger(__name__)

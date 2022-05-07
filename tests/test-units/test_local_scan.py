@@ -1,6 +1,6 @@
 from unittest import TestCase
 from pathlib import Path
-from gphotos.LocalFilesMedia import LocalFilesMedia
+from gphotos_sync.LocalFilesMedia import LocalFilesMedia
 
 test_data = Path(__file__).absolute().parent.parent / "test-data"
 
