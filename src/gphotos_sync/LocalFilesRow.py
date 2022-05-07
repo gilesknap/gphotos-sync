@@ -1,22 +1,16 @@
-#!/usr/bin/env python3
-# coding: utf8
-from typing import TypeVar
-from pathlib import Path
+import logging
 from datetime import datetime
-from gphotos_sync.DbRow import DbRow
+from pathlib import Path
+
 from gphotos_sync.BaseMedia import BaseMedia
 from gphotos_sync.DatabaseMedia import DatabaseMedia
+from gphotos_sync.DbRow import DbRow
 from gphotos_sync.LocalFilesMedia import LocalFilesMedia
-import logging
 
 log = logging.getLogger(__name__)
 
-# this allows self reference to this class in its factory methods
-G = TypeVar("G", bound="GooglePhotosRow")
-
 
 @DbRow.db_row
-# pylint: disable=no-member
 class LocalFilesRow(DbRow):
     """
     generates a class with attributes for each of the columns in the
@@ -58,7 +52,7 @@ class LocalFilesRow(DbRow):
         return db_media
 
     @classmethod
-    def from_media(cls, media: LocalFilesMedia) -> G:
+    def from_media(cls, media: LocalFilesMedia) -> "LocalFilesRow":
         now_time = datetime.now().strftime(BaseMedia.TIME_FORMAT)
         new_row = cls.make(
             Path=str(media.relative_folder),

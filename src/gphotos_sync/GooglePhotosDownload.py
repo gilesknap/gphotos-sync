@@ -6,9 +6,6 @@ import shutil
 import tempfile
 from datetime import datetime
 from itertools import zip_longest
-
-#!/usr/bin/env python3
-# coding: utf8
 from pathlib import Path
 from typing import Iterable, List, Mapping, Union
 

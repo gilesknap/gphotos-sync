@@ -1,5 +1,5 @@
 import os
-from datetime import date, datetime
+from datetime import datetime
 from pathlib import Path
 from typing import List
 from unittest import TestCase

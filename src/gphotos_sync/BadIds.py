@@ -1,7 +1,8 @@
-from pathlib import Path
-from yaml import safe_load, safe_dump, YAMLError
-from typing import Dict
 import logging
+from pathlib import Path
+from typing import Dict
+
+from yaml import YAMLError, safe_dump, safe_load
 
 log = logging.getLogger(__name__)
 

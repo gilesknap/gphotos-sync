@@ -181,7 +181,8 @@ class GooglePhotosSyncMain:
         "--album-invert",
         action="store_true",
         help="Inverts the sorting direction of files within an album. "
-        "Default sorting is descending from newest to olders. This causes it to be the other way around.",
+        "Default sorting is descending from newest to olders. "
+        "This causes it to be the other way around.",
     )
     parser.add_argument("--new-token", action="store_true", help="Request new token")
     parser.add_argument(

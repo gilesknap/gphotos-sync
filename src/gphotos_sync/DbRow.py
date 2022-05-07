@@ -1,19 +1,15 @@
+import logging
 from datetime import datetime
-from typing import Mapping, Any, List, ClassVar, TypeVar, Type
-from gphotos_sync.DatabaseMedia import DatabaseMedia
+from typing import Any, ClassVar, List, Mapping, Type
+
 from gphotos_sync.BaseMedia import BaseMedia
+from gphotos_sync.DatabaseMedia import DatabaseMedia
 
 from . import Utils
-import logging
 
 log = logging.getLogger(__name__)
 
-# this allows self reference to this class in its factory methods
-DB = TypeVar("DB", bound="DBRow")
 
-
-# noinspection PyUnresolvedReferences
-# pylint: disable=no-member
 class DbRow:
     """
     base class for classes representing a row in the database to allow easy
@@ -53,7 +49,7 @@ class DbRow:
         raise NotImplementedError
 
     @classmethod
-    def from_media(cls, media: BaseMedia) -> DB:
+    def from_media(cls, media: BaseMedia) -> "DbRow":
         raise NotImplementedError
 
     def __init__(self, _):
@@ -65,7 +61,7 @@ class DbRow:
 
     # factory method for delivering a DbRow class based on named arguments
     @classmethod
-    def make(cls, **k_args: Any) -> DB:
+    def make(cls, **k_args: Any) -> "DbRow":
         new_row_class = cls(None)
         for key, value in k_args.items():
             if not hasattr(new_row_class, key):
@@ -75,7 +71,7 @@ class DbRow:
         return new_row_class
 
     @classmethod
-    def db_row(cls, row_class: DB) -> DB:
+    def db_row(cls, row_class: "DbRow") -> "DbRow":
         """
         class decorator function to create RowClass classes that represent a row
         in the database

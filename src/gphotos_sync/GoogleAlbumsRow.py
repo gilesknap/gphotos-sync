@@ -1,10 +1,11 @@
-from typing import TypeVar
-from datetime import datetime
-from gphotos_sync import Utils
-from gphotos_sync.DbRow import DbRow
-from gphotos_sync.DatabaseMedia import DatabaseMedia
-from gphotos_sync.GoogleAlbumMedia import GoogleAlbumMedia
 import logging
+from datetime import datetime
+from typing import TypeVar
+
+from gphotos_sync import Utils
+from gphotos_sync.DatabaseMedia import DatabaseMedia
+from gphotos_sync.DbRow import DbRow
+from gphotos_sync.GoogleAlbumMedia import GoogleAlbumMedia
 
 log = logging.getLogger(__name__)
 

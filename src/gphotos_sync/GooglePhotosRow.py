@@ -1,13 +1,12 @@
-#!/usr/bin/env python3
-# coding: utf8
-from typing import TypeVar
-from pathlib import Path
+import logging
 from datetime import datetime
-from gphotos_sync.DbRow import DbRow
+from pathlib import Path
+from typing import TypeVar
+
 from gphotos_sync.BaseMedia import BaseMedia
 from gphotos_sync.DatabaseMedia import DatabaseMedia
+from gphotos_sync.DbRow import DbRow
 from gphotos_sync.GooglePhotosMedia import GooglePhotosMedia
-import logging
 
 log = logging.getLogger(__name__)
 

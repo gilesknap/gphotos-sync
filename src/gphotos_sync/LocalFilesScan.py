@@ -1,11 +1,9 @@
-#!/usr/bin/env python3
-# coding: utf8
-
-from pathlib import Path
-import shutil
-from typing import Callable
-from .LocalData import LocalData
 import logging
+import shutil
+from pathlib import Path
+from typing import Callable
+
+from .LocalData import LocalData
 from .LocalFilesMedia import LocalFilesMedia
 from .LocalFilesRow import LocalFilesRow
 

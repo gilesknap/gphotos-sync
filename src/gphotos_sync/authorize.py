@@ -1,12 +1,12 @@
+import logging
+from json import JSONDecodeError, dump, load
+from pathlib import Path
+from typing import List, Optional
+
+from google_auth_oauthlib.flow import InstalledAppFlow
 from requests.adapters import HTTPAdapter
 from requests_oauthlib import OAuth2Session
-from pathlib import Path
 from urllib3.util.retry import Retry
-from typing import List, Optional
-from google_auth_oauthlib.flow import InstalledAppFlow
-
-from json import load, dump, JSONDecodeError
-import logging
 
 log = logging.getLogger(__name__)
 

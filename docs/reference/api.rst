@@ -8,10 +8,6 @@ API
 
 This is the internal code reference for gphotos_sync
 
-You can mix verbose text with docstring and signature extraction by
-using ``autoclass`` and ``autofunction`` directives instead of
-``automodule`` below.
-
 .. data:: gphotos_sync.__version__
     :type: str
 

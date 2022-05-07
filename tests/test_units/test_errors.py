@@ -34,11 +34,11 @@ class TestErrors(TestCase):
     """
 
     @patch(
-        "gphotos.authorize.InstalledAppFlow.run_local_server",
+        "gphotos_sync.authorize.InstalledAppFlow.run_local_server",
         return_value="dummy_response_string",
     )
     @patch(
-        "gphotos.authorize.InstalledAppFlow.authorized_session",
+        "gphotos_sync.authorize.InstalledAppFlow.authorized_session",
         return_value="dummy_seaaion",
     )
     def test_authorize(self, local_server, authorized_session):
@@ -129,25 +129,27 @@ class TestErrors(TestCase):
         c = do_check(a_path)
         assert c.is_linux
 
-        with patch("gphotos.Checks.Path.symlink_to", side_effect=FileNotFoundError()):
+        with patch(
+            "gphotos_sync.Checks.Path.symlink_to", side_effect=FileNotFoundError()
+        ):
             assert not c._symlinks_supported()
 
-        with patch("gphotos.Checks.Path.unlink", side_effect=FileNotFoundError()):
+        with patch("gphotos_sync.Checks.Path.unlink", side_effect=FileNotFoundError()):
             assert not c._check_case_sensitive()
 
-        with patch("gphotos.Checks.Path.glob", return_value=["a"]):
+        with patch("gphotos_sync.Checks.Path.glob", return_value=["a"]):
             assert not c._check_case_sensitive()
 
         with patch(
-            "gphotos.Checks.subprocess.check_output", side_effect=BaseException()
+            "gphotos_sync.Checks.subprocess.check_output", side_effect=BaseException()
         ):
             assert c._get_max_path_length() == 248
 
         if os.name != "nt":
-            with patch("gphotos.Checks.os.statvfs", side_effect=BaseException()):
+            with patch("gphotos_sync.Checks.os.statvfs", side_effect=BaseException()):
                 assert c._get_max_filename_length() == 248
 
-        with patch("gphotos.Checks.Path.touch", side_effect=BaseException()):
+        with patch("gphotos_sync.Checks.Path.touch", side_effect=BaseException()):
             assert not c._unicode_filenames()
 
     @staticmethod
@@ -208,10 +210,11 @@ class TestErrors(TestCase):
             return {}
 
     @patch(
-        "gphotos.GoogleAlbumsSync.PAGE_SIZE", new_callable=PropertyMock(return_value=1)
+        "gphotos_sync.GoogleAlbumsSync.PAGE_SIZE",
+        new_callable=PropertyMock(return_value=1),
     )
     @patch(
-        "gphotos.GoogleAlbumsSync.ALBUM_ITEMS",
+        "gphotos_sync.GoogleAlbumsSync.ALBUM_ITEMS",
         new_callable=PropertyMock(return_value=1),
     )
     def test_google_albums_sync(self, page_size, album_items):
@@ -234,6 +237,6 @@ class TestErrors(TestCase):
 
         # check that empty media_json response works
         with patch(
-            "gphotos.restclient.Method.execute", return_value=self.DummyResponse()
+            "gphotos_sync.restclient.Method.execute", return_value=self.DummyResponse()
         ):
             self.download_faves(expected=0)

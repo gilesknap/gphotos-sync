@@ -1,17 +1,14 @@
-#!/usr/bin/env python3
-# coding: utf8
-from pathlib import Path
+import logging
 from datetime import datetime
+from pathlib import Path
 
 from gphotos_sync import Utils
 from gphotos_sync.GooglePhotosMedia import GooglePhotosMedia
 from gphotos_sync.GooglePhotosRow import GooglePhotosRow
-from gphotos_sync.LocalFilesMedia import LocalFilesMedia
 from gphotos_sync.LocalData import LocalData
-from gphotos_sync.Settings import Settings
+from gphotos_sync.LocalFilesMedia import LocalFilesMedia
 from gphotos_sync.restclient import RestClient
-
-import logging
+from gphotos_sync.Settings import Settings
 
 log = logging.getLogger(__name__)
 
