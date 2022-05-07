@@ -4,10 +4,10 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-gphotos-sync = {editable = true, extras = ["dev"], path = "."}
+gphotos_sync = {editable = true, extras = ["dev"], path = "."}
 
 [packages]
-gphotos-sync = {editable = true, path = "."}
+gphotos_sync = {editable = true, path = "."}
 
 [scripts]
 lint = "pre-commit run --all-files --show-diff-on-failure --color=always -v"

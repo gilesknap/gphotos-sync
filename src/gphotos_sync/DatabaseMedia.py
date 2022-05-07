@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # coding: utf8
 from datetime import datetime
-from typing import TypeVar
+from typing import Optional, TypeVar
 
 from gphotos_sync.BaseMedia import BaseMedia
 from gphotos_sync.Checks import get_check
@@ -37,24 +37,36 @@ class DatabaseMedia(BaseMedia):
 
     def __init__(
         self,
-        _id: str = None,
-        _uid: str = None,
-        _url: str = None,
-        _relative_folder: str = None,
-        _filename: str = None,
-        _orig_name: str = None,
-        _duplicate_number: int = None,
-        _size: int = None,
-        _mime_type: str = None,
-        _description: str = None,
-        _date: datetime = None,
-        _create_date: datetime = None,
-        _downloaded: bool = False,
-        _location: str = None,
+        _id: Optional[str] = None,
+        _uid: Optional[str] = None,
+        _url: Optional[str] = None,
+        _relative_folder: Optional[str] = None,
+        _filename: Optional[str] = None,
+        _orig_name: Optional[str] = None,
+        _duplicate_number: Optional[int] = None,
+        _size: Optional[int] = None,
+        _mime_type: Optional[str] = None,
+        _description: Optional[str] = None,
+        _date: Optional[datetime] = None,
+        _create_date: Optional[datetime] = None,
+        _downloaded: Optional[bool] = False,
+        _location: Optional[str] = None,
     ):
         super(DatabaseMedia, self).__init__()
-        # add all of the arguments as attributes on this object
-        self.__dict__.update(locals())
+        self._id = _id
+        self._uid = _uid
+        self._url = _url
+        self._relative_folder = _relative_folder
+        self._filename = _filename
+        self._orig_name = _orig_name
+        self._duplicate_number = _duplicate_number
+        self._size = _size
+        self._mime_type = _mime_type
+        self._description = _description
+        self._date = _date
+        self._create_date = _create_date
+        self._downloaded = _downloaded
+        self._location = _location
 
     # this is used to replace meta data that has been extracted from the
     # file system and overrides that provided by Google API
@@ -65,7 +77,7 @@ class DatabaseMedia(BaseMedia):
         self._size = size
 
     @property
-    def location(self) -> str:
+    def location(self) -> Optional[str]:
         """
         image GPS information
         """
@@ -77,11 +89,11 @@ class DatabaseMedia(BaseMedia):
         return self._size
 
     @property
-    def mime_type(self) -> str:
+    def mime_type(self) -> Optional[str]:
         return self._mime_type
 
     @property
-    def id(self) -> str:
+    def id(self) -> Optional[str]:
         return self._id
 
     @property
@@ -89,14 +101,14 @@ class DatabaseMedia(BaseMedia):
         return self._uid
 
     @property
-    def description(self) -> str:
+    def description(self) -> Optional[str]:
         """
         The description of the file
         """
         return get_check().valid_file_name(self._description)
 
     @property
-    def orig_name(self) -> str:
+    def orig_name(self) -> Optional[str]:
         """
         Original filename before duplicate name handling
         """
