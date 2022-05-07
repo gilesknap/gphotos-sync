@@ -1,10 +1,12 @@
 import os
-import tests.test_setup as ts
 from pathlib import Path
 from unittest import TestCase
 
-import gphotos.authorize as auth
 import pytest
+from mock import PropertyMock, patch
+
+import gphotos.authorize as auth
+import tests.test_setup as ts
 from gphotos.BaseMedia import BaseMedia
 from gphotos.Checks import do_check
 from gphotos.DatabaseMedia import DatabaseMedia
@@ -12,7 +14,6 @@ from gphotos.DbRow import DbRow
 from gphotos.GoogleAlbumMedia import GoogleAlbumMedia
 from gphotos.GoogleAlbumsRow import GoogleAlbumsRow
 from gphotos.LocalData import LocalData
-from mock import PropertyMock, patch
 
 photos_root = Path("photos")
 albums_root = Path("albums")
@@ -195,11 +196,11 @@ class TestErrors(TestCase):
             )
             s.gp.start(s.parsed_args)
 
-        with LocalData(s.root) as db:
-            # Total of 1 out of media items
-            db.cur.execute("SELECT COUNT() FROM SyncFiles")
-            count = db.cur.fetchone()
-            self.assertEqual(expected, count[0])
+            with LocalData(s.root) as db:
+                # Total of 1 out of media items
+                db.cur.execute("SELECT COUNT() FROM SyncFiles")
+                count = db.cur.fetchone()
+                self.assertEqual(expected, count[0])
 
     class DummyResponse:
         @staticmethod

@@ -36,6 +36,7 @@ class TestRequests(TestCase):
             respect_retry_after_header=True,
         )
 
+        session.close()
         session.mount("https://", HTTPAdapter(max_retries=retry))
 
         start = datetime.now()

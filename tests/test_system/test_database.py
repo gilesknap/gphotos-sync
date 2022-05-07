@@ -35,4 +35,5 @@ class DatabaseTest(TestCase):
             db.store()
 
             with self.assertRaises(ValueError):
+                s.__exit__()
                 s.test_setup("new_schema", args=args)

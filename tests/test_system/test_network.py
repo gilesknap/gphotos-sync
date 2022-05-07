@@ -1,3 +1,4 @@
+import warnings
 from pathlib import Path
 from unittest import TestCase
 from unittest.mock import Mock, patch
@@ -28,6 +29,9 @@ def patched_get(self, url, stream=True, timeout=20):
 class TestNetwork(TestCase):
     @patch.object(Session, "get", patched_get)
     def test_max_retries_hit(self):
+        warnings.filterwarnings(
+            action="ignore", message="unclosed", category=ResourceWarning
+        )
 
         with ts.SetupDbAndCredentials() as s:
             args = ["--skip-albums"]

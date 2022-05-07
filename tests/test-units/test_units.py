@@ -43,6 +43,7 @@ class TestUnits(TestCase):
         # timeout should not affect the 5 retries
         # but backoff_factor=0.5 should
         self.assertLess(elapsed.seconds, 30)
+        a.session.close()
 
     def test_download_timeout(self):
         a = auth.Authorize(scope, token_file, secrets_file)
@@ -56,6 +57,7 @@ class TestUnits(TestCase):
             retry_error = True
             print(e)
 
+        a.session.close()
         elapsed = datetime.now() - start
         self.assertEqual(retry_error, True)
         # .2 timeout by 5 retries = 1 sec
@@ -149,7 +151,7 @@ class TestUnits(TestCase):
             )
             s.gp.fs_checks(s.root, s.parsed_args)
             self.assertFalse(get_check().is_linux)
-            self.assertEquals(get_check().max_filename, 30)
+            self.assertEqual(get_check().max_filename, 30)
 
             if os_name != "nt":
                 args = []
@@ -158,4 +160,4 @@ class TestUnits(TestCase):
                 )
                 s.gp.fs_checks(s.root, s.parsed_args)
                 self.assertTrue(get_check().is_linux)
-                self.assertEquals(get_check().max_filename, 255)
+                self.assertEqual(get_check().max_filename, 255)

@@ -24,6 +24,7 @@ class TestSystem(TestCase):
         """Download favourite images in test library.
         Also Check that dates are set correctly
         """
+
         with ts.SetupDbAndCredentials() as s:
             args = ["--favourites-only", "--max-retries", "6", "--max-threads", "2"]
             s.test_setup(
@@ -210,7 +211,6 @@ class TestSystem(TestCase):
             count = db.cur.fetchone()
             self.assertEqual(10, count[0])
 
-    def test_system_hard_link(self):
         with ts.SetupDbAndCredentials() as s:
             args = [
                 "--start-date",
@@ -350,9 +350,7 @@ class TestSystem(TestCase):
             s.gp.start(s.parsed_args)
 
             files = sorted(s.root.glob(pat))
-            self.assertEqual(15, len(files))
 
-    def test_do_delete(self):
         with ts.SetupDbAndCredentials() as s:
             args = [
                 "--start-date",
