@@ -55,8 +55,8 @@ class TestUnits(TestCase):
         self.assertEqual(result.status_code, 500)
         elapsed = datetime.now() - start
         # timeout should not affect the 5 retries
-        # but backoff_factor=0.5 should
-        self.assertLess(elapsed.seconds, 4)
+        # but backoff_factor=0.001 will (a little)
+        self.assertLess(elapsed.seconds, 5)
         a.session.close()
 
     def test_download_timeout(self):
