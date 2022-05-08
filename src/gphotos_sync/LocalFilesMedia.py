@@ -70,11 +70,10 @@ class LocalFilesMedia(BaseMedia):
         self.__full_path: Path = full_path
         self.__original_name: str = full_path.name
         self.__ffprobe_installed = True
-        self.__createDate: Optional[datetime] = None
+        self.__createDate: datetime = Utils.MINIMUM_DATE
 
         self.got_meta: bool = False
-        self.__exif_0: dict = {}
-        self.__exif: dict = {}
+        self.__exif: exif.Image = None
 
         matches = DUPLICATE_MATCH.match(str(full_path.name))
         if matches:

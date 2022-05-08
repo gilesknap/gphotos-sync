@@ -65,6 +65,17 @@ class TestUnits(TestCase):
         retry_error = False
         start = datetime.now()
 
+        # speed up error checking by reducing backoff factor
+        retry = Retry(
+            total=5,
+            backoff_factor=0.2,
+            status_forcelist=[500, 502, 503, 504],
+            allowed_methods=frozenset(["GET", "POST"]),
+            raise_on_status=False,
+            respect_retry_after_header=True,
+        )
+
+        a.session.mount("https://", HTTPAdapter(max_retries=retry))
         try:
             _ = a.session.get("https://httpbin.org//delay/5", stream=True, timeout=0.2)
         except exc.ConnectionError as e:

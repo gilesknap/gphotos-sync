@@ -174,6 +174,7 @@ class Checks:
 # a global for holding the current root folder check results
 root_folder: Optional[Checks] = None
 
+# TODO: this approach needs review
 
 # ugly global stuff to avoid passing Checks object everywhere
 def do_check(root: Path, max_filename=0, ntfs=None):

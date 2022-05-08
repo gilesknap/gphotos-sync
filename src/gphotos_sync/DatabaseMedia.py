@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 # coding: utf8
 from datetime import datetime
+from pathlib import Path
 from typing import Optional, TypeVar
 
+from gphotos_sync import Utils
 from gphotos_sync.BaseMedia import BaseMedia
 from gphotos_sync.Checks import get_check
 
@@ -37,20 +39,20 @@ class DatabaseMedia(BaseMedia):
 
     def __init__(
         self,
-        _id: Optional[str] = None,
-        _uid: Optional[str] = None,
-        _url: Optional[str] = None,
-        _relative_folder: Optional[str] = None,
-        _filename: Optional[str] = None,
-        _orig_name: Optional[str] = None,
-        _duplicate_number: Optional[int] = None,
-        _size: Optional[int] = None,
-        _mime_type: Optional[str] = None,
-        _description: Optional[str] = None,
-        _date: Optional[datetime] = None,
-        _create_date: Optional[datetime] = None,
-        _downloaded: Optional[bool] = False,
-        _location: Optional[str] = None,
+        _id: str = "",
+        _uid: str = "",
+        _url: str = "",
+        _relative_folder: Path = Path(),
+        _filename: str = "",
+        _orig_name: str = "",
+        _duplicate_number: int = 0,
+        _size: int = 0,
+        _mime_type: str = "",
+        _description: str = "",
+        _date: datetime = Utils.MINIMUM_DATE,
+        _create_date: datetime = Utils.MINIMUM_DATE,
+        _downloaded: bool = False,
+        _location: str = "",
     ):
         super(DatabaseMedia, self).__init__()
         self._id = _id

@@ -1,5 +1,6 @@
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
 
 from .Checks import get_check
 
@@ -13,7 +14,7 @@ class BaseMedia(object):
     TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
     def __init__(self, root_path: Path = Path(""), **k_args):
-        self._id = None
+        self._id: str = ""
         self._relative_folder: Path = Path("")
         self._root_path: Path = root_path
         self._duplicate_number: int = 0
@@ -53,7 +54,7 @@ class BaseMedia(object):
 
     # as above but without the filename appended
     @property
-    def relative_folder(self) -> Path:
+    def relative_folder(self) -> Optional[Path]:
         return self._relative_folder
 
     @property
@@ -79,7 +80,7 @@ class BaseMedia(object):
         raise NotImplementedError
 
     @property
-    def id(self) -> str:
+    def id(self) -> Optional[str]:
         raise NotImplementedError
 
     @property
@@ -99,9 +100,9 @@ class BaseMedia(object):
         raise NotImplementedError
 
     @property
-    def mime_type(self) -> str:
+    def mime_type(self) -> Optional[str]:
         raise NotImplementedError
 
     @property
-    def url(self) -> str:
+    def url(self) -> Optional[str]:
         raise NotImplementedError
