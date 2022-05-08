@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime
-from typing import TypeVar
 
 from gphotos_sync import Utils
 from gphotos_sync.DatabaseMedia import DatabaseMedia
@@ -8,9 +7,6 @@ from gphotos_sync.DbRow import DbRow
 from gphotos_sync.GoogleAlbumMedia import GoogleAlbumMedia
 
 log = logging.getLogger(__name__)
-
-# this allows self reference to this class in its factory methods
-G = TypeVar("G", bound="GoogleAlbumsRow")
 
 
 @DbRow.db_row
@@ -32,21 +28,24 @@ class GoogleAlbumsRow(DbRow):
         "Downloaded": bool,
     }
 
-    def to_media(self) -> DatabaseMedia:
+    # All properties on this class are dynamically added from the above
+    # list using DbRow.make. Hence Mypy cannot see them and they need
+    # type: ignore
+    def to_media(self) -> DatabaseMedia:  # type:ignore
         db_media = DatabaseMedia(
-            _id=self.RemoteId,
-            _filename=self.AlbumName,
-            _size=self.Size,
-            _create_date=self.EndDate,
+            _id=self.RemoteId,  # type:ignore
+            _filename=self.AlbumName,  # type:ignore
+            _size=self.Size,  # type:ignore
+            _create_date=self.EndDate,  # type:ignore
         )
         return db_media
 
     @classmethod
-    def from_media(cls, album: GoogleAlbumMedia) -> G:
+    def from_media(cls, album) -> GoogleAlbumMedia:  # type:ignore
         pass
 
     @classmethod
-    def from_parm(cls, album_id, filename, size, start, end) -> G:
+    def from_parm(cls, album_id, filename, size, start, end) -> "GoogleAlbumsRow":
         new_row = cls.make(
             RemoteId=album_id,
             AlbumName=filename,

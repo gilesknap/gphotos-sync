@@ -1,7 +1,6 @@
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import TypeVar
 
 from gphotos_sync.BaseMedia import BaseMedia
 from gphotos_sync.DatabaseMedia import DatabaseMedia
@@ -9,9 +8,6 @@ from gphotos_sync.DbRow import DbRow
 from gphotos_sync.GooglePhotosMedia import GooglePhotosMedia
 
 log = logging.getLogger(__name__)
-
-# this allows self reference to this class in its factory methods
-G = TypeVar("G", bound="GooglePhotosRow")
 
 
 @DbRow.db_row
@@ -43,28 +39,34 @@ class GooglePhotosRow(DbRow):
     }
     no_update = ["Id"]
 
+    # All properties on this class are dynamically added from the above
+    # list using DbRow.make. Hence Mypy cannot see them and they need
+    # type: ignore
     def to_media(self) -> DatabaseMedia:
-        pth = Path(self.Path) if self.Path else None
+        pth = Path(self.Path) if self.Path else None  # type: ignore
         db_media = DatabaseMedia(
-            _id=self.RemoteId,
-            _url=self.Url,
-            _uid=self.Uid,
-            _relative_folder=pth,
-            _filename=self.FileName,
-            _orig_name=self.OrigFileName,
-            _duplicate_number=self.DuplicateNo,
-            _size=self.FileSize,
-            _mime_type=self.MimeType,
-            _description=self.Description,
-            _date=self.ModifyDate,
-            _create_date=self.CreateDate,
-            _downloaded=self.Downloaded,
-            _location=self.Location,
+            _id=self.RemoteId,  # type: ignore
+            _url=self.Url,  # type: ignore
+            _uid=self.Uid,  # type: ignore
+            _relative_folder=pth,  # type: ignore
+            _filename=self.FileName,  # type: ignore
+            _orig_name=self.OrigFileName,  # type: ignore
+            _duplicate_number=self.DuplicateNo,  # type: ignore
+            _size=self.FileSize,  # type: ignore
+            _mime_type=self.MimeType,  # type: ignore
+            _description=self.Description,  # type: ignore
+            _date=self.ModifyDate,  # type: ignore
+            _create_date=self.CreateDate,  # type: ignore
+            _downloaded=self.Downloaded,  # type: ignore
+            _location=self.Location,  # type: ignore
         )
         return db_media
 
     @classmethod
-    def from_media(cls, media: GooglePhotosMedia) -> G:
+    def from_media(  # type: ignore
+        cls,
+        media: GooglePhotosMedia,
+    ) -> "GooglePhotosRow":
         now_time = datetime.now().strftime(BaseMedia.TIME_FORMAT)
         new_row = cls.make(
             RemoteId=media.id,

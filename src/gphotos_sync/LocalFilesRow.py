@@ -56,7 +56,7 @@ class LocalFilesRow(DbRow):
         return db_media
 
     @classmethod
-    def from_media(cls, media: LocalFilesMedia) -> "LocalFilesRow":
+    def from_media(cls, media: LocalFilesMedia) -> "LocalFilesRow":  # type: ignore
         now_time = datetime.now().strftime(BaseMedia.TIME_FORMAT)
         new_row = cls.make(
             Path=str(media.relative_folder),
