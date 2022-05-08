@@ -1,4 +1,5 @@
 import logging
+import typing
 from datetime import datetime
 from pathlib import Path
 
@@ -35,19 +36,22 @@ class LocalFilesRow(DbRow):
     }
     no_update = ["Id"]
 
+    # All properties on this class are dynamically added from the above
+    # list using DbRow.make. Hence Mypy cannot see them and they need
+    # type: ignore
     def to_media(self) -> DatabaseMedia:
-        pth = Path(self.Path) if self.Path else None
+        pth = Path(self.Path) if self.Path else None  # type: ignore
         db_media = DatabaseMedia(
-            _id=self.RemoteId,
-            _relative_folder=pth,
-            _filename=self.FileName,
-            _orig_name=self.OriginalFileName,
-            _duplicate_number=self.DuplicateNo,
-            _size=self.FileSize,
-            _mime_type=self.MimeType,
-            _description=self.Description,
-            _date=self.ModifyDate,
-            _create_date=self.CreateDate,
+            _id=self.RemoteId,  # type: ignore
+            _relative_folder=pth,  # type: ignore
+            _filename=self.FileName,  # type: ignore
+            _orig_name=self.OriginalFileName,  # type: ignore
+            _duplicate_number=self.DuplicateNo,  # type: ignore
+            _size=self.FileSize,  # type: ignore
+            _mime_type=self.MimeType,  # type: ignore
+            _description=self.Description,  # type: ignore
+            _date=self.ModifyDate,  # type: ignore
+            _create_date=self.CreateDate,  # type: ignore
         )
         return db_media
 
