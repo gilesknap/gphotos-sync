@@ -237,7 +237,7 @@ class GooglePhotosSyncMain:
     parser.add_argument(
         "--max-retries",
         help="Set the number of retries on network timeout / failures",
-        default=5,
+        default=20,
     )
     parser.add_argument(
         "--max-threads",
