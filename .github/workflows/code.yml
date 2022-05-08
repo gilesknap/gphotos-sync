@@ -29,7 +29,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
-        python: ["3.7"]
+        python: ["3.8"]
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -67,13 +67,13 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"] # can add windows-latest, macos-latest
-        python: ["3.7", "3.8", "3.9"]
+        python: ["3.8", "3.9", "3.10"]
         pipenv: ["skip-lock"]
 
         include:
           # Add an extra Python3.7 runner to use the lockfile
           - os: "ubuntu-latest"
-            python: "3.7"
+            python: "3.8"
             pipenv: "deploy"
 
     runs-on: ${{ matrix.os }}

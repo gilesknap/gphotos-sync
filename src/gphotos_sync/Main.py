@@ -64,7 +64,14 @@ class GooglePhotosSyncMain:
         epilog=version_string, description="Google Photos download tool"
     )
     parser.add_argument(
-        "root_folder", help="root of the local folders to download into"
+        "--version",
+        action="store_true",
+        help="report version and exit",
+    )
+    parser.add_argument(
+        "root_folder",
+        help="root of the local folders to download into",
+        nargs="?",
     )
     album_group = parser.add_mutually_exclusive_group()
     album_group.add_argument(
@@ -271,7 +278,7 @@ class GooglePhotosSyncMain:
         action="store",
         metavar="FMT",
         help="Configure the month/day formatting for the album folder/file "
-        "path (default: %m%d).",
+        "path (default: %%m%%d).",
         default="%m%d",
     )
     parser.add_argument(
@@ -431,6 +438,15 @@ class GooglePhotosSyncMain:
     def main(self, test_args: dict = None):
         start_time = datetime.now()
         args = self.parser.parse_args(test_args)
+
+        if args.version:
+            print(__version__)
+            exit(0)
+        else:
+            if args.root_folder is None:
+                self.parser.print_help()
+                print("\nERROR: Please supply root_folder in which to save photos")
+                exit(1)
 
         root_folder = Path(args.root_folder).absolute()
         db_path = Path(args.db_path) if args.db_path else root_folder
