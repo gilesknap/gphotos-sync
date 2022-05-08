@@ -7,6 +7,8 @@ from unittest import TestCase
 
 import pytest
 from requests import exceptions as exc
+from requests.adapters import HTTPAdapter
+from urllib3 import Retry
 
 import gphotos_sync.authorize as auth
 import tests.test_setup as ts
@@ -35,6 +37,18 @@ class TestUnits(TestCase):
         a = auth.Authorize(scope, token_file, secrets_file)
         a.authorize()
 
+        # speed up error checking by reducing backoff factor
+        retry = Retry(
+            total=5,
+            backoff_factor=0.01,
+            status_forcelist=[500, 502, 503, 504],
+            allowed_methods=frozenset(["GET", "POST"]),
+            raise_on_status=False,
+            respect_retry_after_header=True,
+        )
+
+        a.session.mount("https://", HTTPAdapter(max_retries=retry))
+
         start = datetime.now()
 
         result = a.session.get("https://httpbin.org/status/500", timeout=30)
@@ -42,7 +56,7 @@ class TestUnits(TestCase):
         elapsed = datetime.now() - start
         # timeout should not affect the 5 retries
         # but backoff_factor=0.5 should
-        self.assertLess(elapsed.seconds, 30)
+        self.assertLess(elapsed.seconds, 4)
         a.session.close()
 
     def test_download_timeout(self):

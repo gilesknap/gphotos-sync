@@ -20,7 +20,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-latest"]
         python: ["3.8"]
 
     runs-on: "ubuntu-latest"
@@ -28,6 +27,7 @@ jobs:
       - name: Run black, flake8, mypy
         uses: dls-controls/pipenv-run-action@v1
         with:
+          python-version: ${{ matrix.python }}
           pipenv-run: lint
 
   wheel:
@@ -77,7 +77,7 @@ jobs:
         pipenv: ["skip-lock"]
 
         include:
-          # Add an extra Python3.7 runner to use the lockfile
+          # Add an extra Python3.8 runner to use the lockfile
           - os: "ubuntu-latest"
             python: "3.8"
             pipenv: "deploy"
