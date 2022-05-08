@@ -13,6 +13,8 @@
         "source.organizeImports": true
     },
     "cSpell.words": [
+        "exif",
+        "ffprobe",
         "gphotos"
     ]
 }

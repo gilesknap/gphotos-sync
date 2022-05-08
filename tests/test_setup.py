@@ -60,7 +60,10 @@ class SetupDbAndCredentials:
             self.root.mkdir(parents=True)
 
         do_check(self.root)
-        all_args = [str(self.root), "--log-level", "warning"]
+        # make retries big so that CI can get past
+        #      HTTPError: 429 Client Error: Too Many Requests for url
+        # on the google API URLS (when re-running CI frequently)
+        all_args = [str(self.root), "--log-level", "error", "--max-retries", "200"]
         if args:
             all_args += args
 
