@@ -4,7 +4,7 @@
 import re
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 
 from gphotos_sync.Checks import get_check
 
@@ -18,19 +18,18 @@ JSONType = Union[Dict[str, JSONValue], List[JSONValue]]
 
 
 class GooglePhotosMedia(BaseMedia):
-    def __init__(self, media_json: JSONType, to_lower=False):
-        self.__media_json: JSONType = media_json
-        self.__uid: str = None
+    def __init__(self, media_json, to_lower=False):
+        self.__media_json: Dict[str, Any] = media_json
+        self.__uid: Optional[str] = None
         self.__lower = to_lower
         super(GooglePhotosMedia, self).__init__()
         if self.is_video:
-            self.__media_meta = None
             self.__media_meta = media_json.get("mediaMetadata").get("video")
         else:
             self.__media_meta = media_json.get("mediaMetadata").get("photo")
 
     @property
-    def uid(self) -> str:
+    def uid(self) -> Optional[str]:
         return self.__uid
 
     # ----- override Properties below -----
@@ -50,7 +49,7 @@ class GooglePhotosMedia(BaseMedia):
             return ""
 
     @property
-    def orig_name(self) -> Path:
+    def orig_name(self) -> str:
         try:
             name = self.__media_json["filename"]
             matches = DuplicateSuffix.match(name)
@@ -61,7 +60,7 @@ class GooglePhotosMedia(BaseMedia):
             name = ""
         if self.__lower:
             name = name.lower()
-        return Path(get_check().valid_file_name(name))
+        return str(Path(get_check().valid_file_name(name)))
 
     @property
     def create_date(self) -> datetime:
@@ -71,7 +70,8 @@ class GooglePhotosMedia(BaseMedia):
         except (KeyError, ValueError):
             photo_date = Utils.MINIMUM_DATE
 
-        return photo_date
+        # TODO: why does mypy not like this?
+        return photo_date  # type: ignore
 
     @property
     def modify_date(self) -> datetime:
@@ -79,11 +79,11 @@ class GooglePhotosMedia(BaseMedia):
         return date
 
     @property
-    def mime_type(self) -> str:
+    def mime_type(self) -> Optional[str]:
         return self.__media_json.get("mimeType")
 
     @property
-    def url(self) -> str:
+    def url(self) -> Optional[str]:
         return self.__media_json.get("productUrl")
 
     @property

@@ -95,7 +95,7 @@ class DatabaseMedia(BaseMedia):
         return self._mime_type
 
     @property
-    def id(self) -> Optional[str]:
+    def id(self) -> str:
         return self._id
 
     @property
@@ -103,14 +103,14 @@ class DatabaseMedia(BaseMedia):
         return self._uid
 
     @property
-    def description(self) -> Optional[str]:
+    def description(self) -> str:
         """
         The description of the file
         """
         return get_check().valid_file_name(self._description)
 
     @property
-    def orig_name(self) -> Optional[str]:
+    def orig_name(self) -> str:
         """
         Original filename before duplicate name handling
         """

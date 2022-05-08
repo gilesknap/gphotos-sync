@@ -3,7 +3,7 @@ from json import dumps
 from typing import Any, Dict, List, Union
 
 from requests import Session
-from requests.exceptions import BaseHTTPError
+from requests.exceptions import HTTPError
 
 JSONValue = Union[str, int, float, bool, None, Dict[str, Any], List[Any]]
 JSONType = Union[Dict[str, JSONValue], List[JSONValue]]
@@ -63,32 +63,32 @@ class Method:
     """
 
     def __init__(self, service: RestClient, **k_args: Dict[str, str]):
-        self.path: str = None
-        self.httpMethod: str = None
+        self.path: str = ""
+        self.httpMethod: str = ""
         self.service: RestClient = service
         self.__dict__.update(k_args)
         self.path_args: List[str] = []
         self.query_args: List[str] = []
         if hasattr(self, "parameters"):
-            for key, value in self.parameters.items():
+            for key, value in self.parameters.items():  # type: ignore
                 if value["location"] == "path":
                     self.path_args.append(key)
                 else:
                     self.query_args.append(key)
 
-    def execute(self, body: str = None, **k_args: Dict[str, str]):
+    def execute(self, body: str = "", **k_args: Dict[str, str]):
         """executes the remote REST call for this Method"""
-        path_args: Dict[str, str] = {
+        path_args: Dict[str, Dict] = {
             k: k_args[k] for k in self.path_args if k in k_args
         }
-        query_args: Dict[str, str] = {
+        query_args: Dict[str, Dict] = {
             k: k_args[k] for k in self.query_args if k in k_args
         }
         path: str = self.service.base_url + self.make_path(path_args)
         if body:
             body = dumps(body)
 
-        log.trace(
+        log.trace(  # type: ignore
             "\nREQUEST: %s to %s params=%s\n%s",
             self.httpMethod,
             path,
@@ -98,20 +98,22 @@ class Method:
         result = self.service.auth_session.request(
             self.httpMethod, data=body, url=path, timeout=10, params=query_args
         )
-        log.trace("\nRESPONSE: %s\n%s", result.status_code, str(result.content))
+        log.trace(  # type: ignore
+            "\nRESPONSE: %s\n%s", result.status_code, str(result.content)
+        )
 
         try:
             result.raise_for_status()
-        except BaseHTTPError:
+        except HTTPError:
             log.error(
                 "Request failed with status {}: {}".format(
-                    result.status_code, result.content
+                    result.status_code, str(result.content)
                 )
             )
             raise
         return result
 
-    def make_path(self, path_args: Dict[str, str]) -> str:
+    def make_path(self, path_args: Dict[str, Any]) -> str:
         """Extracts the arguments from path_args and inserts them into
         the URL template defined in self.path
 

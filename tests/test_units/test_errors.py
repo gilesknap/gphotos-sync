@@ -156,8 +156,8 @@ class TestErrors(TestCase):
     def test_database_media():
         d = DatabaseMedia()
 
-        assert d.url is None
-        assert d.location is None
+        assert d.url == ""
+        assert d.location == ""
 
     @staticmethod
     def test_db_row():
