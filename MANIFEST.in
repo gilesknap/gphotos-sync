@@ -2,6 +2,6 @@ include AUTHORS
 include LICENSE
 include Pipfile*
 include README.rst
-include gphotos/sql/gphotos_create.sql
-prune test
+include gphotos_sync/sql/gphotos_create.sql
+prune tests
 prune etc
