@@ -104,14 +104,14 @@ class Authorize:
 
             self.save_token(oauth2_token)
 
-        # set up the retry bevaiour for the authorized session
+        # set up the retry behaviour for the authorized session
         retries = Retry(
             total=self.max_retries,
-            backoff_factor=0.5,
+            backoff_factor=5,
             status_forcelist=[500, 502, 503, 504],
             allowed_methods=frozenset(["GET", "POST"]),
             raise_on_status=False,
             respect_retry_after_header=True,
         )
-        # apply the retry behaviour to our session by repalcing the default HTTPAdapter
+        # apply the retry behaviour to our session by replacing the default HTTPAdapter
         self.session.mount("https://", HTTPAdapter(max_retries=retries))

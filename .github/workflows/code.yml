@@ -17,6 +17,12 @@ on:
 
 jobs:
   lint:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-latest"]
+        python: ["3.8"]
+
     runs-on: "ubuntu-latest"
     steps:
       - name: Run black, flake8, mypy
