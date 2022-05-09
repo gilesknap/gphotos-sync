@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
 
 from gphotos_sync import Utils
 from gphotos_sync.GooglePhotosMedia import GooglePhotosMedia
@@ -72,9 +73,9 @@ class GooglePhotosIndex(object):
 
     def search_media(
         self,
-        page_token: int = None,
-        start_date: datetime = None,
-        end_date: datetime = None,
+        page_token: Optional[int] = None,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
         do_video: bool = False,
         favourites: bool = False,
     ) -> dict:
@@ -112,7 +113,7 @@ class GooglePhotosIndex(object):
         if not start_date and not end_date and do_video and not favourites:
             # no search criteria so do a list of the entire library
             log.debug("mediaItems.list ...")
-            return self._api.mediaItems.list.execute(
+            return self._api.mediaItems.list.execute(  # type: ignore
                 pageToken=page_token, pageSize=self.PAGE_SIZE
             ).json()
         else:
@@ -131,7 +132,7 @@ class GooglePhotosIndex(object):
                 },
             }
             log.debug("mediaItems.search with body:\n{}".format(body))
-            return self._api.mediaItems.search.execute(body).json()
+            return self._api.mediaItems.search.execute(body).json()  # type: ignore
 
     def index_photos_media(self) -> int:
         log.warning("Indexing Google Photos Files ...")

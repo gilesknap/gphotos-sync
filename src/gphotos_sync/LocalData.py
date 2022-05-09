@@ -4,7 +4,7 @@ import sqlite3 as lite
 from datetime import datetime
 from pathlib import Path
 from sqlite3.dbapi2 import Connection, Cursor
-from typing import Iterator, Type
+from typing import Any, Iterable, Iterator, Optional, Tuple, Type
 
 # todo this module could be tidied quite a bit
 #  too much application logic at this level in some cases
@@ -120,7 +120,7 @@ class LocalData:
         d = Utils.date_to_string(last_date)
         self.cur.execute("UPDATE Globals SET LastIndex=? " "WHERE Id IS 1", (d,))
 
-    def get_scan_date(self) -> datetime:
+    def get_scan_date(self) -> Optional[datetime]:
         query = "SELECT LastIndex " "FROM  Globals WHERE Id IS 1"
         self.cur.execute(query)
         res = self.cur.fetchone()
@@ -168,13 +168,13 @@ class LocalData:
     # noinspection SqlResolve
     def get_rows_by_search(
         self,
-        row_type: Type[DbRow] = None,
+        row_type: Type[DbRow] = DbRow,
         uid: str = "",
         remote_id: str = "%",
         file_name: str = "%",
         path: str = "%",
-        start_date: datetime = None,
-        end_date: datetime = None,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
         skip_downloaded: bool = False,
     ) -> Iterator[DatabaseMedia]:
         """
@@ -193,7 +193,7 @@ class LocalData:
         Return:
             An iterator over query results
         """
-        params = (remote_id, file_name, path)
+        params: Tuple[Any, ...] = (remote_id, file_name, path)
         extra_clauses = ""
         if start_date:
             # look for create date too since an photo recently uploaded will
@@ -248,7 +248,7 @@ class LocalData:
     # todo this could be generic and support Albums and LocalFiles too
     def file_duplicate_no(
         self, name: str, path: str, remote_id: str
-    ) -> (int, DatabaseMedia):
+    ) -> Tuple[int, Optional[DatabaseMedia]]:
         """
         determine if there is already an entry for file. If not determine
         if other entries share the same path/filename and determine a duplicate
@@ -330,7 +330,7 @@ class LocalData:
         album_id: str = "%",
         album_invert: bool = False,
         download_again: bool = False,
-    ) -> (str, str, str, str, str, str):
+    ) -> Iterable[Tuple[Any, ...]]:
         """Join the Albums, SyncFiles and AlbumFiles tables to get a list
         of the files in an album or all albums.
         Parameters

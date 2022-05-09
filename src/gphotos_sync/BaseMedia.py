@@ -54,7 +54,7 @@ class BaseMedia(object):
 
     # as above but without the filename appended
     @property
-    def relative_folder(self) -> Optional[Path]:
+    def relative_folder(self) -> Path:
         return self._relative_folder
 
     @property

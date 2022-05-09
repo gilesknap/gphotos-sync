@@ -53,7 +53,12 @@ class DbRow:
         raise NotImplementedError
 
     def __init__(self, _):
-        pass
+        # TODO this whole dynamic class thing is a little overdone
+        # Here I init commonly used field in derived classes to ease
+        # Mypy errors but this just demonstrates that we have given up
+        # on Types providing protection from coding errors
+        # But Hey - it was fun to make.
+        self.RemoteId = ""
 
     # empty row object = boolean False
     def __bool__(self) -> bool:

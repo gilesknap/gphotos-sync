@@ -4,10 +4,11 @@ import logging
 import os
 import shutil
 import tempfile
+from asyncio import Future
 from datetime import datetime
 from itertools import zip_longest
 from pathlib import Path
-from typing import Iterable, List, Mapping, Union
+from typing import Dict, Iterable, List, Mapping, Union
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -24,8 +25,8 @@ from gphotos_sync.restclient import RestClient
 from .Settings import Settings
 
 try:
-    import win32con  # noqa
-    import win32file  # noqa
+    import win32con  # type: ignore
+    import win32file  # type: ignore
 
     _use_win_32 = True
 except ImportError:
@@ -71,7 +72,7 @@ class GooglePhotosDownload(object):
 
         # attributes related to multi-threaded download
         self.download_pool = futures.ThreadPoolExecutor(max_workers=self.max_threads)
-        self.pool_future_to_media = {}
+        self.pool_future_to_media: Dict[Future, DatabaseMedia] = {}
         self.bad_ids = BadIds(self._root_folder)
 
         self.current_umask = os.umask(7)
@@ -154,7 +155,9 @@ class GooglePhotosDownload(object):
                         # skip files with filenames too long for this OS.
                         # probably thrown by local_full_path.exists().
                         errname = type(err).__name__
-                        if errname == "OSError" and err.errno == errno.ENAMETOOLONG:
+                        if errname == "OSError" and (
+                            err.errno == errno.ENAMETOOLONG  # type: ignore
+                        ):
                             log.warning(
                                 "SKIPPED file because name is too long for this OS %s",
                                 local_full_path,
