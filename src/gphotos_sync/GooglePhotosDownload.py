@@ -1,3 +1,6 @@
+# type: ignore
+# lots of typing issues in this file, partly due to use of asyncIO Future
+# and concurrent Future - TODO: for reviewimport concurrent.futures as futures
 import concurrent.futures as futures
 import errno
 import logging
