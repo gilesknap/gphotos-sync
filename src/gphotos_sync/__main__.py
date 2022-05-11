@@ -15,6 +15,6 @@ def main(args=None):
     say_hello_lots(HelloClass(args.name), args.times)
 
 
-# test with: pipenv run python -m gphotos_sync
+# test with: python -m gphotos_sync
 if __name__ == "__main__":
     main()

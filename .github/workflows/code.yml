@@ -68,7 +68,8 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"] # can add windows-latest, macos-latest
-        python: ["3.8", "3.9", "3.10"]
+        # note - tests run out of free API calls so keep matrix slim.
+        python: ["3.8"]
         lock: [false]
 
         include:
