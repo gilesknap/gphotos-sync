@@ -4,7 +4,7 @@ import re
 import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import Callable, Dict
+from typing import Callable, Dict, Tuple
 
 from gphotos_sync.Checks import get_check
 
@@ -74,11 +74,11 @@ class GoogleAlbumsSync(object):
 
     def fetch_album_contents(
         self, album_id: str, add_media_items: bool
-    ) -> (datetime, datetime):
+    ) -> Tuple[datetime, datetime]:
         first_date = Utils.maximum_date()
         last_date = Utils.MINIMUM_DATE
         body = self.make_search_parameters(album_id=album_id)
-        response = self._api.mediaItems.search.execute(body)
+        response = self._api.mediaItems.search.execute(body)  # type: ignore
         position = -1
         while response:
             items_json = response.json()
@@ -137,7 +137,7 @@ class GoogleAlbumsSync(object):
                 body = self.make_search_parameters(
                     album_id=album_id, page_token=next_page
                 )
-                response = self._api.mediaItems.search.execute(body)
+                response = self._api.mediaItems.search.execute(body)  # type: ignore
             else:
                 break
         return first_date, last_date
@@ -254,7 +254,7 @@ class GoogleAlbumsSync(object):
                 rel_path = fmt.format(year, month, album_name)
             else:
                 fmt = self.path_format or "{0} {1}"
-                rel_path = Path(year) / fmt.format(month, album_name)
+                rel_path = str(Path(year) / fmt.format(month, album_name))
 
         link_folder: Path = self._links_root / rel_path
         return link_folder

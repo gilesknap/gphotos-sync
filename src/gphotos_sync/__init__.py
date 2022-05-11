@@ -1,5 +1,14 @@
-from ._version_git import __version__
+try:
+    # Use live version from git
+    from setuptools_scm import get_version
 
-# __all__ defines the public API for the package.
-# Each module also defines its own __all__.
-__all__ = ["__version__", "hello"]
+    # Warning: If the install is nested to the same depth, this will always succeed
+    tmp_version = get_version(root="../../", relative_to=__file__)
+    del get_version
+except (ImportError, LookupError):
+    # Use installed version
+    from ._version import version as __version__
+else:
+    __version__ = tmp_version
+
+__all__ = ["__version__"]

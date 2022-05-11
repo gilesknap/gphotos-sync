@@ -10,7 +10,7 @@ from requests.exceptions import HTTPError
 import gphotos_sync.Utils as Utils
 import tests.test_setup as ts
 from gphotos_sync.BadIds import BadIds
-from gphotos_sync.GooglePhotosDownload import GooglePhotosDownload
+from gphotos_sync.GooglePhotosDownload import GooglePhotosDownload  # type: ignore
 from gphotos_sync.LocalData import LocalData
 from tests.test_account import TestAccount
 

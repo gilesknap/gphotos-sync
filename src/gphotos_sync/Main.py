@@ -5,6 +5,8 @@ import sys
 from argparse import ArgumentParser, Namespace
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
+from xmlrpc.client import DateTime
 
 from appdirs import AppDirs
 
@@ -12,7 +14,7 @@ from gphotos_sync import Utils, __version__
 from gphotos_sync.authorize import Authorize
 from gphotos_sync.Checks import do_check, get_check
 from gphotos_sync.GoogleAlbumsSync import GoogleAlbumsSync
-from gphotos_sync.GooglePhotosDownload import GooglePhotosDownload
+from gphotos_sync.GooglePhotosDownload import GooglePhotosDownload  # type: ignore
 from gphotos_sync.GooglePhotosIndex import GooglePhotosIndex
 from gphotos_sync.LocalData import LocalData
 from gphotos_sync.LocalFilesScan import LocalFilesScan
@@ -32,7 +34,7 @@ if os.name == "nt":
             kargs["startupinfo"] = startupinfo
             super().__init__(*args, **kargs)
 
-    subprocess.Popen = Popen_patch
+    subprocess.Popen = Popen_patch  # type: ignore
 else:
     import fcntl
 
@@ -42,16 +44,16 @@ log = logging.getLogger(__name__)
 
 class GooglePhotosSyncMain:
     def __init__(self):
-        self.data_store: LocalData = None
-        self.google_photos_client: RestClient = None
-        self.google_photos_idx: GooglePhotosIndex = None
-        self.google_photos_down: GooglePhotosDownload = None
-        self.google_albums_sync: GoogleAlbumsSync = None
-        self.local_files_scan: LocalFilesScan = None
-        self._start_date = None
-        self._end_date = None
+        self.data_store: LocalData
+        self.google_photos_client: RestClient
+        self.google_photos_idx: GooglePhotosIndex
+        self.google_photos_down: GooglePhotosDownload
+        self.google_albums_sync: GoogleAlbumsSync
+        self.local_files_scan: LocalFilesScan
+        self._start_date: Optional[DateTime]
+        self._end_date = Optional[DateTime]
 
-        self.auth: Authorize = None
+        self.auth: Authorize
 
     try:
         version_string = "version: {}, database schema version {}".format(
@@ -327,8 +329,8 @@ class GooglePhotosSyncMain:
         self.auth.authorize()
 
         settings = Settings(
-            start_date=Utils.string_to_date(args.start_date),
-            end_date=Utils.string_to_date(args.end_date),
+            start_date=Utils.string_to_date(args.start_date),  # type: ignore
+            end_date=Utils.string_to_date(args.end_date),  # type: ignore
             shared_albums=not args.skip_shared_albums,
             album_index=not args.no_album_index,
             use_start_date=args.album_date_by_first_photo,
@@ -354,7 +356,9 @@ class GooglePhotosSyncMain:
             path_format=args.path_format,
         )
 
-        self.google_photos_client = RestClient(photos_api_url, self.auth.session)
+        self.google_photos_client = RestClient(
+            photos_api_url, self.auth.session  # type: ignore
+        )
         self.google_photos_idx = GooglePhotosIndex(
             self.google_photos_client, root_folder, self.data_store, settings
         )
@@ -370,7 +374,7 @@ class GooglePhotosSyncMain:
         )
         if args.compare_folder:
             self.local_files_scan = LocalFilesScan(
-                root_folder, compare_folder, self.data_store
+                root_folder, compare_folder, self.data_store  # type: ignore
             )
 
     def do_sync(self, args: Namespace):
@@ -417,7 +421,7 @@ class GooglePhotosSyncMain:
         self.do_sync(args)
 
     @staticmethod
-    def fs_checks(root_folder: Path, args: dict):
+    def fs_checks(root_folder: Path, args):
         Utils.minimum_date(root_folder)
         # store the root folder filesystem checks globally for all to inspect
         do_check(root_folder, int(args.max_filename), bool(args.ntfs))
@@ -425,19 +429,19 @@ class GooglePhotosSyncMain:
         # check if symlinks are supported
         # NTFS supports symlinks, but is_symlink() fails
         if not args.ntfs:
-            if not get_check().is_symlink:
+            if not get_check().is_symlink:  # type: ignore
                 args.skip_albums = True
 
         # check if file system is case sensitive
         if not args.case_insensitive_fs:
-            if not get_check().is_case_sensitive:
+            if not get_check().is_case_sensitive:  # type: ignore
                 args.case_insensitive_fs = True
 
         return args
 
     def main(self, test_args: dict = None):
         start_time = datetime.now()
-        args = self.parser.parse_args(test_args)
+        args = self.parser.parse_args(test_args)  # type: ignore
 
         if args.version:
             print(__version__)
