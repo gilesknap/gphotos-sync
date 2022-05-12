@@ -4,25 +4,8 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-attrs = "*"
-exif = "*"
-appdirs = "*"
-requests_oauthlib = "*"
-pyyaml = ">=4.2b1"
-pywin32 = {markers = "platform_system == 'Windows'",version = "*"}
-psutil = "*"
-versiongit = "*"
-google-auth-oauthlib = "*"
 
 [dev-packages]
-pytest = ">=5.0.1"
-mock = "*"
-coverage = "*"
-pytest-cov = "*"
-flake8 = "*"
-black = "*"
-rope = "*"
-mypy = "*"
 
-[pipenv]
-allow_prereleases = true
+[requires]
+python_version = "3.1"

@@ -45,6 +45,24 @@
         "debug"
       ],
       "console": "integratedTerminal"
-    }
-  ]
+    },
+
+        {
+            "name": "Debug Unit Test",
+            "type": "python",
+            "request": "launch",
+            "justMyCode": false,
+            "program": "${file}",
+            "purpose": [
+                "debug-test"
+            ],
+            "console": "integratedTerminal",
+            "env": {
+                // The default config in setup.cfg's "[tool:pytest]" adds coverage.
+                // Cannot have coverage and debugging at the same time.
+                // https://github.com/microsoft/vscode-python/issues/693
+                "PYTEST_ADDOPTS": "--no-cov"
+            },
+        }
+    ]
 }
