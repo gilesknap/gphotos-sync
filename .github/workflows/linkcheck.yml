@@ -22,6 +22,8 @@ jobs:
 
       - name: checkout
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
         
       - name: Install python version
         uses: actions/setup-python@v2
@@ -30,7 +32,6 @@ jobs:
 
       - name: install dependencies
         run: |
-          set -x
           touch requirements_dev.txt
           pip install -r requirements_dev.txt -e .[dev]
 

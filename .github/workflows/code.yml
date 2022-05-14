@@ -41,10 +41,7 @@ jobs:
       - name: Create Sdist and Wheel
         # Set SOURCE_DATE_EPOCH from git commit for reproducible build
         # https://reproducible-builds.org/
-        # Set group writable and umask to do the same to match inside DLS
         run: |
-          chmod -R g+w .
-          umask 0002
           SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct) pipx run build --sdist --wheel
 
       - name: Upload Wheel and Sdist as artifacts
@@ -68,8 +65,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"] # can add windows-latest, macos-latest
-        # note - tests run out of free API calls so keep matrix slim.
-        python: ["3.8"]
+        python: ["3.8", "3.9", "3.10"]
         lock: [false]
 
         include:
@@ -88,25 +84,29 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
       - name: setup python ${{ matrix.python }}
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python }}
 
-      - name: create requirements.txt
-        if: ${{ matrix.lock == true }}
+      - name: install with locked dependencies
+        if: matrix.lock
         run: |
-          touch requirements.txt
+          touch requirements.txt requirements_dev.txt
           pip install -r requirements.txt -e .
           pip freeze --exclude-editable > requirements.txt
+          pip install -r requirements_dev.txt -e .[dev]
+          pip freeze --exclude-editable > requirements_dev.txt
+
+      - name: install with latest dependencies
+        if: ${{ ! matrix.lock }}
+        run: pip install -e .[dev]
 
       - name: run tests
-        run: |
-          if [ '${{ matrix.lock == true }}' ]; then lock='-r requirements_dev.txt'; fi
-          touch requirements_dev.txt
-          pip install ${lock} -e .[dev]
-          pytest tests
+        run:  pytest tests
 
       - name: create requirements_dev.txt
         run: |
@@ -119,7 +119,7 @@ jobs:
           files: cov.xml
 
       - name: Upload lockfiles
-        if: ${{ matrix.lock == true }}
+        if: matrix.lock
         uses: actions/upload-artifact@v2
         with:
           name: lockfiles
@@ -163,10 +163,6 @@ jobs:
       packages: write
 
     steps:
-      - name: Set outputs
-        id: vars
-        run: echo ::set-output name=repo_name::${GITHUB_REPOSITORY#*\/}
-
       - name: checkout
         uses: actions/checkout@v2
 
@@ -195,6 +191,12 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: ghcr.io/${{ github.repository }}
+          # all pull requests share a single tag 'pr'
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=pr
 
       - name: Set up Docker Buildx
         id: buildx
@@ -203,7 +205,6 @@ jobs:
       - name: Build runtime image
         uses: docker/build-push-action@v2
         with:
-          builder: ${{ steps.buildx.outputs.name }}
           file: .devcontainer/Dockerfile
           context: .
           push: true
