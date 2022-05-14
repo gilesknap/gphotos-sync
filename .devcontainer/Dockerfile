@@ -23,6 +23,8 @@ RUN mkdir -p /root/.local && \
     pip install --user -r requirements.txt dist/*.whl || :
 
 FROM base as runtime
+
 COPY --from=developer /root/.local /root/.local
 
 CMD ["gphotos-sync"]
+CMD ["--version"]
