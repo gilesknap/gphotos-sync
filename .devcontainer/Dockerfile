@@ -26,5 +26,5 @@ FROM base as runtime
 
 COPY --from=developer /root/.local /root/.local
 
-CMD ["gphotos-sync"]
+ENTRYPOINT ["gphotos-sync"]
 CMD ["--version"]
