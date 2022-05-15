@@ -7,16 +7,16 @@
 ARG BASE="mcr.microsoft.com/vscode/devcontainers/python:0-3.10-bullseye"
 FROM ${BASE} as base
 
-RUN apt-get update && export DEBIAN_FRONTEND=noninteractive && \
-    apt-get install -y --no-install-recommends \
-    gcc ethtool && \
-    rm -rf /var/lib/apt/lists/*
-
 # use root to pin where the packages will install
 USER root
 ENV PATH=/root/.local/bin:$PATH
 
 FROM base as developer
+
+RUN apt-get update && export DEBIAN_FRONTEND=noninteractive && \
+    apt-get install -y --no-install-recommends \
+    gcc python3-dev && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /workspace
 COPY . .
