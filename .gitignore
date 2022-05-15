@@ -8,6 +8,7 @@ __pycache__/
 # Distribution / packaging
 .Python
 env/
+.venv/
 build/
 develop-eggs/
 dist/
@@ -22,6 +23,7 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+**/_version.py
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -34,14 +36,16 @@ pip-log.txt
 pip-delete-this-directory.txt
 
 # Unit test / coverage reports
-# htmlcov/
-# .tox/
-# .coverage
-# .coverage.*
-# .cache
-# nosetests.xml
-# coverage.xml
-# *,cover
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+cov.xml
+.pytest_cache/
+.mypy_cache/
 
 # Translations
 *.mo
@@ -56,33 +60,8 @@ docs/_build/
 # PyBuilder
 target/
 
-# jetbrains
-.idea
-
-# exception dump
-
-etc/results.txt
-.gphotos-terminated
-/etc/gphotos_backup.sqlite
-/etc/results_crash.txt
-etc/gphotos_photos_only_backup.sqlite
-etc/albumFolders.txt
-test/test_credentials/.no-token-here
-
-.nfs*
-
-/*venv*/
-
-# vim temp files
-*~
-*.swp
-
-
-.pytest_cache
-.history
-coverage_html_report
-
-coverage.xml
-.coverage
-.vscode/.ropeproject/objectdb
-.mypy_cache/
+# DLS build dir and virtual environment
+/prefix/
+/venv/
+/lightweight-venv/
+/installed.files

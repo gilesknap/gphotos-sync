@@ -1,0 +1,222 @@
+name: Code CI
+
+on:
+  push:
+    branches:
+      # Restricting to these branches and tags stops duplicate jobs on internal
+      # PRs but stops CI running on internal branches without a PR. Delete the
+      # next 5 lines to restore the original behaviour
+      - master
+      - main
+    tags:
+      - "*"
+  pull_request:
+  schedule:
+    # Run every Monday at 8am to check latest versions of dependencies
+    - cron: "0 8 * * MON"
+
+jobs:
+  lint:
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: lint
+        run: |
+          pip install --user .[dev]
+          tox -e pre-commit,mypy
+
+  wheel:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-latest"]
+        python: ["3.8"]
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Create Sdist and Wheel
+        # Set SOURCE_DATE_EPOCH from git commit for reproducible build
+        # https://reproducible-builds.org/
+        run: |
+          SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct) pipx run build --sdist --wheel
+
+      - name: Upload Wheel and Sdist as artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: dist
+          path: dist
+
+      - name: Install minimum python version
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install wheel in a venv and check cli works
+        # ${GITHUB_REPOSITORY##*/} is the repo name without org
+        # Replace this with the cli command if different to the repo name
+        run: pipx run --python $(which python${{ matrix.python }}) --spec dist/*.whl ${GITHUB_REPOSITORY##*/} --version
+
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-latest", "windows-latest"] # can add , macos-latest
+        # keep matrix tight for now to avoid HTTP 429 errors
+        # TODO: restore macos and 3.9 and 3.10
+        python: ["3.8"]
+        lock: [false]
+
+        include:
+          # Add an extra Python3.10 runner to use the lockfile
+          - os: "ubuntu-latest"
+            python: "3.10"
+            lock: true
+
+    runs-on: ${{ matrix.os }}
+    env:
+      # https://github.com/pytest-dev/pytest/issues/2042
+      PY_IGNORE_IMPORTMISMATCH: "1"
+      # enable QT tests with no X Display
+      QT_QPA_PLATFORM: "offscreen"
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: setup python ${{ matrix.python }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: install with locked dependencies
+        if: matrix.lock
+        run: |
+          touch requirements.txt requirements_dev.txt
+          pip install -r requirements.txt -e .
+          pip freeze --exclude-editable > requirements.txt
+          pip install -r requirements_dev.txt -e .[dev]
+          pip freeze --exclude-editable > requirements_dev.txt
+
+      - name: install with latest dependencies
+        if: ${{ ! matrix.lock }}
+        run: pip install -e .[dev]
+
+      - name: run tests
+        run: pytest tests
+
+      - name: create requirements_dev.txt
+        run: |
+          pip freeze --exclude-editable > requirements_dev.txt
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          name: ${{ matrix.python }}/${{ matrix.os }}/${{ matrix.lock }}
+          files: cov.xml
+
+      - name: Upload lockfiles
+        if: matrix.lock
+        uses: actions/upload-artifact@v2
+        with:
+          name: lockfiles
+          path: |
+            requirements.txt
+            requirements_dev.txt
+
+  release:
+    needs: [lint, wheel, test]
+    runs-on: ubuntu-latest
+    # upload to PyPI and make a release on every tag
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          path: artifacts
+
+      - name: Github Release
+        # We pin to the SHA, not the tag, for security reasons.
+        # https://docs.github.com/en/actions/learn-github-actions/security-hardening-for-github-actions#using-third-party-actions
+        uses: softprops/action-gh-release@1e07f4398721186383de40550babbdf2b84acfc5 # v0.1.14
+        with:
+          files: |
+            artifacts/dist/*
+            artifacts/lockfiles/*
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to PyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.pypi_token }}
+        run: pipx run twine upload artifacts/dist/*
+
+  make-container:
+    needs: [lint, wheel, test]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: dist
+          path: dist
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Log in to GitHub Docker Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ghcr.io/${{ github.repository }}
+          # all pull requests share a single tag 'pr'
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=pr
+
+      # required for multi-arch build
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Build runtime image
+        uses: docker/build-push-action@v2
+        with:
+          file: .devcontainer/Dockerfile
+          context: .
+          platforms: linux/amd64,linux/arm/v7,linux/arm64/v8
+          push: true
+          build-args: BASE=python:3.10-slim
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache

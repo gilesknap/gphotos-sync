@@ -1,0 +1,40 @@
+name: Link Check
+
+on:
+  schedule:
+    # Run every Monday at 8am to check URL links still resolve
+    - cron: "0 8 * * MON"
+
+jobs:
+  docs:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-latest"]
+        python: ["3.10"]
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Avoid git conflicts when tag and branch pushed at same time
+        if: startsWith(github.ref, 'refs/tags')
+        run: sleep 60
+
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+        
+      - name: Install python version
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: install dependencies
+        run: |
+          touch requirements_dev.txt
+          pip install -r requirements_dev.txt -e .[dev]
+
+      - name: check links
+        run: tox -e docs -- -b linkcheck
+
