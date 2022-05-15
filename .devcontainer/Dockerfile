@@ -26,5 +26,11 @@ FROM base as runtime
 
 COPY --from=developer /root/.local /root/.local
 
+RUN mkdir -p /root/.config /config \
+    && ln -s /config /root/.config/gphotos-sync \
+    && mkdir /storage
+
+VOLUME /config /storage
+
 ENTRYPOINT ["gphotos-sync"]
 CMD ["--version"]

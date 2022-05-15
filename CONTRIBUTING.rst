@@ -12,7 +12,10 @@ your time coding something that might not fit the scope of the project.
 Running the tests
 -----------------
 
-To use vscode devcontainers::
+To run in a container
+~~~~~~~~~~~~~~~~~~~~~
+
+Use vscode devcontainer as follows::
 
     $ git clone git://github.com/gilesknap/gphotos-sync.git
     $ vscode gphotos-sync
@@ -20,7 +23,12 @@ To use vscode devcontainers::
     In a vscode Terminal:
     $ tox -p
 
-To get the source source code and run the unit tests locally, run::
+
+To run locally
+~~~~~~~~~~~~~~
+
+Get the source source code and run the unit tests directly
+on your workstation as follows::
 
     $ git clone git://github.com/gilesknap/gphotos-sync.git
     $ cd gphotos-sync
@@ -36,7 +44,7 @@ In both cases tox -p runs in parallel the following checks:
   - run mypy linting on all files in ./src ./tests
   - run pre-commit checks:
 
-    - run flake8 static analysis against all source
+    - run flake8 style checks against all source
     - run black formatting checks against all source
 
 While 100% code coverage does not make a library bug-free, it significantly
@@ -108,7 +116,7 @@ Docs follow the underlining convention::
 
 You can build the docs from the project directory by running::
 
-    $ pipenv run docs
+    $ tox -e docs
     $ firefox build/html/index.html
 
 Release Process

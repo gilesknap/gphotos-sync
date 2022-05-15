@@ -24,22 +24,24 @@ inside of a container. The first run will require a user login see
 Execute in a container
 ======================
 
-This project now automatically releases a container image with each release to
-Pypi. The latest image will be here ``ghcr.io/gilesknap/gphotos-sync``.
+This project now automatically releases a container image with each release.
+The latest image will be here ``ghcr.io/gilesknap/gphotos-sync``.
 
-Your container will need access to two host filesystem items. (You could
-use container volumes if you prefer but would need to bootstrap the 
-client_secret.json)
+Your container has two volumes ``/config`` for the client_secret.json file and 
+``/storage`` for the backup data. You should map these to host folders if you
+want to see them outside of the container.
 
-    - The hosts client_secret.json filepath denoted <SECRET>
-    - The host (or shared) folder for your backup denoted <ROOT>
+Hence the typical way to launch the container with docker runtime would be:
 
-Hence you can run the container with the docker runtime like this:
+    $ CONFIG=$HOME/.config/gphotos-sync
+    $ STORAGE=$HOME/My_photos_backup
+    $ docker run --rm -v $CONFIG:/config -v $STORAGE:/storage --net=host -it ghcr.io/gilesknap/gphotos-sync /STORAGE
 
-    ``docker run -v <SECRET>/.config/gphotos-sync -v <ROOT>:/photos --net=host -it ghcr.io/gilesknap/gphotos-sync /photos``
+The option --net=host is required for the first invocation only, so that the
+browser can find authentication service.
 
 Note that if you are running on a NAS or other headless server you will first 
-need to run locally so that you can do initial login flow.
+need to run locally so that you can do initial login flow with a browser.
 Then copy the .gphotos.token to the server. For this
 first run you could use the following options so that no backup is performed:
 
@@ -86,4 +88,13 @@ The application should now be installed and the commandline interface on your pa
 You can check the version that has been installed by typing::
 
     gphotos-sync --version
+
+For a description of additional command line parameters type::
+
+    gphotos-sync --help
+
+To begin a backup with default settings create a new empty TARGET DIRECTORY 
+in which your backups will go and type::
+
+    gphotos-sync <TARGET_DIRECTORY>
 
