@@ -23,15 +23,15 @@ Quick Start
 To get started see the tutorial here. 
 
 
-.. |code_ci| image:: https://github.com/gilesknap/gphotos-sync/workflows/Code%20CI/badge.svg?branch=master
+.. |code_ci| image:: https://github.com/gilesknap/gphotos-sync/workflows/Code%20CI/badge.svg?branch=main
     :target: https://github.com/gilesknap/gphotos-sync/actions?query=workflow%3A%22Code+CI%22
     :alt: Code CI
 
-.. |docs_ci| image:: https://github.com/gilesknap/gphotos-sync/workflows/Docs%20CI/badge.svg?branch=master
+.. |docs_ci| image:: https://github.com/gilesknap/gphotos-sync/workflows/Docs%20CI/badge.svg?branch=main
     :target: https://github.com/gilesknap/gphotos-sync/actions?query=workflow%3A%22Docs+CI%22
     :alt: Docs CI
 
-.. |coverage| image:: https://codecov.io/gh/gilesknap/gphotos-sync/branch/master/graph/badge.svg
+.. |coverage| image:: https://codecov.io/gh/gilesknap/gphotos-sync/branch/main/graph/badge.svg
     :target: https://codecov.io/gh/gilesknap/gphotos-sync
     :alt: Test Coverage
 

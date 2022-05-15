@@ -2,7 +2,7 @@
 #
 # This file only contains a selection of the most common options. For a full
 # list see the documentation:
-# https://www.sphinx-doc.org/en/master/usage/configuration.html
+# https://www.sphinx-doc.org/en/main/usage/configuration.html
 
 import gphotos_sync
 
@@ -17,7 +17,7 @@ release = gphotos_sync.__version__
 # The short X.Y version.
 if "+" in release:
     # Not on a tag
-    version = "master"
+    version = "main"
 else:
     version = release
 
@@ -64,8 +64,8 @@ default_role = "any"
 # The suffix of source filenames.
 source_suffix = ".rst"
 
-# The master toctree document.
-master_doc = "index"
+# The main toctree document.
+main_doc = "index"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
