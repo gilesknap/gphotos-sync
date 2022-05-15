@@ -12,12 +12,32 @@ your time coding something that might not fit the scope of the project.
 Running the tests
 -----------------
 
-To get the source source code and run the unit tests, run::
+To use vscode devcontainers::
+
+    $ git clone git://github.com/gilesknap/gphotos-sync.git
+    $ vscode gphotos-sync
+    Click on 'Reopen in Container' when prompted
+    In a vscode Terminal:
+    $ tox -p
+
+To get the source source code and run the unit tests locally, run::
 
     $ git clone git://github.com/gilesknap/gphotos-sync.git
     $ cd gphotos-sync
-    $ pipenv install --dev
-    $ pipenv run tests
+    $ virtualenv .venv
+    $ source .venv/bin/activate
+    $ pip install -e .[dev]
+    $ tox -p 
+
+In both cases tox -p runs in parallel the following checks:
+
+  - Buiild Spinx Documentation
+  - run pytest on all tests in ./tests
+  - run mypy linting on all files in ./src ./tests
+  - run pre-commit checks:
+
+    - run flake8 static analysis against all source
+    - run black formatting checks against all source
 
 While 100% code coverage does not make a library bug-free, it significantly
 reduces the number of easily caught bugs! Please make sure coverage remains the
@@ -36,12 +56,12 @@ The code in this repository conforms to standards set by the following tools:
 These checks will be run by pre-commit_. You can either choose to run these
 tests on all files tracked by git::
 
-    $ pipenv run lint
+    $ tox -e pre-commit,mypy
 
 Or you can install a pre-commit hook that will run each time you do a ``git
 commit`` on just the files that have changed::
 
-    $ pipenv run pre-commit install
+    $ pre-commit install
 
 .. _black: https://github.com/psf/black
 .. _flake8: https://flake8.pycqa.org/en/latest/
@@ -112,11 +132,11 @@ Python project structure which provides a means to keep tools and
 techniques in sync between multiple Python projects. To update to the
 latest version of the skeleton, run::
 
-    $ git pull https://github.com/gilesknap-org/dls-python3-skeleton skeleton
+    $ git pull https://github.com/dls-controls/dls-python3-skeleton skeleton
 
 Any merge conflicts will indicate an area where something has changed that
 conflicts with the setup of the current module. Check the `closed pull requests
-<https://github.com/gilesknap-org/dls-python3-skeleton/pulls?q=is%3Apr+is%3Aclosed>`_
+<https://github.com/dls-controls/dls-python3-skeleton/pulls?q=is%3Apr+is%3Aclosed>`_
 of the skeleton module for more details.
 
-.. _dls-python3-skeleton: https://gilesknap-org.github.io/dls-python3-skeleton
+.. _dls-python3-skeleton: https://dls-controls.github.io/dls-python3-skeleton
