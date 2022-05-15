@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Overview: module code &mdash; gphotos-sync 2.14.3.dev124+g251ec69 documentation</title>
+  <title>Scheduling a Regular Backup &mdash; gphotos-sync 2.14.3.dev124+g251ec69 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
@@ -19,7 +20,9 @@
         <script src="../_static/doctools.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" /> 
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Comparing The Google Photos Library With Local files" href="comparison.html" />
+    <link rel="prev" title="Additional Setup for Windows Machines" href="windows.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -51,10 +54,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/login.html">User Login OAuth Flow</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">How-to Guides</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../how-to/windows.html">Additional Setup for Windows Machines</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../how-to/cron.html">Scheduling a Regular Backup</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../how-to/comparison.html">Comparing The Google Photos Library With Local files</a></li>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="windows.html">Additional Setup for Windows Machines</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Scheduling a Regular Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="comparison.html">Comparing The Google Photos Library With Local files</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Explanations</span></p>
 <ul>
@@ -84,8 +87,9 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Overview: module code</li>
+      <li>Scheduling a Regular Backup</li>
       <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/how-to/cron.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -93,15 +97,28 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <h1>All modules for which code is available</h1>
-<ul><li><a href="gphotos_sync/BaseMedia.html">gphotos_sync.BaseMedia</a></li>
-<li><a href="gphotos_sync/DatabaseMedia.html">gphotos_sync.DatabaseMedia</a></li>
-<li><a href="gphotos_sync/GooglePhotosDownload.html">gphotos_sync.GooglePhotosDownload</a></li>
-</ul>
+  <section id="scheduling-a-regular-backup">
+<h1>Scheduling a Regular Backup<a class="headerlink" href="#scheduling-a-regular-backup" title="Permalink to this headline"></a></h1>
+<p>On linux you can add gphotos-sync to your cron schedule easily. See <a class="reference external" href="https://crontab.guru/">https://crontab.guru/</a>
+for tips on how to configure regular execution of a command. You will need a script that
+looks something like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>#!/bin/bash
+&lt;PATH TO VENV&gt;/bin/python gphotos-sync &lt;PATH TO TARGET&gt; $@ &gt;&gt; &lt;PATH TO TARGET&gt;/gphotos_full.log --logfile /tmp 2&gt;&amp;1
+</pre></div>
+</div>
+<p>gphotos-sync uses a lockfile so that if a cron job starts while a previous one
+is still running then the 2nd instance will abort.</p>
+<p>Note that cron does not have access to your profile so none of the usual
+environment variables are available.</p>
+</section>
+
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="windows.html" class="btn btn-neutral float-left" title="Additional Setup for Windows Machines" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="comparison.html" class="btn btn-neutral float-right" title="Comparing The Google Photos Library With Local files" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 

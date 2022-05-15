@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Creating an OAuth Client ID &mdash; gphotos-sync 2.14.3.dev124+g251ec69 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/logo.png"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="User Login OAuth Flow" href="login.html" />
+    <link rel="prev" title="Initial Setup" href="installation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../index.html" class="icon icon-home"> gphotos-sync
+            <img src="../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                main
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Initial Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html#execute-in-a-container">Execute in a container</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html#local-installation">Local Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html#running-gphotos-sync">Running gphotos-sync</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Creating an OAuth Client ID</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#create-a-google-cloud-project">Create a Google Cloud Project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#enable-the-photos-api">Enable the Photos API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#configure-oauth-consent">Configure OAuth Consent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#create-the-oauth-credentials">Create the OAuth Credentials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#publish-the-app">Publish the App</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#move-client-secret-json">Move client_secret.json</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="login.html">User Login OAuth Flow</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">How-to Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../how-to/windows.html">Additional Setup for Windows Machines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-to/cron.html">Scheduling a Regular Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-to/comparison.html">Comparing The Google Photos Library With Local files</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Explanations</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../explanations/folders.html">Folder Layout</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explanations/notes.html">Why is Google Photos Sync Read Only</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explanations/tokens.html">Google OAuth Tokens for gphotos-sync</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explanations/googleapiissues.html">Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/api.html">API</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/gilesknap/gphotos-sync/releases">Releases</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">gphotos-sync</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Creating an OAuth Client ID</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/tutorials/oauth2.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="creating-an-oauth-client-id">
+<span id="client-id"></span><h1><a class="toc-backref" href="#id1">Creating an OAuth Client ID</a><a class="headerlink" href="#creating-an-oauth-client-id" title="Permalink to this headline"></a></h1>
+<section id="overview">
+<h2><a class="toc-backref" href="#id2">Overview</a><a class="headerlink" href="#overview" title="Permalink to this headline"></a></h2>
+<div class="contents topic" id="contents">
+<p class="topic-title">Contents</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#creating-an-oauth-client-id" id="id1">Creating an OAuth Client ID</a></p>
+<ul>
+<li><p><a class="reference internal" href="#overview" id="id2">Overview</a></p></li>
+<li><p><a class="reference internal" href="#create-a-google-cloud-project" id="id3">Create a Google Cloud Project</a></p></li>
+<li><p><a class="reference internal" href="#enable-the-photos-api" id="id4">Enable the Photos API</a></p></li>
+<li><p><a class="reference internal" href="#configure-oauth-consent" id="id5">Configure OAuth Consent</a></p></li>
+<li><p><a class="reference internal" href="#create-the-oauth-credentials" id="id6">Create the OAuth Credentials</a></p></li>
+<li><p><a class="reference internal" href="#publish-the-app" id="id7">Publish the App</a></p></li>
+<li><p><a class="reference internal" href="#move-client-secret-json" id="id8">Move client_secret.json</a></p></li>
+</ul>
+</li>
+</ul>
+</div>
+<p>This document will take you through the steps needed to set up a Google Cloud
+project and create an OAuth client ID for gphoto-sync.</p>
+<p>For a discussion of the purpose of this ID see <a class="reference internal" href="../explanations/tokens.html#tokens"><span class="std std-ref">Google OAuth Tokens for gphotos-sync</span></a>.</p>
+<p>Each step here assumes that you’re logged into a personal Google account.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The steps outlined here are correct as of May 2022. Their is quite a
+bit of churn in the Google Cloud Console UI so the screens may change a
+bit.</p>
+</div>
+</section>
+<section id="create-a-google-cloud-project">
+<h2><a class="toc-backref" href="#id3">Create a Google Cloud Project</a><a class="headerlink" href="#create-a-google-cloud-project" title="Permalink to this headline"></a></h2>
+<ol class="arabic">
+<li><p>Head to <a class="reference external" href="https://console.cloud.google.com">https://console.cloud.google.com</a></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>If you have not set up Google Cloud before, select your country
+and agree the to the Terms of Service.</p></li>
+</ul>
+<a class="reference internal image-reference" href="../_images/0.png"><img alt="../_images/0.png" class="align-center" src="../_images/0.png" style="width: 668.0px; height: 77.0px;" /></a>
+</div></blockquote>
+</li>
+<li><p>In the top banner the currently selected project is shown. If you have
+no previous projects this will say ‘Select a project’</p>
+<ul class="simple">
+<li><p>Click on the current project name or ‘Select a project’</p></li>
+<li><p>This will bring up the ‘Select a Project’ dialog</p></li>
+</ul>
+<blockquote>
+<div><a class="reference internal image-reference" href="../_images/1.png"><img alt="../_images/1.png" class="align-center" src="../_images/1.png" style="width: 512.0px; height: 412.0px;" /></a>
+</div></blockquote>
+</li>
+<li><p>Press <strong>New Project</strong>.</p></li>
+<li><p>Enter a project name. For example, “gphotos”. This name must be unique
+within your account and cannot be changed in the future.</p></li>
+<li><p>Leave <strong>Location</strong> as the default “No Organization”.</p></li>
+<li><p>Press Create.</p>
+<blockquote>
+<div><a class="reference internal image-reference" href="../_images/2.png"><img alt="../_images/2.png" class="align-center" src="../_images/2.png" style="width: 512.0px; height: 412.0px;" /></a>
+</div></blockquote>
+</li>
+</ol>
+</section>
+<section id="enable-the-photos-api">
+<h2><a class="toc-backref" href="#id4">Enable the Photos API</a><a class="headerlink" href="#enable-the-photos-api" title="Permalink to this headline"></a></h2>
+<ol class="arabic">
+<li><p>Ensure that the project you made above is the active project.</p></li>
+<li><p>Click on the top-left hamburger menu and find <strong>APIs &amp; Services</strong> &gt; <strong>Library</strong>.</p>
+<blockquote>
+<div><a class="reference internal image-reference" href="../_images/3.png"><img alt="../_images/3.png" class="align-center" src="../_images/3.png" style="width: 462.0px; height: 316.5px;" /></a>
+</div></blockquote>
+</li>
+<li><dl>
+<dt>Search for the <strong>Photos Library API</strong> by Google and select it.</dt><dd><a class="reference internal image-reference" href="../_images/4.png"><img alt="../_images/4.png" class="align-center" src="../_images/4.png" style="width: 743.25px; height: 425.25px;" /></a>
+</dd>
+</dl>
+</li>
+<li><p>Enable it.</p>
+<blockquote>
+<div><a class="reference internal image-reference" href="../_images/5.png"><img alt="../_images/5.png" class="align-center" src="../_images/5.png" style="width: 576.75px; height: 405.0px;" /></a>
+</div></blockquote>
+</li>
+</ol>
+</section>
+<section id="configure-oauth-consent">
+<h2><a class="toc-backref" href="#id5">Configure OAuth Consent</a><a class="headerlink" href="#configure-oauth-consent" title="Permalink to this headline"></a></h2>
+<ol class="arabic">
+<li><p>Find <strong>APIs &amp; Services</strong> &gt; <strong>OAuth consent screen</strong></p>
+<blockquote>
+<div><a class="reference internal image-reference" href="../_images/6.png"><img alt="../_images/6.png" class="align-center" src="../_images/6.png" style="width: 467.25px; height: 310.5px;" /></a>
+</div></blockquote>
+</li>
+<li><p>Set <strong>User Type</strong> to External.</p></li>
+<li><p>Press Create</p>
+<blockquote>
+<div><a class="reference internal image-reference" href="../_images/7-oauth_concent.png"><img alt="../_images/7-oauth_concent.png" class="align-center" src="../_images/7-oauth_concent.png" style="width: 752.25px; height: 532.5px;" /></a>
+</div></blockquote>
+</li>
+<li><p>App Registration - OAuth consent screen:</p>
+<ol class="arabic simple">
+<li><p>Set your <strong>App Name</strong>. For example, “gphotos”. Note that this does
+<strong>not</strong> have to be the same as the project name. Do not include “Google”
+in the name or this will fail.</p></li>
+<li><p>Enter your email address as the <strong>User support email</strong>.</p></li>
+<li><p>Enter your email address as the <strong>Developer contact information</strong>.</p></li>
+<li><p>Leave all other fields.</p></li>
+<li><p>Press <strong>Save and Continue</strong>.</p></li>
+</ol>
+<blockquote>
+<div><a class="reference internal image-reference" href="../_images/8-app_registration.png"><img alt="../_images/8-app_registration.png" class="align-center" src="../_images/8-app_registration.png" style="width: 729.75px; height: 1320.75px;" /></a>
+</div></blockquote>
+</li>
+<li><p>App Registration - Scopes</p>
+<ol class="arabic simple">
+<li><p>Nothing is <em>needed</em> here - you can just ignore everything and press
+<strong>Save and Continue</strong>.</p></li>
+</ol>
+<blockquote>
+<div><a class="reference internal image-reference" href="../_images/9-scopes.png"><img alt="../_images/9-scopes.png" class="align-center" src="../_images/9-scopes.png" style="width: 753.75px; height: 891.0px;" /></a>
+</div></blockquote>
+</li>
+<li><p>App Registration - Test Users:</p>
+<ol class="arabic simple">
+<li><p>Nothing needed here as you are going to publish the project. This means
+it will no longer be in the testing state.</p></li>
+<li><p>Press <strong>Save and Continue</strong>.</p></li>
+</ol>
+<blockquote>
+<div><a class="reference internal image-reference" href="../_images/10-test_users.png"><img alt="../_images/10-test_users.png" class="align-center" src="../_images/10-test_users.png" style="width: 828.75px; height: 531.75px;" /></a>
+</div></blockquote>
+</li>
+<li><p>Summary</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>You will now see a summary screen like this</p></li>
+<li><p>Review the summary and press <strong>Back to Dashboard</strong>.</p></li>
+</ol>
+<a class="reference internal image-reference" href="../_images/11-summary.png"><img alt="../_images/11-summary.png" class="align-center" src="../_images/11-summary.png" style="width: 794.25px; height: 1279.5px;" /></a>
+</div></blockquote>
+</li>
+</ol>
+</section>
+<section id="create-the-oauth-credentials">
+<h2><a class="toc-backref" href="#id6">Create the OAuth Credentials</a><a class="headerlink" href="#create-the-oauth-credentials" title="Permalink to this headline"></a></h2>
+<ol class="arabic">
+<li><p>Find <strong>APIs &amp; Services</strong> &gt; <strong>Credentials</strong></p></li>
+<li><p>Press <strong>+ Create Credentials</strong> and select <strong>OAuth client ID</strong>.</p>
+<blockquote>
+<div><a class="reference internal image-reference" href="../_images/12-create_creds.png"><img alt="../_images/12-create_creds.png" class="align-center" src="../_images/12-create_creds.png" style="width: 847.5px; height: 505.5px;" /></a>
+</div></blockquote>
+</li>
+<li><dl>
+<dt>Choose Desktop App</dt><dd><ol class="arabic simple">
+<li><p>Choose name for your credentials e.g. gphotos</p></li>
+<li><p>Click <strong>Create</strong></p></li>
+</ol>
+<a class="reference internal image-reference" href="../_images/14-create_id.png"><img alt="../_images/14-create_id.png" class="align-center" src="../_images/14-create_id.png" style="width: 544.5px; height: 417.0px;" /></a>
+</dd>
+</dl>
+</li>
+<li><p>Click <strong>Download JSON</strong> to download the OAuth client ID as JSON and
+save it as <code class="docutils literal notranslate"><span class="pre">client_secret.json</span></code>.</p>
+<blockquote>
+<div><a class="reference internal image-reference" href="../_images/15-created.png"><img alt="../_images/15-created.png" class="align-center" src="../_images/15-created.png" style="width: 491.25px; height: 444.75px;" /></a>
+</div></blockquote>
+</li>
+</ol>
+</section>
+<section id="publish-the-app">
+<h2><a class="toc-backref" href="#id7">Publish the App</a><a class="headerlink" href="#publish-the-app" title="Permalink to this headline"></a></h2>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Failure to publish the app will result in your auth token expiring after
+<strong>7 days</strong>. See <a class="reference external" href="https://developers.google.com/identity/protocols/oauth2#expiration">the Google Cloud docs</a> and <a class="reference external" href="https://github.com/gilesknap/gphotos-sync/issues/290">Issue #290</a> for details.</p>
+</div>
+<ol class="arabic simple">
+<li><p>Head to <strong>APIs &amp; Services</strong> &gt; <strong>OAuth consent screen</strong></p></li>
+<li><p>Press <strong>Publish App</strong>.</p></li>
+<li><p>Read the notice and press <strong>Confirm</strong>.</p></li>
+</ol>
+<p>At this point you should be able to run <code class="docutils literal notranslate"><span class="pre">gphotos-sync</span></code> using the instructions
+found in the <a class="reference external" href="https://github.com/gilesknap/gphotos-sync/README.rst">README</a>.</p>
+</section>
+<section id="move-client-secret-json">
+<h2><a class="toc-backref" href="#id8">Move client_secret.json</a><a class="headerlink" href="#move-client-secret-json" title="Permalink to this headline"></a></h2>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>The client_secret.json must be moved to the correct location</p></li>
+<li><p>Each supported operating system has a different location where it will
+look for this file.</p></li>
+<li><p>Return the <a class="reference internal" href="installation.html#tutorial"><span class="std std-ref">Initial Setup</span></a> for details of where to put this file.</p></li>
+</ol>
+</div></blockquote>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="installation.html" class="btn btn-neutral float-left" title="Initial Setup" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="login.html" class="btn btn-neutral float-right" title="User Login OAuth Flow" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p></p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+   
+  <div id="other-versions-div" class="rst-versions" data-toggle="rst-versions" role="note" aria-label="Versions" style="visibility: hidden">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      <span class="fa fa-book"> Other Versions</span>
+      main
+      <span class="fa fa-caret-down"></span>
+    </span>
+    <div class="rst-other-versions">
+      <dl id="other-versions-dl"/>
+    </div>
+  </div>
+  <script>
+    function addVersion(name) {
+      var dd = document.createElement("dd");
+      var a = document.createElement("a");
+      a.href = "../../" + name;
+      a.innerText = name;
+      dd.appendChild(a);
+      document.getElementById('other-versions-dl').appendChild(dd);
+    }
+    // Get versions.txt and add a version for each line
+    fetch("../../versions.txt").then(response => {
+      if (response.ok) {
+        document.getElementById('other-versions-div').style.visibility = "visible";
+        return response.text().then(text => text.split(/\r?\n/).forEach(addVersion))
+      }
+    });
+  </script>
+
+
+</body>
+</html>

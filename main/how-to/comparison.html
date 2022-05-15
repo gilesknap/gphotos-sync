@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Overview: module code &mdash; gphotos-sync 2.14.3.dev124+g251ec69 documentation</title>
+  <title>Comparing The Google Photos Library With Local files &mdash; gphotos-sync 2.14.3.dev124+g251ec69 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
@@ -19,7 +20,9 @@
         <script src="../_static/doctools.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" /> 
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Folder Layout" href="../explanations/folders.html" />
+    <link rel="prev" title="Scheduling a Regular Backup" href="cron.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -51,10 +54,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/login.html">User Login OAuth Flow</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">How-to Guides</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../how-to/windows.html">Additional Setup for Windows Machines</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../how-to/cron.html">Scheduling a Regular Backup</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../how-to/comparison.html">Comparing The Google Photos Library With Local files</a></li>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="windows.html">Additional Setup for Windows Machines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cron.html">Scheduling a Regular Backup</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Comparing The Google Photos Library With Local files</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Explanations</span></p>
 <ul>
@@ -84,8 +87,9 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Overview: module code</li>
+      <li>Comparing The Google Photos Library With Local files</li>
       <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/how-to/comparison.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -93,15 +97,41 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <h1>All modules for which code is available</h1>
-<ul><li><a href="gphotos_sync/BaseMedia.html">gphotos_sync.BaseMedia</a></li>
-<li><a href="gphotos_sync/DatabaseMedia.html">gphotos_sync.DatabaseMedia</a></li>
-<li><a href="gphotos_sync/GooglePhotosDownload.html">gphotos_sync.GooglePhotosDownload</a></li>
+  <section id="comparing-the-google-photos-library-with-local-files">
+<h1>Comparing The Google Photos Library With Local files<a class="headerlink" href="#comparing-the-google-photos-library-with-local-files" title="Permalink to this headline"></a></h1>
+<p>There will be additional folders created when using the –compare-folder option.</p>
+<p>The option is used to make a
+comparison of the contents of your library with a local folder such as a previous backup. The comparison does not require
+that the files are arranged in the same folders, it uses meta-data in the files such as create date and
+exif UID to match pairs of items. The additional folders after a comparison will be:</p>
+<ul class="simple">
+<li><p><strong>comparison</strong> a new folder off of the specified root containing the following:</p></li>
+<li><p><strong>missing_files</strong> - contains symlinks to the files in the comparison folder that were not found in the Google
+Photos Library. The folder structure is the same as that in the comparison folder. These are the
+files that you would upload to Google Photos via the Web interface to restore from backup.</p></li>
+<li><p><strong>extra_files</strong> - contains symlinks into to the files in photos folder which appear in the Library but not in the
+comparison folder. The folder structure is the same as the photos folder.</p></li>
+<li><p><strong>duplicates</strong> - contains symlinks to any duplicate files found in the comparison folder. This is a flat structure
+and the symlink filenames have a numeric prefix to make them unique and group the duplicates together.</p></li>
 </ul>
+<p>NOTES:</p>
+<ul class="simple">
+<li><p>the comparison code uses an external tool ‘ffprobe’. It will run without it but will not be able to
+extract metadata from video files and revert to relying on Google Photos meta data and file modified date (this is
+a much less reliable way to match video files, but the results should be OK if the backup folder
+was originally created using gphotos-sync).</p></li>
+<li><p>If you have shared albums and have clicked ‘add to library’ on items from others’ libraries then you will have two
+copies of those items and they will show as duplicates too.</p></li>
+</ul>
+</section>
+
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="cron.html" class="btn btn-neutral float-left" title="Scheduling a Regular Backup" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../explanations/folders.html" class="btn btn-neutral float-right" title="Folder Layout" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 

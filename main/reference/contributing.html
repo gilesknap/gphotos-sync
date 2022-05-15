@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Contributing &mdash; gphotos-sync 2.14.3.dev111+g6219c2d documentation</title>
+  <title>Contributing &mdash; gphotos-sync 2.14.3.dev124+g251ec69 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
@@ -21,8 +21,8 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Comparing The Google Photos Library With Local files" href="comparison.html" />
-    <link rel="prev" title="Known Issues with Google API" href="../explanations/googleapiissues.html" /> 
+    <link rel="next" title="API" href="api.html" />
+    <link rel="prev" title="Known Issues" href="../explanations/googleapiissues.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -47,35 +47,41 @@
               <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/installation.html">Initial Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/installation.html#execute-in-a-container">Execute in a container</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/installation.html#local-installation">Local Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/installation.html#execute-using-docker">Execute using docker</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/google-project-setup.html">Creating an OAuth Client ID</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/extras.html">Extra Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/installation.html#running-gphotos-sync">Running gphotos-sync</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/oauth2.html">Creating an OAuth Client ID</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/login.html">User Login OAuth Flow</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">How-to Guides</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../how-to/nothing.html">TODO</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-to/windows.html">Additional Setup for Windows Machines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-to/cron.html">Scheduling a Regular Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-to/comparison.html">Comparing The Google Photos Library With Local files</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Explanations</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../explanations/notes.html">Why do I have to Create an Ouath Client ID</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../explanations/notes.html#why-is-google-photos-sync-read-only">Why is Google Photos Sync Read Only</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../explanations/googleapiissues.html">Known Issues with Google API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explanations/folders.html">Folder Layout</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explanations/notes.html">Why is Google Photos Sync Read Only</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explanations/tokens.html">Google OAuth Tokens for gphotos-sync</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explanations/googleapiissues.html">Known Issues</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Contributing</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#running-the-tests">Running the tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#running-the-tests">Running the tests</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#to-run-in-a-container">To run in a container</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#to-run-locally">To run locally</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#code-styling">Code Styling</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#documentation">Documentation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#release-process">Release Process</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#updating-the-tools">Updating the tools</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="comparison.html">Comparing The Google Photos Library With Local files</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/gilesknap/gphotos-sync/releases">Releases</a></li>
-<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
 </ul>
 
         </div>
@@ -111,16 +117,47 @@ file a ticket before making a pull request! We want to make sure you don’t spe
 your time coding something that might not fit the scope of the project.</p>
 <section id="running-the-tests">
 <h2>Running the tests<a class="headerlink" href="#running-the-tests" title="Permalink to this headline"></a></h2>
-<p>To get the source source code and run the unit tests, run:</p>
+<section id="to-run-in-a-container">
+<h3>To run in a container<a class="headerlink" href="#to-run-in-a-container" title="Permalink to this headline"></a></h3>
+<p>Use vscode devcontainer as follows:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ git clone git://github.com/gilesknap/gphotos-sync.git
-$ cd gphotos-sync
-$ pipenv install --dev
-$ pipenv run tests
+$ vscode gphotos-sync
+Click on &#39;Reopen in Container&#39; when prompted
+In a vscode Terminal:
+$ tox -p
 </pre></div>
 </div>
+</section>
+<section id="to-run-locally">
+<h3>To run locally<a class="headerlink" href="#to-run-locally" title="Permalink to this headline"></a></h3>
+<p>Get the source source code and run the unit tests directly
+on your workstation as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ git clone git://github.com/gilesknap/gphotos-sync.git
+$ cd gphotos-sync
+$ virtualenv .venv
+$ source .venv/bin/activate
+$ pip install -e .[dev]
+$ tox -p
+</pre></div>
+</div>
+<p>In both cases tox -p runs in parallel the following checks:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Buiild Spinx Documentation</p></li>
+<li><p>run pytest on all tests in ./tests</p></li>
+<li><p>run mypy linting on all files in ./src ./tests</p></li>
+<li><p>run pre-commit checks:</p>
+<ul>
+<li><p>run flake8 style checks against all source</p></li>
+<li><p>run black formatting checks against all source</p></li>
+</ul>
+</li>
+</ul>
+</div></blockquote>
 <p>While 100% code coverage does not make a library bug-free, it significantly
 reduces the number of easily caught bugs! Please make sure coverage remains the
 same or is improved by a pull request!</p>
+</section>
 </section>
 <section id="code-styling">
 <h2>Code Styling<a class="headerlink" href="#code-styling" title="Permalink to this headline"></a></h2>
@@ -133,12 +170,12 @@ same or is improved by a pull request!</p>
 </ul>
 <p>These checks will be run by <a class="reference external" href="https://pre-commit.com/">pre-commit</a>. You can either choose to run these
 tests on all files tracked by git:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pipenv run lint
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ tox -e pre-commit,mypy
 </pre></div>
 </div>
 <p>Or you can install a pre-commit hook that will run each time you do a <code class="docutils literal notranslate"><span class="pre">git</span>
 <span class="pre">commit</span></code> on just the files that have changed:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pipenv run pre-commit install
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pre-commit install
 </pre></div>
 </div>
 <p>Docstrings are pre-processed using the Sphinx Napoleon extension. As such,
@@ -176,7 +213,7 @@ docstrings of the API.</p>
 </pre></div>
 </div>
 <p>You can build the docs from the project directory by running:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pipenv run docs
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ tox -e docs
 $ firefox build/html/index.html
 </pre></div>
 </div>
@@ -194,15 +231,15 @@ $ firefox build/html/index.html
 </section>
 <section id="updating-the-tools">
 <h2>Updating the tools<a class="headerlink" href="#updating-the-tools" title="Permalink to this headline"></a></h2>
-<p>This module is merged with the <a class="reference external" href="https://gilesknap-org.github.io/dls-python3-skeleton">dls-python3-skeleton</a>. This is a generic
+<p>This module is merged with the <a class="reference external" href="https://dls-controls.github.io/dls-python3-skeleton">dls-python3-skeleton</a>. This is a generic
 Python project structure which provides a means to keep tools and
 techniques in sync between multiple Python projects. To update to the
 latest version of the skeleton, run:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ git pull https://github.com/gilesknap-org/dls-python3-skeleton skeleton
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ git pull https://github.com/dls-controls/dls-python3-skeleton skeleton
 </pre></div>
 </div>
 <p>Any merge conflicts will indicate an area where something has changed that
-conflicts with the setup of the current module. Check the <a class="reference external" href="https://github.com/gilesknap-org/dls-python3-skeleton/pulls?q=is%3Apr+is%3Aclosed">closed pull requests</a>
+conflicts with the setup of the current module. Check the <a class="reference external" href="https://github.com/dls-controls/dls-python3-skeleton/pulls?q=is%3Apr+is%3Aclosed">closed pull requests</a>
 of the skeleton module for more details.</p>
 </section>
 </section>
@@ -211,8 +248,8 @@ of the skeleton module for more details.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../explanations/googleapiissues.html" class="btn btn-neutral float-left" title="Known Issues with Google API" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="comparison.html" class="btn btn-neutral float-right" title="Comparing The Google Photos Library With Local files" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../explanations/googleapiissues.html" class="btn btn-neutral float-left" title="Known Issues" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="api.html" class="btn btn-neutral float-right" title="API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

@@ -9,5 +9,5 @@ Tutorials for installation, library and commandline usage. New users start here.
     :caption: Tutorials
 
     tutorials/installation
-    tutorials/google-project-setup
-    tutorials/extras
+    tutorials/oauth2
+    tutorials/login

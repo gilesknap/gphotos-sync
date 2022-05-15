@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Initial Setup &mdash; gphotos-sync 2.14.3.dev111+g6219c2d documentation</title>
+  <title>Initial Setup &mdash; gphotos-sync 2.14.3.dev124+g251ec69 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
@@ -21,7 +21,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Creating an OAuth Client ID" href="google-project-setup.html" />
+    <link rel="next" title="Creating an OAuth Client ID" href="oauth2.html" />
     <link rel="prev" title="Google Photos Sync (gphotos-sync)" href="../index.html" /> 
 </head>
 
@@ -47,33 +47,35 @@
               <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Initial Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#execute-in-a-container">Execute in a container</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#local-installation">Local Installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#check-your-version-of-python">Check your version of python</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#create-a-virtual-environment">Create a virtual environment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#installing-the-library">Installing the library</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#install-gphotos-sync">Install gphotos-sync</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="#execute-using-docker">Execute using docker</a></li>
-<li class="toctree-l1"><a class="reference internal" href="google-project-setup.html">Creating an OAuth Client ID</a></li>
-<li class="toctree-l1"><a class="reference internal" href="extras.html">Extra Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#running-gphotos-sync">Running gphotos-sync</a></li>
+<li class="toctree-l1"><a class="reference internal" href="oauth2.html">Creating an OAuth Client ID</a></li>
+<li class="toctree-l1"><a class="reference internal" href="login.html">User Login OAuth Flow</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">How-to Guides</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../how-to/nothing.html">TODO</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-to/windows.html">Additional Setup for Windows Machines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-to/cron.html">Scheduling a Regular Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-to/comparison.html">Comparing The Google Photos Library With Local files</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Explanations</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../explanations/notes.html">Why do I have to Create an Ouath Client ID</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../explanations/notes.html#why-is-google-photos-sync-read-only">Why is Google Photos Sync Read Only</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../explanations/googleapiissues.html">Known Issues with Google API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explanations/folders.html">Folder Layout</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explanations/notes.html">Why is Google Photos Sync Read Only</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explanations/tokens.html">Google OAuth Tokens for gphotos-sync</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explanations/googleapiissues.html">Known Issues</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../reference/contributing.html">Contributing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../reference/comparison.html">Comparing The Google Photos Library With Local files</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/api.html">API</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/gilesknap/gphotos-sync/releases">Releases</a></li>
-<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
 </ul>
 
         </div>
@@ -101,10 +103,47 @@
            <div itemprop="articleBody">
              
   <section id="initial-setup">
-<h1>Initial Setup<a class="headerlink" href="#initial-setup" title="Permalink to this headline"></a></h1>
+<span id="tutorial"></span><h1>Initial Setup<a class="headerlink" href="#initial-setup" title="Permalink to this headline"></a></h1>
 <p>Before you run gphotos_sync for the first time you will need to create
 your own OAuth client ID. This is a once only operation and the instructions
-are here: <a class="reference internal" href="google-project-setup.html#client-id"><span class="std std-ref">Creating an OAuth Client ID</span></a></p>
+are here: <a class="reference internal" href="oauth2.html#client-id"><span class="std std-ref">Creating an OAuth Client ID</span></a>.</p>
+<ul class="simple">
+<li><p>Once the client ID is created, download it as <code class="docutils literal notranslate"><span class="pre">client_secret.json</span></code> and save
+it under the application configuration directory:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">~/Library/Application</span> <span class="pre">Support/gphotos-sync/</span></code> under Mac OS X,</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">~/.config/gphotos-sync/</span></code> under Linux,</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">C:\Users\&lt;username&gt;\AppData\Local\gphotos-sync\gphotos-sync\</span></code> under Windows.</p></li>
+</ul>
+</li>
+</ul>
+<p>If you are running Windows, also see <a class="reference internal" href="../how-to/windows.html#windows"><span class="std std-ref">Additional Setup for Windows Machines</span></a>.</p>
+<p>You are ready to run gphotos-sync for the first time, either locally or
+inside of a container. The first run will require a user login see
+<a class="reference internal" href="login.html#login"><span class="std std-ref">User Login OAuth Flow</span></a></p>
+</section>
+<section id="execute-in-a-container">
+<h1>Execute in a container<a class="headerlink" href="#execute-in-a-container" title="Permalink to this headline"></a></h1>
+<p>This project now automatically releases a container image with each release.
+The latest image will be here <code class="docutils literal notranslate"><span class="pre">ghcr.io/gilesknap/gphotos-sync</span></code>.</p>
+<p>Your container has two volumes <code class="docutils literal notranslate"><span class="pre">/config</span></code> for the client_secret.json file and
+<code class="docutils literal notranslate"><span class="pre">/storage</span></code> for the backup data. You should map these to host folders if you
+want to see them outside of the container.</p>
+<p>Hence the typical way to launch the container with docker runtime would be:</p>
+<blockquote>
+<div><p>$ CONFIG=$HOME/.config/gphotos-sync
+$ STORAGE=$HOME/My_photos_backup
+$ docker run –rm -v $CONFIG:/config -v $STORAGE:/storage –net=host -it ghcr.io/gilesknap/gphotos-sync /STORAGE</p>
+</div></blockquote>
+<p>The option –net=host is required for the first invocation only, so that the
+browser can find authentication service.</p>
+<p>Note that if you are running on a NAS or other headless server you will first
+need to run locally so that you can do initial login flow with a browser.
+Then copy the .gphotos.token to the server. For this
+first run you could use the following options so that no backup is performed:</p>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">--skip-files</span> <span class="pre">--skip-albums</span> <span class="pre">--skip-index</span></code></p>
+</div></blockquote>
 </section>
 <section id="local-installation">
 <h1>Local Installation<a class="headerlink" href="#local-installation" title="Permalink to this headline"></a></h1>
@@ -126,27 +165,46 @@ installation will not interfere with any existing Python software:</p>
 </pre></div>
 </div>
 </section>
-<section id="installing-the-library">
-<h2>Installing the library<a class="headerlink" href="#installing-the-library" title="Permalink to this headline"></a></h2>
+<section id="install-gphotos-sync">
+<h2>Install gphotos-sync<a class="headerlink" href="#install-gphotos-sync" title="Permalink to this headline"></a></h2>
 <p>You can now use <code class="docutils literal notranslate"><span class="pre">pip</span></code> to install the application:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">gphotos</span><span class="o">-</span><span class="n">sync</span>
 </pre></div>
 </div>
 <p>If you require a feature that is not currently released you can also install
-from github:</p>
+directly from github:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">git</span><span class="o">+</span><span class="n">git</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">gilesknap</span><span class="o">/</span><span class="n">gphotos</span><span class="o">-</span><span class="n">sync</span><span class="o">.</span><span class="n">git</span>
 </pre></div>
 </div>
-<p>The library should now be installed and the commandline interface on your path.
+<p>The application should now be installed and the commandline interface on your path.
 You can check the version that has been installed by typing:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">gphotos</span><span class="o">-</span><span class="n">sync</span> <span class="o">--</span><span class="n">version</span>
 </pre></div>
 </div>
 </section>
 </section>
-<section id="execute-using-docker">
-<h1>Execute using docker<a class="headerlink" href="#execute-using-docker" title="Permalink to this headline"></a></h1>
-<p>TODO: add info here for the ghcr.io image</p>
+<section id="running-gphotos-sync">
+<h1>Running gphotos-sync<a class="headerlink" href="#running-gphotos-sync" title="Permalink to this headline"></a></h1>
+<p>To begin a backup with default settings create a new empty TARGET DIRECTORY
+in which your backups will go and type:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">gphotos</span><span class="o">-</span><span class="n">sync</span> <span class="o">&lt;</span><span class="n">TARGET_DIRECTORY</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>For the first invocation you will need login the user whose files you
+are backing up, see <a class="reference internal" href="login.html#login"><span class="std std-ref">User Login OAuth Flow</span></a>.</p>
+<p>Once this process has started it will first index all of your library and then
+start a download of the files. The download is multithreaded and will use
+most of your internet bandwidth, you can throttle it if needed using the
+<code class="docutils literal notranslate"><span class="pre">--threads</span></code> option.</p>
+<p>For a description of additional command line parameters type:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">gphotos</span><span class="o">-</span><span class="n">sync</span> <span class="o">--</span><span class="n">help</span>
+</pre></div>
+</div>
+<p>As the download progresses it will create folders and files in your target
+directory. The layout of these is described in <a class="reference internal" href="../explanations/folders.html#folders"><span class="std std-ref">Folder Layout</span></a>.</p>
+<p>Next time you run gphotos-sync it will incrementally download all new files
+since the previous. It is OK to abort gphotos-sync and restart it, this will
+just cause it to continue from where the abort happened.</p>
 </section>
 
 
@@ -154,7 +212,7 @@ You can check the version that has been installed by typing:</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="../index.html" class="btn btn-neutral float-left" title="Google Photos Sync (gphotos-sync)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="google-project-setup.html" class="btn btn-neutral float-right" title="Creating an OAuth Client ID" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="oauth2.html" class="btn btn-neutral float-right" title="Creating an OAuth Client ID" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

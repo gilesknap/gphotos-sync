@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Google Photos Sync (gphotos-sync) &mdash; gphotos-sync 2.14.3.dev111+g6219c2d documentation</title>
+  <title>Google Photos Sync (gphotos-sync) &mdash; gphotos-sync 2.14.3.dev124+g251ec69 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
@@ -46,28 +46,30 @@
               <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="tutorials/installation.html">Initial Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/installation.html#execute-in-a-container">Execute in a container</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorials/installation.html#local-installation">Local Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorials/installation.html#execute-using-docker">Execute using docker</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorials/google-project-setup.html">Creating an OAuth Client ID</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorials/extras.html">Extra Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/installation.html#running-gphotos-sync">Running gphotos-sync</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/oauth2.html">Creating an OAuth Client ID</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/login.html">User Login OAuth Flow</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">How-to Guides</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="how-to/nothing.html">TODO</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-to/windows.html">Additional Setup for Windows Machines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-to/cron.html">Scheduling a Regular Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-to/comparison.html">Comparing The Google Photos Library With Local files</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Explanations</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="explanations/notes.html">Why do I have to Create an Ouath Client ID</a></li>
-<li class="toctree-l1"><a class="reference internal" href="explanations/notes.html#why-is-google-photos-sync-read-only">Why is Google Photos Sync Read Only</a></li>
-<li class="toctree-l1"><a class="reference internal" href="explanations/googleapiissues.html">Known Issues with Google API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="explanations/folders.html">Folder Layout</a></li>
+<li class="toctree-l1"><a class="reference internal" href="explanations/notes.html">Why is Google Photos Sync Read Only</a></li>
+<li class="toctree-l1"><a class="reference internal" href="explanations/tokens.html">Google OAuth Tokens for gphotos-sync</a></li>
+<li class="toctree-l1"><a class="reference internal" href="explanations/googleapiissues.html">Known Issues</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="reference/contributing.html">Contributing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="reference/comparison.html">Comparing The Google Photos Library With Local files</a></li>
 <li class="toctree-l1"><a class="reference internal" href="reference/api.html">API</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/gilesknap/gphotos-sync/releases">Releases</a></li>
-<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
 </ul>
 
         </div>
@@ -98,10 +100,6 @@
 <h1>Google Photos Sync (gphotos-sync)<a class="headerlink" href="#google-photos-sync-gphotos-sync" title="Permalink to this headline"></a></h1>
 <p><a class="reference external" href="https://github.com/gilesknap/gphotos-sync/actions?query=workflow%3A%22Code+CI%22"><img alt="Code CI" src="https://github.com/gilesknap/gphotos-sync/workflows/Code%20CI/badge.svg?branch=main" /></a> <a class="reference external" href="https://github.com/gilesknap/gphotos-sync/actions?query=workflow%3A%22Docs+CI%22"><img alt="Docs CI" src="https://github.com/gilesknap/gphotos-sync/workflows/Docs%20CI/badge.svg?branch=main" /></a> <a class="reference external" href="https://codecov.io/gh/gilesknap/gphotos-sync"><img alt="Test Coverage" src="https://codecov.io/gh/gilesknap/gphotos-sync/branch/main/graph/badge.svg" /></a> <a class="reference external" href="https://pypi.org/project/gphotos-sync"><img alt="Latest PyPI version" src="https://img.shields.io/pypi/v/gphotos-sync.svg" /></a> <a class="reference external" href="https://opensource.org/licenses/Apache-2.0"><img alt="Apache License" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" /></a></p>
 <p>Google Photos Sync is a backup tool for your Google Photos cloud storage.</p>
-<p>It downloads all photos and videos the user has uploaded to Google Photos.
-It also organizes the media in the local file system using
-album information. Additional Google Photos ‘Creations’ such as
-animations, panoramas, movies, effects and collages are also backed up.</p>
 <table class="docutils align-default">
 <colgroup>
 <col style="width: 18%" />
@@ -115,7 +113,7 @@ animations, panoramas, movies, effects and collages are also backed up.</p>
 <td><p><a class="reference external" href="https://github.com/gilesknap/gphotos-sync">https://github.com/gilesknap/gphotos-sync</a></p></td>
 </tr>
 <tr class="row-odd"><td><p>Documentation</p></td>
-<td><p><a class="reference external" href="https://gilesknap-org.github.io/gphotos-sync">https://gilesknap-org.github.io/gphotos-sync</a></p></td>
+<td><p><a class="reference external" href="https://gilesknap.github.io/gphotos-sync">https://gilesknap.github.io/gphotos-sync</a></p></td>
 </tr>
 <tr class="row-even"><td><p>Releases</p></td>
 <td><p><a class="reference external" href="https://github.com/gilesknap/gphotos-sync/releases">https://github.com/gilesknap/gphotos-sync/releases</a></p></td>
@@ -123,9 +121,18 @@ animations, panoramas, movies, effects and collages are also backed up.</p>
 </tbody>
 </table>
 </section>
+<section id="intro">
+<h1>Intro<a class="headerlink" href="#intro" title="Permalink to this headline"></a></h1>
+<p>Google Photos Sync downloads all photos and videos the user has uploaded to
+Google Photos. It also organizes the media in the local file system using
+album information. Additional Google Photos ‘Creations’ such as
+animations, panoramas, movies, effects and collages are also backed up.</p>
+<p>This software is read only and never modifies your cloud library in any way,
+so there is no risk of damaging your data.</p>
+</section>
 <section id="quick-start">
 <h1>Quick Start<a class="headerlink" href="#quick-start" title="Permalink to this headline"></a></h1>
-<p>To get started see the tutorial here.</p>
+<p>To get started see <a class="reference internal" href="tutorials/installation.html#tutorial"><span class="std std-ref">Initial Setup</span></a>.</p>
 <section id="how-the-documentation-is-structured">
 <h2>How the documentation is structured<a class="headerlink" href="#how-the-documentation-is-structured" title="Permalink to this headline"></a></h2>
 <p>Documentation is split into four categories, also accessible from links in the
@@ -137,33 +144,25 @@ side-bar.</p>
 <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="tutorials/installation.html">Initial Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/installation.html#execute-in-a-container">Execute in a container</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorials/installation.html#local-installation">Local Installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="tutorials/installation.html#check-your-version-of-python">Check your version of python</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorials/installation.html#create-a-virtual-environment">Create a virtual environment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorials/installation.html#installing-the-library">Installing the library</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/installation.html#install-gphotos-sync">Install gphotos-sync</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="tutorials/installation.html#execute-using-docker">Execute using docker</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorials/google-project-setup.html">Creating an OAuth Client ID</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="tutorials/google-project-setup.html#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorials/google-project-setup.html#create-a-google-cloud-project">Create a Google Cloud Project</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorials/google-project-setup.html#enable-the-photos-api">Enable the Photos API</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorials/google-project-setup.html#configure-oauth-consent">Configure OAuth Consent</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorials/google-project-setup.html#create-the-oauth-credentials">Create the OAuth Credentials</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorials/google-project-setup.html#publish-the-app">Publish the App</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/installation.html#running-gphotos-sync">Running gphotos-sync</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/oauth2.html">Creating an OAuth Client ID</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/oauth2.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/oauth2.html#create-a-google-cloud-project">Create a Google Cloud Project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/oauth2.html#enable-the-photos-api">Enable the Photos API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/oauth2.html#configure-oauth-consent">Configure OAuth Consent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/oauth2.html#create-the-oauth-credentials">Create the OAuth Credentials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/oauth2.html#publish-the-app">Publish the App</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/oauth2.html#move-client-secret-json">Move client_secret.json</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="tutorials/extras.html">Extra Notes</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="tutorials/extras.html#gps-news">GPS News</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorials/extras.html#introduction">Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorials/extras.html#known-issues">Known Issues</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorials/extras.html#install-and-configure">Install and configure</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorials/extras.html#how-to-use-it">How to use it</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorials/extras.html#running-with-docker">Running with docker</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorials/extras.html#scheduling-a-regular-backup">Scheduling a Regular Backup</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorials/extras.html#rescans">Rescans</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/login.html">User Login OAuth Flow</a></li>
 </ul>
 </div>
 </section>
@@ -173,7 +172,14 @@ side-bar.</p>
 <div class="toctree-wrapper compound">
 <p class="caption" role="heading"><span class="caption-text">How-to Guides</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="how-to/nothing.html">TODO</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-to/windows.html">Additional Setup for Windows Machines</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="how-to/windows.html#python">Python</a></li>
+<li class="toctree-l2"><a class="reference internal" href="how-to/windows.html#symlinks">Symlinks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="how-to/windows.html#alternative-approach">Alternative approach</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="how-to/cron.html">Scheduling a Regular Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-to/comparison.html">Comparing The Google Photos Library With Local files</a></li>
 </ul>
 </div>
 </section>
@@ -183,27 +189,48 @@ side-bar.</p>
 <div class="toctree-wrapper compound">
 <p class="caption" role="heading"><span class="caption-text">Explanations</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="explanations/notes.html">Why do I have to Create an Ouath Client ID</a></li>
-<li class="toctree-l1"><a class="reference internal" href="explanations/notes.html#why-is-google-photos-sync-read-only">Why is Google Photos Sync Read Only</a></li>
-<li class="toctree-l1"><a class="reference internal" href="explanations/googleapiissues.html">Known Issues with Google API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="explanations/folders.html">Folder Layout</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="explanations/folders.html#media-files">Media Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="explanations/folders.html#other-files">Other Files</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="explanations/notes.html">Why is Google Photos Sync Read Only</a></li>
+<li class="toctree-l1"><a class="reference internal" href="explanations/tokens.html">Google OAuth Tokens for gphotos-sync</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="explanations/tokens.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="explanations/tokens.html#why-do-we-need-client-id">Why Do We Need Client ID ?</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="explanations/googleapiissues.html">Known Issues</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="explanations/googleapiissues.html#known-issues-with-google-api">Known Issues with Google API</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="explanations/googleapiissues.html#pending-api-issues">Pending API Issues</a></li>
+<li class="toctree-l3"><a class="reference internal" href="explanations/googleapiissues.html#fixed-api-issues">Fixed API Issues</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="explanations/googleapiissues.html#other-issues">Other Issues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="explanations/googleapiissues.html#gps-workaround">GPS workaround</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </section>
 <section class="columns" id="reference">
 <h3><a class="reference internal" href="reference.html"><span class="doc">Reference</span></a><a class="headerlink" href="#reference" title="Permalink to this headline"></a></h3>
-<p>Practical step-by-step guides for the more experienced user.</p>
+<p>Detailed information including autogenerated code documentation.</p>
 <div class="toctree-wrapper compound">
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="reference/contributing.html">Contributing</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="reference/contributing.html#running-the-tests">Running the tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/contributing.html#running-the-tests">Running the tests</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="reference/contributing.html#to-run-in-a-container">To run in a container</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/contributing.html#to-run-locally">To run locally</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="reference/contributing.html#code-styling">Code Styling</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference/contributing.html#documentation">Documentation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference/contributing.html#release-process">Release Process</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference/contributing.html#updating-the-tools">Updating the tools</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="reference/comparison.html">Comparing The Google Photos Library With Local files</a></li>
 <li class="toctree-l1"><a class="reference internal" href="reference/api.html">API</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="reference/api.html#gphotos-sync"><code class="docutils literal notranslate"><span class="pre">gphotos_sync</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference/api.html#gphotos-sync-main"><code class="docutils literal notranslate"><span class="pre">gphotos_sync.Main</span></code></a></li>
@@ -216,7 +243,6 @@ side-bar.</p>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/gilesknap/gphotos-sync/releases">Releases</a></li>
-<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
 </ul>
 </div>
 </section>
