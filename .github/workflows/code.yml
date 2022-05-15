@@ -213,7 +213,7 @@ jobs:
         with:
           file: .devcontainer/Dockerfile
           context: .
-          platforms: linux/amd64,linux/arm/v7,linux/arm/v8
+          platforms: linux/amd64,linux/arm/v7,linux/arm64/v8
           push: true
           build-args: BASE=python:3.10-slim
           tags: ${{ steps.meta.outputs.tags }}

@@ -89,12 +89,29 @@ You can check the version that has been installed by typing::
 
     gphotos-sync --version
 
-For a description of additional command line parameters type::
-
-    gphotos-sync --help
+Running gphotos-sync
+====================
 
 To begin a backup with default settings create a new empty TARGET DIRECTORY 
 in which your backups will go and type::
 
     gphotos-sync <TARGET_DIRECTORY>
 
+For the first invocation you will need login the user whose files you
+are backing up, see `Login`.
+
+Once this process has started it will first index all of your library and then
+start a download of the files. The download is multithreaded and will use
+most of your internet bandwidth, you can throttle it if needed using the 
+``--threads`` option.
+
+For a description of additional command line parameters type::
+
+    gphotos-sync --help
+
+As the download progresses it will create folders and files in your target 
+directory. The layout of these is described in `Folders`.
+
+Next time you run gphotos-sync it will incrementally download all new files
+since the previous. It is OK to abort gphotos-sync and restart it, this will
+just cause it to continue from where the abort happened.
