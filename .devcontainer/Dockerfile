@@ -9,7 +9,7 @@ FROM ${BASE} as base
 
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive && \
     apt-get install -y --no-install-recommends \
-    gcc && \
+    gcc ethtool && \
     rm -rf /var/lib/apt/lists/*
 
 # use root to pin where the packages will install
