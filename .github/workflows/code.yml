@@ -64,7 +64,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-latest", "windows-latest"] # can add , macos-latest
+        os: ["ubuntu-latest"] # can add , macos-latest "windows-latest"
         # keep matrix tight for now to avoid HTTP 429 errors
         # TODO: restore macos and 3.9 and 3.10
         python: ["3.8"]
@@ -200,6 +200,10 @@ jobs:
             type=raw,value=latest,enable={{is_default_branch}}
             type=raw,value=pr
 
+      # required for multi-arch build
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v1
@@ -209,6 +213,7 @@ jobs:
         with:
           file: .devcontainer/Dockerfile
           context: .
+          platforms: linux/amd64,linux/arm/v7,linux/arm/v8
           push: true
           build-args: BASE=python:3.10-slim
           tags: ${{ steps.meta.outputs.tags }}
