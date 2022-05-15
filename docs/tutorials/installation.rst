@@ -27,7 +27,23 @@ Execute in a container
 This project now automatically releases a container image with each release to
 Pypi. The latest image will be here ``ghcr.io/gilesknap/gphotos-sync``.
 
-docker run -v /home/giles/.config/gphotos-sync:/root/.config/gphotos-sync -v /tmp/photos:/photos --net=host -it gphotos-sync /photos --skip-files --skip-albums --skip-index
+Your container will need access to two host filesystem items. (You could
+use container volumes if you prefer but would need to bootstrap the 
+client_secret.json)
+
+    - The hosts client_secret.json filepath denoted <SECRET>
+    - The host (or shared) folder for your backup denoted <ROOT>
+
+Hence you can run the container with the docker runtime like this:
+
+    ``docker run -v <SECRET>/.config/gphotos-sync -v <ROOT>:/photos --net=host -it ghcr.io/gilesknap/gphotos-sync /photos``
+
+Note that if you are running on a NAS or other headless server you will first 
+need to run locally so that you can do initial login flow.
+Then copy the .gphotos.token to the server. For this
+first run you could use the following options so that no backup is performed:
+
+    ``--skip-files --skip-albums --skip-index``
 
 
 Local Installation
