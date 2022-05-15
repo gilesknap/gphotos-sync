@@ -46,7 +46,10 @@ available to every user.
 Most normal use of gphotos-sync does not exceed the free tier. If it does
 you will not be charged. The code is supposed to throttle back and go slower
 to drop back into the free usage rate. However there is an issue with this 
-feature at present and you will likely see an error 
-``429 Client Error: Too Many Requests for url``. See 
-https://github.com/gilesknap/gphotos-sync/issues/320,
-https://github.com/gilesknap/gphotos-sync/issues/202
+feature at present and you will likely see an error:
+
+    ``429 Client Error: Too Many Requests for url``. 
+
+See https://github.com/gilesknap/gphotos-sync/issues/320,
+https://github.com/gilesknap/gphotos-sync/issues/202 for details and 
+workarounds.
