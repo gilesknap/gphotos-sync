@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Comparing The Google Photos Library With Local files &mdash; gphotos-sync 2.14.3.dev124+g251ec69 documentation</title>
+  <title>Comparing The Google Photos Library With Local files &mdash; gphotos-sync 2.14.3.dev126+g0fea8ef documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
@@ -99,6 +99,18 @@
              
   <section id="comparing-the-google-photos-library-with-local-files">
 <h1>Comparing The Google Photos Library With Local files<a class="headerlink" href="#comparing-the-google-photos-library-with-local-files" title="Permalink to this headline"></a></h1>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This feature is deprecated. Working out if files in the filesystem match
+those in the Google Library more of an art than a science. I used this
+feature to prove that gphotos-sync had worked on my library when I fully
+committed to Google Photos in 2015 and it has not been touched since. It uses
+complicated SQL functions to do the comparison and is probably not working
+anymore.</p>
+<p>I’m leaving it enabled in case anyone wants to have a go or if any
+contributors want to resurrect it. But I’m not supporting this feature
+anymore.</p>
+</div>
 <p>There will be additional folders created when using the –compare-folder option.</p>
 <p>The option is used to make a
 comparison of the contents of your library with a local folder such as a previous backup. The comparison does not require

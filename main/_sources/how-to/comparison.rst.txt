@@ -1,8 +1,7 @@
 Comparing The Google Photos Library With Local files
 ====================================================
 
-.. note:
-
+.. warning::
   This feature is deprecated. Working out if files in the filesystem match
   those in the Google Library more of an art than a science. I used this 
   feature to prove that gphotos-sync had worked on my library when I fully 

@@ -31,18 +31,18 @@ Your container has two volumes ``/config`` for the client_secret.json file and
 ``/storage`` for the backup data. You should map these to host folders if you
 want to see them outside of the container.
 
-Hence the typical way to launch the container with docker runtime would be:
+Hence the typical way to launch the container with docker runtime would be::
 
     $ CONFIG=$HOME/.config/gphotos-sync
     $ STORAGE=$HOME/My_photos_backup
-    $ docker run --rm -v $CONFIG:/config -v $STORAGE:/storage --net=host -it ghcr.io/gilesknap/gphotos-sync /STORAGE
+    $ docker run --rm -v $CONFIG:/config -v $STORAGE:/storage --net=host -it ghcr.io/gilesknap/gphotos-sync /storage
 
 The option --net=host is required for the first invocation only, so that the
 browser can find authentication service.
 
 Note that if you are running on a NAS or other headless server you will first 
 need to run locally so that you can do initial login flow with a browser.
-Then copy the .gphotos.token to the server. For this
+Then copy <TARGET>/.gphotos.token to the server. For this
 first run you could use the following options so that no backup is performed:
 
     ``--skip-files --skip-albums --skip-index``
