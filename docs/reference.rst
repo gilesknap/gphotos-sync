@@ -11,6 +11,7 @@ Practical step-by-step guides for the more experienced user.
     reference/contributing
     reference/comparison
     reference/api
+    reference/extras
     Releases <https://github.com/gilesknap/gphotos-sync/releases>
     Index <genindex.html#http://>
 

@@ -20,7 +20,7 @@ Releases       https://github.com/gilesknap/gphotos-sync/releases
 Quick Start
 ===========
 
-To get started see the tutorial here. 
+To get started see `Tutorial`. 
 
 
 .. |code_ci| image:: https://github.com/gilesknap/gphotos-sync/workflows/Code%20CI/badge.svg?branch=main

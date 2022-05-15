@@ -9,7 +9,9 @@ Overview
 .. contents::
 
 This document will take you through the steps needed to set up a Google Cloud
-project to make use of this tool.
+project and create an OAuth client ID for gphoto-sync.
+
+For a discussion of the purpose of this ID see `Tokens`.
 
 Each step here assumes that you're logged into a personal Google account.
 
@@ -125,7 +127,7 @@ Configure OAuth Consent
         :align: center
         :scale: 75
 
-# . Summary
+#. Summary
 
     #. You will now see a summary screen like this
     #. Review the summary and press **Back to Dashboard**.
@@ -161,6 +163,7 @@ Create the OAuth Credentials
         :align: center
         :scale: 75
 
+
 Publish the App
 ---------------
 
@@ -177,8 +180,15 @@ Publish the App
 At this point you should be able to run ``gphotos-sync`` using the instructions
 found in the README_.
 
-
-.. _`this Linux Uprising post`: https://www.linuxuprising.com/2019/06/how-to-backup-google-photos-to-your.html
 .. _`the Google Cloud docs`: https://developers.google.com/identity/protocols/oauth2#expiration
 .. _`Issue #290`: https://github.com/gilesknap/gphotos-sync/issues/290
-.. _README: ../README.rst
+.. _README: https://github.com/gilesknap/gphotos-sync/README.rst
+
+
+Move client_secret.json
+-----------------------
+
+    #. The client_secret.json must be moved to the correct location
+    #. Each supported operating system has a different location where it will 
+       look for this file.
+    #. Return the `Tutorial` for details of where to put this file.

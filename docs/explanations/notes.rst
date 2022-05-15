@@ -1,8 +1,3 @@
-Why do I have to Create an Ouath Client ID
-==========================================
-
-TODO
-
 Why is Google Photos Sync Read Only
 ===================================
 

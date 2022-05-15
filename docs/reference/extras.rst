@@ -1,6 +1,9 @@
 Extra Notes
 ===========
 
+TODO: these are some notes from the previous README that need merging in to the
+new documentation format.
+
 GPS News
 --------
 For a neat workaround to the GPS info stripping see this project  https://github.com/DennyWeinberg/manager-for-google-photos
@@ -44,23 +47,6 @@ Known Issues
   - To fix, use the parameter --db-path to specify a location for your DB on the local disk. This will perform better anyway.
 
 
-Install and configure
----------------------
-
-For some help on getting python working on Windows see https://github.com/gilesknap/gphotos-sync/issues/63 or use WSL2 (available since 20H2) + docker with wsl2 integration + Switch to linux containers.
-
-On linux, you can install pipenv using ``pip3 install --user pipenv`` and then make sure that ``~/.local/bin/`` is in your path.
-
-To install the latest published version from PyPi, simply::
-
-   mkdir gphotos-sync
-   cd gphotos-sync
-   pipenv install gphotos-sync
-
-Or if you don't want to use pipenv, create a virtual environment and::
-
-   pip install gphotos-sync
-
 (see https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/ if you are not familiar with virtualenv)
 
 To work from the source code, clone the git repository and use pipenv to create a virtual environment and run
@@ -79,12 +65,6 @@ all users would share this resource limit. This is a little fiddly but only need
 
 - For the most up to date notes on creating a client id see `bullyrooks.com`_.
 - My previous notes on creating a client id are here `Oauth2 for gphotos-sync`_
-- Once the client ID is created, download it as ``client_secret.json`` and save it under the application
-  configuration directory:
-
-  - ``~/Library/Application Support/gphotos-sync/`` under Mac OS X,
-  - ``~/.config/gphotos-sync/`` under Linux,
-  - ``C:\Users\<username>\AppData\Local\gphotos-sync\gphotos-sync\`` under Windows.
 
 Also note that for Windows you will need to enable symbolic links permission for the account that gphoto-sync
 will run under. See `Enabling SymLinks on Windows`_.
