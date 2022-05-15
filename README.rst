@@ -25,7 +25,7 @@ so there is no risk of damaging your data.
 Quick Start
 ===========
 
-To get started see `Tutorial`. 
+To get started see `Tutorial <https://gilesknap.github.io/gphotos-sync/main/tutorials/installation.html>`_
 
 
 .. |code_ci| image:: https://github.com/gilesknap/gphotos-sync/workflows/Code%20CI/badge.svg?branch=main
