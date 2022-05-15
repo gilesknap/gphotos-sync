@@ -11,7 +11,7 @@ This is the internal code reference for gphotos_sync
 .. data:: gphotos_sync.__version__
     :type: str
 
-    Version number as calculated by https://github.com/dls-controls/versiongit
+    Version number as calculated by https://github.com/gilesknap-org/versiongit
 
 .. automodule:: gphotos_sync.Main
     :members:
