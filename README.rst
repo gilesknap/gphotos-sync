@@ -13,7 +13,7 @@ animations, panoramas, movies, effects and collages are also backed up.
 ============== ==============================================================
 PyPI           ``pip install gphotos-sync``
 Source code    https://github.com/gilesknap/gphotos-sync
-Documentation  https://dls-controls.github.io/gphotos-sync
+Documentation  https://gilesknap-org.github.io/gphotos-sync
 Releases       https://github.com/gilesknap/gphotos-sync/releases
 ============== ==============================================================
 
@@ -47,4 +47,4 @@ To get started see the tutorial here.
     Anything below this line is used when viewing README.rst and will be replaced
     when included in index.rst
 
-See https://dls-controls.github.io/gphotos-sync for more detailed documentation.
+See https://gilesknap-org.github.io/gphotos-sync for more detailed documentation.

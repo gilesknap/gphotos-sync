@@ -3,9 +3,6 @@
 Creating an OAuth Client ID
 ===========================
 
-TODO: this needs much improvement including screenshots and updating for 
-the latest workflow.
-
 Overview
 --------
 
@@ -14,31 +11,48 @@ Overview
 This document will take you through the steps needed to set up a Google Cloud
 project to make use of this tool.
 
-Most information was taken from `this Linux Uprising post`_ and then modified
-based on new findings.
-
-Each step here assumes that you're logged into your Google account.
+Each step here assumes that you're logged into a personal Google account.
 
 .. note::
 
-   The steps outlined here are correct as of 2021-06-06. The author makes no
-   attempt to keep up-to-date with the latest changes to the Google Cloud web
-   interface or settings.
+   The steps outlined here are correct as of May 2022. Their is quite a 
+   bit of churn in the Google Cloud Console UI so the screens may change a 
+   bit. 
 
 
-Create the Google Cloud Project
--------------------------------
+Create a Google Cloud Project
+-----------------------------
 
-#. Head to https://console.cloud.google.com/cloud-resource-manager?pli=1
+#. Head to https://console.cloud.google.com
 
-   * If you don't yet have any Google Cloud projects, select your country
-     and agree the to the Terms of Service.
+    * If you have not set up Google Cloud before, select your country
+      and agree the to the Terms of Service.
 
-#. Press **Create Project**.
-#. Enter a project name. For example, "Photos Sync". This name must be unique
+    .. image:: oauth-images/0.png
+        :align: center
+        :scale: 100 %
+  
+#. In the top banner the currently selected project is shown. If you have
+   no previous projects this will say 'Select a project'
+
+   * Click on the current project name or 'Select a project'
+
+   * This will bring up the 'Select a Project' dialog
+ 
+    .. image:: oauth-images/1.png
+        :align: center
+        :scale: 100  
+
+#. Press **New Project**.
+#. Enter a project name. For example, "gphotos". This name must be unique
    within your account and cannot be changed in the future.
 #. Leave **Location** as the default "No Organization".
 #. Press Create.
+
+    .. image:: oauth-images/2.png
+        :align: center
+        :scale: 100
+
 
 
 Enable the Photos API
@@ -46,41 +60,79 @@ Enable the Photos API
 
 #. Ensure that the project you made above is the active project.
 #. Click on the top-left hamburger menu and find **APIs & Services** > **Library**.
-#. Search for the **Photos Library API** by Google.
+
+    .. image:: oauth-images/3.png
+        :align: center
+        :scale: 75
+
+#. Search for the **Photos Library API** by Google and select it.
+    .. image:: oauth-images/4.png
+        :align: center
+        :scale: 75
+
 #. Enable it.
 
+    .. image:: oauth-images/5.png
+        :align: center
+        :scale: 75
 
 Configure OAuth Consent
 -----------------------
 
 #. Find **APIs & Services** > **OAuth consent screen**
+
+    .. image:: oauth-images/6.png
+        :align: center
+        :scale: 75
+
 #. Set **User Type** to External.
 #. Press Create
+
+    .. image:: oauth-images/7-oauth_concent.png
+        :align: center
+        :scale: 75
+
 #. App Registration - OAuth consent screen:
 
-   #. Set your **App Name**. For example, "Photos Sync". Note that this does
+   #. Set your **App Name**. For example, "gphotos". Note that this does
       **not** have to be the same as the project name. Do not include "Google"
       in the name or this will fail.
    #. Enter your email address as the **User support email**.
    #. Enter your email address as the **Developer contact information**.
-   #. Add other fields as desired (they can be left blank).
+   #. Leave all other fields.
    #. Press **Save and Continue**.
+
+    .. image:: oauth-images/8-app_registration.png
+        :align: center
+        :scale: 75
 
 #. App Registration - Scopes
 
    #. Nothing is *needed* here - you can just ignore everything and press
       **Save and Continue**.
+
+    .. image:: oauth-images/9-scopes.png
+        :align: center
+        :scale: 75
+
 #. App Registration - Test Users:
 
-   #. Add your email address as a test user.
+   #. Nothing needed here as you are going to publish the project. This means
+      it will no longer be in the testing state.
    #. Press **Save and Continue**.
 
-#. App Registration - Optional Info:
+    .. image:: oauth-images/10-test_users.png
+        :align: center
+        :scale: 75
 
-   #. Nothing is required here, add things if you want.
-   #. Press **Save and Continue**.
+# . Summary
 
-#. Review the summary and press **Back to Dashboard**.
+    #. You will now see a summary screen like this
+    #. Review the summary and press **Back to Dashboard**.
+
+    .. image:: oauth-images/11-summary.png
+        :align: center
+        :scale: 75
 
 
 Create the OAuth Credentials
@@ -88,11 +140,26 @@ Create the OAuth Credentials
 
 #. Find **APIs & Services** > **Credentials**
 #. Press **+ Create Credentials** and select **OAuth client ID**.
-#. Application Type: Desktop App
-#. Name: "Photos Sync OAuth Client"
-#. Save the Client ID and the Secret in your password manager.
-#. Download the OAuth client ID as JSON and save it as ``client_secret.json``.
 
+
+    .. image:: oauth-images/12-create_creds.png
+        :align: center
+        :scale: 75
+
+#. Choose Desktop App 
+    #. Choose name for your credentials e.g. gphotos
+    #. Click **Create**
+
+    .. image:: oauth-images/14-create_id.png
+        :align: center
+        :scale: 75
+
+#. Click **Download JSON** to download the OAuth client ID as JSON and 
+   save it as ``client_secret.json``.
+
+    .. image:: oauth-images/15-created.png
+        :align: center
+        :scale: 75
 
 Publish the App
 ---------------
