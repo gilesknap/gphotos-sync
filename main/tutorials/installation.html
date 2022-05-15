@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Initial Setup &mdash; gphotos-sync 0.1.dev1+gf104261 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/logo.png"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Creating an OAuth Client ID" href="google-project-setup.html" />
+    <link rel="prev" title="Google Photos Sync (gphotos-sync)" href="../index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../index.html" class="icon icon-home"> gphotos-sync
+            <img src="../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                master
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Initial Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#local-installation">Local Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#check-your-version-of-python">Check your version of python</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#create-a-virtual-environment">Create a virtual environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installing-the-library">Installing the library</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#execute-using-docker">Execute using docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="google-project-setup.html">Creating an OAuth Client ID</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extras.html">Extra Notes</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">How-to Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../how-to/nothing.html">TODO</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Explanations</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../explanations/notes.html">Why do I have to Create an Ouath Client ID</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explanations/notes.html#why-is-google-photos-sync-read-only">Why is Google Photos Sync Read Only</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explanations/googleapiissues.html">Known Issues with Google API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/comparison.html">Comparing The Google Photos Library With Local files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/api.html">API</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/gilesknap/gphotos-sync/releases">Releases</a></li>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">gphotos-sync</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Initial Setup</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/tutorials/installation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="initial-setup">
+<h1>Initial Setup<a class="headerlink" href="#initial-setup" title="Permalink to this headline"></a></h1>
+<p>Before you run gphotos_sync for the first time you will need to create
+your own OAuth client ID. This is a once only operation and the instructions
+are here: <a class="reference internal" href="google-project-setup.html#client-id"><span class="std std-ref">Creating an OAuth Client ID</span></a></p>
+</section>
+<section id="local-installation">
+<h1>Local Installation<a class="headerlink" href="#local-installation" title="Permalink to this headline"></a></h1>
+<p>To install on your workstation (linux Mac or Windows) follow this section.</p>
+<section id="check-your-version-of-python">
+<h2>Check your version of python<a class="headerlink" href="#check-your-version-of-python" title="Permalink to this headline"></a></h2>
+<p>You will need python 3.7 or later. You can check your version of python by
+typing into a terminal:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">--</span><span class="n">version</span>
+</pre></div>
+</div>
+</section>
+<section id="create-a-virtual-environment">
+<h2>Create a virtual environment<a class="headerlink" href="#create-a-virtual-environment" title="Permalink to this headline"></a></h2>
+<p>It is recommended that you install into a “virtual environment” so this
+installation will not interfere with any existing Python software:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">venv</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">venv</span>
+<span class="n">source</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">venv</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">activate</span>
+</pre></div>
+</div>
+</section>
+<section id="installing-the-library">
+<h2>Installing the library<a class="headerlink" href="#installing-the-library" title="Permalink to this headline"></a></h2>
+<p>You can now use <code class="docutils literal notranslate"><span class="pre">pip</span></code> to install the application:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">gphotos</span><span class="o">-</span><span class="n">sync</span>
+</pre></div>
+</div>
+<p>If you require a feature that is not currently released you can also install
+from github:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">git</span><span class="o">+</span><span class="n">git</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">gilesknap</span><span class="o">/</span><span class="n">gphotos</span><span class="o">-</span><span class="n">sync</span><span class="o">.</span><span class="n">git</span>
+</pre></div>
+</div>
+<p>The library should now be installed and the commandline interface on your path.
+You can check the version that has been installed by typing:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">gphotos</span><span class="o">-</span><span class="n">sync</span> <span class="o">--</span><span class="n">version</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="execute-using-docker">
+<h1>Execute using docker<a class="headerlink" href="#execute-using-docker" title="Permalink to this headline"></a></h1>
+<p>TODO: add info here for the ghcr.io image</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../index.html" class="btn btn-neutral float-left" title="Google Photos Sync (gphotos-sync)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="google-project-setup.html" class="btn btn-neutral float-right" title="Creating an OAuth Client ID" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p></p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+   
+  <div id="other-versions-div" class="rst-versions" data-toggle="rst-versions" role="note" aria-label="Versions" style="visibility: hidden">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      <span class="fa fa-book"> Other Versions</span>
+      master
+      <span class="fa fa-caret-down"></span>
+    </span>
+    <div class="rst-other-versions">
+      <dl id="other-versions-dl"/>
+    </div>
+  </div>
+  <script>
+    function addVersion(name) {
+      var dd = document.createElement("dd");
+      var a = document.createElement("a");
+      a.href = "../../" + name;
+      a.innerText = name;
+      dd.appendChild(a);
+      document.getElementById('other-versions-dl').appendChild(dd);
+    }
+    // Get versions.txt and add a version for each line
+    fetch("../../versions.txt").then(response => {
+      if (response.ok) {
+        document.getElementById('other-versions-div').style.visibility = "visible";
+        return response.text().then(text => text.split(/\r?\n/).forEach(addVersion))
+      }
+    });
+  </script>
+
+
+</body>
+</html>
