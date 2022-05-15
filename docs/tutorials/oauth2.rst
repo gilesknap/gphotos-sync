@@ -16,7 +16,6 @@ For a discussion of the purpose of this ID see `Tokens`.
 Each step here assumes that you're logged into a personal Google account.
 
 .. note::
-
    The steps outlined here are correct as of May 2022. Their is quite a 
    bit of churn in the Google Cloud Console UI so the screens may change a 
    bit. 
