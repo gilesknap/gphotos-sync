@@ -37,13 +37,8 @@ Hence the typical way to launch the container with docker runtime would be::
     $ STORAGE=$HOME/My_photos_backup
     $ docker run --rm -v $CONFIG:/config -v $STORAGE:/storage --net=host -it ghcr.io/gilesknap/gphotos-sync /storage
 
-The options --net=host -it are required for the first invocation only, so that the
-browser can find authentication service. 
-
-Note that the authentication flow uses a redirect url that sends authentication 
-token back to the process. The default redirect is localhost:8080 you can 
-adjust these with ``--host <HOSTNAME> --port<PORT_NUMBER>``. At present the 
-flow only accepts localhost for host so I'm not sure what the option is for.
+The option --net=host is required for the first invocation only, so that the
+browser can find authentication service.
 
 Note that if you are running on a NAS or other headless server you will first 
 need to run locally so that you can do initial login flow with a browser.

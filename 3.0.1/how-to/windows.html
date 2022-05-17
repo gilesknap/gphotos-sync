@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Additional Setup for Windows Machines &mdash; gphotos-sync 3.0.1 documentation</title>
+  <title>Additional Setup for Windows Machines &mdash; gphotos-sync 3.0.0 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
@@ -34,7 +34,7 @@
             <img src="../_static/logo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.0.1
+                3.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -57,7 +57,6 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Additional Setup for Windows Machines</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#python">Python</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#virtual-environment">Virtual Environment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#symlinks">Symlinks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#alternative-approach">Alternative approach</a></li>
 </ul>
@@ -124,23 +123,6 @@ to find the full VERSION):</p>
 <p>As an alternative to typing the full path you can add the Scripts folder
 to your path. See
 <a class="reference external" href="https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/">https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/</a>.</p>
-<p>Using the installer downloadable from <a class="reference external" href="https://www.python.org/downloads/">https://www.python.org/downloads/</a> will have
-the same effect and includes a checkbox to add python to your Windows Path.</p>
-</section>
-<section id="virtual-environment">
-<h2>Virtual Environment<a class="headerlink" href="#virtual-environment" title="Permalink to this headline"></a></h2>
-<p>It is recommended you create a virtual environment to run you python code in to
-avoid messing up your root python install. In the below example we create a virtual
-environment on the desktop. In the below example we assume that python has been
-added to your window path variable as above.</p>
-<ul class="simple">
-<li><p>Create a new folder on your desktop called ‘GPhotosSync’</p></li>
-<li><p>Hold shift and right click on your desktop and click ‘Open PowerShell window here’</p></li>
-<li><p>type <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">venv</span> <span class="pre">GPhotosSync</span></code> this will create a virtual environment</p></li>
-<li><p>next activate the environment using the command <code class="docutils literal notranslate"><span class="pre">.\GPhotosSync\Scripts\activate.ps1</span></code></p></li>
-<li><p>you can then install gphotos-sync using the command <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">gphotos-sync</span></code></p></li>
-<li><p>You run it the same way as listed above. But now you need to activate the virtual environment every time you run it.</p></li>
-</ul>
 </section>
 <section id="symlinks">
 <h2>Symlinks<a class="headerlink" href="#symlinks" title="Permalink to this headline"></a></h2>
@@ -195,7 +177,7 @@ See <a class="reference external" href="https://docs.microsoft.com/en-us/windows
   <div id="other-versions-div" class="rst-versions" data-toggle="rst-versions" role="note" aria-label="Versions" style="visibility: hidden">
     <span class="rst-current-version" data-toggle="rst-current-version">
       <span class="fa fa-book"> Other Versions</span>
-      3.0.1
+      3.0.0
       <span class="fa fa-caret-down"></span>
     </span>
     <div class="rst-other-versions">
