@@ -23,6 +23,8 @@ class Authorize:
         token_file: Path,
         secrets_file: Path,
         max_retries: int = 5,
+        host: str = "localhost",
+        port: int = 8080,
     ):
         """A very simple class to handle Google API authorization flow
         for the requests library. Includes saving the token and automatic
@@ -42,6 +44,8 @@ class Authorize:
         self.session = None
         self.token = None
         self.secrets_file = secrets_file
+        self.host = host
+        self.port = port
 
         try:
             with secrets_file.open("r") as stream:
@@ -89,7 +93,7 @@ class Authorize:
             flow = InstalledAppFlow.from_client_secrets_file(
                 self.secrets_file, scopes=self.scope
             )
-            flow.run_local_server(open_browser=False)
+            flow.run_local_server(open_browser=False, host=self.host, port=self.port)
 
             self.session = flow.authorized_session()
 

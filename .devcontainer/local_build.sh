@@ -14,5 +14,5 @@ echo building $container_name ...
 
 # run the build with required build-args for a runtime build
 ln -s ../dist .
-podman build --build-arg BASE=python:3.10-slim -t $container_name .. --file ./Dockerfile
+docker build --build-arg BASE=python:3.10-slim -t $container_name .. --file ./Dockerfile
 unlink dist

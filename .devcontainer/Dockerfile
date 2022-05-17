@@ -39,3 +39,6 @@ VOLUME /config /storage
 
 ENTRYPOINT ["gphotos-sync"]
 CMD ["--version"]
+
+EXPOSE 8080
+

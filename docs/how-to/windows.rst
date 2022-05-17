@@ -24,6 +24,23 @@ As an alternative to typing the full path you can add the Scripts folder
 to your path. See 
 https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/.
 
+Using the installer downloadable from https://www.python.org/downloads/ will have 
+the same effect and includes a checkbox to add python to your Windows Path.
+
+Virtual Environment
+-------------------
+It is recommended you create a virtual environment to run you python code in to 
+avoid messing up your root python install. In the below example we create a virtual 
+environment on the desktop. In the below example we assume that python has been 
+added to your window path variable as above.
+
+- Create a new folder on your desktop called 'GPhotosSync'
+- Hold shift and right click on your desktop and click 'Open PowerShell window here'
+- type ``python -m venv GPhotosSync`` this will create a virtual environment
+- next activate the environment using the command ``.\GPhotosSync\Scripts\activate.ps1``
+- you can then install gphotos-sync using the command ``pip install gphotos-sync``
+- You run it the same way as listed above. But now you need to activate the virtual environment every time you run it.
+
 Symlinks
 --------
 
