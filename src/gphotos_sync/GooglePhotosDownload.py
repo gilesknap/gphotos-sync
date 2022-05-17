@@ -88,7 +88,7 @@ class GooglePhotosDownload(object):
         retries = Retry(
             total=settings.max_retries,
             backoff_factor=5,
-            status_forcelist=[500, 502, 503, 504, 509],
+            status_forcelist=[500, 502, 503, 504, 509, 429],
             allowed_methods=frozenset(["GET", "POST"]),
             raise_on_status=False,
             respect_retry_after_header=True,
