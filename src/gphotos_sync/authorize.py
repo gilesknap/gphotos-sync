@@ -112,7 +112,7 @@ class Authorize:
         retries = Retry(
             total=self.max_retries,
             backoff_factor=5,
-            status_forcelist=[500, 502, 503, 504],
+            status_forcelist=[500, 502, 503, 504, 429],
             allowed_methods=frozenset(["GET", "POST"]),
             raise_on_status=False,
             respect_retry_after_header=True,
