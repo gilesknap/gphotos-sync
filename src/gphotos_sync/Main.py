@@ -106,7 +106,7 @@ class GooglePhotosSyncMain:
     parser.add_argument(
         "--compare-folder",
         action="store",
-        help="root of the local folders to compare to the Photos Library",
+        help="DEPRECATED: root of the local folders to compare to the Photos Library",
     )
     parser.add_argument(
         "--favourites-only",
@@ -239,6 +239,7 @@ class GooglePhotosSyncMain:
     parser.add_argument(
         "--max-retries",
         help="Set the number of retries on network timeout / failures",
+        type=int,
         default=20,
     )
     parser.add_argument(
@@ -246,6 +247,7 @@ class GooglePhotosSyncMain:
         help="Set the number of concurrent threads to use for parallel "
         "download of media - reduce this number if network load is "
         "excessive",
+        type=int,
         default=20,
     )
     parser.add_argument(
@@ -295,6 +297,15 @@ class GooglePhotosSyncMain:
         "the default value is `{0}-{1} {2}`",
         default=None,
     )
+    parser.add_argument(
+        "--port",
+        help="Set the port for login flow redirect",
+        type=int,
+        default=8080,
+    )
+    parser.add_argument(
+        "--host", help="hostname for the login flow redirect", default="localhost"
+    )
     parser.add_help = True
 
     def setup(self, args: Namespace, db_path: Path):
@@ -324,7 +335,12 @@ class GooglePhotosSyncMain:
         )
 
         self.auth = Authorize(
-            scope, credentials_file, secret_file, int(args.max_retries)
+            scope,
+            credentials_file,
+            secret_file,
+            int(args.max_retries),
+            host=args.host,
+            port=args.port,
         )
         self.auth.authorize()
 
