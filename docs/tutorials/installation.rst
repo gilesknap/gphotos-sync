@@ -20,6 +20,7 @@ You are ready to run gphotos-sync for the first time, either locally or
 inside of a container. The first run will require a user login see
 `Login`
 
+.. _Container:
 
 Execute in a container
 ======================
