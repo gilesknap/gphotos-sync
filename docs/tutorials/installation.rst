@@ -42,9 +42,10 @@ The options --net=host -it are required for the first invocation only, so that t
 browser can find authentication service. 
 
 Note that the authentication flow uses a redirect url that sends authentication 
-token back to the process. The default redirect is localhost:8080 you can 
-adjust these with ``--host <HOSTNAME> --port<PORT_NUMBER>``. At present the 
-flow only accepts localhost for host so I'm not sure what the option is for.
+token back to the process. The default redirect is localhost:8080 and you can 
+adjust the port with ``--port<PORT_NUMBER>``. The 
+flow only accepts localhost for security reasons so the first run must always
+be done on a machine with a browser.
 
 Note that if you are running on a NAS or other headless server you will first 
 need to run locally so that you can do initial login flow with a browser.
