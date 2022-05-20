@@ -67,3 +67,22 @@ in a far cleaner way.
 The integration
 if particularly good on Windows 11. 
 See https://docs.microsoft.com/en-us/windows/wsl/install.
+
+.. _WindowsDocker:
+
+Initial Setup on Windows for Docker desktop
+===========================================
+
+If you want to run the app in a container then there are some additional
+steps required on Windows.
+
+First you need to have installed Docker Desktop from 
+https://www.docker.com/products/docker-desktop/
+
+- make sure leave ticked 'use WSL2 instead of Hyper V'
+- if you already have docker installed with Hyper V consider re-installing with
+  WSL2
+
+
+
+

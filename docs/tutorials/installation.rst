@@ -20,6 +20,7 @@ You are ready to run gphotos-sync for the first time, either locally or
 inside of a container. The first run will require a user login see
 `Login`
 
+.. _Container:
 
 Execute in a container
 ======================
@@ -35,17 +36,18 @@ Hence the typical way to launch the container with docker runtime would be::
 
     $ CONFIG=$HOME/.config/gphotos-sync
     $ STORAGE=$HOME/My_photos_backup
-    $ docker run --rm -v $CONFIG:/config -v $STORAGE:/storage --net=host -it ghcr.io/gilesknap/gphotos-sync /storage
+    $ docker run --rm -v $CONFIG:/config -v $STORAGE:/storage -p 8080:8080 -it ghcr.io/gilesknap/gphotos-sync /storage
 
-The options --net=host -it are required for the first invocation only, so that the
-browser can find authentication service. 
+The options ``-p 8080:8080 -it`` are required for the first invocation only, 
+so that the browser can find authentication service. 
 
 Note that the authentication flow uses a redirect url that sends authentication 
-token back to the process. The default redirect is localhost:8080 you can 
-adjust these with ``--host <HOSTNAME> --port<PORT_NUMBER>``. At present the 
-flow only accepts localhost for host so I'm not sure what the option is for.
+token back to the process. The default redirect is localhost:8080 and you can 
+adjust the port with ``--port<PORT_NUMBER>``. The 
+flow only allows localhost for security reasons so the first run must always
+be done on a machine with a browser.
 
-Note that if you are running on a NAS or other headless server you will first 
+If you are running on a NAS or other headless server you will first 
 need to run locally so that you can do initial login flow with a browser.
 Then copy <TARGET>/.gphotos.token to the server. For this
 first run you could use the following options so that no backup is performed:

@@ -303,9 +303,6 @@ class GooglePhotosSyncMain:
         type=int,
         default=8080,
     )
-    parser.add_argument(
-        "--host", help="hostname for the login flow redirect", default="localhost"
-    )
     parser.add_help = True
 
     def setup(self, args: Namespace, db_path: Path):
@@ -339,7 +336,6 @@ class GooglePhotosSyncMain:
             credentials_file,
             secret_file,
             int(args.max_retries),
-            host=args.host,
             port=args.port,
         )
         self.auth.authorize()

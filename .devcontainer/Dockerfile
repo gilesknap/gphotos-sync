@@ -22,10 +22,13 @@ WORKDIR /workspace
 COPY . .
 
 # install runtime from DIST if there is one
+
+# install runtime from DIST if there is one
 RUN mkdir -p /root/.local && \
-    test -d dist && \
+    if [ -d dist ] ; then \
     touch requirements.txt && \
-    pip install --user -r requirements.txt dist/*.whl || :
+    pip install --user -r requirements.txt dist/*.whl ; \
+    fi
 
 FROM base as runtime
 
