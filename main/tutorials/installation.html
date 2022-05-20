@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Initial Setup &mdash; gphotos-sync 3.0.4.dev3+g94c6a25 documentation</title>
+  <title>Initial Setup &mdash; gphotos-sync 3.0.4.dev8+gcb30b35 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
@@ -61,6 +61,7 @@
 <p class="caption" role="heading"><span class="caption-text">How-to Guides</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../how-to/windows.html">Additional Setup for Windows Machines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-to/windows.html#initial-setup-on-windows-for-docker-desktop">Initial Setup on Windows for Docker desktop</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../how-to/cron.html">Scheduling a Regular Backup</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../how-to/comparison.html">Comparing The Google Photos Library With Local files</a></li>
 </ul>
@@ -123,7 +124,7 @@ inside of a container. The first run will require a user login see
 <a class="reference internal" href="login.html#login"><span class="std std-ref">User Login OAuth Flow</span></a></p>
 </section>
 <section id="execute-in-a-container">
-<h1>Execute in a container<a class="headerlink" href="#execute-in-a-container" title="Permalink to this headline"></a></h1>
+<span id="container"></span><h1>Execute in a container<a class="headerlink" href="#execute-in-a-container" title="Permalink to this headline"></a></h1>
 <p>This project now automatically releases a container image with each release.
 The latest image will be here <code class="docutils literal notranslate"><span class="pre">ghcr.io/gilesknap/gphotos-sync</span></code>.</p>
 <p>Your container has two volumes <code class="docutils literal notranslate"><span class="pre">/config</span></code> for the client_secret.json file and
@@ -132,16 +133,17 @@ want to see them outside of the container.</p>
 <p>Hence the typical way to launch the container with docker runtime would be:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ CONFIG=$HOME/.config/gphotos-sync
 $ STORAGE=$HOME/My_photos_backup
-$ docker run --rm -v $CONFIG:/config -v $STORAGE:/storage --net=host -it ghcr.io/gilesknap/gphotos-sync /storage
+$ docker run --rm -v $CONFIG:/config -v $STORAGE:/storage -p 8080:8080 -it ghcr.io/gilesknap/gphotos-sync /storage
 </pre></div>
 </div>
-<p>The options –net=host -it are required for the first invocation only, so that the
-browser can find authentication service.</p>
+<p>The options <code class="docutils literal notranslate"><span class="pre">-p</span> <span class="pre">8080:8080</span> <span class="pre">-it</span></code> are required for the first invocation only,
+so that the browser can find authentication service.</p>
 <p>Note that the authentication flow uses a redirect url that sends authentication
-token back to the process. The default redirect is localhost:8080 you can
-adjust these with <code class="docutils literal notranslate"><span class="pre">--host</span> <span class="pre">&lt;HOSTNAME&gt;</span> <span class="pre">--port&lt;PORT_NUMBER&gt;</span></code>. At present the
-flow only accepts localhost for host so I’m not sure what the option is for.</p>
-<p>Note that if you are running on a NAS or other headless server you will first
+token back to the process. The default redirect is localhost:8080 and you can
+adjust the port with <code class="docutils literal notranslate"><span class="pre">--port&lt;PORT_NUMBER&gt;</span></code>. The
+flow only allows localhost for security reasons so the first run must always
+be done on a machine with a browser.</p>
+<p>If you are running on a NAS or other headless server you will first
 need to run locally so that you can do initial login flow with a browser.
 Then copy &lt;TARGET&gt;/.gphotos.token to the server. For this
 first run you could use the following options so that no backup is performed:</p>
