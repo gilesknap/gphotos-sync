@@ -93,7 +93,7 @@ class Authorize:
             )
             # localhost and bind to 0.0.0.0 always works even in a container.
             flow.run_local_server(
-                open_browser=False, bind_host="0.0.0.0", port=self.port
+                open_browser=False, bind_addr="0.0.0.0", port=self.port
             )
 
             self.session = flow.authorized_session()
