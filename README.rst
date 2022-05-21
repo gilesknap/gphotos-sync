@@ -53,3 +53,9 @@ To get started see `Tutorial <https://gilesknap.github.io/gphotos-sync/main/tuto
     when included in index.rst
 
 See https://gilesknap.github.io/gphotos-sync for more detailed documentation.
+
+Google API Issues
+-----------------
+
+To join the discussion on this see https://github.com/gilesknap/gphotos-sync/discussions/347
+
