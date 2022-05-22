@@ -13,7 +13,8 @@ ENV PATH=/root/.local/bin:$PATH
 
 FROM base as developer
 
-RUN apt-get update && export DEBIAN_FRONTEND=noninteractive && \
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     gcc python3-dev && \
     rm -rf /var/lib/apt/lists/*
@@ -24,19 +25,19 @@ COPY . .
 # install runtime from DIST if there is one
 
 # install runtime from DIST if there is one
-RUN mkdir -p /root/.local && \
+RUN mkdir -vp /root/.local && \
     if [ -d dist ] ; then \
     touch requirements.txt && \
-    pip install --user -r requirements.txt dist/*.whl ; \
+    pip install --no-cache --user -r requirements.txt dist/*.whl ; \
     fi
 
 FROM base as runtime
 
 COPY --from=developer /root/.local /root/.local
 
-RUN mkdir -p /root/.config /config \
-    && ln -s /config /root/.config/gphotos-sync \
-    && mkdir /storage
+RUN mkdir -vp /root/.config /config \
+    && ln -vs /config /root/.config/gphotos-sync \
+    && mkdir -vp /storage
 
 VOLUME /config /storage
 
@@ -44,4 +45,3 @@ ENTRYPOINT ["gphotos-sync"]
 CMD ["--version"]
 
 EXPOSE 8080
-
