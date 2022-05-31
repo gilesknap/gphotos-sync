@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Additional Setup for Windows Machines &mdash; gphotos-sync 3.5.dev5+gec1840a documentation</title>
+  <title>Additional Setup for Windows Machines &mdash; gphotos-sync 3.5.dev8+g97dba76 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
@@ -17,6 +17,7 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -105,9 +106,9 @@
            <div itemprop="articleBody">
              
   <section id="additional-setup-for-windows-machines">
-<span id="windows"></span><h1>Additional Setup for Windows Machines<a class="headerlink" href="#additional-setup-for-windows-machines" title="Permalink to this headline"></a></h1>
+<span id="windows"></span><h1>Additional Setup for Windows Machines<a class="headerlink" href="#additional-setup-for-windows-machines" title="Permalink to this heading"></a></h1>
 <section id="python">
-<h2>Python<a class="headerlink" href="#python" title="Permalink to this headline"></a></h2>
+<h2>Python<a class="headerlink" href="#python" title="Permalink to this heading"></a></h2>
 <p>To install python on Windows.</p>
 <ul class="simple">
 <li><p>Open a command prompt with “Windows-Key CMD &lt;Enter&gt;”</p></li>
@@ -129,7 +130,7 @@ to your path. See
 the same effect and includes a checkbox to add python to your Windows Path.</p>
 </section>
 <section id="virtual-environment">
-<h2>Virtual Environment<a class="headerlink" href="#virtual-environment" title="Permalink to this headline"></a></h2>
+<h2>Virtual Environment<a class="headerlink" href="#virtual-environment" title="Permalink to this heading"></a></h2>
 <p>It is recommended you create a virtual environment to run you python code in to
 avoid messing up your root python install. In the below example we create a virtual
 environment on the desktop. In the below example we assume that python has been
@@ -144,7 +145,7 @@ added to your window path variable as above.</p>
 </ul>
 </section>
 <section id="symlinks">
-<h2>Symlinks<a class="headerlink" href="#symlinks" title="Permalink to this headline"></a></h2>
+<h2>Symlinks<a class="headerlink" href="#symlinks" title="Permalink to this heading"></a></h2>
 <p>Album information is created as a set of folders with symbolic links into
 the photos folder. Windows supports symbolic links but it is turned off by default.
 You can either turn it on for your account or you can use the operation
@@ -153,7 +154,7 @@ You can either turn it on for your account or you can use the operation
 will run under, see <a class="reference external" href="https://community.perforce.com/s/article/3472">Enabling SymLinks on Windows</a>.</p>
 </section>
 <section id="alternative-approach">
-<h2>Alternative approach<a class="headerlink" href="#alternative-approach" title="Permalink to this headline"></a></h2>
+<h2>Alternative approach<a class="headerlink" href="#alternative-approach" title="Permalink to this heading"></a></h2>
 <p>To avoid fiddling with symlinks and python paths you could try WSL2.</p>
 <p>This project was developed in Linux, so if you would like to get the
 native experience I recommend installing WSL2 and Ubuntu.
@@ -166,7 +167,7 @@ See <a class="reference external" href="https://docs.microsoft.com/en-us/windows
 </section>
 </section>
 <section id="initial-setup-on-windows-for-docker-desktop">
-<span id="windowsdocker"></span><h1>Initial Setup on Windows for Docker desktop<a class="headerlink" href="#initial-setup-on-windows-for-docker-desktop" title="Permalink to this headline"></a></h1>
+<span id="windowsdocker"></span><h1>Initial Setup on Windows for Docker desktop<a class="headerlink" href="#initial-setup-on-windows-for-docker-desktop" title="Permalink to this heading"></a></h1>
 <p>If you want to run the app in a container then there are some additional
 steps required on Windows.</p>
 <p>First you need to have installed Docker Desktop from
