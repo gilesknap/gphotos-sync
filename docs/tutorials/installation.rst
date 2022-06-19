@@ -43,7 +43,12 @@ so that the browser can find authentication service.
 
 Note that the authentication flow uses a redirect url that sends authentication 
 token back to the process. The default redirect is localhost:8080 and you can 
-adjust the port with ``--port<PORT_NUMBER>``. The 
+adjust the port with ``--port<PORT_NUMBER>``. 
+
+Headless gphotos-sync Servers
+-----------------------------
+ 
+The authentication 
 flow only allows localhost for security reasons so the first run must always
 be done on a machine with a browser.
 
