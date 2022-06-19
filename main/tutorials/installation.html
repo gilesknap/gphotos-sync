@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Initial Setup &mdash; gphotos-sync 3.5.dev8+g97dba76 documentation</title>
+  <title>Initial Setup &mdash; gphotos-sync 3.5.dev10+g2f6bcbb documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
@@ -48,7 +48,10 @@
               <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Initial Setup</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#execute-in-a-container">Execute in a container</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#execute-in-a-container">Execute in a container</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#headless-gphotos-sync-servers">Headless gphotos-sync Servers</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="#local-installation">Local Installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#check-your-version-of-python">Check your version of python</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#create-a-virtual-environment">Create a virtual environment</a></li>
@@ -141,7 +144,10 @@ $ docker run --rm -v $CONFIG:/config -v $STORAGE:/storage -p 8080:8080 -it ghcr.
 so that the browser can find authentication service.</p>
 <p>Note that the authentication flow uses a redirect url that sends authentication
 token back to the process. The default redirect is localhost:8080 and you can
-adjust the port with <code class="docutils literal notranslate"><span class="pre">--port&lt;PORT_NUMBER&gt;</span></code>. The
+adjust the port with <code class="docutils literal notranslate"><span class="pre">--port&lt;PORT_NUMBER&gt;</span></code>.</p>
+<section id="headless-gphotos-sync-servers">
+<h2>Headless gphotos-sync Servers<a class="headerlink" href="#headless-gphotos-sync-servers" title="Permalink to this heading"></a></h2>
+<p>The authentication
 flow only allows localhost for security reasons so the first run must always
 be done on a machine with a browser.</p>
 <p>If you are running on a NAS or other headless server you will first
@@ -151,6 +157,7 @@ first run you could use the following options so that no backup is performed:</p
 <blockquote>
 <div><p><code class="docutils literal notranslate"><span class="pre">--skip-files</span> <span class="pre">--skip-albums</span> <span class="pre">--skip-index</span></code></p>
 </div></blockquote>
+</section>
 </section>
 <section id="local-installation">
 <h1>Local Installation<a class="headerlink" href="#local-installation" title="Permalink to this heading"></a></h1>
