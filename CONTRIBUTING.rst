@@ -7,7 +7,7 @@ filing a new one. If you have a great idea but it involves big changes, please
 file a ticket before making a pull request! We want to make sure you don't spend
 your time coding something that might not fit the scope of the project.
 
-.. _GitHub: https://github.com/epics-containers/python3-pip-skeleton/issues
+.. _GitHub: https://github.com/DiamondLightSource/python3-pip-skeleton/issues
 
 Running the tests
 -----------------
@@ -17,7 +17,7 @@ To run in a container
 
 Use vscode devcontainer as follows::
 
-    $ git clone git://github.com/epics-containers/python3-pip-skeleton.git
+    $ git clone git://github.com/DiamondLightSource/python3-pip-skeleton.git
     $ vscode python3-pip-skeleton
     Click on 'Reopen in Container' when prompted
     In a vscode Terminal:
@@ -30,7 +30,7 @@ To run locally
 Get the source source code and run the unit tests directly
 on your workstation as follows::
 
-    $ git clone git://github.com/epics-containers/python3-pip-skeleton.git
+    $ git clone git://github.com/DiamondLightSource/python3-pip-skeleton.git
     $ cd python3-pip-skeleton
     $ virtualenv .venv
     $ source .venv/bin/activate
@@ -135,7 +135,7 @@ To make a new release, please follow this checklist:
 Note that tagging and pushing to the main branch has the same effect except that
 you will not get the option to edit the release notes.
 
-.. _release: https://github.com/epics-containers/python3-pip-skeleton/releases
+.. _release: https://github.com/DiamondLightSource/python3-pip-skeleton/releases
 
 
 Checking Dependencies
@@ -153,11 +153,11 @@ Python project structure which provides a means to keep tools and
 techniques in sync between multiple Python projects. To update to the
 latest version of the skeleton, run::
 
-    $ git pull https://github.com/dls-controls/python3-pip-skeleton main
+    $ git pull https://github.com/DiamondLightSource/python3-pip-skeleton main
 
 Any merge conflicts will indicate an area where something has changed that
 conflicts with the setup of the current module. Check the `closed pull requests
-<https://github.com/epics-containers/python3-pip-skeleton/pulls?q=is%3Apr+is%3Aclosed>`_
+<https://github.com/DiamondLightSource/python3-pip-skeleton/pulls?q=is%3Apr+is%3Aclosed>`_
 of the skeleton module for more details.
 
-.. _python3-pip-skeleton: https://epics-containers.github.io/python3-pip-skeleton
+.. _python3-pip-skeleton: https://DiamondLightSource.github.io/python3-pip-skeleton

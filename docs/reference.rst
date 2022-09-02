@@ -9,7 +9,7 @@ Technical reference material including APIs and release notes.
     :caption: Reference
 
     reference/api
-    Releases <https://github.com/epics-containers/python3-pip-skeleton/releases>
+    Releases <https://github.com/DiamondLightSource/python3-pip-skeleton/releases>
     Index <genindex.html#http://>
 
 ..
