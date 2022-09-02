@@ -36,6 +36,6 @@ jobs:
           rm -r ${{ env.remove_me }}
           sed -i /${{ env.remove_me }}/d versions.txt
           git config --global user.name 'GitHub Actions Docs Cleanup CI'
-          git config --global user.email 'gha@users.noreply.github.com'
+          git config --global user.email 'GithubActionsCleanup@users.noreply.github.com'
           git commit -am"removing redundant docs version ${{ env.remove_me }}" 
           git push
