@@ -174,4 +174,4 @@ jobs:
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
-        run: pipx run twine upload dist/*/whl dist/*.tar.gz
+        run: pipx run twine upload dist/*.whl dist/*.tar.gz
