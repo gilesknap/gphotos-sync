@@ -1,48 +1,29 @@
+:html_theme.sidebar_secondary.remove:
+
 .. include:: ../README.rst
     :end-before: when included in index.rst
-
 
 How the documentation is structured
 -----------------------------------
 
-Documentation is split into four categories, also accessible from links in the
-side-bar.
+The documentation is split into 2 sections:
 
-.. rst-class:: columns
+.. grid:: 2
 
-`tutorials`
-~~~~~~~~~~~
+    .. grid-item-card:: :material-regular:`person;4em`
+        :link: user/index
+        :link-type: doc
 
-.. include:: tutorials.rst
-    :start-after: =========
+        The User Guide contains documentation on how to install and use python3-pip-skeleton.
 
-.. rst-class:: columns
+    .. grid-item-card:: :material-regular:`code;4em`
+        :link: developer/index
+        :link-type: doc
 
-`how-to`
-~~~~~~~~
+        The Developer Guide contains documentation on how to develop and contribute changes back to python3-pip-skeleton.
 
-.. include:: how-to.rst
-    :start-after: =============
+.. toctree::
+    :hidden:
 
-.. rst-class:: columns
-
-`explanations`
-~~~~~~~~~~~~~~
-
-.. include:: explanations.rst
-    :start-after: ============
-
-.. rst-class:: columns
-
-`reference`
-~~~~~~~~~~~
-
-.. include:: reference.rst
-    :start-after: =========
-
-.. rst-class:: endcolumns
-
-About the documentation
-~~~~~~~~~~~~~~~~~~~~~~~
-
-`Why is the documentation structured this way? <https://documentation.divio.com>`_
+    user/index
+    developer/index

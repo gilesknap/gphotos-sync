@@ -4,9 +4,9 @@ python3-pip-skeleton
 |code_ci| |docs_ci| |coverage| |pypi_version| |license|
 
 .. note::
-    
+
     This project contains template code only. For documentation on how to
-    adopt this skeleton project see 
+    adopt this skeleton project see
     https://DiamondLightSource.github.io/python3-pip-skeleton-cli
 
 This is where you should write a short paragraph that describes what your module does,
@@ -21,9 +21,17 @@ Releases       https://github.com/DiamondLightSource/python3-pip-skeleton/releas
 
 This is where you should put some images or code snippets that illustrate
 some relevant examples. If it is a library then you might put some
-introductory code here.
+introductory code here:
 
-Or if it is a commandline tool then you might put some example commands here.
+.. code-block:: python
+
+    from python3_pip_skeleton import __version__
+
+    print(f"Hello python3_pip_skeleton {__version__}")
+
+Or if it is a commandline tool then you might put some example commands here::
+
+    $ python -m python3_pip_skeleton --version
 
 .. |code_ci| image:: https://github.com/DiamondLightSource/python3-pip-skeleton/workflows/Code%20CI/badge.svg?branch=main
     :target: https://github.com/DiamondLightSource/python3-pip-skeleton/actions?query=workflow%3A%22Code+CI%22

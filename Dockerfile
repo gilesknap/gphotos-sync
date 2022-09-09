@@ -1,6 +1,6 @@
 # This file is for use as a devcontainer and a runtime container
-# 
-# The devcontainer should use the build target and run as root with podman 
+#
+# The devcontainer should use the build target and run as root with podman
 # or docker with user namespaces.
 #
 FROM python:3.10 as build

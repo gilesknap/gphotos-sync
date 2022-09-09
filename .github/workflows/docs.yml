@@ -43,10 +43,10 @@ jobs:
 
       - name: Move to versioned directory
         # e.g. main or 0.1.2
-        run: mv build/html ".github/pages/${GITHUB_REF##*/}"
+        run: mv build/html ".github/pages/${{ github.ref_name }}"
 
-      - name: Write versions.txt
-        run: sphinx_rtd_theme_github_versions .github/pages
+      - name: Write switcher.json
+        run: python .github/pages/make_switcher.py --add "${{ github.ref_name }}" ${{ github.repository }} .github/pages/switcher.json
 
       - name: Publish Docs to gh-pages
         if: github.event_name == 'push'

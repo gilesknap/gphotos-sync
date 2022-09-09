@@ -32,10 +32,9 @@ jobs:
 
       - name: update index and push changes
         run: |
-          echo removing redundant documentation version ${{ env.remove_me }}
           rm -r ${{ env.remove_me }}
-          sed -i /${{ env.remove_me }}/d versions.txt
+          python make_switcher.py --remove ${{ env.remove_me }} ${{ github.repository }} switcher.json
           git config --global user.name 'GitHub Actions Docs Cleanup CI'
-          git config --global user.email 'GithubActionsCleanup@users.noreply.github.com'
-          git commit -am"removing redundant docs version ${{ env.remove_me }}" 
+          git config --global user.email 'GithubActionsCleanup@noreply.github.com'
+          git commit -am"removing redundant docs version ${{ env.remove_me }}"
           git push
