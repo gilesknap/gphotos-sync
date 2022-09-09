@@ -26,6 +26,7 @@ RUN cd /project && \
 
 RUN python -m venv /venv
 ENV PATH=/venv/bin:$PATH
+ENV TOX_DIRECT=1
 
 RUN cd /project && \
     pip install --upgrade pip && \
