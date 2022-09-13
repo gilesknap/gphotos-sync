@@ -126,28 +126,19 @@ jobs:
           context: .
           labels: ${{ steps.meta.outputs.labels }}
 
-      - name: Check runtime
+      - name: Test cli works in runtime image
         run: for i in ${{ steps.meta.outputs.tags }}; do docker run ${i} --version; done
+
+      - name: Test cli works in sdist installed in local python
+        # ${GITHUB_REPOSITORY##*/} is the repo name without org
+        # Replace this with the cli command if different to the repo name
+        run: pip install dist/*.gz && ${GITHUB_REPOSITORY##*/} --version
 
       - name: Upload build files
         uses: actions/upload-artifact@v3
         with:
           name: dist
           path: dist
-
-  sdist:
-    needs: container
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/download-artifact@v3
-
-      - name: Install sdist in a venv and check cli works
-        # ${GITHUB_REPOSITORY##*/} is the repo name without org
-        # Replace this with the cli command if different to the repo name
-        run: |
-          pip install dist/*.gz
-          ${GITHUB_REPOSITORY##*/} --version
 
   release:
     # upload to PyPI and make a release on every tag
