@@ -33,12 +33,12 @@ Or if it is a commandline tool then you might put some example commands here::
 
     $ python -m python3_pip_skeleton --version
 
-.. |code_ci| image:: https://github.com/DiamondLightSource/python3-pip-skeleton/workflows/Code%20CI/badge.svg?branch=main
-    :target: https://github.com/DiamondLightSource/python3-pip-skeleton/actions?query=workflow%3A%22Code+CI%22
+.. |code_ci| image:: https://github.com/DiamondLightSource/python3-pip-skeleton/actions/workflows/code.yml/badge.svg?branch=main
+    :target: https://github.com/DiamondLightSource/python3-pip-skeleton/actions/workflows/code.yml
     :alt: Code CI
 
-.. |docs_ci| image:: https://github.com/DiamondLightSource/python3-pip-skeleton/workflows/Docs%20CI/badge.svg?branch=main
-    :target: https://github.com/DiamondLightSource/python3-pip-skeleton/actions?query=workflow%3A%22Docs+CI%22
+.. |docs_ci| image:: https://github.com/DiamondLightSource/python3-pip-skeleton/actions/workflows/docs.yml/badge.svg?branch=main
+    :target: https://github.com/DiamondLightSource/python3-pip-skeleton/actions/workflows/docs.yml
     :alt: Docs CI
 
 .. |coverage| image:: https://codecov.io/gh/DiamondLightSource/python3-pip-skeleton/branch/main/graph/badge.svg
