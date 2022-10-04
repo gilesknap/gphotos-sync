@@ -128,7 +128,7 @@ jobs:
 
       - name: Test cli works in runtime image
         # check that the first tag can run with --version parameter
-        run: docker run $(echo ${{ steps.meta.outputs.tags }} | sed -e 's/\s.*$//') --version
+        run: docker run $(echo ${{ steps.meta.outputs.tags }} | head -1) --version
 
       - name: Test cli works in sdist installed in local python
         # ${GITHUB_REPOSITORY##*/} is the repo name without org
