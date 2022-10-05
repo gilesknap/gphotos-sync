@@ -162,7 +162,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish to PyPI
-        env:
-          TWINE_USERNAME: __token__
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
-        run: pipx run twine upload dist/*.whl dist/*.tar.gz
