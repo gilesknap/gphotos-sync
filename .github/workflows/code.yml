@@ -164,4 +164,4 @@ jobs:
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+          password: ${{ secrets.PYPI_TOKEN }}
