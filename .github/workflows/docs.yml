@@ -41,12 +41,14 @@ jobs:
       - name: Build docs
         run: tox -e docs
 
+      - name: Sanitize ref name for docs version
+        run: echo "DOCS_VERSION=${GITHUB_REF_NAME//[^A-Za-z0-9._-]/_}" >> $GITHUB_ENV
+
       - name: Move to versioned directory
-        # e.g. main or 0.1.2
-        run: mv build/html ".github/pages/${{ github.ref_name }}"
+        run: mv build/html .github/pages/$DOCS_VERSION
 
       - name: Write switcher.json
-        run: python .github/pages/make_switcher.py --add "${{ github.ref_name }}" ${{ github.repository }} .github/pages/switcher.json
+        run: python .github/pages/make_switcher.py --add $DOCS_VERSION ${{ github.repository }} .github/pages/switcher.json
 
       - name: Publish Docs to gh-pages
         if: github.event_name == 'push'
