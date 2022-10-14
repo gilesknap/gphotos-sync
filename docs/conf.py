@@ -24,7 +24,6 @@ if "+" in release:
     git_branch = check_output("git branch --show-current".split(), cwd=root)
     version = git_branch.decode().strip()
 else:
-    branch = "main"
     version = release
 
 extensions = [
