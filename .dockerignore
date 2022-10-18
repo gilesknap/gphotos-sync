@@ -4,7 +4,5 @@ dist/
 .tox
 .venv*
 venv*
-.devcontainer.json
 .pre-commit-config.yaml
 .vscode
-README.rst
