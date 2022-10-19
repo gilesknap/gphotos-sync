@@ -315,7 +315,6 @@ class GooglePhotosSyncMain:
         if args.compare_folder:
             compare_folder = Path(args.compare_folder).absolute()
         app_dirs = AppDirs(APP_NAME)
-
         self.data_store = LocalData(db_path, args.flush_index)
 
         credentials_file = db_path / ".gphotos.token"
@@ -461,6 +460,9 @@ class GooglePhotosSyncMain:
 
         if args.version:
             print(__version__)
+            exit(0)
+        elif args.skip_video and args.skip_photo:
+            print("--skip-video and --skip-photo can not be combined")
             exit(0)
         else:
             if args.root_folder is None:
