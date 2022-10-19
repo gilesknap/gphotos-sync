@@ -137,6 +137,9 @@ class GooglePhotosSyncMain:
         "--skip-video", action="store_true", help="skip video types in sync"
     )
     parser.add_argument(
+        "--skip-photo", action="store_true", help="skip photo types in sync"
+    )
+    parser.add_argument(
         "--skip-shared-albums",
         action="store_true",
         help="skip albums that only appear in 'Sharing'",
@@ -352,6 +355,7 @@ class GooglePhotosSyncMain:
             retry_download=args.retry_download,
             case_insensitive_fs=args.case_insensitive_fs,
             include_video=not args.skip_video,
+            include_photo=not args.skip_photo,
             rescan=args.rescan,
             archived=args.archived,
             photos_path=Path(args.photos_path),

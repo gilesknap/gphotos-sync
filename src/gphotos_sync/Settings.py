@@ -32,6 +32,7 @@ class Settings:
 
     favourites_only: bool
     include_video: bool
+    include_photo: bool
     archived: bool
     use_hardlinks: bool
 

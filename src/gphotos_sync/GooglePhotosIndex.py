@@ -34,6 +34,7 @@ class GooglePhotosIndex(object):
         self.start_date: datetime = settings.start_date
         self.end_date: datetime = settings.end_date
         self.include_video: bool = settings.include_video
+        self.include_photo: bool = settings.include_photo
         self.rescan: bool = settings.rescan
         self.favourites = settings.favourites_only
         self.case_insensitive_fs: bool = settings.case_insensitive_fs
@@ -77,6 +78,7 @@ class GooglePhotosIndex(object):
         start_date: Optional[datetime] = None,
         end_date: Optional[datetime] = None,
         do_video: bool = False,
+        do_photo: bool = False,
         favourites: bool = False,
     ) -> dict:
         class Y:
@@ -98,6 +100,8 @@ class GooglePhotosIndex(object):
             end = Y(end_date.year, end_date.month, end_date.day)
         if not do_video:
             type_list = ["PHOTO"]
+        if not do_photo:
+            type_list = ["VIDEO"]
         if favourites:
             feature = "FAVORITES"
         else:
@@ -105,12 +109,13 @@ class GooglePhotosIndex(object):
 
         if not page_token:
             log.info(
-                "searching for media start=%s, end=%s, videos=%s",
+                "searching for media start=%s, end=%s, videos=%s, photos=%s",
                 start_date,
                 end_date,
                 do_video,
+                do_photo,
             )
-        if not start_date and not end_date and do_video and not favourites:
+        if not start_date and not end_date and do_video and not favourites and not do_photo:
             # no search criteria so do a list of the entire library
             log.debug("mediaItems.list ...")
             return self._api.mediaItems.list.execute(  # type: ignore
@@ -149,6 +154,7 @@ class GooglePhotosIndex(object):
             start_date=start_date,
             end_date=self.end_date,
             do_video=self.include_video,
+            do_photo=self.include_photo,
             favourites=self.favourites,
         )
 
@@ -213,6 +219,7 @@ class GooglePhotosIndex(object):
                     start_date=start_date,
                     end_date=self.end_date,
                     do_video=self.include_video,
+                    do_photo=self.include_photo,
                     favourites=self.favourites,
                 )
             else:

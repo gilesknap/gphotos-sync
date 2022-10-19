@@ -59,6 +59,7 @@ class GoogleAlbumsSync(object):
         self.use_start_date = settings.use_start_date
         self.favourites = settings.favourites_only
         self.include_video = settings.include_video
+        self.include_photo = settings.include_photo
         self._use_flat_path = settings.use_flat_path
         self._omit_album_date = settings.omit_album_date
         self._album_invert = settings.album_invert
@@ -97,6 +98,9 @@ class GoogleAlbumsSync(object):
 
                 if (not self.include_video) and media_item.is_video:
                     log.debug("---- skipping %s (--skip-video)", media_item.filename)
+                    continue
+                elif (not self.include_photo) and media_item.is_photo:
+                    log.debug("---- skipping %s (--skip-photo)", media_item.filename)
                     continue
 
                 log.debug("----%s", media_item.filename)

@@ -39,6 +39,12 @@ class BaseMedia(object):
         return self.mime_type.startswith("video")
 
     @property
+    def is_photo(self) -> bool:
+        if not self.mime_type:
+            return False
+        return self.mime_type.startswith("image")
+
+    @property
     def duplicate_number(self) -> int:
         return self._duplicate_number
 
