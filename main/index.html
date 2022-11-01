@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Google Photos Sync (gphotos-sync) &mdash; gphotos-sync 3.5.dev10+g2f6bcbb documentation</title>
+  <title>Google Photos Sync (gphotos-sync) &mdash; gphotos-sync 3.5.dev11+g208a216 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
@@ -19,6 +19,7 @@
         <script src="_static/underscore.js"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -132,6 +133,18 @@ animations, panoramas, movies, effects and collages are also backed up.</p>
 <p>This software is read only and never modifies your cloud library in any way,
 so there is no risk of damaging your data.</p>
 </section>
+<section id="warning-google-api-issues">
+<h1>Warning: Google API Issues<a class="headerlink" href="#warning-google-api-issues" title="Permalink to this heading"></a></h1>
+<p>There are a number of long standing issues with the Google Photos API that mean it is not possible
+to make a true backup of your media. In particular:</p>
+<ul class="simple">
+<li><p>Videos are transcoded to lower quality</p></li>
+<li><p>Raw or Original photos are converted to ‘High Quality’</p></li>
+<li><p>GPS info is removed from photos metadata</p></li>
+</ul>
+<p>For details of the Bugs reported to Google see <a class="reference external" href="https://github.com/gilesknap/gphotos-sync/issues/119">https://github.com/gilesknap/gphotos-sync/issues/119</a>.</p>
+<p>To join in a discussion on this issue see <a class="reference external" href="https://github.com/gilesknap/gphotos-sync/discussions/347">https://github.com/gilesknap/gphotos-sync/discussions/347</a>.</p>
+</section>
 <section id="quick-start">
 <h1>Quick Start<a class="headerlink" href="#quick-start" title="Permalink to this heading"></a></h1>
 <p>To get started see <a class="reference external" href="https://gilesknap.github.io/gphotos-sync/main/tutorials/installation.html">Tutorial</a></p>
@@ -240,12 +253,51 @@ side-bar.</p>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="reference/api.html">API</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="reference/api.html#gphotos-sync"><code class="docutils literal notranslate"><span class="pre">gphotos_sync</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/api.html#gphotos_sync.gphotos_sync.__version__"><code class="docutils literal notranslate"><span class="pre">gphotos_sync.__version__</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference/api.html#gphotos-sync-main"><code class="docutils literal notranslate"><span class="pre">gphotos_sync.Main</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference/api.html#gphotos-sync-basemedia"><code class="docutils literal notranslate"><span class="pre">gphotos_sync.BaseMedia</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference/api.html#gphotos-sync-databasemedia"><code class="docutils literal notranslate"><span class="pre">gphotos_sync.DatabaseMedia</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/api.html#gphotos-sync-basemedia"><code class="docutils literal notranslate"><span class="pre">gphotos_sync.BaseMedia</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="reference/api.html#gphotos_sync.BaseMedia.BaseMedia"><code class="docutils literal notranslate"><span class="pre">BaseMedia</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="reference/api.html#gphotos-sync-databasemedia"><code class="docutils literal notranslate"><span class="pre">gphotos_sync.DatabaseMedia</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="reference/api.html#gphotos_sync.DatabaseMedia.DatabaseMedia"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.DatabaseMedia.DatabaseMedia._id"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia._id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.DatabaseMedia.DatabaseMedia._url"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia._url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.DatabaseMedia.DatabaseMedia._relative_folder"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia._relative_folder</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.DatabaseMedia.DatabaseMedia._filename"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia._filename</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.DatabaseMedia.DatabaseMedia._orig_name"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia._orig_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.DatabaseMedia.DatabaseMedia._duplicate_number"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia._duplicate_number</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.DatabaseMedia.DatabaseMedia._size"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia._size</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.DatabaseMedia.DatabaseMedia._mime_type"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia._mime_type</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.DatabaseMedia.DatabaseMedia._date"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia._date</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.DatabaseMedia.DatabaseMedia._create_date"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia._create_date</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.DatabaseMedia.DatabaseMedia._description"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia._description</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.DatabaseMedia.DatabaseMedia._downloaded"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia._downloaded</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.DatabaseMedia.DatabaseMedia.location"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia.location</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.DatabaseMedia.DatabaseMedia.description"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia.description</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.DatabaseMedia.DatabaseMedia.orig_name"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia.orig_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.DatabaseMedia.DatabaseMedia.filename"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia.filename</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.DatabaseMedia.DatabaseMedia.create_date"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia.create_date</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.DatabaseMedia.DatabaseMedia.modify_date"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia.modify_date</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.DatabaseMedia.DatabaseMedia.url"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia.url</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="reference/api.html#gphotos-sync-googlephotosmedia"><code class="docutils literal notranslate"><span class="pre">gphotos_sync.GooglePhotosMedia</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference/api.html#gphotos-sync-localfilesmedia"><code class="docutils literal notranslate"><span class="pre">gphotos_sync.LocalFilesMedia</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference/api.html#gphotos-sync-googlephotosdownload"><code class="docutils literal notranslate"><span class="pre">gphotos_sync.GooglePhotosDownload</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/api.html#gphotos-sync-googlephotosdownload"><code class="docutils literal notranslate"><span class="pre">gphotos_sync.GooglePhotosDownload</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="reference/api.html#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload"><code class="docutils literal notranslate"><span class="pre">GooglePhotosDownload</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.download_photo_media"><code class="docutils literal notranslate"><span class="pre">GooglePhotosDownload.download_photo_media()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.download_batch"><code class="docutils literal notranslate"><span class="pre">GooglePhotosDownload.download_batch()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.download_file"><code class="docutils literal notranslate"><span class="pre">GooglePhotosDownload.download_file()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.do_download_file"><code class="docutils literal notranslate"><span class="pre">GooglePhotosDownload.do_download_file()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.do_download_complete"><code class="docutils literal notranslate"><span class="pre">GooglePhotosDownload.do_download_complete()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.find_bad_items"><code class="docutils literal notranslate"><span class="pre">GooglePhotosDownload.find_bad_items()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="reference/api.html#gphotos-sync-googlephotosindex"><code class="docutils literal notranslate"><span class="pre">gphotos_sync.GooglePhotosIndex</span></code></a></li>
 </ul>
 </li>
