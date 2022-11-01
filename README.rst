@@ -22,6 +22,21 @@ animations, panoramas, movies, effects and collages are also backed up.
 This software is read only and never modifies your cloud library in any way,
 so there is no risk of damaging your data. 
 
+Warning: Google API Issues
+==========================
+
+There are a number of long standing issues with the Google Photos API that mean it is not possible
+to make a true backup of your media. In particular:
+
+- Videos are transcoded to lower quality
+- Raw or Original photos are converted to 'High Quality'
+- GPS info is removed from photos metadata
+
+For details of the Bugs reported to Google see https://github.com/gilesknap/gphotos-sync/issues/119.
+
+To join in a discussion on this issue see https://github.com/gilesknap/gphotos-sync/discussions/347.
+
+
 Quick Start
 ===========
 
@@ -54,8 +69,4 @@ To get started see `Tutorial <https://gilesknap.github.io/gphotos-sync/main/tuto
 
 See https://gilesknap.github.io/gphotos-sync for more detailed documentation.
 
-Google API Issues
------------------
-
-To join the discussion on this see https://github.com/gilesknap/gphotos-sync/discussions/347
 
