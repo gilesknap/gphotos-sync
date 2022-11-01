@@ -4,5 +4,3 @@ dist/
 .tox
 .venv*
 venv*
-.pre-commit-config.yaml
-.vscode
