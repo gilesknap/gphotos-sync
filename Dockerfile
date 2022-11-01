@@ -22,6 +22,7 @@ WORKDIR /project
 # make the wheel outside of the venv so 'build' does not dirty requirements.txt
 RUN pip install --upgrade pip build && \
     export SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct) && \
+    git diff && \
     python -m build && \
     touch requirements.txt
 
