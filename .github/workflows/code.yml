@@ -164,8 +164,8 @@ jobs:
         with:
           prerelease: ${{ contains(github.ref_name, 'a') || contains(github.ref_name, 'b') || contains(github.ref_name, 'rc') }}
           files: |
-            dist/
-            lockfiles/
+            dist/*
+            lockfiles/*
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
