@@ -29,7 +29,6 @@ RUN pip install --upgrade pip build && \
 # set up a virtual environment and put it in PATH
 RUN python -m venv /venv
 ENV PATH=/venv/bin:$PATH
-ENV TOX_DIRECT=1
 
 # install the wheel and generate the requirements file
 RUN pip install --upgrade pip && \
