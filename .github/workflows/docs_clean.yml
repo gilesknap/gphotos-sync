@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: checkout
+      - name: Checkout
         uses: actions/checkout@v3
         with:
           ref: gh-pages
@@ -35,7 +35,7 @@ jobs:
 
       - name: update index and push changes
         run: |
-          rm -r ${{ env.DOCS_VERSION }}
+          rm -r $DOCS_VERSION
           python make_switcher.py --remove $DOCS_VERSION ${{ github.repository }} switcher.json
           git config --global user.name 'GitHub Actions Docs Cleanup CI'
           git config --global user.email 'GithubActionsCleanup@noreply.github.com'

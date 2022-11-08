@@ -4,8 +4,11 @@ on:
   push:
   pull_request:
   schedule:
-    # Run every Monday at 8am to check latest versions of dependencies
+    # Run weekly to check latest versions of dependencies
     - cron: "0 8 * * WED"
+env:
+  # The target python version, which must match the Dockerfile version
+  CONTAINER_PYTHON: "3.11"
 
 jobs:
   lint:
@@ -17,16 +20,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Setup python
-        uses: actions/setup-python@v4
+      - name: Install python packages
+        uses: ./.github/actions/install_requirements
         with:
-          python-version: "3.10"
+          requirements_file: requirements-dev-3.x.txt
+          install_options: -e .[dev]
 
       - name: Lint
-        run: |
-          touch requirements_dev.txt requirements.txt
-          pip install -r requirements.txt -r requirements_dev.txt -e .[dev]
-          tox -e pre-commit,mypy
+        run: tox -e pre-commit,mypy
 
   test:
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
@@ -34,7 +35,13 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"] # can add windows-latest, macos-latest
-        python: ["3.8", "3.9", "3.10"]
+        python: ["3.9", "3.10", "3.11"]
+        install: ["-e .[dev]"]
+        # Make one version be non-editable to test both paths of version code
+        include:
+          - os: "ubuntu-latest"
+            python: "3.8"
+            install: ".[dev]"
 
     runs-on: ${{ matrix.os }}
     env:
@@ -45,18 +52,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
+          # Need this to get version number from last tag
           fetch-depth: 0
 
-      - name: Setup python ${{ matrix.python }}
-        uses: actions/setup-python@v4
+      - name: Install python packages
+        uses: ./.github/actions/install_requirements
         with:
-          python-version: ${{ matrix.python }}
+          python_version: ${{ matrix.python }}
+          requirements_file: requirements-test-${{ matrix.os }}-${{ matrix.python }}.txt
+          install_options: ${{ matrix.install }}
 
-      - name: Install with latest dependencies
-        run: pip install .[dev]
+      - name: List dependency tree
+        run: pipdeptree
 
       - name: Run tests
-        run: pytest tests
+        run: pytest
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
@@ -64,9 +74,46 @@ jobs:
           name: ${{ matrix.python }}/${{ matrix.os }}
           files: cov.xml
 
-  container:
+  dist:
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: "ubuntu-latest"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          # Need this to get version number from last tag
+          fetch-depth: 0
+
+      - name: Build sdist and wheel
+        run: |
+          export SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct) && \
+          pipx run build
+
+      - name: Upload sdist and wheel as artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist
+          path: dist
+
+      - name: Check for packaging errors
+        run: pipx run twine check dist/*
+
+      - name: Install python packages
+        uses: ./.github/actions/install_requirements
+        with:
+          python_version: ${{env.CONTAINER_PYTHON}}
+          requirements_file: requirements.txt
+          install_options: dist/*.whl
+
+      - name: Test module --version works using the installed wheel
+        # If more than one module in src/ replace with module name to test
+        run: python -m $(ls src | head -1) --version
+
+  container:
+    needs: [lint, dist, test]
     runs-on: ubuntu-latest
+
     permissions:
       contents: read
       packages: write
@@ -74,8 +121,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      # image names must be all lower case
+      - name: Generate image repo name
+        run: echo IMAGE_REPOSITORY=ghcr.io/$(tr '[:upper:]' '[:lower:]' <<< "${{ github.repository }}") >> $GITHUB_ENV
+
+      - name: Download wheel and lockfiles
+        uses: actions/download-artifact@v3
         with:
-          fetch-depth: 0
+          path: .devcontainer
 
       - name: Log in to GitHub Docker Registry
         if: github.event_name != 'pull_request'
@@ -89,73 +143,44 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ghcr.io/${{ github.repository }}
+          images: ${{ env.IMAGE_REPOSITORY }}
           tags: |
-            type=ref,event=branch
             type=ref,event=tag
+            type=raw,value=latest
 
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Build developer image for testing
-        uses: docker/build-push-action@v3
-        with:
-          tags: build:latest
-          context: .
-          target: build
-          load: true
-
-      - name: Run tests in the container locked with requirements_dev.txt
-        run: |
-          docker run --name test build bash /project/.github/workflows/container_tests.sh
-          docker cp test:/project/dist .
-          docker cp test:/project/lockfiles .
-          docker cp test:/project/cov.xml .
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
-        with:
-          name: 3.10-locked/ubuntu-latest
-          files: cov.xml
-
       - name: Build runtime image
         uses: docker/build-push-action@v3
         with:
-          push: ${{ github.event_name != 'pull_request' }}
+          build-args: |
+            PIP_OPTIONS=-r lockfiles/requirements.txt dist/*.whl
+          push: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags') }}
+          load: ${{ ! (github.event_name == 'push' && startsWith(github.ref, 'refs/tags')) }}
           tags: ${{ steps.meta.outputs.tags }}
-          context: .
-          labels: ${{ steps.meta.outputs.labels }}
+          context: .devcontainer
+          # If you have a long docker build, uncomment the following to turn on caching
+          # For short build times this makes it a little slower
+          #cache-from: type=gha
+          #cache-to: type=gha,mode=max
 
       - name: Test cli works in runtime image
-        # check that the first tag can run with --version parameter
-        run: docker run $(echo ${{ steps.meta.outputs.tags }} | head -1) --version
-
-      - name: Test cli works in sdist installed in local python
-        # ${GITHUB_REPOSITORY##*/} is the repo name without org
-        # Replace this with the cli command if different to the repo name
-        run: pip install dist/*.gz && ${GITHUB_REPOSITORY##*/} --version
-
-      - name: Upload build files
-        uses: actions/upload-artifact@v3
-        with:
-          name: dist
-          path: dist
-
-      - name: Upload lock files
-        uses: actions/upload-artifact@v3
-        with:
-          name: lockfiles
-          path: lockfiles
+        run: docker run ${{ env.IMAGE_REPOSITORY }} --version
 
   release:
     # upload to PyPI and make a release on every tag
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
-    needs: container
+    needs: [lint, dist, test]
+    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags') }}
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/download-artifact@v3
+
+      - name: Fixup blank lockfiles
+        # Github release artifacts can't be blank
+        run: for f in lockfiles/*; do [ -s $f ] || echo '# No requirements' >> $f; done
 
       - name: Github Release
         # We pin to the SHA, not the tag, for security reasons.

@@ -1,8 +1,9 @@
 name: Link Check
 
 on:
+  workflow_dispatch:
   schedule:
-    # Run every Monday at 8am to check URL links still resolve
+    # Run weekly to check URL links still resolve
     - cron: "0 8 * * WED"
 
 jobs:
@@ -17,18 +18,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
-      - name: Install python version
-        uses: actions/setup-python@v4
+      - name: Install python packages
+        uses: ./.github/actions/install_requirements
         with:
-          python-version: ${{ matrix.python }}
-
-      - name: Install dependencies
-        run: |
-          touch requirements_dev.txt
-          pip install -r requirements_dev.txt -e .[dev]
+          requirements_file: requirements-dev-3.x.txt
+          install_options: -e .[dev]
 
       - name: Check links
-        run: tox -e docs -- -b linkcheck
+        run: tox -e docs build -- -b linkcheck
