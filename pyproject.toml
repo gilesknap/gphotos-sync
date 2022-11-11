@@ -31,7 +31,6 @@ dev = [
     "pre-commit",
     "pydata-sphinx-theme",
     "pytest-cov",
-    "setuptools_scm[toml]>=6.2",
     "sphinx-autobuild",
     "sphinx-copybutton",
     "sphinx-design",
