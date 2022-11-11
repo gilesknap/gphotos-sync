@@ -2,7 +2,7 @@
 This file checks that all the example boilerplate text has been removed.
 It can be deleted when all the contained tests pass
 """
-import configparser
+from importlib.metadata import metadata
 from pathlib import Path
 
 ROOT = Path(__file__).parent.parent
@@ -24,14 +24,12 @@ def assert_not_contains_text(path: str, text: str, explanation: str):
         skeleton_check(text in contents, f"Please change ./{path} {explanation}")
 
 
-# setup.cfg
-def test_module_description():
-    conf = configparser.ConfigParser()
-    conf.read("setup.cfg")
-    description = conf["metadata"]["description"]
+# pyproject.toml
+def test_module_summary():
+    summary = metadata("python3-pip-skeleton")["summary"]
     skeleton_check(
-        "One line description of your module" in description,
-        "Please change description in ./setup.cfg "
+        "One line description of your module" in summary,
+        "Please change project.description in ./pyproject.toml "
         "to be a one line description of your module",
     )
 

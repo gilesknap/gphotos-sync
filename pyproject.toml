@@ -2,5 +2,113 @@
 requires = ["setuptools>=64", "setuptools_scm[toml]>=6.2", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[project]
+name = "python3-pip-skeleton"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+description = "One line description of your module"
+dependencies = [] # Add project dependencies here, e.g. ["click", "numpy"]
+dynamic = ["version"]
+license.file = "LICENSE"
+readme = "README.rst"
+requires-python = ">=3.8"
+
+[project.optional-dependencies]
+dev = [
+    "black",
+    "isort",
+    "mypy",
+    "flake8",
+    "flake8-isort",
+    "Flake8-pyproject",
+    "pipdeptree",
+    "pre-commit",
+    "pydata-sphinx-theme",
+    "pytest-cov",
+    "setuptools_scm[toml]>=6.2",
+    "sphinx-autobuild",
+    "sphinx-copybutton",
+    "sphinx-design",
+    "tox",
+    "tox-direct",
+    "types-mock",
+]
+
+[project.scripts]
+python3-pip-skeleton = "python3_pip_skeleton.__main__:main"
+
+[project.urls]
+GitHub = "https://github.com/DiamondLightSource/python3-pip-skeleton"
+
+[[project.authors]] # Further authors may be added by duplicating this section
+email = "email@address.com"
+name = "Firstname Lastname"
+
+
 [tool.setuptools_scm]
 write_to = "src/python3_pip_skeleton/_version.py"
+
+[tool.mypy]
+ignore_missing_imports = true # Ignore missing stubs in imported modules
+
+[tool.isort]
+float_to_top = true
+profile = "black"
+
+[tool.flake8]
+extend-ignore = [
+    "E203", # See https://github.com/PyCQA/pycodestyle/issues/373
+    "F811", # support typing.overload decorator
+    "F722", # allow Annotated[typ, some_func("some string")]
+]
+max-line-length = 88 # Respect black's line length (default 88),
+exclude = [".tox", "venv"]
+
+
+[tool.pytest.ini_options]
+# Run pytest with all our checkers, and don't spam us with massive tracebacks on error
+addopts = """
+    --tb=native -vv --doctest-modules --doctest-glob="*.rst"
+    --cov=python3_pip_skeleton --cov-report term --cov-report xml:cov.xml
+    """
+# https://iscinumpy.gitlab.io/post/bound-version-constraints/#watch-for-warnings
+filterwarnings = "error"
+# Doctest python code in docs, python code in src docstrings, test functions in tests
+testpaths = "docs src tests"
+
+[tool.coverage.run]
+data_file = "/tmp/python3_pip_skeleton.coverage"
+
+[tool.coverage.paths]
+# Tests are run from installed location, map back to the src directory
+source = ["src", "**/site-packages/"]
+
+# tox must currently be configured via an embedded ini string
+# See: https://github.com/tox-dev/tox/issues/999
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+skipsdist=True
+
+[testenv:{pre-commit,mypy,pytest,docs}]
+# Don't create a virtualenv for the command, requires tox-direct plugin
+direct = True
+passenv = *
+allowlist_externals = 
+    pytest 
+    pre-commit
+    mypy
+    sphinx-build
+    sphinx-autobuild
+commands =
+    pytest: pytest {posargs}
+    mypy: mypy src tests {posargs}
+    pre-commit: pre-commit run --all-files {posargs}
+    docs: sphinx-{posargs:build -EW --keep-going} -T docs build/html
+"""

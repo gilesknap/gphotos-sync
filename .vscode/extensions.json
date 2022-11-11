@@ -3,6 +3,7 @@
         "ms-vscode-remote.remote-containers",
         "ms-python.vscode-pylance",
         "ms-python.python",
-        "ryanluker.vscode-coverage-gutters"
+        "ryanluker.vscode-coverage-gutters",
+        "tamasfe.even-better-toml"
     ]
 }
