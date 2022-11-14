@@ -25,11 +25,11 @@
     "initializeCommand": "bash -c 'for i in $HOME/.inputrc; do [ -f $i ] || touch $i; done'",
     "runArgs": [
         "--net=host",
-        "--security-opt=label=type:container_runtime_t",
-        "-v=${localEnv:HOME}/.ssh:/root/.ssh",
-        "-v=${localEnv:HOME}/.inputrc:/root/.inputrc"
+        "--security-opt=label=type:container_runtime_t"
     ],
     "mounts": [
+        "source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind",
+        "source=${localEnv:HOME}/.inputrc,target=/root/.inputrc,type=bind",
         // map in home directory - not strictly necessary but useful
         "source=${localEnv:HOME},target=${localEnv:HOME},type=bind,consistency=cached"
     ],
