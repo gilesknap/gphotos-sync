@@ -160,6 +160,7 @@ jobs:
           push: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags') }}
           load: ${{ ! (github.event_name == 'push' && startsWith(github.ref, 'refs/tags')) }}
           tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           context: .devcontainer
           # If you have a long docker build, uncomment the following to turn on caching
           # For short build times this makes it a little slower
