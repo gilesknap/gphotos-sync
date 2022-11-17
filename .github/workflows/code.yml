@@ -97,7 +97,7 @@ jobs:
           path: dist
 
       - name: Check for packaging errors
-        run: pipx run twine check dist/*
+        run: pipx run twine check --strict dist/*
 
       - name: Install python packages
         uses: ./.github/actions/install_requirements
