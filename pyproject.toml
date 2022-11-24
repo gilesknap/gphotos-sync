@@ -29,7 +29,7 @@ dev = [
     "Flake8-pyproject",
     "pipdeptree",
     "pre-commit",
-    "pydata-sphinx-theme",
+    "pydata-sphinx-theme>=0.12",
     "pytest-cov",
     "sphinx-autobuild",
     "sphinx-copybutton",
