@@ -24,7 +24,8 @@ dev = [
     "black",
     "isort",
     "mypy",
-    "flake8",
+    # https://github.com/john-hen/Flake8-pyproject/issues/12
+    "flake8<6",
     "flake8-isort",
     "Flake8-pyproject",
     "pipdeptree",
