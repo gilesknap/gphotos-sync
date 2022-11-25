@@ -12,6 +12,13 @@
     "remoteEnv": {
         "DISPLAY": "${localEnv:DISPLAY}"
     },
+    // Add the URLs of features you want added when the container is built.
+    "features": {
+        "ghcr.io/devcontainers/features/common-utils:1": {
+            "username": "none",
+            "upgradePackages": false
+        }
+    },
     // Set *default* container specific settings.json values on container create.
     "settings": {
         "python.defaultInterpreterPath": "/venv/bin/python"
