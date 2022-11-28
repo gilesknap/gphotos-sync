@@ -22,10 +22,7 @@ requires-python = ">=3.8"
 [project.optional-dependencies]
 dev = [
     "black",
-    "isort",
     "mypy",
-    # https://github.com/john-hen/Flake8-pyproject/issues/12
-    "flake8<6",
     "flake8-isort",
     "Flake8-pyproject",
     "pipdeptree",
@@ -35,7 +32,6 @@ dev = [
     "sphinx-autobuild",
     "sphinx-copybutton",
     "sphinx-design",
-    "tox",
     "tox-direct",
     "types-mock",
 ]
