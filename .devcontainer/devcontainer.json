@@ -1,4 +1,4 @@
-// For format details, see https://aka.ms/devcontainer.json
+// For format details, see https://containers.dev/implementors/json_reference/
 {
     "name": "Python 3 Developer Container",
     "build": {
