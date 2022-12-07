@@ -8,11 +8,6 @@ on:
 
 jobs:
   docs:
-    strategy:
-      fail-fast: false
-      matrix:
-        python: ["3.10"]
-
     runs-on: ubuntu-latest
 
     steps:
