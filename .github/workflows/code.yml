@@ -170,42 +170,13 @@ jobs:
       - name: Test cli works in runtime image
         run: docker run ${{ env.IMAGE_REPOSITORY }} --version
 
-  conda:
-    needs: [dist]
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/download-artifact@v3
-
-      - name: Create Conda recipe
-        run: |
-          mkdir -p conda/recipe
-          pipx run grayskull pypi -o conda/recipe dist/*.tar.gz
-
-      - name: Install conda-build
-        run: conda install -y conda-build
-
-      - name: Build Conda distribution
-        run: |
-          mkdir -p conda/build
-          conda build --output-folder conda/build conda/recipe/*/meta.yaml
-
-      - name: Upload conda build
-        uses: actions/upload-artifact@v3
-        with:
-          name: conda_build
-          path: |
-            conda/build/
-            !conda/build/*/.cache
-
   release:
     # upload to PyPI and make a release on every tag
-    needs: [lint, dist, test, conda]
+    needs: [lint, dist, test]
     if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags') }}
     runs-on: ubuntu-latest
     env:
       HAS_PYPI_TOKEN: ${{ secrets.PYPI_TOKEN != '' }}
-      HAS_ANACONDA_TOKEN: ${{ secrets.ANACONDA_TOKEN != '' }}
 
     steps:
       - uses: actions/download-artifact@v3
@@ -232,7 +203,3 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.PYPI_TOKEN }}
-
-      - name: Publish to Anaconda
-        if: ${{ env.HAS_ANACONDA_TOKEN }}
-        run: pipx run --spec anaconda-client anaconda --token ${{ secrets.ANACONDA_TOKEN }} upload conda_build/noarch/*.tar.bz2

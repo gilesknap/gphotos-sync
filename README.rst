@@ -1,7 +1,7 @@
 python3-pip-skeleton
 ===========================
 
-|code_ci| |docs_ci| |coverage| |pypi_version| |anaconda_version| |license|
+|code_ci| |docs_ci| |coverage| |pypi_version| |license|
 
 .. note::
 
@@ -14,7 +14,6 @@ how it does it, and why people should use it.
 
 ============== ==============================================================
 PyPI           ``pip install python3-pip-skeleton``
-Conda          ``conda install -c DiamondLightSource python3-pip-skeleton``
 Source code    https://github.com/DiamondLightSource/python3-pip-skeleton
 Documentation  https://DiamondLightSource.github.io/python3-pip-skeleton
 Releases       https://github.com/DiamondLightSource/python3-pip-skeleton/releases
@@ -49,10 +48,6 @@ Or if it is a commandline tool then you might put some example commands here::
 .. |pypi_version| image:: https://img.shields.io/pypi/v/python3-pip-skeleton.svg
     :target: https://pypi.org/project/python3-pip-skeleton
     :alt: Latest PyPI version
-
-.. |anaconda_version| image:: https://anaconda.org/DiamondLightSource/python3-pip-skeleton/badges/version.svg
-    :target: https://anaconda.org/DiamondLightSource/python3-pip-skeleton
-    :alt: Latest Anaconda version
 
 .. |license| image:: https://img.shields.io/badge/License-Apache%202.0-blue.svg
     :target: https://opensource.org/licenses/Apache-2.0
