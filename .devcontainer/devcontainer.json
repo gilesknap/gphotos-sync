@@ -2,7 +2,7 @@
 {
     "name": "Python 3 Developer Container",
     "build": {
-        "dockerfile": "Dockerfile",
+        "dockerfile": "../Dockerfile",
         "target": "build",
         // Only upgrade pip, we will install the project below
         "args": {

@@ -5,7 +5,7 @@
 #
 FROM python:3.11 as build
 
-ARG PIP_OPTIONS
+ARG PIP_OPTIONS=.
 
 # Add any system dependencies for the developer/build environment here e.g.
 # RUN apt-get update && apt-get upgrade -y && \

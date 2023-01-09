@@ -129,7 +129,7 @@ jobs:
       - name: Download wheel and lockfiles
         uses: actions/download-artifact@v3
         with:
-          path: .devcontainer
+          path: artifacts/
 
       - name: Log in to GitHub Docker Registry
         if: github.event_name != 'pull_request'
@@ -161,7 +161,8 @@ jobs:
           load: ${{ ! (github.event_name == 'push' && startsWith(github.ref, 'refs/tags')) }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          context: .devcontainer
+          context: artifacts/
+          file: ./Dockerfile
           # If you have a long docker build, uncomment the following to turn on caching
           # For short build times this makes it a little slower
           #cache-from: type=gha
