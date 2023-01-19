@@ -33,6 +33,7 @@ side-bar.
             how-to/update-tools
             how-to/make-release
             how-to/pin-requirements
+            how-to/test-container
 
         +++
 
