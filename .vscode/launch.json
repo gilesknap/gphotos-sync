@@ -15,7 +15,7 @@
             ],
             "console": "integratedTerminal",
             "env": {
-                // The default config in setup.cfg's "[tool:pytest]" adds coverage.
+                // The default config in pyproject.toml's "[tool.pytest.ini_options]" adds coverage.
                 // Cannot have coverage and debugging at the same time.
                 // https://github.com/microsoft/vscode-python/issues/693
                 "PYTEST_ADDOPTS": "--no-cov"
