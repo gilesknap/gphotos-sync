@@ -28,7 +28,7 @@ requires python 3.8 or later) or to run in a container under `VSCode
             $ cd python3-pip-skeleton
             $ python3 -m venv venv
             $ source venv/bin/activate
-            $ pip install -e .[dev]
+            $ pip install -e '.[dev]'
 
     .. tab-item:: VSCode devcontainer
 
