@@ -15,6 +15,9 @@ commit`` on just the files that have changed::
 
     $ pre-commit install
 
+It is also possible to `automatically enable pre-commit on cloned repositories <https://pre-commit.com/#automatically-enabling-pre-commit-on-repositories>`_.
+This will result in pre-commits being enabled on every repo your user clones from now on.
+
 Fixing issues
 -------------
 
