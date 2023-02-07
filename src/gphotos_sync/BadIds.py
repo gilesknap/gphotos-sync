@@ -53,7 +53,7 @@ class BadIds:
 
     def report(self):
         if self.bad_ids_found > 0:
-            log.error(
+            log.warning(
                 "WARNING: skipped %d files listed in %s",
                 self.bad_ids_found,
                 self.bad_ids_filename,
