@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>API &mdash; gphotos-sync 3.5.dev13+g390b698 documentation</title>
+  <title>API &mdash; gphotos-sync 3.5.dev14+g3c98c37 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
@@ -14,10 +14,8 @@
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
         <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/js/theme.js"></script>
@@ -31,15 +29,19 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
-            <a href="../index.html" class="icon icon-home"> gphotos-sync
-            <img src="../_static/logo.png" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            gphotos-sync
+              <img src="../_static/logo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
                 main
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -137,7 +139,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a></li>
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
       <li class="breadcrumb-item active">API</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/reference/api.rst.txt" rel="nofollow"> View page source</a>
@@ -257,7 +259,7 @@ of the Database.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="gphotos_sync.DatabaseMedia.DatabaseMedia.location">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">location</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#gphotos_sync.DatabaseMedia.DatabaseMedia.location" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">location</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></em><a class="headerlink" href="#gphotos_sync.DatabaseMedia.DatabaseMedia.location" title="Permalink to this definition"></a></dt>
 <dd><p>image GPS information</p>
 </dd></dl>
 
@@ -314,7 +316,7 @@ of the Database.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gphotos_sync.GooglePhotosDownload.</span></span><span class="sig-name descname"><span class="pre">GooglePhotosDownload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">api</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">RestClient</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root_folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.11)"><span class="pre">Path</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">LocalData</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Settings</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gphotos_sync/GooglePhotosDownload.html#GooglePhotosDownload"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload" title="Permalink to this definition"></a></dt>
 <dd><p>A Class for managing the indexing and download of Google Photos</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>api</strong> – object representing the Google REST API</p></li>
 <li><p><strong>root_folder</strong> – path to the root of local file synchronization</p></li>
@@ -358,7 +360,7 @@ complete processing of the media item.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.do_download_complete">
-<span class="sig-name descname"><span class="pre">do_download_complete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">futures_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.11)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Mapping" title="(in Python v3.11)"><span class="pre">Mapping</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Future</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#gphotos_sync.DatabaseMedia.DatabaseMedia" title="gphotos_sync.DatabaseMedia.DatabaseMedia"><span class="pre">DatabaseMedia</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Future</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gphotos_sync/GooglePhotosDownload.html#GooglePhotosDownload.do_download_complete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.do_download_complete" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">do_download_complete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">futures_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Mapping" title="(in Python v3.11)"><span class="pre">Mapping</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Future</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#gphotos_sync.DatabaseMedia.DatabaseMedia" title="gphotos_sync.DatabaseMedia.DatabaseMedia"><span class="pre">DatabaseMedia</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Future</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gphotos_sync/GooglePhotosDownload.html#GooglePhotosDownload.do_download_complete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.do_download_complete" title="Permalink to this definition"></a></dt>
 <dd><p>runs in the main thread and completes processing of a media
 item once (multi threaded) do_download has completed</p>
 </dd></dl>

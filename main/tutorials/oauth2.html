@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Creating an OAuth Client ID &mdash; gphotos-sync 3.5.dev13+g390b698 documentation</title>
+  <title>Creating an OAuth Client ID &mdash; gphotos-sync 3.5.dev14+g3c98c37 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
@@ -14,10 +14,8 @@
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
         <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/js/theme.js"></script>
@@ -32,15 +30,19 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
-            <a href="../index.html" class="icon icon-home"> gphotos-sync
-            <img src="../_static/logo.png" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            gphotos-sync
+              <img src="../_static/logo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
                 main
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -98,7 +100,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a></li>
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
       <li class="breadcrumb-item active">Creating an OAuth Client ID</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/tutorials/oauth2.rst.txt" rel="nofollow"> View page source</a>
@@ -110,10 +112,10 @@
            <div itemprop="articleBody">
              
   <section id="creating-an-oauth-client-id">
-<span id="client-id"></span><h1><a class="toc-backref" href="#id1">Creating an OAuth Client ID</a><a class="headerlink" href="#creating-an-oauth-client-id" title="Permalink to this heading"></a></h1>
+<span id="client-id"></span><h1><a class="toc-backref" href="#id1" role="doc-backlink">Creating an OAuth Client ID</a><a class="headerlink" href="#creating-an-oauth-client-id" title="Permalink to this heading"></a></h1>
 <section id="overview">
-<h2><a class="toc-backref" href="#id2">Overview</a><a class="headerlink" href="#overview" title="Permalink to this heading"></a></h2>
-<div class="contents topic" id="contents">
+<h2><a class="toc-backref" href="#id2" role="doc-backlink">Overview</a><a class="headerlink" href="#overview" title="Permalink to this heading"></a></h2>
+<nav class="contents" id="contents">
 <p class="topic-title">Contents</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="#creating-an-oauth-client-id" id="id1">Creating an OAuth Client ID</a></p>
@@ -128,7 +130,7 @@
 </ul>
 </li>
 </ul>
-</div>
+</nav>
 <p>This document will take you through the steps needed to set up a Google Cloud
 project and create an OAuth client ID for gphoto-sync.</p>
 <p>For a discussion of the purpose of this ID see <a class="reference internal" href="../explanations/tokens.html#tokens"><span class="std std-ref">Google OAuth Tokens for gphotos-sync</span></a>.</p>
@@ -141,7 +143,7 @@ bit.</p>
 </div>
 </section>
 <section id="create-a-google-cloud-project">
-<h2><a class="toc-backref" href="#id3">Create a Google Cloud Project</a><a class="headerlink" href="#create-a-google-cloud-project" title="Permalink to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">Create a Google Cloud Project</a><a class="headerlink" href="#create-a-google-cloud-project" title="Permalink to this heading"></a></h2>
 <ol class="arabic">
 <li><p>Head to <a class="reference external" href="https://console.cloud.google.com">https://console.cloud.google.com</a></p>
 <blockquote>
@@ -174,7 +176,7 @@ within your account and cannot be changed in the future.</p></li>
 </ol>
 </section>
 <section id="enable-the-photos-api">
-<h2><a class="toc-backref" href="#id4">Enable the Photos API</a><a class="headerlink" href="#enable-the-photos-api" title="Permalink to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">Enable the Photos API</a><a class="headerlink" href="#enable-the-photos-api" title="Permalink to this heading"></a></h2>
 <ol class="arabic">
 <li><p>Ensure that the project you made above is the active project.</p></li>
 <li><p>Click on the top-left hamburger menu and find <strong>APIs &amp; Services</strong> &gt; <strong>Library</strong>.</p>
@@ -195,7 +197,7 @@ within your account and cannot be changed in the future.</p></li>
 </ol>
 </section>
 <section id="configure-oauth-consent">
-<h2><a class="toc-backref" href="#id5">Configure OAuth Consent</a><a class="headerlink" href="#configure-oauth-consent" title="Permalink to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">Configure OAuth Consent</a><a class="headerlink" href="#configure-oauth-consent" title="Permalink to this heading"></a></h2>
 <ol class="arabic">
 <li><p>Find <strong>APIs &amp; Services</strong> &gt; <strong>OAuth consent screen</strong></p>
 <blockquote>
@@ -253,7 +255,7 @@ it will no longer be in the testing state.</p></li>
 </ol>
 </section>
 <section id="create-the-oauth-credentials">
-<h2><a class="toc-backref" href="#id6">Create the OAuth Credentials</a><a class="headerlink" href="#create-the-oauth-credentials" title="Permalink to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id6" role="doc-backlink">Create the OAuth Credentials</a><a class="headerlink" href="#create-the-oauth-credentials" title="Permalink to this heading"></a></h2>
 <ol class="arabic">
 <li><p>Find <strong>APIs &amp; Services</strong> &gt; <strong>Credentials</strong></p></li>
 <li><p>Press <strong>+ Create Credentials</strong> and select <strong>OAuth client ID</strong>.</p>
@@ -279,7 +281,7 @@ save it as <code class="docutils literal notranslate"><span class="pre">client_s
 </ol>
 </section>
 <section id="publish-the-app">
-<h2><a class="toc-backref" href="#id7">Publish the App</a><a class="headerlink" href="#publish-the-app" title="Permalink to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id7" role="doc-backlink">Publish the App</a><a class="headerlink" href="#publish-the-app" title="Permalink to this heading"></a></h2>
 <div class="admonition important">
 <p class="admonition-title">Important</p>
 <p>Failure to publish the app will result in your auth token expiring after
@@ -294,7 +296,7 @@ save it as <code class="docutils literal notranslate"><span class="pre">client_s
 found in the <a class="reference external" href="https://github.com/gilesknap/gphotos-sync/README.rst">README</a>.</p>
 </section>
 <section id="move-client-secret-json">
-<h2><a class="toc-backref" href="#id8">Move client_secret.json</a><a class="headerlink" href="#move-client-secret-json" title="Permalink to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id8" role="doc-backlink">Move client_secret.json</a><a class="headerlink" href="#move-client-secret-json" title="Permalink to this heading"></a></h2>
 <blockquote>
 <div><ol class="arabic simple">
 <li><p>The client_secret.json must be moved to the correct location</p></li>
