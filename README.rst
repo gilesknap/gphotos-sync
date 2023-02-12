@@ -69,4 +69,9 @@ To get started see `Tutorial <https://gilesknap.github.io/gphotos-sync/main/tuto
 
 See https://gilesknap.github.io/gphotos-sync for more detailed documentation.
 
+Alterniatives
+=============
+
+For a commercial product that backs up your library to the cloud see:
+See https://photovaultone.com/
 
