@@ -28,6 +28,7 @@ dev = [
     "pipdeptree",
     "pre-commit",
     "pydata-sphinx-theme>=0.12",
+    "pytest",
     "pytest-cov",
     "sphinx-autobuild",
     "sphinx-copybutton",
