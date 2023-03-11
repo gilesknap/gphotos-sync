@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Additional Setup for Windows Machines &mdash; gphotos-sync 3.1.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/logo.png"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Scheduling a Regular Backup" href="cron.html" />
+    <link rel="prev" title="User Login OAuth Flow" href="../tutorials/login.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            gphotos-sync
+              <img src="../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                3.1.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/installation.html">Initial Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/installation.html#execute-in-a-container">Execute in a container</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/installation.html#local-installation">Local Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/installation.html#running-gphotos-sync">Running gphotos-sync</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/oauth2.html">Creating an OAuth Client ID</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/login.html">User Login OAuth Flow</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">How-to Guides</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Additional Setup for Windows Machines</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#python">Python</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#virtual-environment">Virtual Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#symlinks">Symlinks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#alternative-approach">Alternative approach</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#initial-setup-on-windows-for-docker-desktop">Initial Setup on Windows for Docker desktop</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cron.html">Scheduling a Regular Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="comparison.html">Comparing The Google Photos Library With Local files</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Explanations</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../explanations/folders.html">Folder Layout</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explanations/notes.html">Why is Google Photos Sync Read Only</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explanations/tokens.html">Google OAuth Tokens for gphotos-sync</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explanations/googleapiissues.html">Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/api.html">API</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/gilesknap/gphotos-sync/releases">Releases</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">gphotos-sync</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Additional Setup for Windows Machines</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/how-to/windows.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="additional-setup-for-windows-machines">
+<span id="windows"></span><h1>Additional Setup for Windows Machines<a class="headerlink" href="#additional-setup-for-windows-machines" title="Permalink to this heading"></a></h1>
+<section id="python">
+<h2>Python<a class="headerlink" href="#python" title="Permalink to this heading"></a></h2>
+<p>To install python on Windows.</p>
+<ul class="simple">
+<li><p>Open a command prompt with “Windows-Key CMD &lt;Enter&gt;”</p></li>
+<li><p>Type ‘python’</p></li>
+<li><p>This will take you to the Microsoft Store and prompt you to install python</p></li>
+<li><p>When complete return to the command prompt</p></li>
+<li><p>Type ‘pip install gphotos-sync’</p></li>
+</ul>
+<p>You can now run using the following but replacing &lt;USER&gt; with your username
+and &lt;VERSION&gt; with the python version installed (look in the Packages folder
+to find the full VERSION):</p>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">C:\Users\&lt;USER&gt;\AppData\Local\Packages\PythonSoftwareFoundation.Python.&lt;VERSION&gt;\LocalCache\local-packages\Python310\Scripts\gphotos-sync.exe</span></code></p>
+</div></blockquote>
+<p>As an alternative to typing the full path you can add the Scripts folder
+to your path. See
+<a class="reference external" href="https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/">https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/</a>.</p>
+<p>Using the installer downloadable from <a class="reference external" href="https://www.python.org/downloads/">https://www.python.org/downloads/</a> will have
+the same effect and includes a checkbox to add python to your Windows Path.</p>
+</section>
+<section id="virtual-environment">
+<h2>Virtual Environment<a class="headerlink" href="#virtual-environment" title="Permalink to this heading"></a></h2>
+<p>It is recommended you create a virtual environment to run you python code in to
+avoid messing up your root python install. In the below example we create a virtual
+environment on the desktop. In the below example we assume that python has been
+added to your window path variable as above.</p>
+<ul class="simple">
+<li><p>Create a new folder on your desktop called ‘GPhotosSync’</p></li>
+<li><p>Hold shift and right click on your desktop and click ‘Open PowerShell window here’</p></li>
+<li><p>type <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">venv</span> <span class="pre">GPhotosSync</span></code> this will create a virtual environment</p></li>
+<li><p>next activate the environment using the command <code class="docutils literal notranslate"><span class="pre">.\GPhotosSync\Scripts\activate.ps1</span></code></p></li>
+<li><p>you can then install gphotos-sync using the command <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">gphotos-sync</span></code></p></li>
+<li><p>You run it the same way as listed above. But now you need to activate the virtual environment every time you run it.</p></li>
+</ul>
+</section>
+<section id="symlinks">
+<h2>Symlinks<a class="headerlink" href="#symlinks" title="Permalink to this heading"></a></h2>
+<p>Album information is created as a set of folders with symbolic links into
+the photos folder. Windows supports symbolic links but it is turned off by default.
+You can either turn it on for your account or you can use the operation
+<code class="docutils literal notranslate"><span class="pre">--skip-albums</span></code>.</p>
+<p>To enable symbolic links permission for the account that gphoto-sync
+will run under, see <a class="reference external" href="https://community.perforce.com/s/article/3472">Enabling SymLinks on Windows</a>.</p>
+</section>
+<section id="alternative-approach">
+<h2>Alternative approach<a class="headerlink" href="#alternative-approach" title="Permalink to this heading"></a></h2>
+<p>To avoid fiddling with symlinks and python paths you could try WSL2.</p>
+<p>This project was developed in Linux, so if you would like to get the
+native experience I recommend installing WSL2 and Ubuntu.
+This gives you a linux environment inside of your Windows OS and
+handles command line installation of python and python applications
+in a far cleaner way.</p>
+<p>The integration
+if particularly good on Windows 11.
+See <a class="reference external" href="https://docs.microsoft.com/en-us/windows/wsl/install">https://docs.microsoft.com/en-us/windows/wsl/install</a>.</p>
+</section>
+</section>
+<section id="initial-setup-on-windows-for-docker-desktop">
+<span id="windowsdocker"></span><h1>Initial Setup on Windows for Docker desktop<a class="headerlink" href="#initial-setup-on-windows-for-docker-desktop" title="Permalink to this heading"></a></h1>
+<p>If you want to run the app in a container then there are some additional
+steps required on Windows.</p>
+<p>First you need to have installed Docker Desktop from
+<a class="reference external" href="https://www.docker.com/products/docker-desktop/">https://www.docker.com/products/docker-desktop/</a></p>
+<ul class="simple">
+<li><p>make sure leave ticked ‘use WSL2 instead of Hyper V’</p></li>
+<li><p>if you already have docker installed with Hyper V consider re-installing with
+WSL2</p></li>
+</ul>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../tutorials/login.html" class="btn btn-neutral float-left" title="User Login OAuth Flow" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="cron.html" class="btn btn-neutral float-right" title="Scheduling a Regular Backup" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p></p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+   
+  <div id="other-versions-div" class="rst-versions" data-toggle="rst-versions" role="note" aria-label="Versions" style="visibility: hidden">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      <span class="fa fa-book"> Other Versions</span>
+      3.1.0
+      <span class="fa fa-caret-down"></span>
+    </span>
+    <div class="rst-other-versions">
+      <dl id="other-versions-dl"/>
+    </div>
+  </div>
+  <script>
+    function addVersion(name) {
+      var dd = document.createElement("dd");
+      var a = document.createElement("a");
+      a.href = "../../" + name;
+      a.innerText = name;
+      dd.appendChild(a);
+      document.getElementById('other-versions-dl').appendChild(dd);
+    }
+    // Get versions.txt and add a version for each line
+    fetch("../../versions.txt").then(response => {
+      if (response.ok) {
+        document.getElementById('other-versions-div').style.visibility = "visible";
+        return response.text().then(text => text.split(/\r?\n/).forEach(addVersion))
+      }
+    });
+  </script>
+
+
+</body>
+</html>

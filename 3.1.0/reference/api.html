@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API &mdash; gphotos-sync 3.1.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/logo.png"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Contributing" href="contributing.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            gphotos-sync
+              <img src="../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                3.1.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/installation.html">Initial Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/installation.html#execute-in-a-container">Execute in a container</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/installation.html#local-installation">Local Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/installation.html#running-gphotos-sync">Running gphotos-sync</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/oauth2.html">Creating an OAuth Client ID</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/login.html">User Login OAuth Flow</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">How-to Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../how-to/windows.html">Additional Setup for Windows Machines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-to/windows.html#initial-setup-on-windows-for-docker-desktop">Initial Setup on Windows for Docker desktop</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-to/cron.html">Scheduling a Regular Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-to/comparison.html">Comparing The Google Photos Library With Local files</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Explanations</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../explanations/folders.html">Folder Layout</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explanations/notes.html">Why is Google Photos Sync Read Only</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explanations/tokens.html">Google OAuth Tokens for gphotos-sync</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explanations/googleapiissues.html">Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#gphotos-sync"><code class="docutils literal notranslate"><span class="pre">gphotos_sync</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#gphotos_sync.gphotos_sync.__version__"><code class="docutils literal notranslate"><span class="pre">gphotos_sync.__version__</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#gphotos-sync-main"><code class="docutils literal notranslate"><span class="pre">gphotos_sync.Main</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#gphotos-sync-basemedia"><code class="docutils literal notranslate"><span class="pre">gphotos_sync.BaseMedia</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#gphotos_sync.BaseMedia.BaseMedia"><code class="docutils literal notranslate"><span class="pre">BaseMedia</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#gphotos-sync-databasemedia"><code class="docutils literal notranslate"><span class="pre">gphotos_sync.DatabaseMedia</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#gphotos_sync.DatabaseMedia.DatabaseMedia"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gphotos_sync.DatabaseMedia.DatabaseMedia._id"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia._id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gphotos_sync.DatabaseMedia.DatabaseMedia._url"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia._url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gphotos_sync.DatabaseMedia.DatabaseMedia._relative_folder"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia._relative_folder</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gphotos_sync.DatabaseMedia.DatabaseMedia._filename"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia._filename</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gphotos_sync.DatabaseMedia.DatabaseMedia._orig_name"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia._orig_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gphotos_sync.DatabaseMedia.DatabaseMedia._duplicate_number"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia._duplicate_number</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gphotos_sync.DatabaseMedia.DatabaseMedia._size"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia._size</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gphotos_sync.DatabaseMedia.DatabaseMedia._mime_type"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia._mime_type</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gphotos_sync.DatabaseMedia.DatabaseMedia._date"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia._date</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gphotos_sync.DatabaseMedia.DatabaseMedia._create_date"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia._create_date</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gphotos_sync.DatabaseMedia.DatabaseMedia._description"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia._description</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gphotos_sync.DatabaseMedia.DatabaseMedia._downloaded"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia._downloaded</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gphotos_sync.DatabaseMedia.DatabaseMedia.location"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia.location</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gphotos_sync.DatabaseMedia.DatabaseMedia.description"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia.description</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gphotos_sync.DatabaseMedia.DatabaseMedia.orig_name"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia.orig_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gphotos_sync.DatabaseMedia.DatabaseMedia.filename"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia.filename</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gphotos_sync.DatabaseMedia.DatabaseMedia.create_date"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia.create_date</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gphotos_sync.DatabaseMedia.DatabaseMedia.modify_date"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia.modify_date</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gphotos_sync.DatabaseMedia.DatabaseMedia.url"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia.url</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#gphotos-sync-googlephotosmedia"><code class="docutils literal notranslate"><span class="pre">gphotos_sync.GooglePhotosMedia</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#gphotos-sync-localfilesmedia"><code class="docutils literal notranslate"><span class="pre">gphotos_sync.LocalFilesMedia</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#gphotos-sync-googlephotosdownload"><code class="docutils literal notranslate"><span class="pre">gphotos_sync.GooglePhotosDownload</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload"><code class="docutils literal notranslate"><span class="pre">GooglePhotosDownload</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.download_photo_media"><code class="docutils literal notranslate"><span class="pre">GooglePhotosDownload.download_photo_media()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.download_batch"><code class="docutils literal notranslate"><span class="pre">GooglePhotosDownload.download_batch()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.download_file"><code class="docutils literal notranslate"><span class="pre">GooglePhotosDownload.download_file()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.do_download_file"><code class="docutils literal notranslate"><span class="pre">GooglePhotosDownload.do_download_file()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.do_download_complete"><code class="docutils literal notranslate"><span class="pre">GooglePhotosDownload.do_download_complete()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.find_bad_items"><code class="docutils literal notranslate"><span class="pre">GooglePhotosDownload.find_bad_items()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#gphotos-sync-googlephotosindex"><code class="docutils literal notranslate"><span class="pre">gphotos_sync.GooglePhotosIndex</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/gilesknap/gphotos-sync/releases">Releases</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">gphotos-sync</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">API</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/reference/api.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-gphotos_sync">
+<span id="api"></span><h1>API<a class="headerlink" href="#module-gphotos_sync" title="Permalink to this heading"></a></h1>
+<section id="gphotos-sync">
+<h2><code class="docutils literal notranslate"><span class="pre">gphotos_sync</span></code><a class="headerlink" href="#gphotos-sync" title="Permalink to this heading"></a></h2>
+</section>
+<p>This is the internal code reference for gphotos_sync</p>
+<dl class="py data">
+<dt class="sig sig-object py" id="gphotos_sync.gphotos_sync.__version__">
+<span class="sig-prename descclassname"><span class="pre">gphotos_sync.</span></span><span class="sig-name descname"><span class="pre">__version__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></em><a class="headerlink" href="#gphotos_sync.gphotos_sync.__version__" title="Permalink to this definition"></a></dt>
+<dd><p>Version number as calculated by setuptools_scm</p>
+</dd></dl>
+
+<span class="target" id="module-gphotos_sync.Main"></span><section id="gphotos-sync-main">
+<h2><code class="docutils literal notranslate"><span class="pre">gphotos_sync.Main</span></code><a class="headerlink" href="#gphotos-sync-main" title="Permalink to this heading"></a></h2>
+</section>
+<span class="target" id="module-gphotos_sync.BaseMedia"></span><section id="gphotos-sync-basemedia">
+<h2><code class="docutils literal notranslate"><span class="pre">gphotos_sync.BaseMedia</span></code><a class="headerlink" href="#gphotos-sync-basemedia" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="gphotos_sync.BaseMedia.BaseMedia">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gphotos_sync.BaseMedia.</span></span><span class="sig-name descname"><span class="pre">BaseMedia</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.11)"><span class="pre">Path</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">PosixPath('.')</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">k_args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gphotos_sync/BaseMedia.html#BaseMedia"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gphotos_sync.BaseMedia.BaseMedia" title="Permalink to this definition"></a></dt>
+<dd><p>Base class for media model classes.
+These provide a standard interface for media items that have been loaded
+from disk / loaded from DB / retrieved from the Google Photos Library</p>
+</dd></dl>
+
+</section>
+<span class="target" id="module-gphotos_sync.DatabaseMedia"></span><section id="gphotos-sync-databasemedia">
+<h2><code class="docutils literal notranslate"><span class="pre">gphotos_sync.DatabaseMedia</span></code><a class="headerlink" href="#gphotos-sync-databasemedia" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="gphotos_sync.DatabaseMedia.DatabaseMedia">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gphotos_sync.DatabaseMedia.</span></span><span class="sig-name descname"><span class="pre">DatabaseMedia</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_uid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_relative_folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.11)"><span class="pre">Path</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">PosixPath('.')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_orig_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_duplicate_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_mime_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_description</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_date</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.11)"><span class="pre">datetime</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">datetime.datetime(1900,</span> <span class="pre">1,</span> <span class="pre">1,</span> <span class="pre">0,</span> <span class="pre">0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_create_date</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.11)"><span class="pre">datetime</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">datetime.datetime(1900,</span> <span class="pre">1,</span> <span class="pre">1,</span> <span class="pre">0,</span> <span class="pre">0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_downloaded</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_location</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gphotos_sync/DatabaseMedia.html#DatabaseMedia"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gphotos_sync.DatabaseMedia.DatabaseMedia" title="Permalink to this definition"></a></dt>
+<dd><p>A Class for reading and writing BaseMedia objects to and from
+database tables</p>
+<p>The standard BaseMedia attributes are represented here. This dumb class
+is used for representing any MediaBase derived class that has been read out
+of the Database.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gphotos_sync.DatabaseMedia.DatabaseMedia._id">
+<span class="sig-name descname"><span class="pre">_id</span></span><a class="headerlink" href="#gphotos_sync.DatabaseMedia.DatabaseMedia._id" title="Permalink to this definition"></a></dt>
+<dd><p>remote identifier from Google Photos</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gphotos_sync.DatabaseMedia.DatabaseMedia._url">
+<span class="sig-name descname"><span class="pre">_url</span></span><a class="headerlink" href="#gphotos_sync.DatabaseMedia.DatabaseMedia._url" title="Permalink to this definition"></a></dt>
+<dd><p>the ‘product URL’ which takes you to the Web view for this file</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gphotos_sync.DatabaseMedia.DatabaseMedia._relative_folder">
+<span class="sig-name descname"><span class="pre">_relative_folder</span></span><a class="headerlink" href="#gphotos_sync.DatabaseMedia.DatabaseMedia._relative_folder" title="Permalink to this definition"></a></dt>
+<dd><p>root relative path to file</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gphotos_sync.DatabaseMedia.DatabaseMedia._filename">
+<span class="sig-name descname"><span class="pre">_filename</span></span><a class="headerlink" href="#gphotos_sync.DatabaseMedia.DatabaseMedia._filename" title="Permalink to this definition"></a></dt>
+<dd><p>local filename</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gphotos_sync.DatabaseMedia.DatabaseMedia._orig_name">
+<span class="sig-name descname"><span class="pre">_orig_name</span></span><a class="headerlink" href="#gphotos_sync.DatabaseMedia.DatabaseMedia._orig_name" title="Permalink to this definition"></a></dt>
+<dd><p>as above minus any duplicate number suffix</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gphotos_sync.DatabaseMedia.DatabaseMedia._duplicate_number">
+<span class="sig-name descname"><span class="pre">_duplicate_number</span></span><a class="headerlink" href="#gphotos_sync.DatabaseMedia.DatabaseMedia._duplicate_number" title="Permalink to this definition"></a></dt>
+<dd><p>which instance if &gt; 1 file has same orig_name</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gphotos_sync.DatabaseMedia.DatabaseMedia._size">
+<span class="sig-name descname"><span class="pre">_size</span></span><a class="headerlink" href="#gphotos_sync.DatabaseMedia.DatabaseMedia._size" title="Permalink to this definition"></a></dt>
+<dd><p>files size on disk</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gphotos_sync.DatabaseMedia.DatabaseMedia._mime_type">
+<span class="sig-name descname"><span class="pre">_mime_type</span></span><a class="headerlink" href="#gphotos_sync.DatabaseMedia.DatabaseMedia._mime_type" title="Permalink to this definition"></a></dt>
+<dd><p>string representation of file type</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gphotos_sync.DatabaseMedia.DatabaseMedia._date">
+<span class="sig-name descname"><span class="pre">_date</span></span><a class="headerlink" href="#gphotos_sync.DatabaseMedia.DatabaseMedia._date" title="Permalink to this definition"></a></dt>
+<dd><p>modification date</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gphotos_sync.DatabaseMedia.DatabaseMedia._create_date">
+<span class="sig-name descname"><span class="pre">_create_date</span></span><a class="headerlink" href="#gphotos_sync.DatabaseMedia.DatabaseMedia._create_date" title="Permalink to this definition"></a></dt>
+<dd><p>creation date</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gphotos_sync.DatabaseMedia.DatabaseMedia._description">
+<span class="sig-name descname"><span class="pre">_description</span></span><a class="headerlink" href="#gphotos_sync.DatabaseMedia.DatabaseMedia._description" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gphotos_sync.DatabaseMedia.DatabaseMedia._downloaded">
+<span class="sig-name descname"><span class="pre">_downloaded</span></span><a class="headerlink" href="#gphotos_sync.DatabaseMedia.DatabaseMedia._downloaded" title="Permalink to this definition"></a></dt>
+<dd><p>true if previously downloaded to disk</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="gphotos_sync.DatabaseMedia.DatabaseMedia.location">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">location</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></em><a class="headerlink" href="#gphotos_sync.DatabaseMedia.DatabaseMedia.location" title="Permalink to this definition"></a></dt>
+<dd><p>image GPS information</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="gphotos_sync.DatabaseMedia.DatabaseMedia.description">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">description</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></em><a class="headerlink" href="#gphotos_sync.DatabaseMedia.DatabaseMedia.description" title="Permalink to this definition"></a></dt>
+<dd><p>The description of the file</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="gphotos_sync.DatabaseMedia.DatabaseMedia.orig_name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">orig_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></em><a class="headerlink" href="#gphotos_sync.DatabaseMedia.DatabaseMedia.orig_name" title="Permalink to this definition"></a></dt>
+<dd><p>Original filename before duplicate name handling</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="gphotos_sync.DatabaseMedia.DatabaseMedia.filename">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">filename</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></em><a class="headerlink" href="#gphotos_sync.DatabaseMedia.DatabaseMedia.filename" title="Permalink to this definition"></a></dt>
+<dd><p>filename including a suffix to make it unique if duplicates exist</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="gphotos_sync.DatabaseMedia.DatabaseMedia.create_date">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create_date</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.11)"><span class="pre">datetime</span></a></em><a class="headerlink" href="#gphotos_sync.DatabaseMedia.DatabaseMedia.create_date" title="Permalink to this definition"></a></dt>
+<dd><p>Creation date</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="gphotos_sync.DatabaseMedia.DatabaseMedia.modify_date">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">modify_date</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.11)"><span class="pre">datetime</span></a></em><a class="headerlink" href="#gphotos_sync.DatabaseMedia.DatabaseMedia.modify_date" title="Permalink to this definition"></a></dt>
+<dd><p>Modify Date</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="gphotos_sync.DatabaseMedia.DatabaseMedia.url">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">url</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></em><a class="headerlink" href="#gphotos_sync.DatabaseMedia.DatabaseMedia.url" title="Permalink to this definition"></a></dt>
+<dd><p>Remote url to retrieve this file from the server</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<span class="target" id="module-gphotos_sync.GooglePhotosMedia"></span><section id="gphotos-sync-googlephotosmedia">
+<h2><code class="docutils literal notranslate"><span class="pre">gphotos_sync.GooglePhotosMedia</span></code><a class="headerlink" href="#gphotos-sync-googlephotosmedia" title="Permalink to this heading"></a></h2>
+</section>
+<span class="target" id="module-gphotos_sync.GoogleAlbumMedia"></span><p><code class="docutils literal notranslate"><span class="pre">gphotos_sync.GoogleAlbumMedia</span></code></p>
+<span class="target" id="module-gphotos_sync.LocalFilesMedia"></span><section id="gphotos-sync-localfilesmedia">
+<h2><code class="docutils literal notranslate"><span class="pre">gphotos_sync.LocalFilesMedia</span></code><a class="headerlink" href="#gphotos-sync-localfilesmedia" title="Permalink to this heading"></a></h2>
+</section>
+<span class="target" id="module-gphotos_sync.GooglePhotosDownload"></span><section id="gphotos-sync-googlephotosdownload">
+<h2><code class="docutils literal notranslate"><span class="pre">gphotos_sync.GooglePhotosDownload</span></code><a class="headerlink" href="#gphotos-sync-googlephotosdownload" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="gphotos_sync.GooglePhotosDownload.GooglePhotosDownload">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gphotos_sync.GooglePhotosDownload.</span></span><span class="sig-name descname"><span class="pre">GooglePhotosDownload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">api</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">RestClient</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root_folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.11)"><span class="pre">Path</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">LocalData</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Settings</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gphotos_sync/GooglePhotosDownload.html#GooglePhotosDownload"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload" title="Permalink to this definition"></a></dt>
+<dd><p>A Class for managing the indexing and download of Google Photos</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>api</strong> – object representing the Google REST API</p></li>
+<li><p><strong>root_folder</strong> – path to the root of local file synchronization</p></li>
+<li><p><strong>db</strong> – local database for indexing</p></li>
+<li><p><strong>settings</strong> – further arguments</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.download_photo_media">
+<span class="sig-name descname"><span class="pre">download_photo_media</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gphotos_sync/GooglePhotosDownload.html#GooglePhotosDownload.download_photo_media"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.download_photo_media" title="Permalink to this definition"></a></dt>
+<dd><p>here we batch up our requests to get base url for downloading media.
+This avoids the overhead of one REST call per file. A REST call
+takes longer than downloading an image</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.download_batch">
+<span class="sig-name descname"><span class="pre">download_batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Mapping" title="(in Python v3.11)"><span class="pre">Mapping</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#gphotos_sync.DatabaseMedia.DatabaseMedia" title="gphotos_sync.DatabaseMedia.DatabaseMedia"><span class="pre">DatabaseMedia</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gphotos_sync/GooglePhotosDownload.html#GooglePhotosDownload.download_batch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.download_batch" title="Permalink to this definition"></a></dt>
+<dd><p>Downloads a batch of media items collected in download_photo_media.</p>
+<p>A fresh ‘base_url’ is required since they have limited lifespan and
+these are obtained by a single call to the service function
+mediaItems.batchGet.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.download_file">
+<span class="sig-name descname"><span class="pre">download_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">media_item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#gphotos_sync.DatabaseMedia.DatabaseMedia" title="gphotos_sync.DatabaseMedia.DatabaseMedia"><span class="pre">DatabaseMedia</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">media_json</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.11)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gphotos_sync/GooglePhotosDownload.html#GooglePhotosDownload.download_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.download_file" title="Permalink to this definition"></a></dt>
+<dd><p>farms a single media download off to the thread pool.</p>
+<p>Uses a dictionary of Futures -&gt; mediaItem to track downloads that are
+currently scheduled/running. When a Future is done it calls
+do_download_complete to remove the Future from the dictionary and
+complete processing of the media item.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.do_download_file">
+<span class="sig-name descname"><span class="pre">do_download_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">media_item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#gphotos_sync.DatabaseMedia.DatabaseMedia" title="gphotos_sync.DatabaseMedia.DatabaseMedia"><span class="pre">DatabaseMedia</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gphotos_sync/GooglePhotosDownload.html#GooglePhotosDownload.do_download_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.do_download_file" title="Permalink to this definition"></a></dt>
+<dd><p>Runs in a process pool and does a download of a single media item.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.do_download_complete">
+<span class="sig-name descname"><span class="pre">do_download_complete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">futures_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Mapping" title="(in Python v3.11)"><span class="pre">Mapping</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Future</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#gphotos_sync.DatabaseMedia.DatabaseMedia" title="gphotos_sync.DatabaseMedia.DatabaseMedia"><span class="pre">DatabaseMedia</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Future</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gphotos_sync/GooglePhotosDownload.html#GooglePhotosDownload.do_download_complete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.do_download_complete" title="Permalink to this definition"></a></dt>
+<dd><p>runs in the main thread and completes processing of a media
+item once (multi threaded) do_download has completed</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.find_bad_items">
+<span class="sig-name descname"><span class="pre">find_bad_items</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Mapping" title="(in Python v3.11)"><span class="pre">Mapping</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#gphotos_sync.DatabaseMedia.DatabaseMedia" title="gphotos_sync.DatabaseMedia.DatabaseMedia"><span class="pre">DatabaseMedia</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gphotos_sync/GooglePhotosDownload.html#GooglePhotosDownload.find_bad_items"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.find_bad_items" title="Permalink to this definition"></a></dt>
+<dd><p>a batch get failed. Now do all of its contents as individual
+gets so we can work out which ID(s) cause the failure</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<span class="target" id="module-gphotos_sync.GooglePhotosIndex"></span><section id="gphotos-sync-googlephotosindex">
+<h2><code class="docutils literal notranslate"><span class="pre">gphotos_sync.GooglePhotosIndex</span></code><a class="headerlink" href="#gphotos-sync-googlephotosindex" title="Permalink to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="contributing.html" class="btn btn-neutral float-left" title="Contributing" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p></p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+   
+  <div id="other-versions-div" class="rst-versions" data-toggle="rst-versions" role="note" aria-label="Versions" style="visibility: hidden">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      <span class="fa fa-book"> Other Versions</span>
+      3.1.0
+      <span class="fa fa-caret-down"></span>
+    </span>
+    <div class="rst-other-versions">
+      <dl id="other-versions-dl"/>
+    </div>
+  </div>
+  <script>
+    function addVersion(name) {
+      var dd = document.createElement("dd");
+      var a = document.createElement("a");
+      a.href = "../../" + name;
+      a.innerText = name;
+      dd.appendChild(a);
+      document.getElementById('other-versions-dl').appendChild(dd);
+    }
+    // Get versions.txt and add a version for each line
+    fetch("../../versions.txt").then(response => {
+      if (response.ok) {
+        document.getElementById('other-versions-div').style.visibility = "visible";
+        return response.text().then(text => text.split(/\r?\n/).forEach(addVersion))
+      }
+    });
+  </script>
+
+
+</body>
+</html>
