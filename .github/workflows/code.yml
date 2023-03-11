@@ -13,6 +13,8 @@ on:
 
 jobs:
   lint:
+    # pull requests are a duplicate of a branch push if within the same repo.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: "ubuntu-latest"
     steps:
       - name: checkout
@@ -57,6 +59,7 @@ jobs:
         run: pipx run --python $(which python${{ matrix.python }}) --spec dist/*.whl ${GITHUB_REPOSITORY##*/} --version
 
   test:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     strategy:
       fail-fast: false
       matrix:
@@ -219,7 +222,8 @@ jobs:
           file: .devcontainer/Dockerfile
           context: .
           platforms: linux/amd64,linux/arm/v7,linux/arm64/v8
-          push: ${{ github.event_name != 'pull_request' }}
+          # only push tagged builds
+          push: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags') }}
           build-args: BASE=python:3.10-slim
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
