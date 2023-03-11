@@ -303,6 +303,18 @@ class GooglePhotosSyncMain:
         type=int,
         default=8080,
     )
+    parser.add_argument(
+        "--image-timeout",
+        help="Set the time in seconds to wait for an image to download",
+        type=int,
+        default=60,
+    )
+    parser.add_argument(
+        "--video-timeout",
+        help="Set the time in seconds to wait for a video to download",
+        type=int,
+        default=2000,
+    )
     parser.add_help = True
 
     def setup(self, args: Namespace, db_path: Path):
@@ -366,6 +378,8 @@ class GooglePhotosSyncMain:
             ntfs_override=args.ntfs,
             month_format=args.month_format,
             path_format=args.path_format,
+            image_timeout=args.image_timeout,
+            video_timeout=args.video_timeout,
         )
 
         self.google_photos_client = RestClient(
