@@ -6,14 +6,10 @@ on:
       # Restricting to these branches and tags stops duplicate jobs on internal
       # PRs but stops CI running on internal branches without a PR. Delete the
       # next 5 lines to restore the original behaviour
-      - master
       - main
     tags:
       - "*"
   pull_request:
-  schedule:
-    # Run every Monday at 8am to check latest versions of dependencies
-    - cron: "0 8 * * MON"
 
 jobs:
   lint:
@@ -187,7 +183,6 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
 
       - name: Log in to GitHub Docker Registry
         if: github.event_name != 'pull_request'
