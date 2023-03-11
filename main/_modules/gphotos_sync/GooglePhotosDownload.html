@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>gphotos_sync.GooglePhotosDownload &mdash; gphotos-sync 3.5.dev18+g03828ab documentation</title>
+  <title>gphotos_sync.GooglePhotosDownload &mdash; gphotos-sync 3.5.dev26+gb53a6c5 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -172,8 +172,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">end_date</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">end_date</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">retry_download</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">retry_download</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">case_insensitive_fs</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">case_insensitive_fs</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">video_timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2000</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">image_timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">60</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">video_timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">video_timeout</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">image_timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">image_timeout</span>
 
         <span class="c1"># attributes related to multi-threaded download</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">download_pool</span> <span class="o">=</span> <span class="n">futures</span><span class="o">.</span><span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_threads</span><span class="p">)</span>
