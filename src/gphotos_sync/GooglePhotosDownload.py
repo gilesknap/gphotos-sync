@@ -70,8 +70,8 @@ class GooglePhotosDownload(object):
         self.end_date: datetime = settings.end_date
         self.retry_download: bool = settings.retry_download
         self.case_insensitive_fs: bool = settings.case_insensitive_fs
-        self.video_timeout: int = 2000
-        self.image_timeout: int = 60
+        self.video_timeout: int = settings.video_timeout
+        self.image_timeout: int = settings.image_timeout
 
         # attributes related to multi-threaded download
         self.download_pool = futures.ThreadPoolExecutor(max_workers=self.max_threads)

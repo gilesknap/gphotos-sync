@@ -16,9 +16,9 @@ For a discussion of the purpose of this ID see `Tokens`.
 Each step here assumes that you're logged into a personal Google account.
 
 .. note::
-   The steps outlined here are correct as of May 2022. Their is quite a 
-   bit of churn in the Google Cloud Console UI so the screens may change a 
-   bit. 
+   The steps outlined here are correct as of May 2022. Their is quite a
+   bit of churn in the Google Cloud Console UI so the screens may change a
+   bit.
 
 
 Create a Google Cloud Project
@@ -32,17 +32,17 @@ Create a Google Cloud Project
     .. image:: oauth-images/0.png
         :align: center
         :scale: 100 %
-  
+
 #. In the top banner the currently selected project is shown. If you have
    no previous projects this will say 'Select a project'
 
    * Click on the current project name or 'Select a project'
 
    * This will bring up the 'Select a Project' dialog
- 
+
     .. image:: oauth-images/1.png
         :align: center
-        :scale: 100  
+        :scale: 100
 
 #. Press **New Project**.
 #. Enter a project name. For example, "gphotos". This name must be unique
@@ -147,7 +147,7 @@ Create the OAuth Credentials
         :align: center
         :scale: 75
 
-#. Choose Desktop App 
+#. Choose Desktop App
     #. Choose name for your credentials e.g. gphotos
     #. Click **Create**
 
@@ -155,7 +155,7 @@ Create the OAuth Credentials
         :align: center
         :scale: 75
 
-#. Click **Download JSON** to download the OAuth client ID as JSON and 
+#. Click **Download JSON** to download the OAuth client ID as JSON and
    save it as ``client_secret.json``.
 
     .. image:: oauth-images/15-created.png
@@ -181,13 +181,13 @@ found in the README_.
 
 .. _`the Google Cloud docs`: https://developers.google.com/identity/protocols/oauth2#expiration
 .. _`Issue #290`: https://github.com/gilesknap/gphotos-sync/issues/290
-.. _README: https://github.com/gilesknap/gphotos-sync/README.rst
+.. _README: https://github.com/gilesknap/gphotos-sync/blob/main/README.rst
 
 
 Move client_secret.json
 -----------------------
 
     #. The client_secret.json must be moved to the correct location
-    #. Each supported operating system has a different location where it will 
+    #. Each supported operating system has a different location where it will
        look for this file.
     #. Return the `Tutorial` for details of where to put this file.
