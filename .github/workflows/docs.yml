@@ -12,6 +12,7 @@ on:
 
 jobs:
   docs:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     strategy:
       fail-fast: false
       matrix:
@@ -34,7 +35,7 @@ jobs:
         # Can delete this if you don't use graphviz in your docs
         run: sudo apt-get install graphviz
 
-      - name: checkout 
+      - name: checkout
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
