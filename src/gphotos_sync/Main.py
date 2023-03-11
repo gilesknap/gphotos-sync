@@ -451,7 +451,7 @@ class GooglePhotosSyncMain:
 
         return args
 
-    def main(self, test_args: dict = None):
+    def main(self, test_args: Optional[dict] = None):
         start_time = datetime.now()
         args = self.parser.parse_args(test_args)  # type: ignore
 

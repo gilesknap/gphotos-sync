@@ -4,7 +4,7 @@ import re
 import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import Callable, Dict, Tuple
+from typing import Callable, Dict, Optional, Tuple
 
 from gphotos_sync.Checks import get_check
 
@@ -68,7 +68,9 @@ class GoogleAlbumsSync(object):
         self.path_format = settings.path_format
 
     @classmethod
-    def make_search_parameters(cls, album_id: str, page_token: str = None) -> Dict:
+    def make_search_parameters(
+        cls, album_id: str, page_token: Optional[str] = None
+    ) -> Dict:
         body = {"pageToken": page_token, "albumId": album_id, "pageSize": PAGE_SIZE}
         return body
 
