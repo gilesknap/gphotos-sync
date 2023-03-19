@@ -23,8 +23,6 @@ WORKDIR /workspace
 COPY . .
 
 # install runtime from DIST if there is one
-
-# install runtime from DIST if there is one
 RUN mkdir -vp /root/.local && \
     if [ -d dist ] ; then \
     touch requirements.txt && \
