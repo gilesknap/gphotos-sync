@@ -38,7 +38,8 @@ RUN mkdir -vp /root/.config /config \
     && mkdir -vp /storage
 
 # make the installed version of gphotos-sync available to non root users
-RUN chmod -R a+rx /root/.local
+RUN chmod -R a+rx /root
+ENV HOME=/root
 
 VOLUME /config /storage
 
