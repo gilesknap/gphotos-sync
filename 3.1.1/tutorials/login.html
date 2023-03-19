@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Login OAuth Flow &mdash; gphotos-sync 3.1.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/logo.png"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Additional Setup for Windows Machines" href="../how-to/windows.html" />
+    <link rel="prev" title="Creating an OAuth Client ID" href="oauth2.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            gphotos-sync
+              <img src="../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                3.1.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Initial Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html#execute-in-a-container">Execute in a container</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html#local-installation">Local Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html#running-gphotos-sync">Running gphotos-sync</a></li>
+<li class="toctree-l1"><a class="reference internal" href="oauth2.html">Creating an OAuth Client ID</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">User Login OAuth Flow</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">How-to Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../how-to/windows.html">Additional Setup for Windows Machines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-to/windows.html#initial-setup-on-windows-for-docker-desktop">Initial Setup on Windows for Docker desktop</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-to/cron.html">Scheduling a Regular Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-to/comparison.html">Comparing The Google Photos Library With Local files</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Explanations</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../explanations/folders.html">Folder Layout</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explanations/notes.html">Why is Google Photos Sync Read Only</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explanations/tokens.html">Google OAuth Tokens for gphotos-sync</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explanations/googleapiissues.html">Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/api.html">API</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/gilesknap/gphotos-sync/releases">Releases</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">gphotos-sync</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">User Login OAuth Flow</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/tutorials/login.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="user-login-oauth-flow">
+<span id="login"></span><h1>User Login OAuth Flow<a class="headerlink" href="#user-login-oauth-flow" title="Permalink to this heading"></a></h1>
+<p>The first time you run gphoto-sync against a given root folder
+you will be prompted to log in as the user who’s photos you wish to
+backup into that folder.</p>
+<p>For a discussion of authentication see <a class="reference internal" href="../explanations/tokens.html#tokens"><span class="std std-ref">Google OAuth Tokens for gphotos-sync</span></a>.</p>
+<p>The User token will be saved in the root folder (as <code class="docutils literal notranslate"><span class="pre">.gphotos.token</span></code>) and
+you will not be prompted again. Although the token expires it is configured
+to refresh automatically.</p>
+<p>Note that this means you can backup multiple users on the same machine
+simply by specifying a different folder for each user.</p>
+<p>When you first run gphotos sync it must be on a workstation that you can
+run a browser on. This is because the authentication flow uses a temporary local
+web server and Google’s login pages.</p>
+<p>On first run (or when the .gphotos.token has been deleted) you will see
+output like this:</p>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">`Please</span> <span class="pre">visit</span> <span class="pre">this</span> <span class="pre">URL</span> <span class="pre">to</span> <span class="pre">authorize</span> <span class="pre">this</span> <span class="pre">application:</span> <span class="pre">https://accounts.google.com/o/oauth2/auth?re...</span> <span class="pre">[url</span> <span class="pre">clipped]`</span></code></p>
+</div></blockquote>
+<p>Most modern terminals will let you &lt;ctrl&gt; click on the link to launch your
+browser, if this does not work then copy the URL and paste into your
+browser.</p>
+<p>You should now see:</p>
+<blockquote>
+<div><a class="reference internal image-reference" href="../_images/01-sign-in.png"><img alt="../_images/01-sign-in.png" class="align-center" src="../_images/01-sign-in.png" style="width: 444.75px; height: 539.25px;" /></a>
+</div></blockquote>
+<p>Choose the user you want to backup photos for. Or pick ‘Use Another Account’
+if they are not shown.</p>
+<p>You will be presented with a warning because you have made your own client ID
+which is not verified by Google. This is expected for this application (see
+<a class="reference internal" href="../explanations/tokens.html#tokens"><span class="std std-ref">Google OAuth Tokens for gphotos-sync</span></a>).</p>
+<blockquote>
+<div><a class="reference internal image-reference" href="../_images/02-verify.png"><img alt="../_images/02-verify.png" class="align-center" src="../_images/02-verify.png" style="width: 611.25px; height: 303.0px;" /></a>
+</div></blockquote>
+<p>Click ‘Advanced’ and then ‘go to gphotos-sync (unsafe)’.</p>
+<blockquote>
+<div><a class="reference internal image-reference" href="../_images/03-verify2.png"><img alt="../_images/03-verify2.png" class="align-center" src="../_images/03-verify2.png" style="width: 607.5px; height: 427.5px;" /></a>
+</div></blockquote>
+<p>The next screen shows you the permissions you may grant to this application.
+Tick all the boxes and click ‘Continue’. The command line gphotos-sync will
+then continue to run and start to backup the user’s library.</p>
+<blockquote>
+<div><a class="reference internal image-reference" href="../_images/04-access.png"><img alt="../_images/04-access.png" class="align-center" src="../_images/04-access.png" style="width: 459.0px; height: 711.75px;" /></a>
+</div></blockquote>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="oauth2.html" class="btn btn-neutral float-left" title="Creating an OAuth Client ID" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../how-to/windows.html" class="btn btn-neutral float-right" title="Additional Setup for Windows Machines" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p></p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+   
+  <div id="other-versions-div" class="rst-versions" data-toggle="rst-versions" role="note" aria-label="Versions" style="visibility: hidden">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      <span class="fa fa-book"> Other Versions</span>
+      3.1.1
+      <span class="fa fa-caret-down"></span>
+    </span>
+    <div class="rst-other-versions">
+      <dl id="other-versions-dl"/>
+    </div>
+  </div>
+  <script>
+    function addVersion(name) {
+      var dd = document.createElement("dd");
+      var a = document.createElement("a");
+      a.href = "../../" + name;
+      a.innerText = name;
+      dd.appendChild(a);
+      document.getElementById('other-versions-dl').appendChild(dd);
+    }
+    // Get versions.txt and add a version for each line
+    fetch("../../versions.txt").then(response => {
+      if (response.ok) {
+        document.getElementById('other-versions-div').style.visibility = "visible";
+        return response.text().then(text => text.split(/\r?\n/).forEach(addVersion))
+      }
+    });
+  </script>
+
+
+</body>
+</html>
