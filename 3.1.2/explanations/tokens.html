@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Google OAuth Tokens for gphotos-sync &mdash; gphotos-sync 3.1.2 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/logo.png"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Known Issues" href="googleapiissues.html" />
+    <link rel="prev" title="Why is Google Photos Sync Read Only" href="notes.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            gphotos-sync
+              <img src="../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                3.1.2
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/installation.html">Initial Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/installation.html#execute-in-a-container">Execute in a container</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/installation.html#local-installation">Local Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/installation.html#running-gphotos-sync">Running gphotos-sync</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/oauth2.html">Creating an OAuth Client ID</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/login.html">User Login OAuth Flow</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">How-to Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../how-to/windows.html">Additional Setup for Windows Machines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-to/windows.html#initial-setup-on-windows-for-docker-desktop">Initial Setup on Windows for Docker desktop</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-to/cron.html">Scheduling a Regular Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-to/comparison.html">Comparing The Google Photos Library With Local files</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Explanations</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="folders.html">Folder Layout</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notes.html">Why is Google Photos Sync Read Only</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Google OAuth Tokens for gphotos-sync</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#why-do-we-need-client-id">Why Do We Need Client ID ?</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="googleapiissues.html">Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/api.html">API</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/gilesknap/gphotos-sync/releases">Releases</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">gphotos-sync</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Google OAuth Tokens for gphotos-sync</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/explanations/tokens.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="google-oauth-tokens-for-gphotos-sync">
+<span id="tokens"></span><h1>Google OAuth Tokens for gphotos-sync<a class="headerlink" href="#google-oauth-tokens-for-gphotos-sync" title="Permalink to this heading"></a></h1>
+<section id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading"></a></h2>
+<p>There are two kinds of authentication required to run gphotos-sync.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>First the application must authenticate with Google to authorize the use
+of the Google Photos API. This gives it permission to perform the
+second authentication step.</p></li>
+<li><p>Second, an individual User Account must me authenticated to allow access
+to that user’s Google Photos Library.</p></li>
+</ul>
+</div></blockquote>
+<p>The secret information that enables these authentication steps is held in
+two files:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>client_secret.json holds the OAuth application ID that allows the
+first step. This is stored in an application configuration folder.
+There is only one of these files per installation of gphotos-sync.
+See <a class="reference internal" href="../tutorials/oauth2.html#client-id"><span class="std std-ref">Creating an OAuth Client ID</span></a> for details of creating this file.</p></li>
+<li><p>.gphotos.token holds the user token for each user you are backing up
+photos for. This resides in the root folder of the library backup.
+See <a class="reference internal" href="../tutorials/login.html#login"><span class="std std-ref">User Login OAuth Flow</span></a> for details of creating this file.</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="why-do-we-need-client-id">
+<h2>Why Do We Need Client ID ?<a class="headerlink" href="#why-do-we-need-client-id" title="Permalink to this heading"></a></h2>
+<p>The expected use of the client ID is that a vendor provides a single ID
+for their application, Google verifies the application and then anyone
+can use it.</p>
+<p>In this scenario ALL Google API calls would count against the vendor’s
+account. They would be charged for use of those APIs and they would
+need to charge their users to make this worthwhile.</p>
+<p>If I was to provide my own client ID with gphotos-sync then I would need
+to charge a subscription to cover API costs.</p>
+<p>Since this is FOSS I ask every user to create their own client ID
+so they can take advantage of the free tier of Google API use that is
+available to every user.</p>
+<p>Most normal use of gphotos-sync does not exceed the free tier. If it does
+you will not be charged. The code is supposed to throttle back and go slower
+to drop back into the free usage rate. However there is an issue with this
+feature at present and you will likely see an error:</p>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">429</span> <span class="pre">Client</span> <span class="pre">Error:</span> <span class="pre">Too</span> <span class="pre">Many</span> <span class="pre">Requests</span> <span class="pre">for</span> <span class="pre">url</span></code>.</p>
+</div></blockquote>
+<p>See <a class="reference external" href="https://github.com/gilesknap/gphotos-sync/issues/320">https://github.com/gilesknap/gphotos-sync/issues/320</a>,
+<a class="reference external" href="https://github.com/gilesknap/gphotos-sync/issues/202">https://github.com/gilesknap/gphotos-sync/issues/202</a> for details and
+workarounds.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="notes.html" class="btn btn-neutral float-left" title="Why is Google Photos Sync Read Only" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="googleapiissues.html" class="btn btn-neutral float-right" title="Known Issues" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p></p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+   
+  <div id="other-versions-div" class="rst-versions" data-toggle="rst-versions" role="note" aria-label="Versions" style="visibility: hidden">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      <span class="fa fa-book"> Other Versions</span>
+      3.1.2
+      <span class="fa fa-caret-down"></span>
+    </span>
+    <div class="rst-other-versions">
+      <dl id="other-versions-dl"/>
+    </div>
+  </div>
+  <script>
+    function addVersion(name) {
+      var dd = document.createElement("dd");
+      var a = document.createElement("a");
+      a.href = "../../" + name;
+      a.innerText = name;
+      dd.appendChild(a);
+      document.getElementById('other-versions-dl').appendChild(dd);
+    }
+    // Get versions.txt and add a version for each line
+    fetch("../../versions.txt").then(response => {
+      if (response.ok) {
+        document.getElementById('other-versions-div').style.visibility = "visible";
+        return response.text().then(text => text.split(/\r?\n/).forEach(addVersion))
+      }
+    });
+  </script>
+
+
+</body>
+</html>
