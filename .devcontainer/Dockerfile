@@ -1,7 +1,7 @@
 # ideas from https://www.docker.com/blog/containerized-python-development-part-1/
 
-# This file is for use as a .vscode devcontainer as well as a runtime 
-# container. The devcontainer should be rootful and use podman or docker 
+# This file is for use as a .vscode devcontainer as well as a runtime
+# container. The devcontainer should be rootful and use podman or docker
 # with user namespaces.
 
 ARG BASE="mcr.microsoft.com/vscode/devcontainers/python:0-3.10-bullseye"
@@ -38,6 +38,9 @@ COPY --from=developer /root/.local /root/.local
 RUN mkdir -vp /root/.config /config \
     && ln -vs /config /root/.config/gphotos-sync \
     && mkdir -vp /storage
+
+# make the installed version of gphotos-sync available to non root users
+RUN chmod -R a+rx /root/.local
 
 VOLUME /config /storage
 
