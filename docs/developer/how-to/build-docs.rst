@@ -13,7 +13,7 @@ docs that pull in docstrings from the code.
     `documentation_standards`
 
 The docs will be built into the ``build/html`` directory, and can be opened
-locally with a web browse::
+locally with a web browser::
 
     $ firefox build/html/index.html
 
