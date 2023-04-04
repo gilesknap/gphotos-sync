@@ -32,12 +32,12 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"] # can add windows-latest, macos-latest
-        python: ["3.9", "3.10", "3.11"]
+        python: ["3.8", "3.9", "3.10", "3.11"]
         install: ["-e .[dev]"]
         # Make one version be non-editable to test both paths of version code
         include:
           - os: "ubuntu-latest"
-            python: "3.8"
+            python: "3.7"
             install: ".[dev]"
 
     runs-on: ${{ matrix.os }}

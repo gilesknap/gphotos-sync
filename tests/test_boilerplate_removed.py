@@ -2,8 +2,13 @@
 This file checks that all the example boilerplate text has been removed.
 It can be deleted when all the contained tests pass
 """
-from importlib.metadata import metadata
+import sys
 from pathlib import Path
+
+if sys.version_info < (3, 8):
+    from importlib_metadata import metadata  # noqa
+else:
+    from importlib.metadata import metadata  # noqa
 
 ROOT = Path(__file__).parent.parent
 
