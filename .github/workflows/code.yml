@@ -115,6 +115,9 @@ jobs:
       contents: read
       packages: write
 
+    env:
+      TEST_TAG: "testing"
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -136,42 +139,66 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Docker meta
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build and export to Docker local cache
+        uses: docker/build-push-action@v4
+        with:
+        # Note build-args, context, file, and target must all match between this
+        # step and the later build-push-action, otherwise the second build-push-action
+        # will attempt to build the image again
+          build-args: |
+            PIP_OPTIONS=-r lockfiles/requirements.txt dist/*.whl
+          context: artifacts/
+          file: ./Dockerfile
+          target: runtime
+          load: true
+          tags: ${{ env.TEST_TAG }}
+          # If you have a long docker build (2+ minutes), uncomment the 
+          # following to turn on caching. For short build times this 
+          # makes it a little slower
+          #cache-from: type=gha
+          #cache-to: type=gha,mode=max
+
+      - name: Test cli works in cached runtime image
+        run: docker run docker.io/library/${{ env.TEST_TAG }} --version
+
+      - name: Create tags for publishing image
         id: meta
         uses: docker/metadata-action@v4
         with:
           images: ${{ env.IMAGE_REPOSITORY }}
           tags: |
             type=ref,event=tag
-            type=raw,value=latest
+            type=raw,value=latest, enable=${{ github.ref_type == 'tag' }}
+          # type=edge,branch=main
+          # Add line above to generate image for every commit to given branch,
+          # and uncomment the end of if clause in next step
 
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Build runtime image
+      - name: Push cached image to container registry
+        if: github.ref_type == 'tag' # || github.ref_name == 'main'
         uses: docker/build-push-action@v3
+        # This does not build the image again, it will find the image in the 
+        # Docker cache and publish it
         with:
+        # Note build-args, context, file, and target must all match between this
+        # step and the previous build-push-action, otherwise this step will 
+        # attempt to build the image again
           build-args: |
             PIP_OPTIONS=-r lockfiles/requirements.txt dist/*.whl
-          push: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags') }}
-          load: ${{ ! (github.event_name == 'push' && startsWith(github.ref, 'refs/tags')) }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
           context: artifacts/
           file: ./Dockerfile
-          # If you have a long docker build, uncomment the following to turn on caching
-          # For short build times this makes it a little slower
-          #cache-from: type=gha
-          #cache-to: type=gha,mode=max
-
-      - name: Test cli works in runtime image
-        run: docker run ${{ env.IMAGE_REPOSITORY }} --version
+          target: runtime
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
 
   release:
     # upload to PyPI and make a release on every tag
     needs: [lint, dist, test]
-    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags') }}
+    if: ${{ github.event_name == 'push' && github.ref_type == 'tag' }}
     runs-on: ubuntu-latest
     env:
       HAS_PYPI_TOKEN: ${{ secrets.PYPI_TOKEN != '' }}
