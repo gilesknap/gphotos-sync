@@ -75,7 +75,6 @@ exclude = [".tox", "venv"]
 # Run pytest with all our checkers, and don't spam us with massive tracebacks on error
 addopts = """
     --tb=native -vv --doctest-modules --doctest-glob="*.rst"
-    --cov=python3_pip_skeleton --cov-report term --cov-report xml:cov.xml
     """
 # https://iscinumpy.gitlab.io/post/bound-version-constraints/#watch-for-warnings
 filterwarnings = "error"
@@ -107,7 +106,7 @@ allowlist_externals =
     sphinx-build
     sphinx-autobuild
 commands =
-    pytest: pytest {posargs}
+    pytest: pytest --cov=python3_pip_skeleton --cov-report term --cov-report xml:cov.xml {posargs}
     mypy: mypy src tests {posargs}
     pre-commit: pre-commit run --all-files {posargs}
     docs: sphinx-{posargs:build -EW --keep-going} -T docs build/html
