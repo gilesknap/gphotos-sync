@@ -3,10 +3,7 @@
     "python.linting.flake8Enabled": true,
     "python.linting.mypyEnabled": true,
     "python.linting.enabled": true,
-    "python.testing.pytestArgs": [
-        "--cov=python3_pip_skeleton",
-        "--cov-report xml:cov.xml"
-    ],
+    "python.testing.pytestArgs": ["--cov=python3_pip_skeleton", "--cov-report", "xml:cov.xml"],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
     "python.formatting.provider": "black",
