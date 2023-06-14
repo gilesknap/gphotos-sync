@@ -77,12 +77,9 @@ class Authorize:
         self.token_file.chmod(0o600)
 
     def convert_to_local_timestamp(self, dt):
-        dt = dt.astimezone()
-        tz_offset = 86400 - dt.tzinfo.utcoffset(dt).seconds
-        # Daylight Savings Time
         is_dst = time.localtime().tm_isdst
-        tz_offset = tz_offset + 3600 if is_dst else tz_offset
-        return dt.timestamp() - tz_offset
+        offset = time.timezone - 3600 if is_dst else time.timezone
+        return dt.timestamp() - offset
 
     def authorize(self):
         """Initiates OAuth2 authentication and authorization flow"""
