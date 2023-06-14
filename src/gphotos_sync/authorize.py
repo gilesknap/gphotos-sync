@@ -2,6 +2,7 @@ import logging
 from json import JSONDecodeError, dump, load
 from pathlib import Path
 from typing import List, Optional
+import time
 
 from google_auth_oauthlib.flow import InstalledAppFlow
 from requests.adapters import HTTPAdapter
@@ -75,6 +76,14 @@ class Authorize:
             dump(token, stream)
         self.token_file.chmod(0o600)
 
+    def convert_to_local_timestamp(self, dt):
+        dt = dt.astimezone()
+        tz_offset = 86400 - dt.tzinfo.utcoffset(dt).seconds
+        # Daylight Savings Time
+        is_dst = time.localtime().tm_isdst
+        tz_offset = tz_offset + 3600 if is_dst else tz_offset
+        return dt.timestamp() - tz_offset
+
     def authorize(self):
         """Initiates OAuth2 authentication and authorization flow"""
         token = self.load_token()
@@ -104,7 +113,7 @@ class Authorize:
                 "refresh_token": flow.credentials.refresh_token,
                 "token_type": "Bearer",
                 "scope": flow.credentials.scopes,
-                "expires_at": flow.credentials.expiry.timestamp(),
+                "expires_at": self.convert_to_local_timestamp(flow.credentials.expiry),
             }
 
             self.save_token(oauth2_token)
