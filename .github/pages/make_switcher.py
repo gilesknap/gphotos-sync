@@ -64,7 +64,7 @@ def write_json(path: Path, repository: str, versions: str):
     ]
     text = json.dumps(struct, indent=2)
     print(f"JSON switcher:\n{text}")
-    path.write_text(text)
+    path.write_text(text, encoding="utf-8")
 
 
 def main(args=None):

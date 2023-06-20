@@ -32,7 +32,7 @@ runs:
         mkdir -p lockfiles
         pip freeze --exclude-editable > lockfiles/${{ inputs.requirements_file }}
         # delete the self referencing line and make sure it isn't blank
-        sed -i '/file:/d' lockfiles/${{ inputs.requirements_file }}
+        sed -i'' -e '/file:/d' lockfiles/${{ inputs.requirements_file }}
       shell: bash
 
     - name: Upload lockfiles
