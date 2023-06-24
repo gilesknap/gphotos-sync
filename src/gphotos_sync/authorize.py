@@ -2,7 +2,7 @@ import logging
 from json import JSONDecodeError, dump, load
 from pathlib import Path
 from typing import List, Optional
-import time
+from datetime import timezone
 
 from google_auth_oauthlib.flow import InstalledAppFlow
 from requests.adapters import HTTPAdapter
@@ -75,11 +75,6 @@ class Authorize:
         with self.token_file.open("w") as stream:
             dump(token, stream)
         self.token_file.chmod(0o600)
-
-    def convert_to_local_timestamp(self, dt):
-        is_dst = time.localtime().tm_isdst
-        offset = time.timezone - 3600 if is_dst else time.timezone
-        return dt.timestamp() - offset
 
     def authorize(self):
         """Initiates OAuth2 authentication and authorization flow"""
