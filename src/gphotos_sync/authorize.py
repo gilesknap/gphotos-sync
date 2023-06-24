@@ -110,7 +110,7 @@ class Authorize:
                 "refresh_token": flow.credentials.refresh_token,
                 "token_type": "Bearer",
                 "scope": flow.credentials.scopes,
-                "expires_at": self.convert_to_local_timestamp(flow.credentials.expiry),
+                "expires_at": flow.credentials.expiry.replace(tzinfo=timezone.utc).timestamp()
             }
 
             self.save_token(oauth2_token)
