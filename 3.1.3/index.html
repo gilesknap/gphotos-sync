@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Google Photos Sync (gphotos-sync) &mdash; gphotos-sync 3.1.3 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="_static/logo.png"/>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Initial Setup" href="tutorials/installation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+
+          
+          
+          <a href="#" class="icon icon-home">
+            gphotos-sync
+              <img src="_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                3.1.3
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/installation.html">Initial Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/installation.html#execute-in-a-container">Execute in a container</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/installation.html#local-installation">Local Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/installation.html#running-gphotos-sync">Running gphotos-sync</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/oauth2.html">Creating an OAuth Client ID</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/login.html">User Login OAuth Flow</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">How-to Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="how-to/windows.html">Additional Setup for Windows Machines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-to/windows.html#initial-setup-on-windows-for-docker-desktop">Initial Setup on Windows for Docker desktop</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-to/cron.html">Scheduling a Regular Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-to/comparison.html">Comparing The Google Photos Library With Local files</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Explanations</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="explanations/folders.html">Folder Layout</a></li>
+<li class="toctree-l1"><a class="reference internal" href="explanations/notes.html">Why is Google Photos Sync Read Only</a></li>
+<li class="toctree-l1"><a class="reference internal" href="explanations/tokens.html">Google OAuth Tokens for gphotos-sync</a></li>
+<li class="toctree-l1"><a class="reference internal" href="explanations/googleapiissues.html">Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference/api.html">API</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/gilesknap/gphotos-sync/releases">Releases</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">gphotos-sync</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Google Photos Sync (gphotos-sync)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="google-photos-sync-gphotos-sync">
+<h1>Google Photos Sync (gphotos-sync)<a class="headerlink" href="#google-photos-sync-gphotos-sync" title="Permalink to this heading"></a></h1>
+<p><a class="reference external" href="https://github.com/gilesknap/gphotos-sync/actions?query=workflow%3A%22Code+CI%22"><img alt="Code CI" src="https://github.com/gilesknap/gphotos-sync/workflows/Code%20CI/badge.svg?branch=main" /></a> <a class="reference external" href="https://github.com/gilesknap/gphotos-sync/actions?query=workflow%3A%22Docs+CI%22"><img alt="Docs CI" src="https://github.com/gilesknap/gphotos-sync/workflows/Docs%20CI/badge.svg?branch=main" /></a> <a class="reference external" href="https://codecov.io/gh/gilesknap/gphotos-sync"><img alt="Test Coverage" src="https://codecov.io/gh/gilesknap/gphotos-sync/branch/main/graph/badge.svg" /></a> <a class="reference external" href="https://pypi.org/project/gphotos-sync"><img alt="Latest PyPI version" src="https://img.shields.io/pypi/v/gphotos-sync.svg" /></a> <a class="reference external" href="https://opensource.org/licenses/Apache-2.0"><img alt="Apache License" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" /></a></p>
+<p>Google Photos Sync is a backup tool for your Google Photos cloud storage.</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p>PyPI</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">gphotos-sync</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Source code</p></td>
+<td><p><a class="reference external" href="https://github.com/gilesknap/gphotos-sync">https://github.com/gilesknap/gphotos-sync</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Documentation</p></td>
+<td><p><a class="reference external" href="https://gilesknap.github.io/gphotos-sync">https://gilesknap.github.io/gphotos-sync</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Releases</p></td>
+<td><p><a class="reference external" href="https://github.com/gilesknap/gphotos-sync/releases">https://github.com/gilesknap/gphotos-sync/releases</a></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="intro">
+<h1>Intro<a class="headerlink" href="#intro" title="Permalink to this heading"></a></h1>
+<p>Google Photos Sync downloads all photos and videos the user has uploaded to
+Google Photos. It also organizes the media in the local file system using
+album information. Additional Google Photos ‘Creations’ such as
+animations, panoramas, movies, effects and collages are also backed up.</p>
+<p>This software is read only and never modifies your cloud library in any way,
+so there is no risk of damaging your data.</p>
+</section>
+<section id="warning-google-api-issues">
+<h1>Warning: Google API Issues<a class="headerlink" href="#warning-google-api-issues" title="Permalink to this heading"></a></h1>
+<p>There are a number of long standing issues with the Google Photos API that mean it is not possible
+to make a true backup of your media. In particular:</p>
+<ul class="simple">
+<li><p>Videos are transcoded to lower quality</p></li>
+<li><p>Raw or Original photos are converted to ‘High Quality’</p></li>
+<li><p>GPS info is removed from photos metadata</p></li>
+</ul>
+<p>For details of the Bugs reported to Google see <a class="reference external" href="https://github.com/gilesknap/gphotos-sync/issues/119">https://github.com/gilesknap/gphotos-sync/issues/119</a>.</p>
+<p>To join in a discussion on this issue see <a class="reference external" href="https://github.com/gilesknap/gphotos-sync/discussions/347">https://github.com/gilesknap/gphotos-sync/discussions/347</a>.</p>
+</section>
+<section id="quick-start">
+<h1>Quick Start<a class="headerlink" href="#quick-start" title="Permalink to this heading"></a></h1>
+<p>To get started see <a class="reference external" href="https://gilesknap.github.io/gphotos-sync/main/tutorials/installation.html">Tutorial</a></p>
+<section id="how-the-documentation-is-structured">
+<h2>How the documentation is structured<a class="headerlink" href="#how-the-documentation-is-structured" title="Permalink to this heading"></a></h2>
+<p>Documentation is split into four categories, also accessible from links in the
+side-bar.</p>
+<section class="columns" id="tutorials">
+<h3><a class="reference internal" href="tutorials.html"><span class="doc">Tutorials</span></a><a class="headerlink" href="#tutorials" title="Permalink to this heading"></a></h3>
+<p>Tutorials for installation, library and commandline usage. New users start here.</p>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/installation.html">Initial Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/installation.html#execute-in-a-container">Execute in a container</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/installation.html#headless-gphotos-sync-servers">Headless gphotos-sync Servers</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/installation.html#local-installation">Local Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/installation.html#check-your-version-of-python">Check your version of python</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/installation.html#create-a-virtual-environment">Create a virtual environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/installation.html#install-gphotos-sync">Install gphotos-sync</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/installation.html#running-gphotos-sync">Running gphotos-sync</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/oauth2.html">Creating an OAuth Client ID</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/oauth2.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/oauth2.html#create-a-google-cloud-project">Create a Google Cloud Project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/oauth2.html#enable-the-photos-api">Enable the Photos API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/oauth2.html#configure-oauth-consent">Configure OAuth Consent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/oauth2.html#create-the-oauth-credentials">Create the OAuth Credentials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/oauth2.html#publish-the-app">Publish the App</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/oauth2.html#move-client-secret-json">Move client_secret.json</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/login.html">User Login OAuth Flow</a></li>
+</ul>
+</div>
+</section>
+<section class="columns" id="how-to">
+<h3><a class="reference internal" href="how-to.html"><span class="doc">How-to Guides</span></a><a class="headerlink" href="#how-to" title="Permalink to this heading"></a></h3>
+<p>Practical step-by-step guides for the more experienced user.</p>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">How-to Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="how-to/windows.html">Additional Setup for Windows Machines</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="how-to/windows.html#python">Python</a></li>
+<li class="toctree-l2"><a class="reference internal" href="how-to/windows.html#virtual-environment">Virtual Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="how-to/windows.html#symlinks">Symlinks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="how-to/windows.html#alternative-approach">Alternative approach</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="how-to/windows.html#initial-setup-on-windows-for-docker-desktop">Initial Setup on Windows for Docker desktop</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-to/cron.html">Scheduling a Regular Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-to/comparison.html">Comparing The Google Photos Library With Local files</a></li>
+</ul>
+</div>
+</section>
+<section class="columns" id="explanations">
+<h3><a class="reference internal" href="explanations.html"><span class="doc">Explanations</span></a><a class="headerlink" href="#explanations" title="Permalink to this heading"></a></h3>
+<p>Explanation of how the library works and why it works that way.</p>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Explanations</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="explanations/folders.html">Folder Layout</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="explanations/folders.html#media-files">Media Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="explanations/folders.html#other-files">Other Files</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="explanations/notes.html">Why is Google Photos Sync Read Only</a></li>
+<li class="toctree-l1"><a class="reference internal" href="explanations/tokens.html">Google OAuth Tokens for gphotos-sync</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="explanations/tokens.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="explanations/tokens.html#why-do-we-need-client-id">Why Do We Need Client ID ?</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="explanations/googleapiissues.html">Known Issues</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="explanations/googleapiissues.html#known-issues-with-google-api">Known Issues with Google API</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="explanations/googleapiissues.html#pending-api-issues">Pending API Issues</a></li>
+<li class="toctree-l3"><a class="reference internal" href="explanations/googleapiissues.html#fixed-api-issues">Fixed API Issues</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="explanations/googleapiissues.html#other-issues">Other Issues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="explanations/googleapiissues.html#gps-workaround">GPS workaround</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section class="columns" id="reference">
+<h3><a class="reference internal" href="reference.html"><span class="doc">Reference</span></a><a class="headerlink" href="#reference" title="Permalink to this heading"></a></h3>
+<p>Detailed information including autogenerated code documentation.</p>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="reference/contributing.html">Contributing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reference/contributing.html#running-the-tests">Running the tests</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="reference/contributing.html#to-run-in-a-container">To run in a container</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/contributing.html#to-run-locally">To run locally</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="reference/contributing.html#code-styling">Code Styling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/contributing.html#documentation">Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/contributing.html#release-process">Release Process</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/contributing.html#updating-the-tools">Updating the tools</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="reference/api.html">API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reference/api.html#gphotos-sync"><code class="docutils literal notranslate"><span class="pre">gphotos_sync</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/api.html#gphotos_sync.gphotos_sync.__version__"><code class="docutils literal notranslate"><span class="pre">gphotos_sync.__version__</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/api.html#gphotos-sync-main"><code class="docutils literal notranslate"><span class="pre">gphotos_sync.Main</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/api.html#gphotos-sync-basemedia"><code class="docutils literal notranslate"><span class="pre">gphotos_sync.BaseMedia</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="reference/api.html#gphotos_sync.BaseMedia.BaseMedia"><code class="docutils literal notranslate"><span class="pre">BaseMedia</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="reference/api.html#gphotos-sync-databasemedia"><code class="docutils literal notranslate"><span class="pre">gphotos_sync.DatabaseMedia</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="reference/api.html#gphotos_sync.DatabaseMedia.DatabaseMedia"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.DatabaseMedia.DatabaseMedia._id"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia._id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.DatabaseMedia.DatabaseMedia._url"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia._url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.DatabaseMedia.DatabaseMedia._relative_folder"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia._relative_folder</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.DatabaseMedia.DatabaseMedia._filename"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia._filename</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.DatabaseMedia.DatabaseMedia._orig_name"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia._orig_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.DatabaseMedia.DatabaseMedia._duplicate_number"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia._duplicate_number</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.DatabaseMedia.DatabaseMedia._size"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia._size</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.DatabaseMedia.DatabaseMedia._mime_type"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia._mime_type</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.DatabaseMedia.DatabaseMedia._date"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia._date</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.DatabaseMedia.DatabaseMedia._create_date"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia._create_date</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.DatabaseMedia.DatabaseMedia._description"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia._description</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.DatabaseMedia.DatabaseMedia._downloaded"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia._downloaded</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.DatabaseMedia.DatabaseMedia.location"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia.location</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.DatabaseMedia.DatabaseMedia.description"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia.description</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.DatabaseMedia.DatabaseMedia.orig_name"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia.orig_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.DatabaseMedia.DatabaseMedia.filename"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia.filename</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.DatabaseMedia.DatabaseMedia.create_date"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia.create_date</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.DatabaseMedia.DatabaseMedia.modify_date"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia.modify_date</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.DatabaseMedia.DatabaseMedia.url"><code class="docutils literal notranslate"><span class="pre">DatabaseMedia.url</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="reference/api.html#gphotos-sync-googlephotosmedia"><code class="docutils literal notranslate"><span class="pre">gphotos_sync.GooglePhotosMedia</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/api.html#gphotos-sync-localfilesmedia"><code class="docutils literal notranslate"><span class="pre">gphotos_sync.LocalFilesMedia</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/api.html#gphotos-sync-googlephotosdownload"><code class="docutils literal notranslate"><span class="pre">gphotos_sync.GooglePhotosDownload</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="reference/api.html#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload"><code class="docutils literal notranslate"><span class="pre">GooglePhotosDownload</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.download_photo_media"><code class="docutils literal notranslate"><span class="pre">GooglePhotosDownload.download_photo_media()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.download_batch"><code class="docutils literal notranslate"><span class="pre">GooglePhotosDownload.download_batch()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.download_file"><code class="docutils literal notranslate"><span class="pre">GooglePhotosDownload.download_file()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.do_download_file"><code class="docutils literal notranslate"><span class="pre">GooglePhotosDownload.do_download_file()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.do_download_complete"><code class="docutils literal notranslate"><span class="pre">GooglePhotosDownload.do_download_complete()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api.html#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.find_bad_items"><code class="docutils literal notranslate"><span class="pre">GooglePhotosDownload.find_bad_items()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="reference/api.html#gphotos-sync-googlephotosindex"><code class="docutils literal notranslate"><span class="pre">gphotos_sync.GooglePhotosIndex</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/gilesknap/gphotos-sync/releases">Releases</a></li>
+</ul>
+</div>
+</section>
+<section class="endcolumns" id="about-the-documentation">
+<h3>About the documentation<a class="headerlink" href="#about-the-documentation" title="Permalink to this heading"></a></h3>
+<p><a class="reference external" href="https://documentation.divio.com">Why is the documentation structured this way?</a></p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="tutorials/installation.html" class="btn btn-neutral float-right" title="Initial Setup" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p></p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+   
+  <div id="other-versions-div" class="rst-versions" data-toggle="rst-versions" role="note" aria-label="Versions" style="visibility: hidden">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      <span class="fa fa-book"> Other Versions</span>
+      3.1.3
+      <span class="fa fa-caret-down"></span>
+    </span>
+    <div class="rst-other-versions">
+      <dl id="other-versions-dl"/>
+    </div>
+  </div>
+  <script>
+    function addVersion(name) {
+      var dd = document.createElement("dd");
+      var a = document.createElement("a");
+      a.href = "../" + name;
+      a.innerText = name;
+      dd.appendChild(a);
+      document.getElementById('other-versions-dl').appendChild(dd);
+    }
+    // Get versions.txt and add a version for each line
+    fetch("../versions.txt").then(response => {
+      if (response.ok) {
+        document.getElementById('other-versions-div').style.visibility = "visible";
+        return response.text().then(text => text.split(/\r?\n/).forEach(addVersion))
+      }
+    });
+  </script>
+
+
+</body>
+</html>
