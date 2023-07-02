@@ -1,8 +1,8 @@
 import logging
+from datetime import timezone
 from json import JSONDecodeError, dump, load
 from pathlib import Path
 from typing import List, Optional
-from datetime import timezone
 
 from google_auth_oauthlib.flow import InstalledAppFlow
 from requests.adapters import HTTPAdapter
@@ -105,7 +105,9 @@ class Authorize:
                 "refresh_token": flow.credentials.refresh_token,
                 "token_type": "Bearer",
                 "scope": flow.credentials.scopes,
-                "expires_at": flow.credentials.expiry.replace(tzinfo=timezone.utc).timestamp()
+                "expires_at": flow.credentials.expiry.replace(
+                    tzinfo=timezone.utc
+                ).timestamp(),
             }
 
             self.save_token(oauth2_token)
