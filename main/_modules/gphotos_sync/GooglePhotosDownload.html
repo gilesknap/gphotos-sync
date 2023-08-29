@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>gphotos_sync.GooglePhotosDownload &mdash; gphotos-sync 3.1.3.dev6+g317dc84 documentation</title>
+  <title>gphotos_sync.GooglePhotosDownload &mdash; gphotos-sync 3.1.4.dev2+g1516059 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -13,11 +13,11 @@
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../../_static/jquery.js"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/sphinx_highlight.js"></script>
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=c0b9df91"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
@@ -142,7 +142,9 @@
 <span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="GooglePhotosDownload"><a class="viewcode-back" href="../../reference/api.html#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload">[docs]</a><span class="k">class</span> <span class="nc">GooglePhotosDownload</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="GooglePhotosDownload">
+<a class="viewcode-back" href="../../reference/api.html#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload">[docs]</a>
+<span class="k">class</span> <span class="nc">GooglePhotosDownload</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A Class for managing the indexing and download of Google Photos&quot;&quot;&quot;</span>
 
     <span class="n">PAGE_SIZE</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span>
@@ -203,7 +205,9 @@
     <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
-<div class="viewcode-block" id="GooglePhotosDownload.download_photo_media"><a class="viewcode-back" href="../../reference/api.html#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.download_photo_media">[docs]</a>    <span class="k">def</span> <span class="nf">download_photo_media</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="GooglePhotosDownload.download_photo_media">
+<a class="viewcode-back" href="../../reference/api.html#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.download_photo_media">[docs]</a>
+    <span class="k">def</span> <span class="nf">download_photo_media</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        here we batch up our requests to get base url for downloading media.</span>
 <span class="sd">        This avoids the overhead of one REST call per file. A REST call</span>
@@ -289,7 +293,10 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">bad_ids</span><span class="o">.</span><span class="n">report</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">files_downloaded</span></div>
 
-<div class="viewcode-block" id="GooglePhotosDownload.download_batch"><a class="viewcode-back" href="../../reference/api.html#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.download_batch">[docs]</a>    <span class="k">def</span> <span class="nf">download_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DatabaseMedia</span><span class="p">]):</span>
+
+<div class="viewcode-block" id="GooglePhotosDownload.download_batch">
+<a class="viewcode-back" href="../../reference/api.html#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.download_batch">[docs]</a>
+    <span class="k">def</span> <span class="nf">download_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DatabaseMedia</span><span class="p">]):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Downloads a batch of media items collected in download_photo_media.</span>
 
 <span class="sd">        A fresh &#39;base_url&#39; is required since they have limited lifespan and</span>
@@ -327,7 +334,10 @@
             <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Cancelled download threads&quot;</span><span class="p">)</span>
             <span class="k">raise</span></div>
 
-<div class="viewcode-block" id="GooglePhotosDownload.download_file"><a class="viewcode-back" href="../../reference/api.html#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.download_file">[docs]</a>    <span class="k">def</span> <span class="nf">download_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">media_item</span><span class="p">:</span> <span class="n">DatabaseMedia</span><span class="p">,</span> <span class="n">media_json</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+
+<div class="viewcode-block" id="GooglePhotosDownload.download_file">
+<a class="viewcode-back" href="../../reference/api.html#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.download_file">[docs]</a>
+    <span class="k">def</span> <span class="nf">download_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">media_item</span><span class="p">:</span> <span class="n">DatabaseMedia</span><span class="p">,</span> <span class="n">media_json</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;farms a single media download off to the thread pool.</span>
 
 <span class="sd">        Uses a dictionary of Futures -&gt; mediaItem to track downloads that are</span>
@@ -356,7 +366,10 @@
         <span class="n">future</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">download_pool</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">do_download_file</span><span class="p">,</span> <span class="n">base_url</span><span class="p">,</span> <span class="n">media_item</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pool_future_to_media</span><span class="p">[</span><span class="n">future</span><span class="p">]</span> <span class="o">=</span> <span class="n">media_item</span></div>
 
-<div class="viewcode-block" id="GooglePhotosDownload.do_download_file"><a class="viewcode-back" href="../../reference/api.html#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.do_download_file">[docs]</a>    <span class="k">def</span> <span class="nf">do_download_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">media_item</span><span class="p">:</span> <span class="n">DatabaseMedia</span><span class="p">):</span>
+
+<div class="viewcode-block" id="GooglePhotosDownload.do_download_file">
+<a class="viewcode-back" href="../../reference/api.html#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.do_download_file">[docs]</a>
+    <span class="k">def</span> <span class="nf">do_download_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">media_item</span><span class="p">:</span> <span class="n">DatabaseMedia</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Runs in a process pool and does a download of a single media item.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">case_insensitive_fs</span><span class="p">:</span>
             <span class="n">relative_folder</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">media_item</span><span class="o">.</span><span class="n">relative_folder</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
@@ -414,7 +427,10 @@
             <span class="k">if</span> <span class="n">t_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
                 <span class="n">t_path</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="GooglePhotosDownload.do_download_complete"><a class="viewcode-back" href="../../reference/api.html#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.do_download_complete">[docs]</a>    <span class="k">def</span> <span class="nf">do_download_complete</span><span class="p">(</span>
+
+<div class="viewcode-block" id="GooglePhotosDownload.do_download_complete">
+<a class="viewcode-back" href="../../reference/api.html#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.do_download_complete">[docs]</a>
+    <span class="k">def</span> <span class="nf">do_download_complete</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">futures_list</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span>
             <span class="n">Mapping</span><span class="p">[</span><span class="n">futures</span><span class="o">.</span><span class="n">Future</span><span class="p">,</span> <span class="n">DatabaseMedia</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">futures</span><span class="o">.</span><span class="n">Future</span><span class="p">]</span>
@@ -460,7 +476,10 @@
                     <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Downloaded </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">files_downloaded</span><span class="si">}</span><span class="s2"> items ...</span><span class="se">\033</span><span class="s2">[F&quot;</span><span class="p">)</span>
             <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool_future_to_media</span><span class="p">[</span><span class="n">future</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="GooglePhotosDownload.find_bad_items"><a class="viewcode-back" href="../../reference/api.html#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.find_bad_items">[docs]</a>    <span class="k">def</span> <span class="nf">find_bad_items</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DatabaseMedia</span><span class="p">]):</span>
+
+<div class="viewcode-block" id="GooglePhotosDownload.find_bad_items">
+<a class="viewcode-back" href="../../reference/api.html#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.find_bad_items">[docs]</a>
+    <span class="k">def</span> <span class="nf">find_bad_items</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DatabaseMedia</span><span class="p">]):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        a batch get failed. Now do all of its contents as individual</span>
 <span class="sd">        gets so we can work out which ID(s) cause the failure</span>
@@ -480,7 +499,9 @@
                     <span class="s2">&quot;FAILURE </span><span class="si">%d</span><span class="s2"> in get of </span><span class="si">%s</span><span class="s2"> BAD ID&quot;</span><span class="p">,</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">files_download_failed</span><span class="p">,</span>
                     <span class="n">media_item</span><span class="o">.</span><span class="n">relative_path</span><span class="p">,</span>
-                <span class="p">)</span></div></div>
+                <span class="p">)</span></div>
+</div>
+
 </pre></div>
 
            </div>

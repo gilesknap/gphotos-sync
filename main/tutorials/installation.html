@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Initial Setup &mdash; gphotos-sync 3.1.3.dev6+g317dc84 documentation</title>
+  <title>Initial Setup &mdash; gphotos-sync 3.1.4.dev2+g1516059 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
@@ -14,11 +14,11 @@
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=c0b9df91"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -112,7 +112,7 @@
            <div itemprop="articleBody">
              
   <section id="initial-setup">
-<span id="tutorial"></span><h1>Initial Setup<a class="headerlink" href="#initial-setup" title="Permalink to this heading"></a></h1>
+<span id="tutorial"></span><h1>Initial Setup<a class="headerlink" href="#initial-setup" title="Link to this heading"></a></h1>
 <p>Before you run gphotos_sync for the first time you will need to create
 your own OAuth client ID. This is a once only operation and the instructions
 are here: <a class="reference internal" href="oauth2.html#client-id"><span class="std std-ref">Creating an OAuth Client ID</span></a>.</p>
@@ -132,7 +132,7 @@ inside of a container. The first run will require a user login see
 <a class="reference internal" href="login.html#login"><span class="std std-ref">User Login OAuth Flow</span></a></p>
 </section>
 <section id="execute-in-a-container">
-<span id="container"></span><h1>Execute in a container<a class="headerlink" href="#execute-in-a-container" title="Permalink to this heading"></a></h1>
+<span id="container"></span><h1>Execute in a container<a class="headerlink" href="#execute-in-a-container" title="Link to this heading"></a></h1>
 <p>This project now automatically releases a container image with each release.
 The latest image will be here <code class="docutils literal notranslate"><span class="pre">ghcr.io/gilesknap/gphotos-sync</span></code>.</p>
 <p>Your container has two volumes <code class="docutils literal notranslate"><span class="pre">/config</span></code> for the client_secret.json file and
@@ -150,7 +150,7 @@ so that the browser can find authentication service.</p>
 token back to the process. The default redirect is localhost:8080 and you can
 adjust the port with <code class="docutils literal notranslate"><span class="pre">--port&lt;PORT_NUMBER&gt;</span></code>.</p>
 <section id="headless-gphotos-sync-servers">
-<h2>Headless gphotos-sync Servers<a class="headerlink" href="#headless-gphotos-sync-servers" title="Permalink to this heading"></a></h2>
+<h2>Headless gphotos-sync Servers<a class="headerlink" href="#headless-gphotos-sync-servers" title="Link to this heading"></a></h2>
 <p>The authentication
 flow only allows localhost for security reasons so the first run must always
 be done on a machine with a browser.</p>
@@ -164,10 +164,10 @@ first run you could use the following options so that no backup is performed:</p
 </section>
 </section>
 <section id="local-installation">
-<h1>Local Installation<a class="headerlink" href="#local-installation" title="Permalink to this heading"></a></h1>
+<h1>Local Installation<a class="headerlink" href="#local-installation" title="Link to this heading"></a></h1>
 <p>To install on your workstation (linux Mac or Windows) follow this section.</p>
 <section id="check-your-version-of-python">
-<h2>Check your version of python<a class="headerlink" href="#check-your-version-of-python" title="Permalink to this heading"></a></h2>
+<h2>Check your version of python<a class="headerlink" href="#check-your-version-of-python" title="Link to this heading"></a></h2>
 <p>You will need python 3.7 or later. You can check your version of python by
 typing into a terminal:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">--</span><span class="n">version</span>
@@ -175,7 +175,7 @@ typing into a terminal:</p>
 </div>
 </section>
 <section id="create-a-virtual-environment">
-<h2>Create a virtual environment<a class="headerlink" href="#create-a-virtual-environment" title="Permalink to this heading"></a></h2>
+<h2>Create a virtual environment<a class="headerlink" href="#create-a-virtual-environment" title="Link to this heading"></a></h2>
 <p>It is recommended that you install into a “virtual environment” so this
 installation will not interfere with any existing Python software:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">venv</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">venv</span>
@@ -184,7 +184,7 @@ installation will not interfere with any existing Python software:</p>
 </div>
 </section>
 <section id="install-gphotos-sync">
-<h2>Install gphotos-sync<a class="headerlink" href="#install-gphotos-sync" title="Permalink to this heading"></a></h2>
+<h2>Install gphotos-sync<a class="headerlink" href="#install-gphotos-sync" title="Link to this heading"></a></h2>
 <p>You can now use <code class="docutils literal notranslate"><span class="pre">pip</span></code> to install the application:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">gphotos</span><span class="o">-</span><span class="n">sync</span>
 </pre></div>
@@ -202,7 +202,7 @@ You can check the version that has been installed by typing:</p>
 </section>
 </section>
 <section id="running-gphotos-sync">
-<h1>Running gphotos-sync<a class="headerlink" href="#running-gphotos-sync" title="Permalink to this heading"></a></h1>
+<h1>Running gphotos-sync<a class="headerlink" href="#running-gphotos-sync" title="Link to this heading"></a></h1>
 <p>To begin a backup with default settings create a new empty TARGET DIRECTORY
 in which your backups will go and type:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">gphotos</span><span class="o">-</span><span class="n">sync</span> <span class="o">&lt;</span><span class="n">TARGET_DIRECTORY</span><span class="o">&gt;</span>
