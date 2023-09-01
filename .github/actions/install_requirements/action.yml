@@ -55,4 +55,3 @@ runs:
           fi
         fi
       shell: bash
-

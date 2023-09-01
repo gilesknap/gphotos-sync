@@ -37,5 +37,3 @@ VSCode support
 
 The ``.vscode/settings.json`` will run black and isort formatters as well as
 flake8 checking on save. Issues will be highlighted in the editor window.
-
-
