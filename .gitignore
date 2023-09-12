@@ -66,3 +66,6 @@ venv*
 
 # further build artifacts
 lockfiles/
+
+# ruff cache
+.ruff_cache/
