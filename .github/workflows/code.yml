@@ -144,7 +144,7 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: Build and export to Docker local cache
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
         # Note build-args, context, file, and target must all match between this
         # step and the later build-push-action, otherwise the second build-push-action
@@ -179,7 +179,7 @@ jobs:
 
       - name: Push cached image to container registry
         if: github.ref_type == 'tag' # || github.ref_name == 'main'
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v5
         # This does not build the image again, it will find the image in the 
         # Docker cache and publish it
         with:
