@@ -167,7 +167,7 @@ jobs:
 
       - name: Create tags for publishing image
         id: meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v5
         with:
           images: ${{ env.IMAGE_REPOSITORY }}
           tags: |
