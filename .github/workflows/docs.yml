@@ -15,7 +15,7 @@ jobs:
         run: sleep 60
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           # Need this to get version number from last tag
           fetch-depth: 0
