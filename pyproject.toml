@@ -3,7 +3,7 @@ requires = ["setuptools>=64", "setuptools_scm[toml]>=6.2", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "python3-pip-skeleton"
+name = "gphotos-sync"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "License :: OSI Approved :: Apache Software License",
@@ -40,18 +40,18 @@ dev = [
 ]
 
 [project.scripts]
-python3-pip-skeleton = "python3_pip_skeleton.__main__:main"
+gphotos-sync = "photos_sync.__main__:main"
 
 [project.urls]
-GitHub = "https://github.com/DiamondLightSource/python3-pip-skeleton"
+GitHub = "https://github.com/gilesknap/gphotos-sync"
 
 [[project.authors]] # Further authors may be added by duplicating this section
-email = "email@address.com"
-name = "Firstname Lastname"
+email = "gilesknap@gmail.com"
+name = "Giles Knap"
 
 
 [tool.setuptools_scm]
-write_to = "src/python3_pip_skeleton/_version.py"
+write_to = "src/photos_sync/_version.py"
 
 [tool.mypy]
 ignore_missing_imports = true # Ignore missing stubs in imported modules
@@ -67,7 +67,7 @@ filterwarnings = "error"
 testpaths = "docs src tests"
 
 [tool.coverage.run]
-data_file = "/tmp/python3_pip_skeleton.coverage"
+data_file = "/tmp/photos_sync.coverage"
 
 [tool.coverage.paths]
 # Tests are run from installed location, map back to the src directory
@@ -91,7 +91,7 @@ allowlist_externals =
     sphinx-build
     sphinx-autobuild
 commands =
-    pytest: pytest --cov=python3_pip_skeleton --cov-report term --cov-report xml:cov.xml {posargs}
+    pytest: pytest --cov=photos_sync --cov-report term --cov-report xml:cov.xml {posargs}
     mypy: mypy src tests {posargs}
     pre-commit: pre-commit run --all-files {posargs}
     docs: sphinx-{posargs:build -EW --keep-going} -T docs build/html

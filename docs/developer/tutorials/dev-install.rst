@@ -10,7 +10,7 @@ Clone the repository
 First clone the repository locally using `Git
 <https://git-scm.com/downloads>`_::
 
-    $ git clone git://github.com/DiamondLightSource/python3-pip-skeleton.git
+    $ git clone git://github.com/gilesknap/gphotos-sync.git
 
 Install dependencies
 --------------------
@@ -25,7 +25,7 @@ requires python 3.8 or later) or to run in a container under `VSCode
 
         .. code::
 
-            $ cd python3-pip-skeleton
+            $ cd gphotos-sync
             $ python3 -m venv venv
             $ source venv/bin/activate
             $ pip install -e '.[dev]'
@@ -34,7 +34,7 @@ requires python 3.8 or later) or to run in a container under `VSCode
 
         .. code::
 
-            $ code python3-pip-skeleton
+            $ code gphotos-sync
             # Click on 'Reopen in Container' when prompted
             # Open a new terminal
 
