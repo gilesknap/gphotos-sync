@@ -20,7 +20,7 @@ jobs:
       - name: Install python packages
         uses: ./.github/actions/install_requirements
         with:
-          python_version: 3.10
+          python_version: "3.12"
           requirements_file: requirements-dev-3.x.txt
           install_options: -e .[dev]
 
