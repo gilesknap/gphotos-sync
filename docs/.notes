@@ -1,0 +1,11 @@
+System Tests
+============
+
+The system tests use a real Google Account with its own Photos Library.
+
+This account is called gphotos.sync.test@gmail.com
+
+It's password uses giles' password scheme C 
+
+(I'd like this to be in public domain for use by other contributors but I 
+don't believe there is a secure way to do this.)
