@@ -46,7 +46,7 @@ dev = [
 ]
 
 [project.scripts]
-gphotos-sync = "photos_sync.__main__:main"
+gphotos-sync = "gphotos_sync.__main__:main"
 
 [project.urls]
 GitHub = "https://github.com/gilesknap/gphotos-sync"
@@ -57,7 +57,7 @@ name = "Giles Knap"
 
 
 [tool.setuptools_scm]
-write_to = "src/photos_sync/_version.py"
+write_to = "src/gphotos_sync/_version.py"
 
 [tool.mypy]
 ignore_missing_imports = true # Ignore missing stubs in imported modules
