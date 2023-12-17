@@ -20,7 +20,7 @@ dependencies = [
     "appdirs",
     "pyyaml",
     "psutil",
-    "google",
+    "google_auth_oauthlib",
     "typing-extensions;python_version<'3.8'",
 ] # Add project dependencies here, e.g. ["click", "numpy"]
 dynamic = ["version"]
@@ -43,6 +43,10 @@ dev = [
     "sphinx-design",
     "tox-direct",
     "types-mock",
+    "mock",
+    "types-setuptools",
+    "types-requests",
+    "types-PyYAML",
 ]
 
 [project.scripts]
