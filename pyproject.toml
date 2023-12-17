@@ -21,12 +21,11 @@ dependencies = [
     "pyyaml",
     "psutil",
     "google_auth_oauthlib",
-    "typing-extensions;python_version<'3.8'",
 ] # Add project dependencies here, e.g. ["click", "numpy"]
 dynamic = ["version"]
 license.file = "LICENSE"
 readme = "README.rst"
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 
 [project.optional-dependencies]
 dev = [
