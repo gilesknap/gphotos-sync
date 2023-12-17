@@ -1,9 +1,116 @@
 [build-system]
-# To get a reproducible wheel, wheel must be pinned to the same version as in
-# dls-python3, and setuptools must produce the same dist-info. Cap setuptools
-# to the last version that didn't add License-File to METADATA
-requires = ["setuptools<57", "wheel==0.33.1"]
+requires = ["setuptools>=64", "setuptools_scm[toml]>=6.2", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[project]
+name = "gphotos-sync"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+description = "One line description of your module"
+dependencies = [
+    "attrs",
+    "exif",
+    "appdirs",
+    "pyyaml",
+    "psutil",
+    "google",
+    "typing-extensions;python_version<'3.8'",
+] # Add project dependencies here, e.g. ["click", "numpy"]
+dynamic = ["version"]
+license.file = "LICENSE"
+readme = "README.rst"
+requires-python = ">=3.7"
+
+[project.optional-dependencies]
+dev = [
+    "black",
+    "mypy",
+    "pipdeptree",
+    "pre-commit",
+    "pydata-sphinx-theme>=0.12",
+    "pytest",
+    "pytest-cov",
+    "ruff",
+    "sphinx-autobuild",
+    "sphinx-copybutton",
+    "sphinx-design",
+    "tox-direct",
+    "types-mock",
+]
+
+[project.scripts]
+gphotos-sync = "photos_sync.__main__:main"
+
+[project.urls]
+GitHub = "https://github.com/gilesknap/gphotos-sync"
+
+[[project.authors]] # Further authors may be added by duplicating this section
+email = "gilesknap@gmail.com"
+name = "Giles Knap"
+
+
 [tool.setuptools_scm]
-write_to = "src/gphotos_sync/_version.py"
+write_to = "src/photos_sync/_version.py"
+
+[tool.mypy]
+ignore_missing_imports = true # Ignore missing stubs in imported modules
+
+[tool.pytest.ini_options]
+# Run pytest with all our checkers, and don't spam us with massive tracebacks on error
+addopts = """
+    --tb=native -vv --doctest-modules --doctest-glob="*.rst"
+    """
+# https://iscinumpy.gitlab.io/post/bound-version-constraints/#watch-for-warnings
+filterwarnings = "error"
+# Doctest python code in docs, python code in src docstrings, test functions in tests
+testpaths = "docs src tests"
+
+[tool.coverage.run]
+data_file = "/tmp/photos_sync.coverage"
+
+[tool.coverage.paths]
+# Tests are run from installed location, map back to the src directory
+source = ["src", "**/site-packages/"]
+
+# tox must currently be configured via an embedded ini string
+# See: https://github.com/tox-dev/tox/issues/999
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+skipsdist=True
+
+[testenv:{pre-commit,mypy,pytest,docs}]
+# Don't create a virtualenv for the command, requires tox-direct plugin
+direct = True
+passenv = *
+allowlist_externals =
+    pytest
+    pre-commit
+    mypy
+    sphinx-build
+    sphinx-autobuild
+commands =
+    pytest: pytest --cov=photos_sync --cov-report term --cov-report xml:cov.xml {posargs}
+    mypy: mypy src tests {posargs}
+    pre-commit: pre-commit run --all-files {posargs}
+    docs: sphinx-{posargs:build -EW --keep-going} -T docs build/html
+"""
+
+
+[tool.ruff]
+src = ["src", "tests"]
+line-length = 88
+select = [
+    "C4",   # flake8-comprehensions - https://beta.ruff.rs/docs/rules/#flake8-comprehensions-c4
+    "E",    # pycodestyle errors - https://beta.ruff.rs/docs/rules/#error-e
+    "F",    # pyflakes rules - https://beta.ruff.rs/docs/rules/#pyflakes-f
+    "W",    # pycodestyle warnings - https://beta.ruff.rs/docs/rules/#warning-w
+    "I001", # isort
+]

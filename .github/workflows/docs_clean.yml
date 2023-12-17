@@ -1,0 +1,43 @@
+name: Docs Cleanup CI
+
+# delete branch documentation when a branch is deleted
+# also allow manually deleting a documentation version
+on:
+  delete:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "documentation version to DELETE"
+        required: true
+        type: string
+
+jobs:
+  remove:
+    if: github.event.ref_type == 'branch' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+
+      - name: removing documentation for branch ${{ github.event.ref }}
+        if: ${{ github.event_name != 'workflow_dispatch' }}
+        run: echo "REF_NAME=${{ github.event.ref }}" >> $GITHUB_ENV
+
+      - name: manually removing documentation version ${{ github.event.inputs.version }}
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: echo "REF_NAME=${{ github.event.inputs.version }}" >> $GITHUB_ENV
+
+      - name: Sanitize ref name for docs version
+        run: echo "DOCS_VERSION=${REF_NAME//[^A-Za-z0-9._-]/_}" >> $GITHUB_ENV
+
+      - name: update index and push changes
+        run: |
+          rm -r $DOCS_VERSION
+          python make_switcher.py --remove $DOCS_VERSION ${{ github.repository }} switcher.json
+          git config --global user.name 'GitHub Actions Docs Cleanup CI'
+          git config --global user.email 'GithubActionsCleanup@noreply.github.com'
+          git commit -am "Removing redundant docs version $DOCS_VERSION"
+          git push

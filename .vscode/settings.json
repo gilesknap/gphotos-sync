@@ -1,12 +1,16 @@
 {
-    "python.testing.pytestArgs": [],
+    "python.testing.pytestArgs": [
+        "--cov=python3_pip_skeleton",
+        "--cov-report",
+        "xml:cov.xml"
+    ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
     "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": {
-        "source.organizeImports": "explicit"
-    },
-    "cSpell.words": [
-        "gphotos"
-    ]
+    "[python]": {
+        "editor.codeActionsOnSave": {
+            "source.fixAll.ruff": false,
+            "source.organizeImports.ruff": true
+        }
+    }
 }

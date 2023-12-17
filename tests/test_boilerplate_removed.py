@@ -2,14 +2,19 @@
 This file checks that all the example boilerplate text has been removed.
 It can be deleted when all the contained tests pass
 """
-import configparser
+import sys
 from pathlib import Path
+
+if sys.version_info < (3, 8):
+    from importlib_metadata import metadata  # noqa
+else:
+    from importlib.metadata import metadata  # noqa
 
 ROOT = Path(__file__).parent.parent
 
 
 def skeleton_check(check: bool, text: str):
-    if ROOT.name == "dls-python3-skeleton":
+    if ROOT.name == "python3-pip-skeleton" or str(ROOT) == "/project":
         # In the skeleton module the check should fail
         check = not check
         text = f"Skeleton didn't raise: {text}"
@@ -24,19 +29,12 @@ def assert_not_contains_text(path: str, text: str, explanation: str):
         skeleton_check(text in contents, f"Please change ./{path} {explanation}")
 
 
-def assert_not_exists(path: str, explanation: str):
-    exists = (ROOT / path).exists()
-    skeleton_check(exists, f"Please delete ./{path} {explanation}")
-
-
-# setup.cfg
-def test_module_description():
-    conf = configparser.ConfigParser()
-    conf.read("setup.cfg")
-    description = conf["metadata"]["description"]
+# pyproject.toml
+def test_module_summary():
+    summary = metadata("gphotos-sync")["summary"]
     skeleton_check(
-        "One line description of your module" in description,
-        "Please change description in ./setup.cfg "
+        "One line description of your module" in summary,
+        "Please change project.description in ./pyproject.toml "
         "to be a one line description of your module",
     )
 
@@ -50,30 +48,17 @@ def test_changed_README_intro():
     )
 
 
+def test_removed_adopt_skeleton():
+    assert_not_contains_text(
+        "README.rst",
+        "This project contains template code only",
+        "remove the note at the start",
+    )
+
+
 def test_changed_README_body():
     assert_not_contains_text(
         "README.rst",
         "This is where you should put some images or code snippets",
         "to include some features and why people should use it",
-    )
-
-
-# Docs
-def test_docs_ref_api_changed():
-    assert_not_contains_text(
-        "docs/reference/api.rst",
-        "You can mix verbose text with docstring and signature",
-        "to introduce the API for your module",
-    )
-
-
-def test_how_tos_written():
-    assert_not_exists(
-        "docs/how-to/accomplish-a-task.rst", "and write some docs/how-tos"
-    )
-
-
-def test_explanations_written():
-    assert_not_exists(
-        "docs/explanations/why-is-something-so.rst", "and write some docs/explanations"
     )

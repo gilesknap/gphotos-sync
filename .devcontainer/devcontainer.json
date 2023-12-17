@@ -1,68 +1,50 @@
-// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
-// https://github.com/microsoft/vscode-dev-containers/tree/v0.231.6/containers/python-3
+// For format details, see https://containers.dev/implementors/json_reference/
 {
-    "name": "Python 3",
+    "name": "Python 3 Developer Container",
     "build": {
-        "dockerfile": "Dockerfile",
-        "target": "developer",
-        "context": "..",
-        "args": {}
+        "dockerfile": "../Dockerfile",
+        "target": "build",
+        // Only upgrade pip, we will install the project below
+        "args": {
+            "PIP_OPTIONS": "--upgrade pip"
+        }
     },
     "remoteEnv": {
         "DISPLAY": "${localEnv:DISPLAY}"
     },
-    // Set *default* container specific settings.json values on container create.
-    "settings": {
-        "python.defaultInterpreterPath": "/usr/local/bin/python",
-        "python.linting.enabled": true,
-        "python.linting.pylintEnabled": true,
-        "python.formatting.autopep8Path": "/usr/local/py-utils/bin/autopep8",
-        "python.formatting.blackPath": "/usr/local/py-utils/bin/black",
-        "python.formatting.yapfPath": "/usr/local/py-utils/bin/yapf",
-        "python.linting.banditPath": "/usr/local/py-utils/bin/bandit",
-        "python.linting.flake8Path": "/usr/local/py-utils/bin/flake8",
-        "python.linting.mypyPath": "/usr/local/py-utils/bin/mypy",
-        "python.linting.pycodestylePath": "/usr/local/py-utils/bin/pycodestyle",
-        "python.linting.pydocstylePath": "/usr/local/py-utils/bin/pydocstyle",
-        "python.linting.pylintPath": "/usr/local/py-utils/bin/pylint"
-    },
-    // Add the IDs of extensions you want installed when the container is created.
-    "extensions": [
-        "ms-python.python",
-        "ms-python.vscode-pylance",
-        "streetsidesoftware.code-spell-checker",
-        "ryanluker.vscode-coverage-gutters",
-        "mhutchie.git-graph",
-        "eamodio.gitlens",
-        "gruntfuggly.todo-tree",
-        "redhat.vscode-yaml",
-        "nsd.vscode-epics",
-        "alefragnani.bookmarks"
-    ],
+    // Add the URLs of features you want added when the container is built.
     "features": {
-        //"docker-from-docker": "20.10",
-        "git": "os-provided"
+        "ghcr.io/devcontainers/features/common-utils:1": {
+            "username": "none",
+            "upgradePackages": false
+        }
     },
-    // Use 'forwardPorts' to make a list of ports inside the container available locally.
-    // "forwardPorts": [],
-    // Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
-    // "remoteUser": "vscode",
+    "customizations": {
+        "vscode": {
+            // Add the IDs of extensions you want installed when the container is created.
+            "extensions": [
+                "ms-python.python",
+                "tamasfe.even-better-toml",
+                "redhat.vscode-yaml",
+                "ryanluker.vscode-coverage-gutters"
+            ]
+        }
+    },
     // Make sure the files we are mapping into the container exist on the host
-    "initializeCommand": "bash -c 'for i in $HOME/.inputrc $HOME/.bashrc_dev; do [ -f $i ] || touch $i; done'",
+    "initializeCommand": "bash -c 'for i in $HOME/.inputrc; do [ -f $i ] || touch $i; done'",
     "runArgs": [
-        "--privileged",
         "--net=host",
-        "-v=${localEnv:HOME}/.ssh:/root/.ssh",
-        "-v=${localEnv:HOME}/.bashrc_dev:/root/.bashrc",
-        "-v=${localEnv:HOME}/.inputrc:/root/.inputrc"
+        "--security-opt=label=type:container_runtime_t"
     ],
     "mounts": [
-        // map in home directory - not strictly necessary but may be useful
+        "source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind",
+        "source=${localEnv:HOME}/.inputrc,target=/root/.inputrc,type=bind",
+        // map in home directory - not strictly necessary but useful
         "source=${localEnv:HOME},target=${localEnv:HOME},type=bind,consistency=cached"
     ],
-    "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
-    "workspaceFolder": "/workspace",
+    // make the workspace folder the same inside and outside of the container
+    "workspaceMount": "source=${localWorkspaceFolder},target=${localWorkspaceFolder},type=bind",
+    "workspaceFolder": "${localWorkspaceFolder}",
     // After the container is created, install the python project in editable form
-    // This installs into the system python of the container
-    "postCreateCommand": "pip install $([ -f requirements_dev.txt ] && echo -r requirements_dev.txt ) -e .[dev]"
+    "postCreateCommand": "pip install -e '.[dev]'"
 }
