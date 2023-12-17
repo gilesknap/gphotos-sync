@@ -76,7 +76,7 @@ filterwarnings = [
    "ignore:.*socket.*:ResourceWarning",
    # this deprecation is rather serious for gphotos-sync as it relies on sqlite
    # doing date conversion quite heavily - will ignore the deprection for now
-   "ignore:sqlite:DeprecationWarning: The default datetime adapter.*"
+   "ignore:sqlite3:DeprecationWarning: The default datetime adapter.*"
 ]
 # Doctest python code in docs, python code in src docstrings, test functions in tests
 testpaths = "docs src tests"
