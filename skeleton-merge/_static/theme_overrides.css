@@ -1,0 +1,34 @@
+/* override table width restrictions */
+@media screen and (min-width: 639px) {
+    .wy-table-responsive table td {
+        /* !important prevents the common CSS stylesheets from
+           overriding this as on RTD they are loaded after this stylesheet */
+        white-space: normal !important;
+    }
+}
+
+/* override table padding */
+.rst-content table.docutils th, .rst-content table.docutils td {
+    padding: 4px 6px;
+}
+
+/* Add two-column option */
+@media only screen and (min-width: 1000px) {
+    .columns {
+        padding-left: 10px;
+        padding-right: 10px;
+        float: left;
+        width: 50%;
+        min-height: 145px;
+    }
+}
+
+.endcolumns {
+    clear: both
+}
+
+/* Hide toctrees within columns and captions from all toctrees.
+   This is what makes the include trick in index.rst work */
+.columns .toctree-wrapper, .toctree-wrapper .caption-text {
+    display: none;
+}
