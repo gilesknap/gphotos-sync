@@ -9,8 +9,8 @@
     "editor.formatOnSave": true,
     "[python]": {
         "editor.codeActionsOnSave": {
-            "source.fixAll.ruff": false,
-            "source.organizeImports.ruff": true
+            "source.fixAll.ruff": "never",
+            "source.organizeImports.ruff": "explicit"
         }
     }
 }

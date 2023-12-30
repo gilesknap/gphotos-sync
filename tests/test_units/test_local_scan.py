@@ -9,7 +9,6 @@ test_data = Path(__file__).absolute().parent.parent / "test-data"
 
 class TestLocalScan(TestCase):
     def test_local_duplicate_names(self):
-
         ps = "PIC00002 (2).jpg"
         p = Path(test_data) / Path(ps)
 

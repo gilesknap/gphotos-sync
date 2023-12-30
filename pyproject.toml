@@ -40,6 +40,7 @@ dev = [
     "sphinx-autobuild",
     "sphinx-copybutton",
     "sphinx-design",
+    "sphinx_rtd_theme_github_versions",
     "tox-direct",
     "types-mock",
     "mock",
@@ -72,11 +73,14 @@ addopts = """
     """
 # https://iscinumpy.gitlab.io/post/bound-version-constraints/#watch-for-warnings
 filterwarnings = [
-   "error",
-   "ignore:.*socket.*:ResourceWarning",
-   # this deprecation is rather serious for gphotos-sync as it relies on sqlite
-   # doing date conversion quite heavily - will ignore the deprection for now
-   "ignore:sqlite3:DeprecationWarning: The default datetime adapter.*"
+    "error",
+    "ignore:.*socket.*:ResourceWarning",
+    # this deprecation is rather serious for gphotos-sync as it relies on sqlite
+    # doing date conversion quite heavily - will ignore the deprection for now
+    # DeprecationWarning: The default datetime adapter is deprecated as of Python 3.12;
+    "ignore:.*sqlite3.*:DeprecationWarning:",
+    # like the above
+    "ignore:.*datetime.utcfromtimestamp:DeprecationWarning:"
 ]
 # Doctest python code in docs, python code in src docstrings, test functions in tests
 testpaths = "docs src tests"
