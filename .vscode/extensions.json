@@ -1,7 +1,10 @@
 {
     "recommendations": [
-        "ms-python.vscode-pylance",
+        "ms-vscode-remote.remote-containers",
         "ms-python.python",
-        "ryanluker.vscode-coverage-gutters"
+        "tamasfe.even-better-toml",
+        "redhat.vscode-yaml",
+        "ryanluker.vscode-coverage-gutters",
+        "charliermarsh.Ruff"
     ]
 }

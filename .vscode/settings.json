@@ -1,18 +1,16 @@
 {
-    "python.linting.pylintEnabled": false,
-    "python.linting.flake8Enabled": true,
-    "python.linting.mypyEnabled": true,
-    "python.linting.enabled": true,
-    "python.testing.pytestArgs": [],
+    "python.testing.pytestArgs": [
+        "--cov=python3_pip_skeleton",
+        "--cov-report",
+        "xml:cov.xml"
+    ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
-    "python.formatting.provider": "black",
-    "python.languageServer": "Pylance",
     "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": {
-        "source.organizeImports": true
-    },
-    "cSpell.words": [
-        "gphotos"
-    ]
+    "[python]": {
+        "editor.codeActionsOnSave": {
+            "source.fixAll.ruff": "never",
+            "source.organizeImports.ruff": "explicit"
+        }
+    }
 }

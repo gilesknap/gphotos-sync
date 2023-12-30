@@ -14,13 +14,13 @@ Releases       https://github.com/gilesknap/gphotos-sync/releases
 
 Intro
 =====
-Google Photos Sync downloads all photos and videos the user has uploaded to 
-Google Photos. It also organizes the media in the local file system using 
-album information. Additional Google Photos 'Creations' such as 
+Google Photos Sync downloads all photos and videos the user has uploaded to
+Google Photos. It also organizes the media in the local file system using
+album information. Additional Google Photos 'Creations' such as
 animations, panoramas, movies, effects and collages are also backed up.
 
 This software is read only and never modifies your cloud library in any way,
-so there is no risk of damaging your data. 
+so there is no risk of damaging your data.
 
 Warning: Google API Issues
 ==========================

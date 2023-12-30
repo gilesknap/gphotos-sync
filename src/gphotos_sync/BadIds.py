@@ -40,7 +40,7 @@ class BadIds:
             safe_dump(self.items, stream, default_flow_style=False)
 
     def add_id(self, path: str, gid: str, product_url: str, e: Exception):
-        item = dict(path=str(path), product_url=product_url)
+        item = {"path": str(path), "product_url": product_url}
         self.items[gid] = item
         log.debug("BAD ID %s for %s", gid, path, exc_info=e)
 

@@ -60,8 +60,12 @@ docs/_build/
 # PyBuilder
 target/
 
-# DLS build dir and virtual environment
-/prefix/
-/venv/
-/lightweight-venv/
-/installed.files
+# likely venv names
+.venv*
+venv*
+
+# further build artifacts
+lockfiles/
+
+# ruff cache
+.ruff_cache/

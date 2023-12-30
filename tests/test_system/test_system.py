@@ -464,7 +464,6 @@ class TestSystem(TestCase):
 
     @patch.object(GooglePhotosDownload, "do_download_file")
     def test_bad_ids(self, do_download_file):
-
         do_download_file.side_effect = HTTPError(Mock(status=500), "ouch!")
         with ts.SetupDbAndCredentials() as s:
             args = [

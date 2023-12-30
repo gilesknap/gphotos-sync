@@ -77,10 +77,10 @@ pygments_style = "sphinx"
 
 # This means you can link things like `str` and `asyncio` to the relevant
 # docs in the python documentation.
-intersphinx_mapping = dict(python=("https://docs.python.org/3/", None))
+intersphinx_mapping = {"python": ("https://docs.python.org/3/", None)}
 
 # A dictionary of graphviz graph attributes for inheritance diagrams.
-inheritance_graph_attrs = dict(rankdir="TB")
+inheritance_graph_attrs = {"rankdir": "TB"}
 
 # Common links that should be available on every page
 rst_epilog = """
@@ -99,7 +99,7 @@ linkcheck_ignore = [r"http://localhost:\d+/"]
 html_theme = "sphinx_rtd_theme_github_versions"
 
 # Options for the sphinx rtd theme, use DLS blue
-html_theme_options = dict(style_nav_header_background="rgb(7, 43, 93)")
+html_theme_options = {"style_nav_header_background": "rgb(7, 43, 93)"}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
