@@ -13,10 +13,10 @@ This is the internal code reference for gphotos_sync
 
     Version number as calculated by setuptools_scm
 
-.. automodule:: gphotos_sync.Main
+.. automodule:: gphotos_sync.__main__
     :members:
 
-    ``gphotos_sync.Main``
+    ``gphotos_sync.__main__``
     -----------------------------------------
 .. automodule:: gphotos_sync.BaseMedia
     :members:
