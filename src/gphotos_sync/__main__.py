@@ -383,7 +383,8 @@ class GooglePhotosSyncMain:
         )
 
         self.google_photos_client = RestClient(
-            photos_api_url, self.auth.session  # type: ignore
+            photos_api_url,
+            self.auth.session,  # type: ignore
         )
         self.google_photos_idx = GooglePhotosIndex(
             self.google_photos_client, root_folder, self.data_store, settings
@@ -400,7 +401,9 @@ class GooglePhotosSyncMain:
         )
         if args.compare_folder:
             self.local_files_scan = LocalFilesScan(
-                root_folder, compare_folder, self.data_store  # type: ignore
+                root_folder,
+                compare_folder,
+                self.data_store,  # type: ignore
             )
 
     def do_sync(self, args: Namespace):
@@ -521,3 +524,7 @@ class GooglePhotosSyncMain:
 
 def main():
     GooglePhotosSyncMain().main()
+
+
+if __name__ == "__main__":
+    main()
