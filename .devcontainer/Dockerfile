@@ -4,7 +4,7 @@
 # container. The devcontainer should be rootful and use podman or docker
 # with user namespaces.
 
-ARG BASE="mcr.microsoft.com/vscode/devcontainers/python:0-3.10-bullseye"
+ARG BASE="mcr.microsoft.com/devcontainers/python:dev-3.12-bullseye"
 FROM ${BASE} as base
 
 # use root to pin where the packages will install
