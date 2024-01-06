@@ -402,7 +402,7 @@ class GooglePhotosSyncMain:
         if args.compare_folder:
             self.local_files_scan = LocalFilesScan(
                 root_folder,
-                compare_folder,
+                compare_folder,  # type: ignore
                 self.data_store,  # type: ignore
             )
 
