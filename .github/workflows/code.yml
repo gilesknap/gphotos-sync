@@ -5,7 +5,7 @@ on:
   pull_request:
 env:
   # The target python version, which must match the Dockerfile version
-  CONTAINER_PYTHON: "3.11"
+  CONTAINER_PYTHON: "3.12"
 
 jobs:
   lint:
