@@ -4,9 +4,9 @@ from pathlib import Path
 
 from appdirs import AppDirs
 
-from gphotos_sync import Main
+from gphotos_sync import __main__
+from gphotos_sync.__main__ import GooglePhotosSyncMain
 from gphotos_sync.Checks import do_check
-from gphotos_sync.Main import GooglePhotosSyncMain
 
 # if we are debugging requests library is too noisy
 logging.getLogger("requests").setLevel(logging.WARNING)
@@ -23,8 +23,8 @@ logging.basicConfig(
 class SetupDbAndCredentials:
     def __init__(self):
         # set up the test account credentials
-        Main.APP_NAME = "gphotos-sync-test"
-        app_dirs = AppDirs(Main.APP_NAME)
+        __main__.APP_NAME = "gphotos-sync-test"
+        app_dirs = AppDirs(__main__.APP_NAME)
         self.test_folder = Path(__file__).absolute().parent / "test_credentials"
         user_data = Path(app_dirs.user_data_dir)
         if not user_data.exists():
