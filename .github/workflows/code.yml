@@ -5,7 +5,7 @@ on:
   pull_request:
 env:
   # The target python version, which must match the Dockerfile version
-  CONTAINER_PYTHON: "3.11"
+  CONTAINER_PYTHON: "3.12"
 
 jobs:
   lint:
@@ -105,96 +105,8 @@ jobs:
           install_options: dist/*.whl
 
       - name: Test module --version works using the installed wheel
-        # If more than one module in src/ replace with module name to test
-        run: python -m $(ls src | head -1) --version
-
-  container:
-    needs: [lint, dist, test]
-    runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
-      packages: write
-
-    env:
-      TEST_TAG: "testing"
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      # image names must be all lower case
-      - name: Generate image repo name
-        run: echo IMAGE_REPOSITORY=ghcr.io/$(tr '[:upper:]' '[:lower:]' <<< "${{ github.repository }}") >> $GITHUB_ENV
-
-      - name: Download wheel and lockfiles
-        uses: actions/download-artifact@v3
-        with:
-          path: artifacts/
-
-      - name: Log in to GitHub Docker Registry
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build and export to Docker local cache
-        uses: docker/build-push-action@v5
-        with:
-          # Note build-args, context, file, and target must all match between this
-          # step and the later build-push-action, otherwise the second build-push-action
-          # will attempt to build the image again
-          build-args: |
-            PIP_OPTIONS=-r lockfiles/requirements.txt dist/*.whl
-          context: artifacts/
-          file: ./Dockerfile
-          target: runtime
-          load: true
-          tags: ${{ env.TEST_TAG }}
-          # If you have a long docker build (2+ minutes), uncomment the
-          # following to turn on caching. For short build times this
-          # makes it a little slower
-          #cache-from: type=gha
-          #cache-to: type=gha,mode=max
-
-      - name: Test cli works in cached runtime image
-        run: docker run docker.io/library/${{ env.TEST_TAG }} --version
-
-      - name: Create tags for publishing image
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.IMAGE_REPOSITORY }}
-          tags: |
-            type=ref,event=tag
-            type=raw,value=latest, enable=${{ github.ref_type == 'tag' }}
-          # type=edge,branch=main
-          # Add line above to generate image for every commit to given branch,
-          # and uncomment the end of if clause in next step
-
-      - name: Push cached image to container registry
-        if: github.ref_type == 'tag' # || github.ref_name == 'main'
-        uses: docker/build-push-action@v5
-        # This does not build the image again, it will find the image in the
-        # Docker cache and publish it
-        with:
-          # Note build-args, context, file, and target must all match between this
-          # step and the previous build-push-action, otherwise this step will
-          # attempt to build the image again
-          build-args: |
-            PIP_OPTIONS=-r lockfiles/requirements.txt dist/*.whl
-          context: artifacts/
-          file: ./Dockerfile
-          target: runtime
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+        # Check that the command line entry point works
+        run: gphotos-sync --version
 
   release:
     # upload to PyPI and make a release on every tag
@@ -229,3 +141,76 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.PYPI_TOKEN }}
+
+  make-container:
+    needs: [lint, dist, test]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: dist
+          path: dist
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Log in to GitHub Docker Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            ghcr.io/${{ github.repository }}
+            # github repo and dockerhub tag must match for this to work
+            ${{ github.repository }}
+          # all pull requests share a single tag 'pr'
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=raw,value=latest,enable=${{ github.event_name != 'pull_request' }}
+            type=raw,value=pr
+
+      # required for multi-arch build
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Build runtime image
+        uses: docker/build-push-action@v3
+        with:
+          file: .devcontainer/Dockerfile
+          context: .
+          platforms: linux/amd64,linux/arm/v7,linux/arm64/v8
+          push: true
+          build-args: BASE=python:3.12-slim
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache

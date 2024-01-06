@@ -18,5 +18,5 @@ echo building $container_name ...
 # run the build with required build-args for a runtime build
 cd ${THIS_DIR}
 ln -s ../dist .
-docker build --build-arg BASE=python:3.10-slim -t $container_name .. --file ./Dockerfile
+docker build --build-arg BASE=python:3.12-slim -t $container_name .. --file ./Dockerfile
 unlink dist
