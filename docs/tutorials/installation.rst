@@ -94,7 +94,7 @@ You can now use ``pip`` to install the application::
 If you require a feature that is not currently released you can also install
 directly from github::
 
-    python3 -m pip install git+git://github.com/gilesknap/gphotos-sync.git
+    python3 -m pip install git+https://github.com/gilesknap/gphotos-sync.git
 
 The application should now be installed and the commandline interface on your path.
 You can check the version that has been installed by typing::
