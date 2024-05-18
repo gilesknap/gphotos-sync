@@ -30,7 +30,7 @@ class BadIds:
     def load_ids(self):
         try:
             with self.bad_ids_filename.open("r") as stream:
-                self.items = safe_load(stream)
+                self.items = safe_load(stream) or {}
             log.debug("bad_ids file, loaded %d bad ids", len(self.items))
         except (YAMLError, IOError):
             log.debug("no bad_ids file, bad ids list is empty")
