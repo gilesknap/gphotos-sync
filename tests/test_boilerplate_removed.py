@@ -2,6 +2,7 @@
 This file checks that all the example boilerplate text has been removed.
 It can be deleted when all the contained tests pass
 """
+
 import sys
 from pathlib import Path
 
