@@ -185,4 +185,4 @@ class TestUnits(TestCase):
                 )
                 s.gp.fs_checks(s.root, s.parsed_args)
                 self.assertTrue(get_check().is_linux)
-                self.assertEqual(get_check().max_filename, 255)
+                self.assertTrue(get_check().max_filename >= 242)

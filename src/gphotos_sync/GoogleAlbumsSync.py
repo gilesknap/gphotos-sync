@@ -66,6 +66,7 @@ class GoogleAlbumsSync(object):
         self._ntfs_override = settings.ntfs_override
         self.month_format = settings.month_format
         self.path_format = settings.path_format
+        self._no_album_sorting = settings.no_album_sorting
 
     @classmethod
     def make_search_parameters(
@@ -309,7 +310,11 @@ class GoogleAlbumsSync(object):
 
             link_folder: Path = self.album_folder_name(album_name, start_date, end_date)
 
-            link_filename = "{:04d}_{}".format(album_item, file_name)
+            if self._no_album_sorting:
+                link_filename = "{}".format(file_name)
+            else:
+                link_filename = "{:04d}_{}".format(album_item, file_name)
+
             link_filename = link_filename[: get_check().max_filename]
             link_file = link_folder / link_filename
             # incredibly, pathlib.Path.relative_to cannot handle
