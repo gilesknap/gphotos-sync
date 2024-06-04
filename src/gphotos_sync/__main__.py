@@ -183,6 +183,12 @@ class GooglePhotosSyncMain:
         default="albums",
     )
     parser.add_argument(
+        "--shared-albums-path",
+        help="Specify a folder for the shared albums "
+        "Defaults to the 'sharedAlbums' in the local download folders",
+        default="sharedAlbums",
+    )
+    parser.add_argument(
         "--photos-path",
         help="Specify a folder for the photo files. "
         "Defaults to the 'photos' in the local download folders",
@@ -381,6 +387,7 @@ class GooglePhotosSyncMain:
             archived=args.archived,
             photos_path=Path(args.photos_path),
             albums_path=Path(args.albums_path),
+            shared_albums_path=Path(args.shared_albums_path),
             use_flat_path=args.use_flat_path,
             max_retries=int(args.max_retries),
             max_threads=int(args.max_threads),

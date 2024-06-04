@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # coding: utf8
 
+import logging
 import re
 from datetime import datetime
 from json import loads
@@ -10,9 +11,12 @@ from subprocess import PIPE, CalledProcessError, run
 from typing import Any, Dict, List, Optional, Union
 
 import exif
+from plum.exceptions import UnpackError
 
 from . import Utils
 from .BaseMedia import BaseMedia
+
+log = logging.getLogger(__name__)
 
 JSONValue = Union[str, int, float, bool, None, Dict[str, Any], List[Any]]
 JSONType = Union[Dict[str, JSONValue], List[JSONValue]]
@@ -137,6 +141,12 @@ class LocalFilesMedia(BaseMedia):
                 self.__exif = exif.Image(image_file)
             self.got_meta = True
         except (IOError, AssertionError):
+            self.got_meta = False
+        except (UnpackError, ValueError):
+            log.error(
+                "Problem reading exif data from file: %s",
+                str(self.relative_folder / self.filename),
+            )
             self.got_meta = False
 
     @property

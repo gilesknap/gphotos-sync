@@ -26,6 +26,7 @@ class GoogleAlbumsRow(DbRow):
         "EndDate": datetime,
         "SyncDate": datetime,
         "Downloaded": bool,
+        "IsSharedAlbum": bool,
     }
 
     # All properties on this class are dynamically added from the above
@@ -37,6 +38,7 @@ class GoogleAlbumsRow(DbRow):
             _filename=self.AlbumName,  # type:ignore
             _size=self.Size,  # type:ignore
             _create_date=self.EndDate,  # type:ignore
+            _is_shared_album=self.IsSharedAlbum,  # type:ignore
         )
         return db_media
 
@@ -45,7 +47,9 @@ class GoogleAlbumsRow(DbRow):
         pass
 
     @classmethod
-    def from_parm(cls, album_id, filename, size, start, end) -> "GoogleAlbumsRow":
+    def from_parm(
+        cls, album_id, filename, size, start, end, is_shared
+    ) -> "GoogleAlbumsRow":
         new_row = cls.make(
             RemoteId=album_id,
             AlbumName=filename,
@@ -54,5 +58,6 @@ class GoogleAlbumsRow(DbRow):
             EndDate=end,
             SyncDate=Utils.date_to_string(datetime.now()),
             Downloaded=0,
+            IsSharedAlbum=is_shared,
         )
         return new_row

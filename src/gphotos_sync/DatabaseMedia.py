@@ -53,6 +53,7 @@ class DatabaseMedia(BaseMedia):
         _create_date: datetime = Utils.MINIMUM_DATE,
         _downloaded: bool = False,
         _location: str = "",
+        _is_shared_album: bool = False,
     ):
         super(DatabaseMedia, self).__init__()
         self._id = _id
@@ -69,6 +70,7 @@ class DatabaseMedia(BaseMedia):
         self._create_date = _create_date
         self._downloaded = _downloaded
         self._location = _location
+        self._is_shared_album = _is_shared_album
 
     # this is used to replace meta data that has been extracted from the
     # file system and overrides that provided by Google API

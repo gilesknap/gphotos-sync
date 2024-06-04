@@ -74,7 +74,10 @@ class Authorize:
     def save_token(self, token: str):
         with self.token_file.open("w") as stream:
             dump(token, stream)
-        self.token_file.chmod(0o600)
+        try:
+            self.token_file.chmod(0o600)
+        except (PermissionError,):
+            log.warning("Could not change permissions of the token file")
 
     def authorize(self):
         """Initiates OAuth2 authentication and authorization flow"""

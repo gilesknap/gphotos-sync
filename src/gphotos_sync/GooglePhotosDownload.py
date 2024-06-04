@@ -282,13 +282,16 @@ class GooglePhotosDownload(object):
             response.close()
             t_path.rename(local_full_path)
             create_date = Utils.safe_timestamp(media_item.create_date)
-            os.utime(
-                str(local_full_path),
-                (
-                    Utils.safe_timestamp(media_item.modify_date).timestamp(),
-                    create_date.timestamp(),
-                ),
-            )
+            try:
+                os.utime(
+                    str(local_full_path),
+                    (
+                        Utils.safe_timestamp(media_item.modify_date).timestamp(),
+                        create_date.timestamp(),
+                    ),
+                )
+            except (PermissionError,):
+                log.debug("Could not set times for downloaded file")
             if _use_win_32:
                 file_handle = win32file.CreateFile(
                     str(local_full_path),
@@ -301,7 +304,10 @@ class GooglePhotosDownload(object):
                 )
                 win32file.SetFileTime(file_handle, *(create_date,) * 3)
                 file_handle.close()
-            os.chmod(str(local_full_path), 0o666 & ~self.current_umask)
+            try:
+                os.chmod(str(local_full_path), 0o666 & ~self.current_umask)
+            except (PermissionError,):
+                log.debug("Could not set file access rights for downloaded file")
         except KeyboardInterrupt:
             log.debug("User cancelled download thread")
             raise

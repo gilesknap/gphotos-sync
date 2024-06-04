@@ -346,8 +346,8 @@ class LocalData:
 
         query = """
         SELECT SyncFiles.Path, SyncFiles.Filename, Albums.AlbumName,
-        Albums.StartDate, Albums.EndDate, Albums.RemoteId, SyncFiles.CreateDate
-        FROM AlbumFiles
+        Albums.StartDate, Albums.EndDate, Albums.RemoteId, SyncFiles.CreateDate,
+        Albums.IsSharedAlbum FROM AlbumFiles
         INNER JOIN SyncFiles ON AlbumFiles.DriveRec=SyncFiles.RemoteId
         INNER JOIN Albums ON AlbumFiles.AlbumRec=Albums.RemoteId
         WHERE Albums.RemoteId LIKE ?
