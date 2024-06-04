@@ -3,6 +3,7 @@ import logging
 import os
 import sys
 from argparse import ArgumentParser, Namespace
+from configparser import ConfigParser
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -69,6 +70,13 @@ class GooglePhotosSyncMain:
         "--version",
         action="store_true",
         help="report version and exit",
+    )
+    parser.add_argument(
+        "-c",
+        "--conf",
+        action="store",
+        help="use the .ini configuration file to initialise arguments. "
+        "Command line provided arguments will superceed the ones in the config file",
     )
     parser.add_argument(
         "root_folder",
@@ -486,6 +494,28 @@ class GooglePhotosSyncMain:
                 self.parser.print_help()
                 print("\nERROR: Please supply root_folder in which to save photos")
                 exit(1)
+
+        if args.conf is not None:
+            if not Path(args.conf).exists():
+                print("\nERROR: Provided config file does not exist")
+                exit(1)
+            config = ConfigParser()
+            config.read(args.conf)
+            # we need to use our own dict to store the options as ConfigParser config
+            #  object does not support storing booleans
+            options = {}
+
+            for key in config["GENERAL"]:
+                # overload and convert "true" and "false" strings to booleans
+                if config.get("GENERAL", key).lower() in ["true", "false"]:
+                    options[key] = config.getboolean("GENERAL", key)  # type: ignore
+                else:
+                    options[key] = config.get("GENERAL", key)  # type: ignore
+
+            self.parser.set_defaults(**options)
+
+        # overload the options provided in the .ini file with ones in command line
+        args = self.parser.parse_args(test_args)  # type: ignore
 
         root_folder = Path(args.root_folder).absolute()
         db_path = Path(args.db_path) if args.db_path else root_folder
