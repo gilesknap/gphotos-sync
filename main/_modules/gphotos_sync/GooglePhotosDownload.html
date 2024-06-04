@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>gphotos_sync.GooglePhotosDownload &mdash; gphotos-sync 3.2.3.dev4+g9ce7e64 documentation</title>
+  <title>gphotos_sync.GooglePhotosDownload &mdash; gphotos-sync 3.2.4.dev2+g2c70af9 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
@@ -17,7 +17,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=caccd44f"></script>
+        <script src="../../_static/documentation_options.js?v=4d241428"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -400,13 +400,16 @@
             <span class="n">response</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
             <span class="n">t_path</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">local_full_path</span><span class="p">)</span>
             <span class="n">create_date</span> <span class="o">=</span> <span class="n">Utils</span><span class="o">.</span><span class="n">safe_timestamp</span><span class="p">(</span><span class="n">media_item</span><span class="o">.</span><span class="n">create_date</span><span class="p">)</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">utime</span><span class="p">(</span>
-                <span class="nb">str</span><span class="p">(</span><span class="n">local_full_path</span><span class="p">),</span>
-                <span class="p">(</span>
-                    <span class="n">Utils</span><span class="o">.</span><span class="n">safe_timestamp</span><span class="p">(</span><span class="n">media_item</span><span class="o">.</span><span class="n">modify_date</span><span class="p">)</span><span class="o">.</span><span class="n">timestamp</span><span class="p">(),</span>
-                    <span class="n">create_date</span><span class="o">.</span><span class="n">timestamp</span><span class="p">(),</span>
-                <span class="p">),</span>
-            <span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">utime</span><span class="p">(</span>
+                    <span class="nb">str</span><span class="p">(</span><span class="n">local_full_path</span><span class="p">),</span>
+                    <span class="p">(</span>
+                        <span class="n">Utils</span><span class="o">.</span><span class="n">safe_timestamp</span><span class="p">(</span><span class="n">media_item</span><span class="o">.</span><span class="n">modify_date</span><span class="p">)</span><span class="o">.</span><span class="n">timestamp</span><span class="p">(),</span>
+                        <span class="n">create_date</span><span class="o">.</span><span class="n">timestamp</span><span class="p">(),</span>
+                    <span class="p">),</span>
+                <span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">PermissionError</span><span class="p">,):</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Could not set times for downloaded file&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">_use_win_32</span><span class="p">:</span>
                 <span class="n">file_handle</span> <span class="o">=</span> <span class="n">win32file</span><span class="o">.</span><span class="n">CreateFile</span><span class="p">(</span>
                     <span class="nb">str</span><span class="p">(</span><span class="n">local_full_path</span><span class="p">),</span>
@@ -419,7 +422,10 @@
                 <span class="p">)</span>
                 <span class="n">win32file</span><span class="o">.</span><span class="n">SetFileTime</span><span class="p">(</span><span class="n">file_handle</span><span class="p">,</span> <span class="o">*</span><span class="p">(</span><span class="n">create_date</span><span class="p">,)</span> <span class="o">*</span> <span class="mi">3</span><span class="p">)</span>
                 <span class="n">file_handle</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">chmod</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">local_full_path</span><span class="p">),</span> <span class="mo">0o666</span> <span class="o">&amp;</span> <span class="o">~</span><span class="bp">self</span><span class="o">.</span><span class="n">current_umask</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">chmod</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">local_full_path</span><span class="p">),</span> <span class="mo">0o666</span> <span class="o">&amp;</span> <span class="o">~</span><span class="bp">self</span><span class="o">.</span><span class="n">current_umask</span><span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">PermissionError</span><span class="p">,):</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Could not set file access rights for downloaded file&quot;</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
             <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;User cancelled download thread&quot;</span><span class="p">)</span>
             <span class="k">raise</span>
