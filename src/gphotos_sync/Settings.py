@@ -23,6 +23,7 @@ class Settings:
     use_flat_path: bool
 
     albums_path: Path
+    shared_albums_path: Path
     album_index: bool
     omit_album_date: bool
     album_invert: bool

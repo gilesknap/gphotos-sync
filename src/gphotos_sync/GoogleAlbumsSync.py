@@ -43,9 +43,17 @@ class GoogleAlbumsSync(object):
         """
         self._photos_folder = settings.photos_path
         self._albums_folder = settings.albums_path
+        self._shared_albums_folder = settings.shared_albums_path
 
         self._root_folder: Path = root_folder
-        self._links_root = self._root_folder / self._albums_folder
+        if not self._albums_folder.is_absolute():
+            self._albums_root = self._root_folder / self._albums_folder
+        else:
+            self._albums_root = self._albums_folder
+        if not self._shared_albums_folder.is_absolute():
+            self._shared_albums_root = self._root_folder / self._shared_albums_folder
+        else:
+            self._shared_albums_root = self._shared_albums_folder
         self._photos_root = self._root_folder / self._photos_folder
         self._db: LocalData = db
         self._api: RestClient = api
@@ -224,7 +232,12 @@ class GoogleAlbumsSync(object):
                     # write the album data down now we know the contents'
                     # date range
                     gar = GoogleAlbumsRow.from_parm(
-                        album.id, album.filename, album.size, first_date, last_date
+                        album.id,
+                        album.filename,
+                        album.size,
+                        first_date,
+                        last_date,
+                        {"albums": False, "sharedAlbums": True}.get(item_key),
                     )
                     self._db.put_row(gar, update=indexed_album)
 
@@ -239,7 +252,7 @@ class GoogleAlbumsSync(object):
         log.warning("Indexed %d %s", count, description)
 
     def album_folder_name(
-        self, album_name: str, start_date: datetime, end_date: datetime
+        self, album_name: str, start_date: datetime, end_date: datetime, shared: bool
     ) -> Path:
         album_name = get_check().valid_file_name(album_name)
         if self._omit_album_date:
@@ -259,7 +272,11 @@ class GoogleAlbumsSync(object):
                 fmt = self.path_format or "{0} {1}"
                 rel_path = str(Path(year) / fmt.format(month, album_name))
 
-        link_folder: Path = self._links_root / rel_path
+        link_folder: Path
+        if shared:
+            link_folder = self._shared_albums_root / rel_path
+        else:
+            link_folder = self._albums_root / rel_path
         return link_folder
 
     def create_album_content_links(self):
@@ -271,10 +288,13 @@ class GoogleAlbumsSync(object):
         # always re-create all album links - it is quite fast and a good way
         # to ensure consistency
         # especially now that we have --album-date-by-first-photo
-        if self._links_root.exists():
+        if self._albums_root.exists():
             log.debug("removing previous album links tree")
-            shutil.rmtree(self._links_root)
-        re_download = not self._links_root.exists()
+            shutil.rmtree(self._albums_root)
+        if self._shared_albums_root.exists():
+            log.debug("removing previous shared album links tree")
+            shutil.rmtree(self._shared_albums_root)
+        re_download = not self._albums_root.exists()
 
         for (
             path,
@@ -284,6 +304,7 @@ class GoogleAlbumsSync(object):
             end_date_str,
             rid,
             created,
+            sharedAlbum,
         ) in self._db.get_album_files(
             album_invert=self._album_invert, download_again=re_download
         ):
@@ -308,7 +329,9 @@ class GoogleAlbumsSync(object):
 
             full_file_name = self._root_folder / path / file_name
 
-            link_folder: Path = self.album_folder_name(album_name, start_date, end_date)
+            link_folder: Path = self.album_folder_name(
+                album_name, start_date, end_date, sharedAlbum
+            )
 
             if self._no_album_sorting:
                 link_filename = "{}".format(file_name)
