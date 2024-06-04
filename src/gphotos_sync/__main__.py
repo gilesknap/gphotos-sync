@@ -148,6 +148,11 @@ class GooglePhotosSyncMain:
         "photo. The default is its last photo",
     )
     parser.add_argument(
+        "--no-album-sorting",
+        action="store_true",
+        help="Remove prefix in photo filename inside the album folders",
+    )
+    parser.add_argument(
         "--start-date",
         help="Set the earliest date of files to sync" "format YYYY-MM-DD",
         default=None,
@@ -380,6 +385,7 @@ class GooglePhotosSyncMain:
             path_format=args.path_format,
             image_timeout=args.image_timeout,
             video_timeout=args.video_timeout,
+            no_album_sorting=args.no_album_sorting,
         )
 
         self.google_photos_client = RestClient(

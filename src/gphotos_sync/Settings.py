@@ -26,6 +26,7 @@ class Settings:
     album_index: bool
     omit_album_date: bool
     album_invert: bool
+    no_album_sorting: bool
     album: str
     album_regex: str
     shared_albums: bool
