@@ -135,4 +135,4 @@ select = [
 skip = '.git*,*.css'
 check-hidden = true
 # ignore-regex = ''
-# ignore-words-list = ''
+ignore-words-list = 'implementors'
