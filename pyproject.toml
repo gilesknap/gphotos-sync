@@ -76,7 +76,7 @@ filterwarnings = [
     "error",
     "ignore:.*socket.*:ResourceWarning",
     # this deprecation is rather serious for gphotos-sync as it relies on sqlite
-    # doing date conversion quite heavily - will ignore the deprection for now
+    # doing date conversion quite heavily - will ignore the deprecation for now
     # DeprecationWarning: The default datetime adapter is deprecated as of Python 3.12;
     "ignore:.*sqlite3.*:DeprecationWarning:",
     # like the above

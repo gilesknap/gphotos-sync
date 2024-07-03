@@ -130,7 +130,7 @@ class Checks:
         except BaseException:
             # for failures choose a safe size for Windows filesystems
             log.info(
-                f"cant determine max filepath length, defaulting to " f"{max_length}"
+                f"can't determine max filepath length, defaulting to " f"{max_length}"
             )
         log.info("Max Path Length: %d" % max_length)
         return max_length
@@ -145,7 +145,7 @@ class Checks:
             # for failures choose a safe size for Windows filesystems
             max_filename = 248
             log.info(
-                f"cant determine max filename length, " f"defaulting to {max_filename}"
+                f"can't determine max filename length, " f"defaulting to {max_filename}"
             )
         log.info("Max filename length: %d" % max_filename)
         return max_filename

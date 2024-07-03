@@ -13,5 +13,5 @@ Google Photos Library in the cloud. There are two primary reasons for this:
 
 - Even if the API allowed it, this would be a very hard problem, because
   it is often hard to identify if a local photo or video matches one in the 
-  cloud. Besides this, I would not want the resposibility of potentially 
+  cloud. Besides this, I would not want the responsibility of potentially 
   trashing someone's photo collection. 
