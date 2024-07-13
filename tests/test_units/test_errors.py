@@ -66,7 +66,7 @@ class TestErrors(TestCase):
             bad_file.unlink()
         with pytest.raises(SystemExit) as test_wrapped_e:
             a = auth.Authorize(scope, bad_file, bad_file)
-        assert test_wrapped_e.type == SystemExit
+        assert test_wrapped_e.type is SystemExit
 
         a = auth.Authorize(scope, bad_file, secrets_file)
         res = a.load_token()
