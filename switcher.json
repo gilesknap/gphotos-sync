@@ -60,6 +60,10 @@
     "url": "https://gilesknap.github.io/gphotos-sync/3.1.1/"
   },
   {
+    "version": "codespell",
+    "url": "https://gilesknap.github.io/gphotos-sync/codespell/"
+  },
+  {
     "version": "fix-pr",
     "url": "https://gilesknap.github.io/gphotos-sync/fix-pr/"
   },

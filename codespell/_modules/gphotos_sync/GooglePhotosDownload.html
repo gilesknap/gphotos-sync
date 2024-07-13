@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gphotos_sync.GooglePhotosDownload &mdash; gphotos-sync 3.2.5.dev5+g551c44c documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+      <link rel="stylesheet" type="text/css" href="../../_static/theme_overrides.css?v=e20ccd95" />
+
+  
+    <link rel="shortcut icon" href="../../_static/logo.png"/>
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=02b7ae33"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            gphotos-sync
+              <img src="../../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                main
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/installation.html">Initial Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/installation.html#execute-in-a-container">Execute in a container</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/installation.html#local-installation">Local Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/installation.html#running-gphotos-sync">Running gphotos-sync</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/oauth2.html">Creating an OAuth Client ID</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/login.html">User Login OAuth Flow</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">How-to Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../how-to/windows.html">Additional Setup for Windows Machines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../how-to/windows.html#initial-setup-on-windows-for-docker-desktop">Initial Setup on Windows for Docker desktop</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../how-to/cron.html">Scheduling a Regular Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../how-to/comparison.html">Comparing The Google Photos Library With Local files</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Explanations</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../explanations/folders.html">Folder Layout</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../explanations/notes.html">Why is Google Photos Sync Read Only</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../explanations/tokens.html">Google OAuth Tokens for gphotos-sync</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../explanations/googleapiissues.html">Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/api.html">API</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/gilesknap/gphotos-sync/releases">Releases</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">gphotos-sync</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">gphotos_sync.GooglePhotosDownload</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for gphotos_sync.GooglePhotosDownload</h1><div class="highlight"><pre>
+<span></span><span class="c1"># type: ignore</span>
+<span class="c1"># lots of typing issues in this file, partly due to use of asyncIO Future</span>
+<span class="c1"># and concurrent Future - TODO: for reviewimport concurrent.futures as futures</span>
+<span class="kn">import</span> <span class="nn">concurrent.futures</span> <span class="k">as</span> <span class="nn">futures</span>
+<span class="kn">import</span> <span class="nn">errno</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+<span class="kn">from</span> <span class="nn">asyncio</span> <span class="kn">import</span> <span class="n">Future</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">zip_longest</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">from</span> <span class="nn">requests.adapters</span> <span class="kn">import</span> <span class="n">HTTPAdapter</span>
+<span class="kn">from</span> <span class="nn">requests.exceptions</span> <span class="kn">import</span> <span class="n">RequestException</span>
+<span class="kn">from</span> <span class="nn">urllib3.util.retry</span> <span class="kn">import</span> <span class="n">Retry</span>
+
+<span class="kn">from</span> <span class="nn">gphotos_sync</span> <span class="kn">import</span> <span class="n">Utils</span>
+<span class="kn">from</span> <span class="nn">gphotos_sync.BadIds</span> <span class="kn">import</span> <span class="n">BadIds</span>
+<span class="kn">from</span> <span class="nn">gphotos_sync.DatabaseMedia</span> <span class="kn">import</span> <span class="n">DatabaseMedia</span>
+<span class="kn">from</span> <span class="nn">gphotos_sync.GooglePhotosRow</span> <span class="kn">import</span> <span class="n">GooglePhotosRow</span>
+<span class="kn">from</span> <span class="nn">gphotos_sync.LocalData</span> <span class="kn">import</span> <span class="n">LocalData</span>
+<span class="kn">from</span> <span class="nn">gphotos_sync.restclient</span> <span class="kn">import</span> <span class="n">RestClient</span>
+
+<span class="kn">from</span> <span class="nn">.Settings</span> <span class="kn">import</span> <span class="n">Settings</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">win32con</span>  <span class="c1"># type: ignore</span>
+    <span class="kn">import</span> <span class="nn">win32file</span>  <span class="c1"># type: ignore</span>
+
+    <span class="n">_use_win_32</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">win32file</span><span class="p">,</span> <span class="n">win32con</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+    <span class="n">_use_win_32</span> <span class="o">=</span> <span class="kc">False</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="GooglePhotosDownload">
+<a class="viewcode-back" href="../../reference/api.html#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload">[docs]</a>
+<span class="k">class</span> <span class="nc">GooglePhotosDownload</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A Class for managing the indexing and download of Google Photos&quot;&quot;&quot;</span>
+
+    <span class="n">PAGE_SIZE</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span>
+    <span class="n">BATCH_SIZE</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">40</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">api</span><span class="p">:</span> <span class="n">RestClient</span><span class="p">,</span> <span class="n">root_folder</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">db</span><span class="p">:</span> <span class="n">LocalData</span><span class="p">,</span> <span class="n">settings</span><span class="p">:</span> <span class="n">Settings</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters:</span>
+<span class="sd">            api: object representing the Google REST API</span>
+<span class="sd">            root_folder: path to the root of local file synchronization</span>
+<span class="sd">            db: local database for indexing</span>
+<span class="sd">            settings: further arguments</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="p">:</span> <span class="n">LocalData</span> <span class="o">=</span> <span class="n">db</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_root_folder</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">root_folder</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_api</span><span class="p">:</span> <span class="n">RestClient</span> <span class="o">=</span> <span class="n">api</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">files_downloaded</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">files_download_started</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">files_download_skipped</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">files_download_failed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span> <span class="o">=</span> <span class="n">settings</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_threads</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">max_threads</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_date</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">start_date</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">end_date</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">end_date</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">retry_download</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">retry_download</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">case_insensitive_fs</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">case_insensitive_fs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">video_timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">video_timeout</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">image_timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">image_timeout</span>
+
+        <span class="c1"># attributes related to multi-threaded download</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">download_pool</span> <span class="o">=</span> <span class="n">futures</span><span class="o">.</span><span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_threads</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pool_future_to_media</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Future</span><span class="p">,</span> <span class="n">DatabaseMedia</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bad_ids</span> <span class="o">=</span> <span class="n">BadIds</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_root_folder</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_umask</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">umask</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">umask</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_umask</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_session</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span>
+        <span class="c1"># define the retry behaviour for each connection. Note that</span>
+        <span class="c1"># respect_retry_after_header=True means that status codes [413, 429, 503]</span>
+        <span class="c1"># will backoff for the recommended period defined in the retry after header</span>
+        <span class="n">retries</span> <span class="o">=</span> <span class="n">Retry</span><span class="p">(</span>
+            <span class="n">total</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">max_retries</span><span class="p">,</span>
+            <span class="n">backoff_factor</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+            <span class="n">status_forcelist</span><span class="o">=</span><span class="p">[</span><span class="mi">500</span><span class="p">,</span> <span class="mi">502</span><span class="p">,</span> <span class="mi">503</span><span class="p">,</span> <span class="mi">504</span><span class="p">,</span> <span class="mi">509</span><span class="p">,</span> <span class="mi">429</span><span class="p">],</span>
+            <span class="n">allowed_methods</span><span class="o">=</span><span class="nb">frozenset</span><span class="p">([</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="s2">&quot;POST&quot;</span><span class="p">]),</span>
+            <span class="n">raise_on_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">respect_retry_after_header</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="o">.</span><span class="n">mount</span><span class="p">(</span>
+            <span class="s2">&quot;https://&quot;</span><span class="p">,</span> <span class="n">HTTPAdapter</span><span class="p">(</span><span class="n">max_retries</span><span class="o">=</span><span class="n">retries</span><span class="p">,</span> <span class="n">pool_maxsize</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_threads</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<div class="viewcode-block" id="GooglePhotosDownload.download_photo_media">
+<a class="viewcode-back" href="../../reference/api.html#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.download_photo_media">[docs]</a>
+    <span class="k">def</span> <span class="nf">download_photo_media</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        here we batch up our requests to get base url for downloading media.</span>
+<span class="sd">        This avoids the overhead of one REST call per file. A REST call</span>
+<span class="sd">        takes longer than downloading an image</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">grouper</span><span class="p">(</span>
+            <span class="n">iterable</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">DatabaseMedia</span><span class="p">],</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">DatabaseMedia</span><span class="p">]]:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Collect data into chunks size BATCH_SIZE&quot;&quot;&quot;</span>
+            <span class="k">return</span> <span class="n">zip_longest</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="nb">iter</span><span class="p">(</span><span class="n">iterable</span><span class="p">)]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">BATCH_SIZE</span><span class="p">,</span> <span class="n">fillvalue</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">retry_download</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">files_download_skipped</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">downloaded_count</span><span class="p">()</span>
+
+        <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Downloading Photos ...&quot;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">media_items_block</span> <span class="ow">in</span> <span class="n">grouper</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">get_rows_by_search</span><span class="p">(</span>
+                    <span class="n">GooglePhotosRow</span><span class="p">,</span>
+                    <span class="n">start_date</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">start_date</span><span class="p">,</span>
+                    <span class="n">end_date</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">end_date</span><span class="p">,</span>
+                    <span class="n">skip_downloaded</span><span class="o">=</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">retry_download</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">):</span>
+                <span class="n">batch</span> <span class="o">=</span> <span class="p">{}</span>
+
+                <span class="n">items</span> <span class="o">=</span> <span class="p">(</span><span class="n">mi</span> <span class="k">for</span> <span class="n">mi</span> <span class="ow">in</span> <span class="n">media_items_block</span> <span class="k">if</span> <span class="n">mi</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">media_item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">case_insensitive_fs</span><span class="p">:</span>
+                        <span class="n">relative_folder</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">media_item</span><span class="o">.</span><span class="n">relative_folder</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                        <span class="n">filename</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">media_item</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">relative_folder</span> <span class="o">=</span> <span class="n">media_item</span><span class="o">.</span><span class="n">relative_folder</span>
+                        <span class="n">filename</span> <span class="o">=</span> <span class="n">media_item</span><span class="o">.</span><span class="n">filename</span>
+                    <span class="n">local_folder</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root_folder</span> <span class="o">/</span> <span class="n">relative_folder</span>
+                    <span class="n">local_full_path</span> <span class="o">=</span> <span class="n">local_folder</span> <span class="o">/</span> <span class="n">filename</span>
+
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">local_full_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">files_download_skipped</span> <span class="o">+=</span> <span class="mi">1</span>
+                            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                                <span class="s2">&quot;SKIPPED download (file exists) </span><span class="si">%d</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">files_download_skipped</span><span class="p">,</span>
+                                <span class="n">media_item</span><span class="o">.</span><span class="n">relative_path</span><span class="p">,</span>
+                            <span class="p">)</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">put_downloaded</span><span class="p">(</span><span class="n">media_item</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+
+                        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">bad_ids</span><span class="o">.</span><span class="n">check_id_ok</span><span class="p">(</span><span class="n">media_item</span><span class="o">.</span><span class="n">id</span><span class="p">):</span>
+                            <span class="n">batch</span><span class="p">[</span><span class="n">media_item</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">media_item</span>
+                            <span class="k">if</span> <span class="ow">not</span> <span class="n">local_folder</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+                                <span class="n">local_folder</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+                    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                        <span class="c1"># skip files with filenames too long for this OS.</span>
+                        <span class="c1"># probably thrown by local_full_path.exists().</span>
+                        <span class="n">errname</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">err</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
+                        <span class="k">if</span> <span class="n">errname</span> <span class="o">==</span> <span class="s2">&quot;OSError&quot;</span> <span class="ow">and</span> <span class="p">(</span>
+                            <span class="n">err</span><span class="o">.</span><span class="n">errno</span> <span class="o">==</span> <span class="n">errno</span><span class="o">.</span><span class="n">ENAMETOOLONG</span>  <span class="c1"># type: ignore</span>
+                        <span class="p">):</span>
+                            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                                <span class="s2">&quot;SKIPPED file because name is too long for this OS </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                                <span class="n">local_full_path</span><span class="p">,</span>
+                            <span class="p">)</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">files_download_failed</span> <span class="o">+=</span> <span class="mi">1</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="c1"># re-raise other errors</span>
+                            <span class="k">raise</span>
+
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">download_batch</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="c1"># allow any remaining background downloads to complete</span>
+            <span class="n">futures_left</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pool_future_to_media</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">do_download_complete</span><span class="p">(</span><span class="n">futures_left</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;Downloaded </span><span class="si">%d</span><span class="s2"> Items, Failed </span><span class="si">%d</span><span class="s2">, Already Downloaded </span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">files_downloaded</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">files_download_failed</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">files_download_skipped</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bad_ids</span><span class="o">.</span><span class="n">store_ids</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bad_ids</span><span class="o">.</span><span class="n">report</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">files_downloaded</span></div>
+
+
+<div class="viewcode-block" id="GooglePhotosDownload.download_batch">
+<a class="viewcode-back" href="../../reference/api.html#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.download_batch">[docs]</a>
+    <span class="k">def</span> <span class="nf">download_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DatabaseMedia</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Downloads a batch of media items collected in download_photo_media.</span>
+
+<span class="sd">        A fresh &#39;base_url&#39; is required since they have limited lifespan and</span>
+<span class="sd">        these are obtained by a single call to the service function</span>
+<span class="sd">        mediaItems.batchGet.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api</span><span class="o">.</span><span class="n">mediaItems</span><span class="o">.</span><span class="n">batchGet</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">mediaItemIds</span><span class="o">=</span><span class="n">batch</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+            <span class="n">r_json</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">r_json</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pageToken&quot;</span><span class="p">):</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Ops - Batch size too big, some items dropped!&quot;</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">r_json</span><span class="p">[</span><span class="s2">&quot;mediaItemResults&quot;</span><span class="p">]):</span>
+                <span class="n">media_item_json</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mediaItem&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">media_item_json</span><span class="p">:</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Null response in mediaItems.batchGet </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">batch</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                        <span class="s2">&quot;Null response in mediaItems.batchGet&quot;</span>
+                        <span class="s2">&quot;for item </span><span class="si">%d</span><span class="s2"> in</span><span class="se">\n\n</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="se">\n\n</span><span class="s2"> which is </span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                        <span class="n">i</span><span class="p">,</span>
+                        <span class="nb">str</span><span class="p">(</span><span class="n">r_json</span><span class="p">),</span>
+                        <span class="nb">str</span><span class="p">(</span><span class="n">result</span><span class="p">),</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">media_item</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">media_item_json</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">])</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">download_file</span><span class="p">(</span><span class="n">media_item</span><span class="p">,</span> <span class="n">media_item_json</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">RequestException</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">find_bad_items</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Cancelling download threads ...&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool_future_to_media</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
+            <span class="n">futures</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pool_future_to_media</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Cancelled download threads&quot;</span><span class="p">)</span>
+            <span class="k">raise</span></div>
+
+
+<div class="viewcode-block" id="GooglePhotosDownload.download_file">
+<a class="viewcode-back" href="../../reference/api.html#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.download_file">[docs]</a>
+    <span class="k">def</span> <span class="nf">download_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">media_item</span><span class="p">:</span> <span class="n">DatabaseMedia</span><span class="p">,</span> <span class="n">media_json</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;farms a single media download off to the thread pool.</span>
+
+<span class="sd">        Uses a dictionary of Futures -&gt; mediaItem to track downloads that are</span>
+<span class="sd">        currently scheduled/running. When a Future is done it calls</span>
+<span class="sd">        do_download_complete to remove the Future from the dictionary and</span>
+<span class="sd">        complete processing of the media item.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">base_url</span> <span class="o">=</span> <span class="n">media_json</span><span class="p">[</span><span class="s2">&quot;baseUrl&quot;</span><span class="p">]</span>
+
+        <span class="c1"># we dont want a massive queue so wait until at least one thread is free</span>
+        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pool_future_to_media</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_threads</span><span class="p">:</span>
+            <span class="c1"># check which futures are done, complete the main thread work</span>
+            <span class="c1"># and remove them from the dictionary</span>
+            <span class="n">done_list</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">future</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool_future_to_media</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">future</span><span class="o">.</span><span class="n">done</span><span class="p">():</span>
+                    <span class="n">done_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">future</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">do_download_complete</span><span class="p">(</span><span class="n">done_list</span><span class="p">)</span>
+
+        <span class="c1"># start a new background download</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">files_download_started</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;downloading </span><span class="si">%d</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">files_download_started</span><span class="p">,</span> <span class="n">media_item</span><span class="o">.</span><span class="n">relative_path</span>
+        <span class="p">)</span>
+        <span class="n">future</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">download_pool</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">do_download_file</span><span class="p">,</span> <span class="n">base_url</span><span class="p">,</span> <span class="n">media_item</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pool_future_to_media</span><span class="p">[</span><span class="n">future</span><span class="p">]</span> <span class="o">=</span> <span class="n">media_item</span></div>
+
+
+<div class="viewcode-block" id="GooglePhotosDownload.do_download_file">
+<a class="viewcode-back" href="../../reference/api.html#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.do_download_file">[docs]</a>
+    <span class="k">def</span> <span class="nf">do_download_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">media_item</span><span class="p">:</span> <span class="n">DatabaseMedia</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Runs in a process pool and does a download of a single media item.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">case_insensitive_fs</span><span class="p">:</span>
+            <span class="n">relative_folder</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">media_item</span><span class="o">.</span><span class="n">relative_folder</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">media_item</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">relative_folder</span> <span class="o">=</span> <span class="n">media_item</span><span class="o">.</span><span class="n">relative_folder</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">media_item</span><span class="o">.</span><span class="n">filename</span>
+        <span class="n">local_folder</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root_folder</span> <span class="o">/</span> <span class="n">relative_folder</span>
+        <span class="n">local_full_path</span> <span class="o">=</span> <span class="n">local_folder</span> <span class="o">/</span> <span class="n">filename</span>
+
+        <span class="k">if</span> <span class="n">media_item</span><span class="o">.</span><span class="n">is_video</span><span class="p">:</span>
+            <span class="n">download_url</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">=dv&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">base_url</span><span class="p">)</span>
+            <span class="n">timeout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">video_timeout</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">download_url</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">=d&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">base_url</span><span class="p">)</span>
+            <span class="n">timeout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_timeout</span>
+        <span class="n">temp_file</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="nb">dir</span><span class="o">=</span><span class="n">local_folder</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">t_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">temp_file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">download_url</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+            <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">copyfileobj</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">raw</span><span class="p">,</span> <span class="n">temp_file</span><span class="p">)</span>
+            <span class="n">temp_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">temp_file</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">response</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">t_path</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">local_full_path</span><span class="p">)</span>
+            <span class="n">create_date</span> <span class="o">=</span> <span class="n">Utils</span><span class="o">.</span><span class="n">safe_timestamp</span><span class="p">(</span><span class="n">media_item</span><span class="o">.</span><span class="n">create_date</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">utime</span><span class="p">(</span>
+                    <span class="nb">str</span><span class="p">(</span><span class="n">local_full_path</span><span class="p">),</span>
+                    <span class="p">(</span>
+                        <span class="n">Utils</span><span class="o">.</span><span class="n">safe_timestamp</span><span class="p">(</span><span class="n">media_item</span><span class="o">.</span><span class="n">modify_date</span><span class="p">)</span><span class="o">.</span><span class="n">timestamp</span><span class="p">(),</span>
+                        <span class="n">create_date</span><span class="o">.</span><span class="n">timestamp</span><span class="p">(),</span>
+                    <span class="p">),</span>
+                <span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">PermissionError</span><span class="p">,):</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Could not set times for downloaded file&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">_use_win_32</span><span class="p">:</span>
+                <span class="n">file_handle</span> <span class="o">=</span> <span class="n">win32file</span><span class="o">.</span><span class="n">CreateFile</span><span class="p">(</span>
+                    <span class="nb">str</span><span class="p">(</span><span class="n">local_full_path</span><span class="p">),</span>
+                    <span class="n">win32file</span><span class="o">.</span><span class="n">GENERIC_WRITE</span><span class="p">,</span>
+                    <span class="mi">0</span><span class="p">,</span>
+                    <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">win32con</span><span class="o">.</span><span class="n">OPEN_EXISTING</span><span class="p">,</span>
+                    <span class="mi">0</span><span class="p">,</span>
+                    <span class="kc">None</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">win32file</span><span class="o">.</span><span class="n">SetFileTime</span><span class="p">(</span><span class="n">file_handle</span><span class="p">,</span> <span class="o">*</span><span class="p">(</span><span class="n">create_date</span><span class="p">,)</span> <span class="o">*</span> <span class="mi">3</span><span class="p">)</span>
+                <span class="n">file_handle</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">chmod</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">local_full_path</span><span class="p">),</span> <span class="mo">0o666</span> <span class="o">&amp;</span> <span class="o">~</span><span class="bp">self</span><span class="o">.</span><span class="n">current_umask</span><span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">PermissionError</span><span class="p">,):</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Could not set file access rights for downloaded file&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;User cancelled download thread&quot;</span><span class="p">)</span>
+            <span class="k">raise</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">temp_file</span><span class="p">:</span>
+                <span class="n">temp_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">t_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="n">t_path</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="GooglePhotosDownload.do_download_complete">
+<a class="viewcode-back" href="../../reference/api.html#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.do_download_complete">[docs]</a>
+    <span class="k">def</span> <span class="nf">do_download_complete</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">futures_list</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span>
+            <span class="n">Mapping</span><span class="p">[</span><span class="n">futures</span><span class="o">.</span><span class="n">Future</span><span class="p">,</span> <span class="n">DatabaseMedia</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">futures</span><span class="o">.</span><span class="n">Future</span><span class="p">]</span>
+        <span class="p">],</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;runs in the main thread and completes processing of a media</span>
+<span class="sd">        item once (multi threaded) do_download has completed</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">future</span> <span class="ow">in</span> <span class="n">futures_list</span><span class="p">:</span>
+            <span class="n">media_item</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool_future_to_media</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">future</span><span class="p">)</span>
+            <span class="n">timeout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">video_timeout</span> <span class="k">if</span> <span class="n">media_item</span><span class="o">.</span><span class="n">is_video</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_timeout</span>
+            <span class="n">e</span> <span class="o">=</span> <span class="n">future</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">files_download_failed</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                    <span class="s2">&quot;FAILURE </span><span class="si">%d</span><span class="s2"> downloading </span><span class="si">%s</span><span class="s2"> - </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">files_download_failed</span><span class="p">,</span>
+                    <span class="n">media_item</span><span class="o">.</span><span class="n">relative_path</span><span class="p">,</span>
+                    <span class="n">e</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="c1"># treat API errors as possibly transient. Report them above in</span>
+                <span class="c1"># log.error but do not raise them. Other exceptions will raise</span>
+                <span class="c1"># up to the root handler and abort. Note that all retry logic is</span>
+                <span class="c1"># already handled in urllib3</span>
+
+                <span class="c1"># Items that cause API errors go in a BadIds file which must</span>
+                <span class="c1"># be deleted to retry these items.</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">RequestException</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">bad_ids</span><span class="o">.</span><span class="n">add_id</span><span class="p">(</span>
+                        <span class="n">media_item</span><span class="o">.</span><span class="n">relative_path</span><span class="p">,</span> <span class="n">media_item</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">media_item</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">e</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">e</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">put_downloaded</span><span class="p">(</span><span class="n">media_item</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">files_downloaded</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                    <span class="s2">&quot;COMPLETED </span><span class="si">%d</span><span class="s2"> downloading </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">files_downloaded</span><span class="p">,</span>
+                    <span class="n">media_item</span><span class="o">.</span><span class="n">relative_path</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">progress</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">files_downloaded</span> <span class="o">%</span> <span class="mi">10</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Downloaded </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">files_downloaded</span><span class="si">}</span><span class="s2"> items ...</span><span class="se">\033</span><span class="s2">[F&quot;</span><span class="p">)</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool_future_to_media</span><span class="p">[</span><span class="n">future</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="GooglePhotosDownload.find_bad_items">
+<a class="viewcode-back" href="../../reference/api.html#gphotos_sync.GooglePhotosDownload.GooglePhotosDownload.find_bad_items">[docs]</a>
+    <span class="k">def</span> <span class="nf">find_bad_items</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DatabaseMedia</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        a batch get failed. Now do all of its contents as individual</span>
+<span class="sd">        gets so we can work out which ID(s) cause the failure</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">item_id</span><span class="p">,</span> <span class="n">media_item</span> <span class="ow">in</span> <span class="n">batch</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;BAD ID Retry on </span><span class="si">%s</span><span class="s2"> (</span><span class="si">%s</span><span class="s2">)&quot;</span><span class="p">,</span> <span class="n">item_id</span><span class="p">,</span> <span class="n">media_item</span><span class="o">.</span><span class="n">relative_path</span><span class="p">)</span>
+                <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api</span><span class="o">.</span><span class="n">mediaItems</span><span class="o">.</span><span class="n">get</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">mediaItemId</span><span class="o">=</span><span class="n">item_id</span><span class="p">)</span>
+                <span class="n">media_item_json</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">download_file</span><span class="p">(</span><span class="n">media_item</span><span class="p">,</span> <span class="n">media_item_json</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">RequestException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">bad_ids</span><span class="o">.</span><span class="n">add_id</span><span class="p">(</span>
+                    <span class="nb">str</span><span class="p">(</span><span class="n">media_item</span><span class="o">.</span><span class="n">relative_path</span><span class="p">),</span> <span class="n">media_item</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">media_item</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">e</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">files_download_failed</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                    <span class="s2">&quot;FAILURE </span><span class="si">%d</span><span class="s2"> in get of </span><span class="si">%s</span><span class="s2"> BAD ID&quot;</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">files_download_failed</span><span class="p">,</span>
+                    <span class="n">media_item</span><span class="o">.</span><span class="n">relative_path</span><span class="p">,</span>
+                <span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p></p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+   
+  <div id="other-versions-div" class="rst-versions" data-toggle="rst-versions" role="note" aria-label="Versions" style="visibility: hidden">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      <span class="fa fa-book"> Other Versions</span>
+      main
+      <span class="fa fa-caret-down"></span>
+    </span>
+    <div class="rst-other-versions">
+      <dl id="other-versions-dl"/>
+    </div>
+  </div>
+  <script>
+    function addVersion(name) {
+      var dd = document.createElement("dd");
+      var a = document.createElement("a");
+      a.href = "../../../" + name;
+      a.innerText = name;
+      dd.appendChild(a);
+      document.getElementById('other-versions-dl').appendChild(dd);
+    }
+    // Get versions.txt and add a version for each line
+    fetch("../../../versions.txt").then(response => {
+      if (response.ok) {
+        document.getElementById('other-versions-div').style.visibility = "visible";
+        return response.text().then(text => text.split(/\r?\n/).forEach(addVersion))
+      }
+    });
+  </script>
+
+
+</body>
+</html>
