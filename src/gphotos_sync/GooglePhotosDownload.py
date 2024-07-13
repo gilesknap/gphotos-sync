@@ -15,7 +15,7 @@ from typing import Dict, Iterable, List, Mapping, Union
 
 import requests
 from requests.adapters import HTTPAdapter
-from requests.exceptions import RequestException
+from requests.exceptions import RequestException, Timeout
 from urllib3.util.retry import Retry
 
 from gphotos_sync import Utils
@@ -344,12 +344,16 @@ class GooglePhotosDownload(object):
                 # already handled in urllib3
 
                 # Items that cause API errors go in a BadIds file which must
-                # be deleted to retry these items.
-                if isinstance(e, RequestException):
+                # be deleted to retry these items. Also do this for timeouts
+                # which have been reported as happening on files missing on
+                # the server. See #480 and #488
+                if isinstance(e, RequestException) or isinstance(e, Timeout):
                     self.bad_ids.add_id(
                         media_item.relative_path, media_item.id, media_item.url, e
                     )
                 else:
+                    # don't leave the thread hanging if we are going to raise
+                    del self.pool_future_to_media[future]
                     raise e
             else:
                 self._db.put_downloaded(media_item.id)
