@@ -376,7 +376,7 @@ class GoogleAlbumsSync(object):
                                 follow_symlinks=False,
                             )
                     except PermissionError:
-                        log.debug(f"cant set date on {link_file}")
+                        log.debug(f"can't set date on {link_file}")
 
             except FileExistsError as err:
                 log.info("duplicate link to %s: %s", full_file_name, err)

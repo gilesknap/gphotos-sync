@@ -22,7 +22,7 @@ albums:
     folder. The folder names will be 'albums/YYYY/MM Original Album Name'.
 
 Note that these are the default layouts and you can change what is downloaded
-and how it is layed out with command line options. See the help for details::
+and how it is laid out with command line options. See the help for details::
 
     gphotos-sync --help
 

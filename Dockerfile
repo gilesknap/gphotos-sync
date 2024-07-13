@@ -26,7 +26,7 @@ RUN pip install ${PIP_OPTIONS}
 
 FROM python:3.11-slim as runtime
 
-# Add apt-get system dependecies for runtime here if needed
+# Add apt-get system dependencies for runtime here if needed
 
 # copy the virtual environment from the build stage and put it in PATH
 COPY --from=build /venv/ /venv/

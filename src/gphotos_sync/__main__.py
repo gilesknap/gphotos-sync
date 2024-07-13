@@ -76,7 +76,7 @@ class GooglePhotosSyncMain:
         "--conf",
         action="store",
         help="use the .ini configuration file to initialise arguments. "
-        "Command line provided arguments will superceed the ones in the config file",
+        "Command line provided arguments will supersede the ones in the config file",
     )
     parser.add_argument(
         "root_folder",
@@ -286,7 +286,7 @@ class GooglePhotosSyncMain:
     )
     parser.add_argument(
         "--max-filename",
-        help="Set the maxiumum filename length for target filesystem."
+        help="Set the maximum filename length for target filesystem."
         "This overrides the automatic detection.",
         default=0,
     )

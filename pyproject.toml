@@ -76,7 +76,7 @@ filterwarnings = [
     "error",
     "ignore:.*socket.*:ResourceWarning",
     # this deprecation is rather serious for gphotos-sync as it relies on sqlite
-    # doing date conversion quite heavily - will ignore the deprection for now
+    # doing date conversion quite heavily - will ignore the deprecation for now
     # DeprecationWarning: The default datetime adapter is deprecated as of Python 3.12;
     "ignore:.*sqlite3.*:DeprecationWarning:",
     # like the above
@@ -129,3 +129,10 @@ select = [
     "W",    # pycodestyle warnings - https://beta.ruff.rs/docs/rules/#warning-w
     "I001", # isort
 ]
+
+[tool.codespell]
+# Ref: https://github.com/codespell-project/codespell#using-a-config-file
+skip = '.git*,*.css'
+check-hidden = true
+# ignore-regex = ''
+ignore-words-list = 'implementors'

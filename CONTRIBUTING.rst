@@ -39,7 +39,7 @@ on your workstation as follows::
 
 In both cases tox -p runs in parallel the following checks:
 
-  - Buiild Spinx Documentation
+  - Build Spinx Documentation
   - run pytest on all tests in ./tests
   - run mypy linting on all files in ./src ./tests
   - run pre-commit checks:
