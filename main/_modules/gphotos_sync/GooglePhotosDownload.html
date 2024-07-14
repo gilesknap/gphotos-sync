@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>gphotos_sync.GooglePhotosDownload &mdash; gphotos-sync 3.2.5.dev7+gfdc159d documentation</title>
+  <title>gphotos_sync.GooglePhotosDownload &mdash; gphotos-sync 3.2.5.dev9+g39401af documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
@@ -17,7 +17,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=46a5890e"></script>
+        <script src="../../_static/documentation_options.js?v=34c0dc76"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -120,7 +120,7 @@
 
 <span class="kn">import</span> <span class="nn">requests</span>
 <span class="kn">from</span> <span class="nn">requests.adapters</span> <span class="kn">import</span> <span class="n">HTTPAdapter</span>
-<span class="kn">from</span> <span class="nn">requests.exceptions</span> <span class="kn">import</span> <span class="n">RequestException</span>
+<span class="kn">from</span> <span class="nn">requests.exceptions</span> <span class="kn">import</span> <span class="n">RequestException</span><span class="p">,</span> <span class="n">Timeout</span>
 <span class="kn">from</span> <span class="nn">urllib3.util.retry</span> <span class="kn">import</span> <span class="n">Retry</span>
 
 <span class="kn">from</span> <span class="nn">gphotos_sync</span> <span class="kn">import</span> <span class="n">Utils</span>
@@ -465,12 +465,16 @@
                 <span class="c1"># already handled in urllib3</span>
 
                 <span class="c1"># Items that cause API errors go in a BadIds file which must</span>
-                <span class="c1"># be deleted to retry these items.</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">RequestException</span><span class="p">):</span>
+                <span class="c1"># be deleted to retry these items. Also do this for timeouts</span>
+                <span class="c1"># which have been reported as happening on files missing on</span>
+                <span class="c1"># the server. See #480 and #488</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">RequestException</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">Timeout</span><span class="p">):</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">bad_ids</span><span class="o">.</span><span class="n">add_id</span><span class="p">(</span>
                         <span class="n">media_item</span><span class="o">.</span><span class="n">relative_path</span><span class="p">,</span> <span class="n">media_item</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">media_item</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">e</span>
                     <span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># don&#39;t leave the thread hanging if we are going to raise</span>
+                    <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool_future_to_media</span><span class="p">[</span><span class="n">future</span><span class="p">]</span>
                     <span class="k">raise</span> <span class="n">e</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">put_downloaded</span><span class="p">(</span><span class="n">media_item</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
