@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Google Photos Sync (gphotos-sync) &mdash; gphotos-sync 3.2.5.dev10+g682a3b1 documentation</title>
+  <title>Google Photos Sync (gphotos-sync) &mdash; gphotos-sync 3.2.5.dev11+g63daa0b documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=fd3f3429" />
@@ -18,7 +18,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=f6d7e015"></script>
+        <script src="_static/documentation_options.js?v=2a21682b"></script>
         <script src="_static/doctools.js?v=9a2dae69"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -136,11 +136,15 @@ so there is no risk of damaging your data.</p>
 </section>
 <section id="warning-index-db-schema-change">
 <h1>WARNING: Index DB Schema Change<a class="headerlink" href="#warning-index-db-schema-change" title="Link to this heading"></a></h1>
-<p>v3.4.2 introduces a change to the index database schema in order to distinguish between
-albums and shared albums. You will be required to rebuild your index database when
-upgrading to this version or more recent.</p>
+<p>3.2.4 introduces a change to the index database schema in order to distinguish between
+private albums and shared albums. You will be required to rebuild your index
+database when upgrading to this version or later.</p>
 <p>Please use the command line option <code class="docutils literal notranslate"><span class="pre">--flush-index</span></code> to rebuild the index database.</p>
 <p>This need only be done for the first invocation of the new version.</p>
+<p>If you have not done so you will see the error message:
+<code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">sqlite3.OperationalError:</span> <span class="pre">no</span> <span class="pre">such</span> <span class="pre">column:</span> <span class="pre">IsSharedAlbum</span>
+<span class="pre">`</span></code></p>
 </section>
 <section id="warning-google-api-issues">
 <h1>Warning: Google API Issues<a class="headerlink" href="#warning-google-api-issues" title="Link to this heading"></a></h1>
