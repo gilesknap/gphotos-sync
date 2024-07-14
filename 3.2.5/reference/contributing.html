@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contributing &mdash; gphotos-sync 3.2.5 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+      <link rel="stylesheet" type="text/css" href="../_static/theme_overrides.css?v=e20ccd95" />
+
+  
+    <link rel="shortcut icon" href="../_static/logo.png"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=176445f9"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="API" href="api.html" />
+    <link rel="prev" title="Known Issues" href="../explanations/googleapiissues.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            gphotos-sync
+              <img src="../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                3.2.5
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/installation.html">Initial Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/installation.html#execute-in-a-container">Execute in a container</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/installation.html#local-installation">Local Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/installation.html#running-gphotos-sync">Running gphotos-sync</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/oauth2.html">Creating an OAuth Client ID</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/login.html">User Login OAuth Flow</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">How-to Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../how-to/windows.html">Additional Setup for Windows Machines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-to/windows.html#initial-setup-on-windows-for-docker-desktop">Initial Setup on Windows for Docker desktop</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-to/cron.html">Scheduling a Regular Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-to/comparison.html">Comparing The Google Photos Library With Local files</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Explanations</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../explanations/folders.html">Folder Layout</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explanations/notes.html">Why is Google Photos Sync Read Only</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explanations/tokens.html">Google OAuth Tokens for gphotos-sync</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explanations/googleapiissues.html">Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Contributing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#running-the-tests">Running the tests</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#to-run-in-a-container">To run in a container</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#to-run-locally">To run locally</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#code-styling">Code Styling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#documentation">Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#release-process">Release Process</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#updating-the-tools">Updating the tools</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/gilesknap/gphotos-sync/releases">Releases</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">gphotos-sync</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Contributing</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/reference/contributing.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="contributing">
+<h1>Contributing<a class="headerlink" href="#contributing" title="Link to this heading"></a></h1>
+<p>Contributions and issues are most welcome! All issues and pull requests are
+handled through <a class="reference external" href="https://github.com/gilesknap/gphotos-sync/issues">GitHub</a>. Also, please check for any existing issues before
+filing a new one. If you have a great idea but it involves big changes, please
+file a ticket before making a pull request! We want to make sure you don’t spend
+your time coding something that might not fit the scope of the project.</p>
+<section id="running-the-tests">
+<h2>Running the tests<a class="headerlink" href="#running-the-tests" title="Link to this heading"></a></h2>
+<section id="to-run-in-a-container">
+<h3>To run in a container<a class="headerlink" href="#to-run-in-a-container" title="Link to this heading"></a></h3>
+<p>Use vscode devcontainer as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ git clone git://github.com/gilesknap/gphotos-sync.git
+$ vscode gphotos-sync
+Click on &#39;Reopen in Container&#39; when prompted
+In a vscode Terminal:
+$ tox -p
+</pre></div>
+</div>
+</section>
+<section id="to-run-locally">
+<h3>To run locally<a class="headerlink" href="#to-run-locally" title="Link to this heading"></a></h3>
+<p>Get the source source code and run the unit tests directly
+on your workstation as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ git clone git://github.com/gilesknap/gphotos-sync.git
+$ cd gphotos-sync
+$ virtualenv .venv
+$ source .venv/bin/activate
+$ pip install -e .[dev]
+$ tox -p
+</pre></div>
+</div>
+<p>In both cases tox -p runs in parallel the following checks:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Build Spinx Documentation</p></li>
+<li><p>run pytest on all tests in ./tests</p></li>
+<li><p>run mypy linting on all files in ./src ./tests</p></li>
+<li><p>run pre-commit checks:</p>
+<ul>
+<li><p>run flake8 style checks against all source</p></li>
+<li><p>run black formatting checks against all source</p></li>
+</ul>
+</li>
+</ul>
+</div></blockquote>
+<p>While 100% code coverage does not make a library bug-free, it significantly
+reduces the number of easily caught bugs! Please make sure coverage remains the
+same or is improved by a pull request!</p>
+</section>
+</section>
+<section id="code-styling">
+<h2>Code Styling<a class="headerlink" href="#code-styling" title="Link to this heading"></a></h2>
+<p>The code in this repository conforms to standards set by the following tools:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/psf/black">black</a> for code formatting</p></li>
+<li><p><a class="reference external" href="https://flake8.pycqa.org/en/latest/">flake8</a> for style checks</p></li>
+<li><p><a class="reference external" href="https://github.com/PyCQA/isort">isort</a> for import ordering</p></li>
+<li><p><a class="reference external" href="https://github.com/python/mypy">mypy</a> for static type checking</p></li>
+</ul>
+<p>These checks will be run by <a class="reference external" href="https://pre-commit.com/">pre-commit</a>. You can either choose to run these
+tests on all files tracked by git:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ tox -e pre-commit,mypy
+</pre></div>
+</div>
+<p>Or you can install a pre-commit hook that will run each time you do a <code class="docutils literal notranslate"><span class="pre">git</span>
+<span class="pre">commit</span></code> on just the files that have changed:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pre-commit install
+</pre></div>
+</div>
+<p>Docstrings are pre-processed using the Sphinx Napoleon extension. As such,
+<a class="reference external" href="https://sphinxcontrib-napoleon.readthedocs.io/en/latest/index.html#google-vs-numpy">google-style</a> is considered as standard for this repository. Please use type
+hints in the function signature for types. For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="n">arg1</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">arg2</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Summary line.</span>
+
+<span class="sd">    Extended description of function.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        arg1: Description of arg1</span>
+<span class="sd">        arg2: Description of arg2</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Description of return value</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="kc">True</span>
+</pre></div>
+</div>
+</section>
+<section id="documentation">
+<h2>Documentation<a class="headerlink" href="#documentation" title="Link to this heading"></a></h2>
+<p>Documentation is contained in the <code class="docutils literal notranslate"><span class="pre">docs</span></code> directory and extracted from
+docstrings of the API.</p>
+<p>Docs follow the underlining convention:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Headling</span> <span class="mi">1</span> <span class="p">(</span><span class="n">page</span> <span class="n">title</span><span class="p">)</span>
+<span class="o">=======================</span>
+
+<span class="n">Heading</span> <span class="mi">2</span>
+<span class="o">---------</span>
+
+<span class="n">Heading</span> <span class="mi">3</span>
+<span class="o">~~~~~~~~~</span>
+</pre></div>
+</div>
+<p>You can build the docs from the project directory by running:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ tox -e docs
+$ firefox build/html/index.html
+</pre></div>
+</div>
+</section>
+<section id="release-process">
+<h2>Release Process<a class="headerlink" href="#release-process" title="Link to this heading"></a></h2>
+<p>To make a new release, please follow this checklist:</p>
+<ul class="simple">
+<li><p>Choose a new PEP440 compliant release number</p></li>
+<li><p>Git tag the version</p></li>
+<li><p>Push to GitHub and the actions will make a release on pypi</p></li>
+<li><p>Push to internal gitlab and do a dls-release.py of the tag</p></li>
+<li><p>Check and edit for clarity the autogenerated GitHub <a class="reference external" href="https://github.com/gilesknap/gphotos-sync/releases">release</a></p></li>
+</ul>
+</section>
+<section id="updating-the-tools">
+<h2>Updating the tools<a class="headerlink" href="#updating-the-tools" title="Link to this heading"></a></h2>
+<p>This module is merged with the <a class="reference external" href="https://dls-controls.github.io/dls-python3-skeleton">dls-python3-skeleton</a>. This is a generic
+Python project structure which provides a means to keep tools and
+techniques in sync between multiple Python projects. To update to the
+latest version of the skeleton, run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ git pull https://github.com/dls-controls/dls-python3-skeleton skeleton
+</pre></div>
+</div>
+<p>Any merge conflicts will indicate an area where something has changed that
+conflicts with the setup of the current module. Check the <a class="reference external" href="https://github.com/dls-controls/dls-python3-skeleton/pulls?q=is%3Apr+is%3Aclosed">closed pull requests</a>
+of the skeleton module for more details.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../explanations/googleapiissues.html" class="btn btn-neutral float-left" title="Known Issues" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="api.html" class="btn btn-neutral float-right" title="API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p></p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+   
+  <div id="other-versions-div" class="rst-versions" data-toggle="rst-versions" role="note" aria-label="Versions" style="visibility: hidden">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      <span class="fa fa-book"> Other Versions</span>
+      3.2.5
+      <span class="fa fa-caret-down"></span>
+    </span>
+    <div class="rst-other-versions">
+      <dl id="other-versions-dl"/>
+    </div>
+  </div>
+  <script>
+    function addVersion(name) {
+      var dd = document.createElement("dd");
+      var a = document.createElement("a");
+      a.href = "../../" + name;
+      a.innerText = name;
+      dd.appendChild(a);
+      document.getElementById('other-versions-dl').appendChild(dd);
+    }
+    // Get versions.txt and add a version for each line
+    fetch("../../versions.txt").then(response => {
+      if (response.ok) {
+        document.getElementById('other-versions-div').style.visibility = "visible";
+        return response.text().then(text => text.split(/\r?\n/).forEach(addVersion))
+      }
+    });
+  </script>
+
+
+</body>
+</html>
