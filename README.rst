@@ -25,13 +25,18 @@ so there is no risk of damaging your data.
 WARNING: Index DB Schema Change
 ===============================
 
-v3.4.2 introduces a change to the index database schema in order to distinguish between
-albums and shared albums. You will be required to rebuild your index database when
-upgrading to this version or more recent.
+3.2.4 introduces a change to the index database schema in order to distinguish between
+private albums and shared albums. You will be required to rebuild your index
+database when upgrading to this version or later.
 
 Please use the command line option ``--flush-index`` to rebuild the index database.
 
 This need only be done for the first invocation of the new version.
+
+If you have not done so you will see the error message:
+```
+sqlite3.OperationalError: no such column: IsSharedAlbum
+```
 
 
 Warning: Google API Issues
