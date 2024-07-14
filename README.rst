@@ -34,9 +34,8 @@ Please use the command line option ``--flush-index`` to rebuild the index databa
 This need only be done for the first invocation of the new version.
 
 If you have not done so you will see the error message:
-```
-sqlite3.OperationalError: no such column: IsSharedAlbum
-```
+
+``sqlite3.OperationalError: no such column: IsSharedAlbum``
 
 
 Warning: Google API Issues
