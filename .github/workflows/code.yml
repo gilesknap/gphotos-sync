@@ -117,7 +117,7 @@ jobs:
       HAS_PYPI_TOKEN: ${{ secrets.PYPI_TOKEN != '' }}
 
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4.1.7
 
       - name: Fixup blank lockfiles
         # Github release artifacts can't be blank
@@ -153,7 +153,7 @@ jobs:
       - name: checkout
         uses: actions/checkout@v2
 
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v4.1.7
         with:
           name: dist
           path: dist
